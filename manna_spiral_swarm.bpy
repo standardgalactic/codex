@@ -1,0 +1,167 @@
+# Manna Spiral Swarm · Headless Animation Render · Blender 3.0-safe
+# Created: 2025-04-27 16:16:51 UTC
+# Author: standardgalactic
+
+import bpy
+import random
+import math
+import os
+import sys
+import time
+
+# Print debug info
+print("Starting Manna Spiral Swarm generation...")
+print(f"Blender Version: {bpy.app.version_string}")
+print(f"Python Version: {sys.version}")
+start_time = time.time()
+
+# ---------- reset ----------
+bpy.ops.wm.read_homefile(use_empty=True)
+
+scene = bpy.context.scene
+scene.frame_start = 1
+scene.frame_end = 150
+
+# Set render engine and quality
+scene.render.engine = 'CYCLES'
+scene.cycles.device = 'CPU'
+scene.cycles.samples = 64  # Reduced for faster rendering
+
+# ---------- ground ----------
+print("Creating ground plane...")
+bpy.ops.mesh.primitive_plane_add(size=1000)
+ground = bpy.context.active_object
+ground.name = "Desert_Ground"
+mat_ground = bpy.data.materials.new("Desert_Material")
+mat_ground.diffuse_color = (0.8,0.6,0.4,1)
+ground.data.materials.append(mat_ground)
+
+# ---------- base gumball + samara ----------
+print("Creating manna gumball prototype...")
+# gumball sphere
+bpy.ops.mesh.primitive_uv_sphere_add(radius=0.05)
+gumball = bpy.context.active_object
+gumball.name = "Manna_Gumball"
+mat_g = bpy.data.materials.new("Kelp_Material")
+mat_g.use_nodes = True
+bsdf = mat_g.node_tree.nodes["Principled BSDF"]
+bsdf.inputs["Base Color"].default_value = (0.1,0.5,0.4,1)
+bsdf.inputs["Metallic"].default_value = 0.15
+bsdf.inputs["Roughness"].default_value = 0.35
+gumball.data.materials.append(mat_g)
+
+# samara wing (thin plane)
+bpy.ops.mesh.primitive_plane_add(size=0.15)
+wing = bpy.context.active_object
+wing.name = "Samara_Wing"
+wing.scale[0] = 0.75
+wing.scale[1] = 0.25
+wing.location[1] = 0.08
+wing.rotation_euler[0] = math.radians(15)
+
+mat_w = bpy.data.materials.new("Wing_Material")
+mat_w.diffuse_color = (0.12,0.6,0.45,1)
+wing.data.materials.append(mat_w)
+
+# parent wing to gumball & join into single mesh
+wing.parent = gumball
+bpy.context.view_layer.objects.active = gumball
+wing.select_set(True)
+gumball.select_set(True)
+bpy.ops.object.join()
+
+prototype = gumball
+
+# ---------- duplicate instances ----------
+print("Creating manna swarm...")
+count = 2000
+created_count = 0
+
+try:
+    for i in range(count):
+        inst = prototype.copy()
+        inst.data = prototype.data
+        bpy.context.collection.objects.link(inst)
+        
+        # helical placement parameters
+        radius = random.uniform(0,400)
+        theta = random.uniform(0, 2*math.pi)
+        inst.location = (radius*math.cos(theta),
+                        radius*math.sin(theta),
+                        random.uniform(150,250))
+        
+        # ----- animation -----
+        inst.keyframe_insert(data_path="location", frame=1)
+        inst.keyframe_insert(data_path="rotation_euler", frame=1)
+        
+        # descent to ground
+        inst.location.z = 0.05
+        drift = random.uniform(20, 60)
+        inst.location.x += drift*math.cos(theta)
+        inst.location.y += drift*math.sin(theta)
+        inst.keyframe_insert(data_path="location", frame=150)
+        
+        # autorotate 12 full spins
+        spins = 12 * 2*math.pi
+        inst.rotation_euler.z += spins
+        inst.keyframe_insert(data_path="rotation_euler", frame=150)
+        
+        created_count += 1
+        if (i + 1) % 100 == 0:
+            print(f"Created {i + 1}/{count} manna instances...")
+
+except Exception as e:
+    print(f"Error during manna creation: {str(e)}")
+    sys.exit(1)
+
+print(f"Successfully created {created_count} manna instances")
+
+# ---------- camera & sun ----------
+print("Setting up camera and lighting...")
+try:
+    bpy.ops.object.camera_add(location=(700,700,400),
+                             rotation=(math.radians(60),0,math.radians(135)))
+    camera = bpy.context.active_object
+    scene.camera = camera
+    
+    bpy.ops.object.light_add(type='SUN', location=(0,0,1000))
+    sun = bpy.context.active_object
+    sun.data.energy = 6
+    
+except Exception as e:
+    print(f"Error during camera/light setup: {str(e)}")
+    sys.exit(1)
+
+# ---------- render settings ----------
+print("Configuring render settings...")
+# Set resolution
+scene.render.resolution_x = 1920
+scene.render.resolution_y = 1080
+
+# Set output path
+output_dir = os.path.abspath(os.path.expanduser("~/manna_output"))
+os.makedirs(output_dir, exist_ok=True)
+scene.render.filepath = os.path.join(output_dir, "manna_spiral_swarm.mp4")
+
+# Configure video output
+scene.render.image_settings.file_format = 'FFMPEG'
+scene.render.ffmpeg.format = 'MPEG4'
+scene.render.ffmpeg.codec = 'H264'
+scene.render.ffmpeg.constant_rate_factor = 'MEDIUM'
+scene.render.ffmpeg.ffmpeg_preset = 'GOOD'
+
+# Verify scene is ready
+if not scene.camera:
+    raise Exception("No camera in scene!")
+
+print("\nScene setup complete!")
+print(f"Output will be saved to: {scene.render.filepath}")
+print(f"Frame range: {scene.frame_start} - {scene.frame_end}")
+print(f"Resolution: {scene.render.resolution_x}x{scene.render.resolution_y}")
+print(f"Render engine: {scene.render.engine}")
+print(f"Device: {scene.cycles.device}")
+print(f"Samples: {scene.cycles.samples}")
+
+setup_time = time.time() - start_time
+print(f"\nSetup completed in {setup_time:.1f} seconds")
+print("Ready to render animation!")
