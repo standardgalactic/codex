@@ -1,0 +1,1000 @@
+# vdo start --name=my_vdo
+# vdo start --all
+The VDO systemd unit is installed and enabled by default when the vdo package is installed. This unit
+automatically runs the vdo start --all command at system startup to bring up all activated VDO
+volumes. See Section 29.4.6, "Automatically Starting VDO Volumes at System Boot" for more
+CHAPTER 29. VDO INTEGRATION
+269
+
+information.
+To stop a given VDO volume, or all VDO volumes, and the associated UDS index(es), use one of these
+commands:
+# vdo stop --name=my_vdo
+# vdo stop --all
+If restarted after an unclean shutdown, VDO will perform a rebuild to verify the consistency of its
+metadata and will repair it if necessary. Rebuilds are automatic and do not require user intervention. See
+Section 29.4.5, "Recovering a VDO Volume After an Unclean Shutdown" for more information on the
+rebuild process.
+VDO might rebuild different writes depending on the write mode:
+In synchronous mode, all writes that were acknowledged by VDO prior to the shutdown will be
+rebuilt.
+In asynchronous mode, all writes that were acknowledged prior to the last acknowledged flush
+request will be rebuilt.
+In either mode, some writes that were either unacknowledged or not followed by a flush may also be
+rebuilt.
+For details on VDO write modes, see Section 29.4.2, "Selecting VDO Write Modes".
+29.4.2. Selecting VDO Write Modes
+VDO supports three write modes, sync, async, and auto:
+When VDO is in sync mode, the layers above it assume that a write command writes data to
+persistent storage. As a result, it is not necessary for the file system or application, for example,
+to issue FLUSH or Force Unit Access (FUA) requests to cause the data to become persistent at
+critical points.
+VDO must be set to sync mode only when the underlying storage guarantees that data is written
+to persistent storage when the write command completes. That is, the storage must either have
+no volatile write cache, or have a write through cache.
+When VDO is in async mode, the data is not guaranteed to be written to persistent storage
+when a write command is acknowledged. The file system or application must issue FLUSH or
+FUA requests to ensure data persistence at critical points in each transaction.
+VDO must be set to async mode if the underlying storage does not guarantee that data is
+written to persistent storage when the write command completes; that is, when the storage has a
+volatile write back cache.
+For information on how to find out if a device uses volatile cache or not, see the section called
+"Checking for a Volatile Cache".
+The auto mode automatically selects sync or async based on the characteristics of each
+device. This is the default option.
+For a more detailed theoretical overview of how write policies operate, see the section called "Overview
+of VDO Write Policies".
+Storage Administration Guide
+270
+
+To set a write policy, use the --writePolicy option. This can be specified either when creating a VDO
+volume as in Section 29.3.3, "Creating a VDO Volume" or when modifying an existing VDO volume with
+the changeWritePolicy subcommand:
+# vdo changeWritePolicy --writePolicy=sync|async|auto --name=vdo_name
+IMPORTANT
+Using the incorrect write policy might result in data loss on power failure.
+Checking for a Volatile Cache
+To see whether a device has a writeback cache, read the 
+/sys/block/block_device/device/scsi_disk/identifier/cache_type sysfs file. For
+example:
+Device sda indicates that it has a writeback cache:
+$ cat '/sys/block/sda/device/scsi_disk/7:0:0:0/cache_type'
+write back
+Device sdb indicates that it does not have a writeback cache:
+$ cat '/sys/block/sdb/device/scsi_disk/1:2:0:0/cache_type'
+None
+Additionally, in the kernel boot log, you can find whether the above mentioned devices have a write
+cache or not:
+sd 7:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
+support DPO or FUA
+sd 1:2:0:0: [sdb] Write cache: disabled, read cache: disabled, supports 
+DPO and FUA
+See the Viewing and Managing Log Files chapter in the System Administrator's Guide for more
+information on reading the system log.
+In these examples, use the following write policies for VDO:
+async mode for the sda device
+sync mode for the sdb device
+NOTE
+You should configure VDO to use the sync write policy if the cache_type value is none
+or write through.
+29.4.3. Removing VDO Volumes
+CHAPTER 29. VDO INTEGRATION
+271
+
+A VDO volume can be removed from the system by running:
+# vdo remove --name=my_vdo
+Prior to removing a VDO volume, unmount file systems and stop applications that are using the storage.
+The vdo remove command removes the VDO volume and its associated UDS index, as well as logical
+volumes where they reside.
+29.4.3.1. Removing an Unsuccessfully Created Volume
+If a failure occurs when the vdo utility is creating a VDO volume, the volume is left in an intermediate
+state. This might happen when, for example, the system crashes, power fails, or the administrator
+interrupts a running vdo create command.
+To clean up from this situation, remove the unsuccessfully created volume with the --force option:
+# vdo remove --force --name=my_vdo
+The --force option is required because the administrator might have caused a conflict by changing the
+system configuration since the volume was unsuccessfully created. Without the --force option, the 
+vdo remove command fails with the following message:
+[...]
+A previous operation failed.
+Recovery from the failure either failed or was interrupted.
+Add '--force' to 'remove' to perform the following cleanup.
+Steps to clean up VDO my_vdo:
+umount -f /dev/mapper/my_vdo
+udevadm settle
+dmsetup remove my_vdo
+vdo: ERROR - VDO volume my_vdo previous operation (create) is incomplete
+29.4.4. Configuring the UDS Index
+VDO uses a high-performance deduplication index called UDS to detect duplicate blocks of data as they
+are being stored. The deduplication window is the number of previously written blocks which the index
+remembers. The size of the deduplication window is configurable. For a given window size, the index will
+requires a specific amount of RAM and a specific amount of disk space. The size of the window is
+usually determined by specifying the size of the index memory using the --indexMem=size option. The
+amount of disk space to use will then be determined automatically.
+In general, Red Hat recommends using a sparse UDS index for all production use cases. This is an
+extremely efficient indexing data structure, requiring approximately one-tenth of a byte of DRAM per
+block in its deduplication window. On disk, it requires approximately 72 bytes of disk space per block.
+The minimum configuration of this index uses 256 MB of DRAM and approximately 25 GB of space on
+disk. To use this configuration, specify the --sparseIndex=enabled --indexMem=0.25 options to
+the vdo create command. This configuration results in a deduplication window of 2.5 TB (meaning it
+will remember a history of 2.5 TB). For most use cases, a deduplication window of 2.5 TB is appropriate
+for deduplicating storage pools that are up to 10 TB in size.
+The default configuration of the index, however, is to use a dense index. This index is considerably less
+efficient (by a factor of 10) in DRAM, but it has much lower (also by a factor of 10) minimum required
+disk space, making it more convenient for evaluation in constrained environments.
+Storage Administration Guide
+272
+
+In general, a deduplication window which is one quarter of the physical size of a VDO volume is a
+recommended configuration. However, this is not an actual requirement. Even small deduplication
+windows (compared to the amount of physical storage) can find significant amounts of duplicate data in
+many use cases. Larger windows may also be used, but it in most cases, there will be little additional
+benefit to doing so.
+Speak with your Red Hat Technical Account Manager representative for additional guidelines on tuning
+this important system parameter.
+29.4.5. Recovering a VDO Volume After an Unclean Shutdown
+If a volume is restarted without having been shut down cleanly, VDO will need to rebuild a portion of its
+metadata to continue operating, which occurs automatically when the volume is started. (Also see
+Section 29.4.5.2, "Forcing a Rebuild" to invoke this process on a volume that was cleanly shut down.)
+Data recovery depends on the write policy of the device:
+If VDO was running on synchronous storage and write policy was set to sync, then all data
+written to the volume will be fully recovered.
+If the write policy was async, then some writes may not be recovered if they were not made
+durable by sending VDO a FLUSH command, or a write I/O tagged with the FUA flag (force unit
+access). This is accomplished from user mode by invoking a data integrity operation like fsync, 
+fdatasync, sync, or umount.
+29.4.5.1. Online Recovery
+In the majority of cases, most of the work of rebuilding an unclean VDO volume can be done after the
+VDO volume has come back online and while it is servicing read and write requests. Initially, the amount
+of space available for write requests may be limited. As more of the volume's metadata is recovered,
+more free space may become available. Furthermore, data written while the VDO is recovering may fail
+to deduplicate against data written before the crash if that data is in a portion of the volume which has not
+yet been recovered. Data may be compressed while the volume is being recovered. Previously
+compressed blocks may still be read or overwritten.
+During an online recovery, a number of statistics will be unavailable: for example, blocks in use and 
+blocks free. These statistics will become available once the rebuild is complete.
+29.4.5.2. Forcing a Rebuild
+VDO can recover from most hardware and software errors. If a VDO volume cannot be recovered
+successfully, it is placed in a read-only mode that persists across volume restarts. Once a volume is in
+read-only mode, there is no guarantee that data has not been lost or corrupted. In such cases, Red Hat
+recommends copying the data out of the read-only volume and possibly restoring the volume from
+backup. (The operating mode attribute of vdostats indicates whether a VDO volume is in read-only
+mode.)
+If the risk of data corruption is acceptable, it is possible to force an offline rebuild of the VDO volume
+metadata so the volume can be brought back online and made available. Again, the integrity of the rebuilt
+data cannot be guaranteed.
+To force a rebuild of a read-only VDO volume, first stop the volume if it is running:
+# vdo stop --name=my_vdo
+CHAPTER 29. VDO INTEGRATION
+273
+
+Then restart the volume using the --forceRebuild option:
+# vdo start --name=my_vdo --forceRebuild
+29.4.6. Automatically Starting VDO Volumes at System Boot
+During system boot, the vdo systemd unit automatically starts all VDO devices that are configured as
+activated.
+To prevent certain existing volumes from being started automatically, deactivate those volumes by
+running either of these commands:
+To deactivate a specific volume:
+# vdo deactivate --name=my_vdo
+To deactivate all volumes:
+# vdo deactivate --all
+Conversely, to activate volumes, use one of these commands:
+To activate a specific volume:
+# vdo activate --name=my_vdo
+To activate all volumes:
+# vdo activate --all
+You can also create a VDO volume that does not start automatically by adding the --
+activate=disabled option to the vdo create command.
+For systems that place LVM volumes on top of VDO volumes as well as beneath them (for example,
+Figure 29.5, "Deduplicated Unified Storage"), it is vital to start services in the right order:
+1. The lower layer of LVM must be started first (in most systems, starting this layer is configured
+automatically when the LVM2 package is installed).
+2. The vdo systemd unit must then be started.
+3. Finally, additional scripts must be run in order to start LVM volumes or other services on top of
+the now running VDO volumes.
+29.4.7. Disabling and Re-enabling Deduplication
+In some instances, it may be desirable to temporarily disable deduplication of data being written to a
+VDO volume while still retaining the ability to read to and write from the volume. While disabling
+deduplication will prevent subsequent writes from being deduplicated, data which was already
+deduplicated will remain so.
+To stop deduplication on a VDO volume, use the following command:
+Storage Administration Guide
+274
+
+# vdo disableDeduplication --name=my_vdo
+This stops the associated UDS index and informs the VDO volume that deduplication is no
+longer active.
+To restart deduplication on a VDO volume, use the following command:
+# vdo enableDeduplication --name=my_vdo
+This restarts the associated UDS index and informs the VDO volume that deduplication is active
+again.
+You can also disable deduplication when creating a new VDO volume by adding the --
+deduplication=disabled option to the vdo create command.
+29.4.8. Using Compression
+29.4.8.1. Introduction
+In addition to block-level deduplication, VDO also provides inline block-level compression using the
+HIOPS Compression™ technology. While deduplication is the optimal solution for virtual machine
+environments and backup applications, compression works very well with structured and unstructured file
+formats that do not typically exhibit block-level redundancy, such as log files and databases.
+Compression operates on blocks that have not been identified as duplicates. When unique data is seen
+for the first time, it is compressed. Subsequent copies of data that have already been stored are
+deduplicated without requiring an additional compression step. The compression feature is based on a
+parallelized packaging algorithm that enables it to handle many compression operations at once. After
+first storing the block and responding to the requestor, a best-fit packing algorithm finds multiple blocks
+that, when compressed, can fit into a single physical block. After it is determined that a particular
+physical block is unlikely to hold additional compressed blocks, it is written to storage and the
+uncompressed blocks are freed and reused. By performing the compression and packaging operations
+after having already responded to the requestor, using compression imposes a minimal latency penalty.
+29.4.8.2. Enabling and Disabling Compression
+VDO volume compression is on by default.
+When creating a volume, you can disable compression by adding the --compression=disabled
+option to the vdo create command.
+Compression can be stopped on an existing VDO volume if necessary to maximize performance or to
+speed processing of data that is unlikely to compress.
+To stop compression on a VDO volume, use the following command:
+# vdo disableCompression --name=my_vdo
+To start it again, use the following command:
+# vdo enableCompression --name=my_vdo
+CHAPTER 29. VDO INTEGRATION
+275
+
+29.4.9. Managing Free Space
+Because VDO is a thinly provisioned block storage target, the amount of physical space VDO uses may
+differ from the size of the volume presented to users of the storage. Integrators and systems
+administrators can exploit this disparity to save on storage costs but must take care to avoid
+unexpectedly running out of storage space if the data written does not achieve the expected rate of
+deduplication.
+Whenever the number of logical blocks (virtual storage) exceeds the number of physical blocks (actual
+storage), it becomes possible for file systems and applications to unexpectedly run out of space. For that
+reason, storage systems using VDO must provide storage administrators with a way of monitoring the
+size of the VDO's free pool. The size of this free pool may be determined by using the vdostats utility;
+see Section 29.7.2, "vdostats" for details. The default output of this utility lists information for all running
+VDO volumes in a format similar to the Linux df utility. For example:
+Device              1K-blocks   Used        Available   Use%
+/dev/mapper/my_vdo  211812352   105906176   105906176     50%
+If the size of VDO's free pool drops below a certain level, the storage administrator can take action by
+deleting data (which will reclaim space whenever the deleted data is not duplicated), adding physical
+storage, or even deleting LUNs.
+Reclaiming Space on File Systems
+VDO cannot reclaim space unless file systems communicate that blocks are free using DISCARD, TRIM,
+or UNMAP commands. For file systems that do not use DISCARD, TRIM, or UNMAP, free space may be
+manually reclaimed by storing a file consisting of binary zeros and then deleting that file.
+File systems may generally be configured to issue DISCARD requests in one of two ways:
+Realtime discard (also online discard or inline discard)
+When realtime discard is enabled, file systems send REQ_DISCARD requests to the block layer
+whenever a user deletes a file and frees space. VDO recieves these requests and returns space to its
+free pool, assuming the block was not shared.
+For file systems that support online discard, you can enable it by setting the discard option at mount
+time.
+Batch discard
+Batch discard is a user-initiated operation that causes the file system to notify the block layer (VDO)
+of any unused blocks. This is accomplished by sending the file system an ioctl request called 
+FITRIM.
+You can use the fstrim utility (for example from cron) to send this ioctl to the file system.
+For more information on the discard feature, see Section 2.4, "Discard Unused Blocks".
+Reclaiming Space Without a File System
+It is also possible to manage free space when the storage is being used as a block storage target without
+a file system. For example, a single VDO volume can be carved up into multiple subvolumes by
+installing the Logical Volume Manager (LVM) on top of it. Before deprovisioning a volume, the 
+blkdiscard command can be used in order to free the space previously used by that logical volume.
+Storage Administration Guide
+276
+
+LVM supports the REQ_DISCARD command and will forward the requests to VDO at the appropriate
+logical block addresses in order to free the space. If other volume managers are being used, they would
+also need to support REQ_DISCARD, or equivalently, UNMAP for SCSI devices or TRIM for ATA devices.
+Reclaiming Space on Fibre Channel or Ethernet Network
+VDO volumes (or portions of volumes) can also be provisioned to hosts on a Fibre Channel storage
+fabric or an Ethernet network using SCSI target frameworks such as LIO or SCST. SCSI initiators can
+use the UNMAP command to free space on thinly provisioned storage targets, but the SCSI target
+framework will need to be configured to advertise support for this command. This is typically done by
+enabling thin provisioning on these volumes. Support for UNMAP can be verified on Linux-based SCSI
+initiators by running the following command:
+# sg_vpd --page=0xb0 /dev/device
+In the output, verify that the "Maximum unmap LBA count" value is greater than zero.
+29.4.10. Increasing Logical Volume Size
+Management applications can increase the logical size of a VDO volume using the vdo growLogical
+subcommand. Once the volume has been grown, the management should inform any devices or file
+systems on top of the VDO volume of its new size. The volume may be grown as follows:
+# vdo growLogical --name=my_vdo --vdoLogicalSize=new_logical_size
+The use of this command allows storage administrators to initially create VDO volumes which have a
+logical size small enough to be safe from running out of space. After some period of time, the actual rate
+of data reduction can be evaluated, and if sufficient, the logical size of the VDO volume can be grown to
+take advantage of the space savings.
+29.4.11. Increasing Physical Volume Size
+To increase the amount of physical storage available to a VDO volume:
+1. Increase the size of the underlying device.
+The exact procedure depends on the type of the device. For example, to resize an MBR
+partition, use the fdisk utility as described in Section 13.5, "Resizing a Partition with fdisk".
+2. Use the growPhysical option to add the new physical storage space to the VDO volume:
+# vdo growPhysical --name=my_vdo
+It is not possible to shrink a VDO volume with this command.
+29.4.12. Automating VDO with Ansible
+You can use the Ansible tool to automate VDO deployment and administration. For details, see:
+Ansible documentation: https://docs.ansible.com/
+VDO Ansible module documentation:
+https://docs.ansible.com/ansible/latest/modules/vdo_module.html
+CHAPTER 29. VDO INTEGRATION
+277
+
+29.5. DEPLOYMENT SCENARIOS
+VDO can be deployed in a variety of ways to provide deduplicated storage for both block and file access
+and for both local and remote storage. Because VDO exposes its deduplicated storage as a standard
+Linux block device, it can be used with standard file systems, iSCSI and FC target drivers, or as unified
+storage.
+29.5.1. iSCSI Target
+As a simple example, the entirety of the VDO storage target can be exported as an iSCSI Target to
+remote iSCSI initiators.
+Figure 29.3. Deduplicated Block Storage Target
+See http://linux-iscsi.org/ for more information on iSCSI Target.
+29.5.2. File Systems
+If file access is desired instead, file systems can be created on top of VDO and exposed to NFS or CIFS
+users via either the Linux NFS server or Samba.
+Figure 29.4. Deduplicated NAS
+29.5.3. LVM
+More feature-rich systems may make further use of LVM to provide multiple LUNs that are all backed by
+the same deduplicated storage pool. In Figure 29.5, "Deduplicated Unified Storage", the VDO target is
+registered as a physical volume so that it can be managed by LVM. Multiple logical volumes (LV1 to 
+LV4) are created out of the deduplicated storage pool. In this way, VDO can support multiprotocol unified
+block/file access to the underlying deduplicated storage pool.
+Storage Administration Guide
+278
+
+Figure 29.5. Deduplicated Unified Storage
+Deduplicated unified storage design allows for multiple file systems to collectively use the same
+deduplication domain through the LVM tools. Also, file systems can take advantage of LVM snapshot,
+copy-on-write, and shrink or grow features, all on top of VDO.
+29.5.4. Encryption
+Data security is critical today. More and more companies have internal policies regarding data
+encryption. Linux Device Mapper mechanisms such as DM-Crypt are compatible with VDO. Encrypting
+VDO volumes will help ensure data security, and any file systems above VDO still gain the deduplication
+feature for disk optimization. Note that applying encryption above VDO results in little if any data
+deduplication; encryption renders duplicate blocks different before VDO can deduplicate them.
+Figure 29.6. Using VDO with Encryption
+29.6. TUNING VDO
+29.6.1. Introduction to VDO Tuning
+As with tuning databases or other complex software, tuning VDO involves making trade-offs between
+numerous system constraints, and some experimentation is required. The primary controls available for
+CHAPTER 29. VDO INTEGRATION
+279
+
+tuning VDO are the number of threads assigned to different types of work, the CPU affinity settings for
+those threads, and cache settings.
+29.6.2. Background on VDO Architecture
+The VDO kernel driver is multi-threaded to improve performance by amortizing processing costs across
+multiple concurrent I/O requests. Rather than have one thread process an I/O request from start to finish,
+it delegates different stages of work to one or more threads or groups of threads, with messages passed
+between them as the I/O request makes its way through the pipeline. This way, one thread can serialize
+all access to a global data structure without having to lock and unlock it each time an I/O operation is
+processed. If the VDO driver is well-tuned, each time a thread completes a requested processing stage
+there will usually be another request queued up for that same processing. Keeping these threads busy
+reduces the overhead of context switching and scheduling, improving performance. Separate threads
+are also used for parts of the operating system that can block, such as enqueueing I/O operations to the
+underlying storage system or messages to UDS.
+The various worker thread types used by VDO are:
+Logical zone threads
+The logical threads, with process names including the string kvdo:logQ, maintain the mapping
+between the logical block numbers (LBNs) presented to the user of the VDO device and the physical
+block numbers (PBNs) in the underlying storage system. They also implement locking such that two
+I/O operations attempting to write to the same block will not be processed concurrently. Logical zone
+threads are active during both read and write operations.
+LBNs are divided into chunks (a block map page contains a bit over 3 MB of LBNs) and these chunks
+are grouped into zones that are divided up among the threads.
+Processing should be distributed fairly evenly across the threads, though some unlucky access
+patterns may occasionally concentrate work in one thread or another. For example, frequent access
+to LBNs within a given block map page will cause one of the logical threads to process all of those
+operations.
+The number of logical zone threads can be controlled using the --vdoLogicalThreads=thread 
+count option of the vdo command
+Physical zone threads
+Physical, or kvdo:physQ, threads manage data block allocation and maintain reference counts.
+They are active during write operations.
+Like LBNs, PBNs are divided into chunks called slabs, which are further divided into zones and
+assigned to worker threads that distribute the processing load.
+The number of physical zone threads can be controlled using the --
+vdoPhysicalThreads=thread count option of the vdo command.
+I/O submission threads
+kvdo:bioQ threads submit block I/O (bio) operations from VDO to the storage system. They take I/O
+requests enqueued by other VDO threads and pass them to the underlying device driver. These
+threads may communicate with and update data structures associated with the device, or set up
+requests for the device driver's kernel threads to process. Submitting I/O requests can block if the
+underlying device's request queue is full, so this work is done by dedicated threads to avoid
+processing delays.
+Storage Administration Guide
+280
+
+If these threads are frequently shown in D state by ps or top utilities, then VDO is frequently keeping
+the storage system busy with I/O requests. This is generally good if the storage system can service
+multiple requests in parallel, as some SSDs can, or if the request processing is pipelined. If thread
+CPU utilization is very low during these periods, it may be possible to reduce the number of I/O
+submission threads.
+CPU usage and memory contention are dependent on the device driver(s) beneath VDO. If CPU
+utilization per I/O request increases as more threads are added then check for CPU, memory, or lock
+contention in those device drivers.
+The number of I/O submission threads can be controlled using the --vdoBioThreads=thread 
+count option of the vdo command.
+CPU-processing threads
+kvdo:cpuQ threads exist to perform any CPU-intensive work such as computing hash values or
+compressing data blocks that do not block or require exclusive access to data structures associated
+with other thread types.
+The number of CPU-processing threads can be controlled using the --vdoCpuThreads=thread 
+count option of the vdo command.
+I/O acknowledgement threads
+The kvdo:ackQ threads issue the callbacks to whatever sits atop VDO (for example, the kernel page
+cache, or application program threads doing direct I/O) to report completion of an I/O request. CPU
+time requirements and memory contention will be dependent on this other kernel-level code.
+The number of acknowledgement threads can be controlled using the --vdoAckThreads=thread 
+count option of the vdo command.
+Non-scalable VDO kernel threads:
+Deduplication thread
+The kvdo:dedupeQ thread takes queued I/O requests and contacts UDS. Since the socket buffer
+can fill up if the server cannot process requests quickly enough or if kernel memory is constrained by
+other system activity, this work is done by a separate thread so if a thread should block, other VDO
+processing can continue. There is also a timeout mechanism in place to skip an I/O request after a
+long delay (several seconds).
+Journal thread
+The kvdo:journalQ thread updates the recovery journal and schedules journal blocks for writing. A
+VDO device uses only one journal, so this work cannot be split across threads.
+Packer thread
+The kvdo:packerQ thread, active in the write path when compression is enabled, collects data
+blocks compressed by the kvdo:cpuQ threads to minimize wasted space. There is one packer data
+structure, and thus one packer thread, per VDO device.
+29.6.3. Values to tune
+29.6.3.1. CPU/memory
+CHAPTER 29. VDO INTEGRATION
+281
+
+29.6.3.1.1. Logical, physical, cpu, ack thread counts
+The logical, physical, cpu, and I/O acknowledgement work can be spread across multiple threads, the
+number of which can be specified during initial configuration or later if the VDO device is restarted.
+One core, or one thread, can do a finite amount of work during a given time. Having one thread compute
+all data-block hash values, for example, would impose a hard limit on the number of data blocks that
+could be processed per second. Dividing the work across multiple threads (and cores) relieves that
+bottleneck.
+As a thread or core approaches 100% usage, more work items will tend to queue up for processing.
+While this may result in CPU having fewer idle cycles, queueing delays and latency for individual I/O
+requests will typically increase. According to some queueing theory models, utilization levels above 70%
+or 80% can lead to excessive delays that can be several times longer than the normal processing time.
+Thus it may be helpful to distribute work further for a thread or core with 50% or higher utilization, even if
+those threads or cores are not always busy.
+In the opposite case, where a thread or CPU is very lightly loaded (and thus very often asleep), supplying
+work for it to do is more likely to incur some additional cost. (A thread attempting to wake another thread
+must acquire a global lock on the scheduler's data structures, and may potentially send an inter-
+processor interrupt to transfer work to another core). As more cores are configured to run VDO threads, it
+becomes less likely that a given piece of data will be cached as work is moved between threads or as
+threads are moved between cores — so too much work distribution can also degrade performance.
+The work performed by the logical, physical, and CPU threads per I/O request will vary based on the
+type of workload, so systems should be tested with the different types of workloads they are expected to
+service.
+Write operations in sync mode involving successful deduplication will entail extra I/O operations (reading
+the previously stored data block), some CPU cycles (comparing the new data block to confirm that they
+match), and journal updates (remapping the LBN to the previously-stored data block's PBN) compared to
+writes of new data. When duplication is detected in async mode, data write operations are avoided at the
+cost of the read and compare operations described above; only one journal update can happen per write,
+whether or not duplication is detected.
+If compression is enabled, reads and writes of compressible data will require more processing by the
+CPU threads.
+Blocks containing all zero bytes (a zero block) are treated specially, as they commonly occur. A special
+entry is used to represent such data in the block map, and the zero block is not written to or read from the
+storage device. Thus, tests that write or read all-zero blocks may produce misleading results. The same
+is true, to a lesser degree, of tests that write over zero blocks or uninitialized blocks (those that were
+never written since the VDO device was created) because reference count updates done by the physical
+threads are not required for zero or uninitialized blocks.
+Acknowledging I/O operations is the only task that is not significantly affected by the type of work being
+done or the data being operated upon, as one callback is issued per I/O operation.
+29.6.3.1.2. CPU Affinity and NUMA
+Accessing memory across NUMA node boundaries takes longer than accessing memory on the local
+node. With Intel processors sharing the last-level cache between cores on a node, cache contention
+between nodes is a much greater problem than cache contention within a node.
+Tools such as top can not distinguish between CPU cycles that do work and cycles that are stalled.
+These tools interpret cache contention and slow memory accesses as actual work. As a result, moving a
+thread between nodes may appear to reduce the thread's apparent CPU utilization while increasing the
+Storage Administration Guide
+282
+
+number of operations it performs per second.
+While many of VDO's kernel threads maintain data structures that are accessed by only one thread, they
+do frequently exchange messages about the I/O requests themselves. Contention may be high if VDO
+threads are run on multiple nodes, or if threads are reassigned from one node to another by the
+scheduler. If it is possible to run other VDO-related work (such as I/O submissions to VDO, or interrupt
+processing for the storage device) on the same node as the VDO threads, contention may be further
+reduced. If one node does not have sufficient cycles to run all VDO-related work, memory contention
+should be considered when selecting threads to move onto other nodes.
+If practical, collect VDO threads on one node using the taskset utility. If other VDO-related work can
+also be run on the same node, that may further reduce contention. In that case, if one node lacks the
+CPU power to keep up with processing demands then memory contention must be considered when
+choosing threads to move onto other nodes. For example, if a storage device's driver has a significant
+number of data structures to maintain, it may help to move both the device's interrupt handling and
+VDO's I/O submissions (the bio threads that call the device's driver code) to another node. Keeping I/O
+acknowledgment (ack threads) and higher-level I/O submission threads (user-mode threads doing direct
+I/O, or the kernel's page cache flush thread) paired is also good practice.
+29.6.3.1.3. Frequency throttling
+If power consumption is not an issue, writing the string performance to the 
+/sys/devices/system/cpu/cpu*/cpufreq/scaling_governor files if they exist might produce
+better results. If these sysfs nodes do not exist, Linux or the system's BIOS may provide other options
+for configuring CPU frequency management.
+Performance measurements are further complicated by CPUs that dynamically vary their frequencies
+based on workload, because the time needed to accomplish a specific piece of work may vary due to
+other work the CPU has been doing, even without task switching or cache contention.
+29.6.3.2. Caching
+29.6.3.2.1. Block Map Cache
+VDO caches a number of block map pages for efficiency. The cache size defaults to 128 MB, but it can
+be increased with the --blockMapCacheSize=megabytes option of the vdo command. Using a
+larger cache may produce significant benefits for random-access workloads.
+29.6.3.2.2. Read Cache
+A second cache may be used for caching data blocks read from the storage system to verify VDO's
+deduplication advice. If similar data blocks are seen within a short time span, the number of I/O
+operations needed may be reduced.
+The read cache also holds storage blocks containing compressed user data. If multiple compressible
+blocks were written within a short period of time, their compressed versions may be located within the
+same storage system block. Likewise, if they are read within a short time, caching may avoid the need
+for additional reads from the storage system.
+The vdo command's --readCache={enabled | disabled} option controls whether a read cache is
+used. If enabled, the cache has a minimum size of 8 MB, but it can be increased with the --
+readCacheSize=megabytes option. Managing the read cache incurs a slight overhead, so it may not
+increase performance if the storage system is fast enough. The read cache is disabled by default.
+CHAPTER 29. VDO INTEGRATION
+283
+
+29.6.3.3. Storage System I/O
+29.6.3.3.1. Bio Threads
+For generic hard drives in a RAID configuration, one or two bio threads may be sufficient for submitting
+I/O operations. If the storage device driver requires its I/O submission threads to do significantly more
+work (updating driver data structures or communicating with the device) such that one or two threads are
+very busy and storage devices are often idle, the bio thread count can be increased to compensate.
+However, depending on the driver implementation, raising the thread count too high may lead to cache or
+spin lock contention. If device access timing is not uniform across all NUMA nodes, it may be helpful to
+run bio threads on the node "closest" to the storage device controllers.
+29.6.3.3.2. IRQ Handling
+If a device driver does significant work in its interrupt handler and does not use a threaded IRQ handler,
+it may prevent the scheduler from providing the best performance. CPU time spent servicing hardware
+interrupts may look like normal VDO (or other) kernel thread execution in some ways. For example, if
+hardware IRQ handling required 30% of a core's cycles, a busy kernel thread on the same core could
+only use the remaining 70%. However, if the work queued up for that thread demanded 80% of the core's
+cycles, the thread would never catch up, and the scheduler might simply leave that thread to run
+impeded on that core instead of switching that thread to a less busy core.
+Using such a device driver under a heavy VDO workload may require a large number of cycles to service
+hardware interrupts (the %hi indicator in the header of the top display). In that case it may help to
+assign IRQ handling to certain cores and adjust the CPU affinity of VDO kernel threads not to run on
+those cores.
+29.6.3.4. Maximum Discard Sectors
+The maximum allowed size of DISCARD (TRIM) operations to a VDO device can be tuned via 
+/sys/kvdo/max_discard_sectors, based on system usage. The default is 8 sectors (that is, one 4
+KB block). Larger sizes may be specified, though VDO will still process them in a loop, one block at a
+time, ensuring that metadata updates for one discarded block are written to the journal and flushed to
+disk before starting on the next block.
+When using a VDO volume as a local file system, Red Hat testing found that a small discard size works
+best, as the generic block-device code in the Linux kernel will break large discard requests into multiple
+smaller ones and submit them in parallel. If there is low I/O activity on the device, VDO can process
+many smaller requests concurrently and much more quickly than one large request.
+If the VDO device is to be used as a SCSI target, the initiator and target software introduce additional
+factors to consider. If the target SCSI software is SCST, it reads the maximum discard size and relays it
+to the initiator. (Red Hat has not attempted to tune VDO configurations in conjunction with LIO SCSI
+target code.)
+Because the Linux SCSI initiator code allows only one discard operation at a time, discard requests that
+exceed the maximum size would be broken into multiple smaller discards and sent, one at a time, to the
+target system (and to VDO). So, in addition to VDO processing a number of small discard operations in
+serial, the round-trip communication time between the two systems adds additional latency.
+Setting a larger maximum discard size can reduce this communication overhead, though that larger
+request is passed in its entirety to VDO and processed one 4 KB block at a time. While there is no per-
+block communication delay, additional processing time for the larger block may cause the SCSI initiator
+software to time out.
+For SCSI target usage, Red Hat recommends configuring the maximum discard size to be moderately
+Storage Administration Guide
+284
+
+large while still keeping the typical discard time well within the initiator's timeout setting. An extra round-
+trip cost every few seconds, for example, should not significantly affect performance and SCSI initiators
+with timeouts of 30 or 60 seconds should not time out.
+29.6.4. Identifying Bottlenecks
+There are several key factors that affect VDO performance, and many tools available to identify those
+having the most impact.
+Thread or CPU utilization above 70%, as seen in utilities such as top or ps, generally implies that too
+much work is being concentrated in one thread or on one CPU. However, in some cases it could mean
+that a VDO thread was scheduled to run on the CPU but no work actually happened; this scenario could
+occur with excessive hardware interrupt handler processing, memory contention between cores or
+NUMA nodes, or contention for a spin lock.
+When using the top utility to examine system performance, Red Hat suggests running top -H to show
+all process threads separately and then entering the 1 f j keys, followed by the Enter/Return key; the 
+top command then displays the load on individual CPU cores and identifies the CPU on which each
+process or thread last ran. This information can provide the following insights:
+If a core has low %id (idle) and %wa (waiting-for-I/O) values, it is being kept busy with work of
+some kind.
+If the %hi value for a core is very low, that core is doing normal processing work, which is being
+load-balanced by the kernel scheduler. Adding more cores to that set may reduce the load as
+long as it does not introduce NUMA contention.
+If the %hi for a core is more than a few percent and only one thread is assigned to that core, and 
+%id and %wa are zero, the core is over-committed and the scheduler is not addressing the
+situation. In this case the kernel thread or the device interrupt handling should be reassigned to
+keep them on separate cores.
+The perf utility can examine the performance counters of many CPUs. Red Hat suggests using the 
+perf top subcommand as a starting point to examine the work a thread or processor is doing. If, for
+example, the bioQ threads are spending many cycles trying to acquire spin locks, there may be too
+much contention in the device driver below VDO, and reducing the number of bioQ threads might
+alleviate the situation. High CPU use (in acquiring spin locks or elsewhere) could also indicate contention
+between NUMA nodes if, for example, the bioQ threads and the device interrupt handler are running on
+different nodes. If the processor supports them, counters such as stalled-cycles-backend, 
+cache-misses, and node-load-misses may be of interest.
+The sar utility can provide periodic reports on multiple system statistics. The sar -d 1 command
+reports block device utilization levels (percentage of the time they have at least one I/O operation in
+progress) and queue lengths (number of I/O requests waiting) once per second. However, not all block
+device drivers can report such information, so the sar usefulness might depend on the device drivers in
+use.
+29.7. VDO COMMANDS
+This section describes the following VDO utilities:
+vdo
+The vdo utility manages both the kvdo and UDS components of VDO.
+CHAPTER 29. VDO INTEGRATION
+285
+
+It is also used to enable or disable compression.
+vdostats
+The vdostats utility displays statistics for each configured (or specified) device in a format similar to
+the Linux df utility.
+29.7.1. vdo
+The vdo utility manages both the kvdo and UDS components of VDO.
+Synopsis
+vdo { activate | changeWritePolicy | create | deactivate | 
+disableCompression | disableDeduplication | enableCompression | 
+enableDeduplication | growLogical | growPhysical | list | modify | 
+printConfigFile | remove | start | status | stop } 
+[ options... ]
+Sub-Commands
+Table 29.4. VDO Sub-Commands
+Sub-Command
+Description
+Storage Administration Guide
+286
+
+create
+Creates a VDO volume and its associated index and makes it available. If
+−−activate=disabled is specified the VDO volume is created but
+not made available. Will not overwrite an existing file system or
+formatted VDO volume unless −−force is given. This command must
+be run with root privileges. Applicable options include:
+--name=volume (required)
+--device=device (required)
+--activate={enabled | disabled}
+--indexMem=gigabytes
+--blockMapCacheSize=megabytes
+--blockMapPeriod=period
+--compression={enabled | disabled}
+--confFile=file
+--deduplication={enabled | disabled}
+--emulate512={enabled | disabled}
+--sparseIndex={enabled | disabled}
+--vdoAckThreads=thread count
+--vdoBioRotationInterval=I/O count
+--vdoBioThreads=thread count
+--vdoCpuThreads=thread count
+--vdoHashZoneThreads=thread count
+--vdoLogicalThreads=thread count
+--vdoLogLevel=level
+--vdoLogicalSize=megabytes
+--vdoPhysicalThreads=thread count
+--readCache={enabled | disabled}
+--readCacheSize=megabytes
+--vdoSlabSize=megabytes
+--verbose
+--writePolicy={ auto | sync | async }
+--logfile=pathname
+Sub-Command
+Description
+CHAPTER 29. VDO INTEGRATION
+287
+
+remove
+Removes one or more stopped VDO volumes and associated indexes.
+This command must be run with root privileges. Applicable options
+include:
+{ --name=volume | --all } (required)
+--confFile=file
+--force
+--verbose
+--logfile=pathname
+start
+Starts one or more stopped, activated VDO volumes and associated
+services. This command must be run with root privileges. Applicable
+options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--forceRebuild
+--verbose
+--logfile=pathname
+stop
+Stops one or more running VDO volumes and associated services. This
+command must be run with root privileges. Applicable options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--force
+--verbose
+--logfile=pathname
+activate
+Activates one or more VDO volumes. Activated volumes can be started
+using the
+start
+command. This command must be run with root privileges. Applicable
+options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--logfile=pathname
+--verbose
+Sub-Command
+Description
+Storage Administration Guide
+288
+
+deactivate
+Deactivates one or more VDO volumes. Deactivated volumes cannot be
+started by the
+start
+command. Deactivating a currently running volume does not stop it.
+Once stopped a deactivated VDO volume must be activated before it can
+be started again. This command must be run with root privileges.
+Applicable options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+status
+Reports VDO system and volume status in YAML format. This command
+does not require root privileges though information will be incomplete if
+run without. Applicable options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+See Table 29.6, "VDO Status Output" for the output provided.
+list
+Displays a list of started VDO volumes. If −−all is specified it displays
+both started and non‐started volumes. This command must be run with
+root privileges. Applicable options include:
+--all
+--confFile=file
+--logfile=pathname
+--verbose
+Sub-Command
+Description
+CHAPTER 29. VDO INTEGRATION
+289
+
+modify
+Modifies configuration parameters of one or all VDO volumes. Changes
+take effect the next time the VDO device is started; already‐running
+devices are not affected. Applicable options include:
+{ --name=volume | --all } (required)
+--blockMapCacheSize=megabytes
+--blockMapPeriod=period
+--confFile=file
+--vdoAckThreads=thread count
+--vdoBioThreads=thread count
+--vdoCpuThreads=thread count
+--vdoHashZoneThreads=thread count
+--vdoLogicalThreads=thread count
+--vdoPhysicalThreads=thread count
+--readCache={enabled | disabled}
+--readCacheSize=megabytes
+--verbose
+--logfile=pathname
+changeWritePolicy
+Modifies the write policy of one or all running VDO volumes. This
+command must be run with root privileges.
+{ --name=volume | --all } (required)
+--writePolicy={ auto | sync | async }
+(required)
+--confFile=file
+--logfile=pathname
+--verbose
+Sub-Command
+Description
+Storage Administration Guide
+290
+
+enableDeduplication
+Enables deduplication on one or more VDO volumes. This command
+must be run with root privileges. Applicable options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+disableDeduplication
+Disables deduplication on one or more VDO volumes. This command
+must be run with root privileges. Applicable options include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+enableCompression
+Enables compression on one or more VDO volumes. If the VDO volume
+is running, takes effect immediately. If the VDO volume is not running
+compression will be enabled the next time the VDO volume is started.
+This command must be run with root privileges. Applicable options
+include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+disableCompression
+Disables compression on one or more VDO volumes. If the VDO volume
+is running, takes effect immediately. If the VDO volume is not running
+compression will be disabled the next time the VDO volume is started.
+This command must be run with root privileges. Applicable options
+include:
+{ --name=volume | --all } (required)
+--confFile=file
+--verbose
+--logfile=pathname
+Sub-Command
+Description
+CHAPTER 29. VDO INTEGRATION
+291
+
+growLogical
+Adds logical space to a VDO volume. The volume must exist and must be
+running. This command must be run with root privileges. Applicable
+options include:
+--name=volume (required)
+--vdoLogicalSize=megabytes
+(required)
+--confFile=file
+--verbose
+--logfile=pathname
+growPhysical
+Adds physical space to a VDO volume. The volume must exist and must
+be running. This command must be run with root privileges. Applicable
+options include:
+--name=volume (required)
+--confFile=file
+--verbose
+--logfile=pathname
+printConfigFile
+Prints the configuration file to stdout. This command require root
+privileges. Applicable options include:
+--confFile=file
+--logfile=pathname
+--verbose
+Sub-Command
+Description
+Options
+Table 29.5. VDO Options
+Option
+Description
+--indexMem=gigabytes
+Specifies the amount of UDS server memory in gigabytes; the default
+size is 1 GB. The special decimal values 0.25, 0.5, 0.75 can be used, as
+can any positive integer.
+--sparseIndex={enabled 
+| disabled}
+Enables or disables sparse indexing. The default is disabled.
+--all
+Indicates that the command should be applied to all configured VDO
+volumes. May not be used with --name.
+Storage Administration Guide
+292
+
+--
+blockMapCacheSize=mega
+bytes
+Specifies the amount of memory allocated for caching block map pages;
+the value must be a multiple of 4096. Using a value with a B(ytes), 
+K(ilobytes), M(egabytes), G(igabytes), T(erabytes), P(etabytes) or 
+E(xabytes) suffix is optional. If no suffix is supplied, the value will be
+interpreted as megabytes. The default is 128M; the value must be at
+least 128M and less than 16T. Note that there is a memory overhead of
+15%.
+--
+blockMapPeriod=period
+A value between 1 and 16380 which determines the number of block
+map updates which may accumulate before cached pages are flushed to
+disk. Higher values decrease recovery time after a crash at the expense
+of decreased performance during normal operation. The default value is
+16380. Speak with your Red Hat representative before tuning this
+parameter.
+--compression={enabled 
+| disabled}
+Enables or disables compression within the VDO device. The default is
+enabled. Compression may be disabled if necessary to maximize
+performance or to speed processing of data that is unlikely to compress.
+--confFile=file
+Specifies an alternate configuration file. The default is 
+/etc/vdoconf.yml.
+--deduplication=
+{enabled | disabled}
+Enables or disables deduplication within the VDO device. The default is 
+enabled. Deduplication may be disabled in instances where data is not
+expected to have good deduplication rates but compression is still
+desired.
+--emulate512={enabled 
+| disabled}
+Enables 512-byte block device emulation mode. The default is 
+disabled.
+--force
+Unmounts mounted file systems before stopping a VDO volume.
+--forceRebuild
+Forces an offline rebuild before starting a read-only VDO volume so that
+it may be brought back online and made available. This option may
+result in data loss or corruption.
+--help
+Displays documentation for the vdo utility.
+--logfile=pathname
+Specify the file to which this script's log messages are directed. Warning
+and error messages are always logged to syslog as well.
+--name=volume
+Operates on the specified VDO volume. May not be used with --all.
+--device=device
+Specifies the absolute path of the device to use for VDO storage.
+--activate={enabled | 
+disabled}
+The argument disabled indicates that the VDO volume should only be
+created. The volume will not be started or enabled. The default is 
+enabled.
+Option
+Description
+CHAPTER 29. VDO INTEGRATION
+293
+
+--vdoAckThreads=thread 
+count
+Specifies the number of threads to use for acknowledging completion of
+requested VDO I/O operations. The default is 1; the value must be at
+least 0 and less than or equal to 100.
+--
+vdoBioRotationInterval
+=I/O count
+Specifies the number of I/O operations to enqueue for each bio-
+submission thread before directing work to the next. The default is 64;
+the value must be at least 1 and less than or equal to 1024.
+--vdoBioThreads=thread 
+count
+Specifies the number of threads to use for submitting I/O operations to
+the storage device. Minimum is 1; maximum is 100. The default is 4; the
+value must be at least 1 and less than or equal to 100.
+--vdoCpuThreads=thread 
+count
+Specifies the number of threads to use for CPU- intensive work such as
+hashing or compression. The default is 2; the value must be at least 1
+and less than or equal to 100.
+--
+vdoHashZoneThreads=thre
+ad count
+Specifies the number of threads across which to subdivide parts of the
+VDO processing based on the hash value computed from the block data.
+The default is 1; the value must be at least 0 and less than or equal to
+100. vdoHashZoneThreads, vdoLogicalThreads and 
+vdoPhysicalThreads must be either all zero or all non-zero.
+--
+vdoLogicalThreads=thre
+ad count
+Specifies the number of threads across which to subdivide parts of the
+VDO processing based on the hash value computed from the block data.
+The value must be at least 0 and less than or equal to 100. A logical
+thread count of 9 or more will require explicitly specifying a sufficiently
+large block map cache size, as well. vdoHashZoneThreads, 
+vdoLogicalThreads, and vdoPhysicalThreads must be either
+all zero or all non‐zero. The default is 1.
+--vdoLogLevel=level
+Specifies the VDO driver log level: critical, error, warning, 
+notice, info, or debug. Levels are case sensitive; the default is 
+info.
+--
+vdoLogicalSize=megabyt
+es
+Specifies the logical VDO volume size in megabytes. Using a value with
+a S(ectors), B(ytes), K(ilobytes), M(egabytes), G(igabytes), T(erabytes), 
+P(etabytes) or E(xabytes) suffix is optional. Used for over- provisioning
+volumes. This defaults to the size of the storage device.
+--
+vdoPhysicalThreads=thre
+ad count
+Specifies the number of threads across which to subdivide parts of the
+VDO processing based on physical block addresses. The value must be
+at least 0 and less than or equal to 16. Each additional thread after the
+first will use an additional 10 MB of RAM. vdoPhysicalThreads, 
+vdoHashZoneThreads, and vdoLogicalThreads must be either
+all zero or all non‐zero. The default is 1.
+Option
+Description
+Storage Administration Guide
+294
+

@@ -1,0 +1,1000 @@
+ 
+From this exercise, the TRIM process is needed so the underlying storage can have an accurate
+knowledge of capacity utilization. fstrim is a command line tool that analyzes many blocks at once for
+greater efficiency. An alternative method is to use the file system discard option when mounting. The
+discard option will update the underlying storage after each file system block is deleted, which can slow
+throughput but provides for great utilization awareness. It is also important to understand that the need to
+TRIM or DISCARD unused blocks is not unique to VDO; any thin-provisioned storage system has the
+same challenge
+30.4. PERFORMANCE TESTING PROCEDURES
+The goal of this section is to construct a performance profile of the device with VDO installed. Each test
+should be run with and without VDO installed, so that VDO's performance can be evaluated relative to
+the performance of the base system.
+30.4.1. Phase 1: Effects of I/O Depth, Fixed 4 KB Blocks
+The goal of this test is to determine the I/O depth that produces the optimal throughput and the lowest
+CHAPTER 30. VDO EVALUATION
+317
+
+latency for your appliance. VDO uses a 4 KB sector size rather than the traditional 512 B used on legacy
+storage devices. The larger sector size allows it to support higher-capacity storage, improve
+performance, and match the cache buffer size used by most operating systems.
+1. Perform four-corner testing at 4 KB I/O, and I/O depth of 1, 8, 16, 32, 64, 128, 256, 512, 1024:
+Sequential 100% reads, at fixed 4 KB *
+Sequential 100% write, at fixed 4 KB
+Random 100% reads, at fixed 4 KB *
+Random 100% write, at fixed 4 KB **
+* Prefill any areas that may be read during the read test by performing a write fio job first
+** Re-create the VDO volume after 4 KB random write I/O runs
+Example shell test input stimulus (write):
+# for depth in 1 2 4 8 16 32 64 128 256 512 1024 2048; do 
+  fio --rw=write --bs=4096 --name=vdo --filename=/dev/mapper/vdo0 \ 
+      --ioengine=libaio --numjobs=1 --thread --norandommap --
+runtime=300\  
+      --direct=1 --iodepth=$depth --scramble_buffers=1  --offset=0 \
+      --size=100g
+  done
+2. Record throughput and latency at each data point, and then graph.
+3. Repeat test to complete four-corner testing: --rw=randwrite, --rw=read, and --
+rw=randread.
+The result is a graph as shown below. Points of interest are the behavior across the range and the points
+of inflection where increased I​/​O depth proves to provide diminishing throughput gains. Likely, sequential
+access and random access will peak at different values, but it may be different for all types of storage
+configurations. In Figure 30.1, "I/O Depth Analysis" notice the "knee" in each performance curve. Marker
+1 identifies the peak sequential throughput at point X, and marker 2 identifies peak random 4 KB
+throughput at point Z.
+This particular appliance does not benefit from sequential 4 KB I​/​O depth > X. Beyond that
+depth, there are diminishing bandwidth bandwidth gains, and average request latency will
+increase 1:1 for each additional I​/​O request.
+This particular appliance does not benefit from random 4 KB I​/​O depth > Z. Beyond that depth,
+there are diminishing bandwidth gains, and average request latency will increase 1:1 for each
+additional I​/​O request.
+Storage Administration Guide
+318
+
+Figure 30.1. I/O Depth Analysis
+Figure 30.2, "Latency Response of Increasing I/O for Random Writes" shows an example of the random
+write latency after the "knee" of the curve in Figure 30.1, "I/O Depth Analysis". Benchmarking practice
+should test at these points for maximum throughput that incurs the least response time penalty. As we
+move forward in the test plan for this example appliance, we will collect additional data with I​/​O depth =
+Z
+Figure 30.2. Latency Response of Increasing I/O for Random Writes
+30.4.2. Phase 2: Effects of I/O Request Size
+The goal of this test is to understand the block size that produces the best performance of the system
+under test at the optimal I/O depth determined in the previous step.
+1. Perform four-corner testing at fixed I/O depth, with varied block size (powers of 2) over the range
+8 KB to 1 MB. Remember to prefill any areas to be read and to recreate volumes between
+tests.
+2. Set the I/O Depth to the value determined in Section 30.4.1, "Phase 1: Effects of I/O Depth,
+Fixed 4 KB Blocks".
+Example test input stimulus (write):
+# z=[see previous step]
+# for iosize in 4 8 16 32 64 128 256 512 1024; do
+  fio --rw=write --bs=$iosize\k --name=vdo --
+filename=/dev/mapper/vdo0 
+CHAPTER 30. VDO EVALUATION
+319
+
+      --ioengine=libaio --numjobs=1 --thread --norandommap --
+runtime=300 
+      --direct=1 --iodepth=$z --scramble_buffers=1 --offset=0 --
+size=100g
+  done
+3. Record throughput and latency at each data point, and then graph.
+4. Repeat test to complete four-corner testing: --rw=randwrite, --rw=read, and --
+rw=randread.
+There are several points of interest that you may find in the results. In this example:
+Sequential writes reach a peak throughput at request size Y. This curve demonstrates how
+applications that are configurable or naturally dominated by certain request sizes may perceive
+performance. Larger request sizes often provide more throughput because 4 KB I/Os may
+benefit from merging.
+Sequential reads reach a similar peak throughput at point Z. Remember that after these peaks,
+overall latency before the I/O completes will increase with no additional throughput. It would be
+wise to tune the device to not accept I/Os larger than this size.
+Random reads achieve peak throughput at point X. Some devices may achieve near-sequential
+throughput rates at large request size random accesses, while others suffer more penalty when
+varying from purely sequential access.
+Random writes achieve peak throughput at point Y. Random writes involve the most interaction
+of a deduplication device, and VDO achieves high performance especially when request sizes
+and/or I/O depths are large.
+The results from this test Figure 30.3, "Request Size vs. Throughput Analysis and Key Inflection Points"
+help in understanding the characteristics of the storage device and the user experience for specific
+applications. Consult with a Red Hat Sales Engineer to determine if there may be further tuning needed
+to increase performance at different request sizes.
+Figure 30.3. Request Size vs. Throughput Analysis and Key Inflection Points
+30.4.3. Phase 3: Effects of Mixing Read & Write I/Os
+The goal of this test is to understand how your appliance with VDO behaves when presented with mixed
+I/O loads (read/write), analyzing the effects of read/write mix at the optimal random queue depth and
+request sizes from 4 KB to 1 MB. You should use whatever is appropriate in your case.
+Storage Administration Guide
+320
+
+1. Perform four-corner testing at fixed I/O depth, varied block size (powers of 2) over the 8 KB to
+256 KB range, and set read percentage at 10% increments, beginning with 0%. Remember to
+prefill any areas to be read and to recreate volumes between tests.
+2. Set the I/O Depth to the value determined in Section 30.4.1, "Phase 1: Effects of I/O Depth,
+Fixed 4 KB Blocks".
+Example test input stimulus (read/write mix):
+# z=[see previous step]
+# for readmix in 0 10 20 30 40 50 60 70 80 90 100; do
+    for iosize in 4 8 16 32 64 128 256 512 1024; do
+      fio --rw=rw --rwmixread=$readmix --bs=$iosize\k --name=vdo \
+          --filename=/dev/mapper/vdo0 --ioengine=libaio --numjobs=1 
+--thread \
+          --norandommap --runtime=300 --direct=0 --iodepth=$z --
+scramble_buffers=1 \
+          --offset=0 --size=100g
+    done
+  done
+3. Record throughput and latency at each data point, and then graph.
+Figure 30.4, "Performance Is Consistent across Varying Read/Write Mixes" shows an example of how
+VDO may respond to I/O loads:
+Figure 30.4. Performance Is Consistent across Varying Read/Write Mixes
+Performance (aggregate) and latency (aggregate) are relatively consistent across the range of mixing
+reads and writes, trending from the lower max write throughput to the higher max read throughput.
+This behavior may vary with different storage, but the important observation is that the performance is
+consistent under varying loads and/or that you can understand performance expectation for applications
+that demonstrate specific read/write mixes. If you discover any unexpected results, Red Hat Sales
+Engineers will be able to help you understand if it is VDO or the storage device itself that needs
+modification.
+Note: Systems that do not exhibit a similar response consistency often signify a sub-optimal
+configuration. Contact your Red Hat Sales Engineer if this occurs.
+30.4.4. Phase 4: Application Environments
+CHAPTER 30. VDO EVALUATION
+321
+
+The goal of these final tests is to understand how the system with VDO behaves when deployed in a real
+application environment. If possible, use real applications and use the knowledge learned so far;
+consider limiting the permissible queue depth on your appliance, and if possible tune the application to
+issue requests with those block sizes most beneficial to VDO performance.
+Request sizes, I/O loads, read/write patterns, etc., are generally hard to predict, as they will vary by
+application use case (i.e., filers vs. virtual desktops vs. database), and applications often vary in the
+types of I/O based on the specific operation or due to multi-tenant access.
+The final test shows general VDO performance in a mixed environment. If more specific details are
+known about your expected environment, test those settings as well.
+Example test input stimulus (read/write mix):
+# for readmix in 20 50 80; do
+    for iosize in 4 8 16 32 64 128 256 512 1024; do
+      fio --rw=rw --rwmixread=$readmix --bsrange=4k-256k --name=vdo \
+          --filename=/dev/mapper/vdo0 --ioengine=libaio --numjobs=1 --
+thread \
+          --norandommap --runtime=300 --direct=0 --iodepth=$iosize \
+          --scramble_buffers=1 --offset=0 --size=100g
+    done
+  done
+Record throughput and latency at each data point, and then graph (Figure 30.5, "Mixed Environment
+Performance").
+Figure 30.5. Mixed Environment Performance
+30.5. ISSUE REPORTING
+In the event that an issue is encountered while working with VDO, it is important to gather as much
+information as possible to assist Red Hat Sales Engineers in attempting to reproduce the issue.
+Issue reports should include the following:
+A detailed description of the test environment; see the section called "Test Environment" for
+specifics
+The VDO configuration
+The use case that generated the issue
+The actions that were being performed at the time of the error
+Storage Administration Guide
+322
+
+The text of any error messages on the console or terminal
+The kernel log files
+Kernel crash dumps, if available
+The result of sosreport, which will capture data describing the entire Linux environment
+30.6. CONCLUSION
+Going through this or any other well-structured evaluation plan is an important step in integrating VDO
+into any storage system. The evaluation process is important to understanding performance and
+catching any potential compatibility issues. The collection of results from this evaluation not only
+demonstrates deduplication and compression, but also provides a performance profile of your system
+implementing VDO. The results help determine whether the results achieved in real applications are as
+expected and plausible or whether they fall short of expectations. Finally, we can also use these results
+to help predict the kinds of applications that will operate favorably with VDO.
+CHAPTER 30. VDO EVALUATION
+323
+
+APPENDIX A. RED HAT CUSTOMER PORTAL LABS
+RELEVANT TO STORAGE ADMINISTRATION
+Red Hat Customer Portal Labs are tools designed to help you improve performance, troubleshoot issues,
+identify security problems, and optimize configuration. This appendix provides an overview of Red Hat
+Customer Portal Labs relevant to storage administration. All Red Hat Customer Portal Labs are available
+at https://access.redhat.com/labs/.
+SCSI DECODER
+The SCSI decoder is designed to decode SCSI error messages in the /log/* files or log file snippets,
+as these error messages can be hard to understand for the user.
+Use the SCSI decoder to individually diagnose each SCSI error message and get solutions to resolve
+problems efficiently.
+FILE SYSTEM LAYOUT CALCULATOR
+The File System Layout Calculator determines the optimal parameters for creating ext3, ext4, and xfs file
+systems, after you provide storage options that describe your current or planned storage. Move the
+cursor over the question mark ("?") for a brief explanation of a particular option, or scroll down to read a
+summary of all options.
+Use the File System Layout Calculator to generate a command that creates a file system with provided
+parameters on the specified RAID storage. Copy the generated command and execute it as root to
+create the required file system.
+LVM RAID CALCULATOR
+The LVM RAID Calculator determines the optimal parameters for creating logical volumes (LVMs) on a
+given RAID storage after you specify storage options. Move the cursor over the question mark ("?") for a
+brief explanation of a particular option, or scroll down to read a summary of all options.
+The LVM RAID Calculator generates a sequence of commands that create LVMs on a given RAID
+storage. Copy and execute the generated commands one by one as root to create the required LVMs.
+ISCSI HELPER
+The iSCSI Helper provides a block-level storage over Internet Protocol (IP) networks, and enables the
+use of storage pools within server virtualization.
+Use the iSCSI Helper to generate a script that prepares the system for its role of an iSCSI target (server)
+or an iSCSI initiator (client) configured according to the settings that you provide.
+SAMBA CONFIGURATION HELPER
+The Samba Configuration Helper creates a configuration that provides basic file and printer sharing
+through Samba:
+Click Server to specify basic server settings.
+Click Shares to add the directories that you want to share
+Click Server to add attached printers individually.
+MULTIPATH HELPER
+The Multipath Helper creates an optimal configuration for multipath devices on Red Hat
+Enterprise Linux 5, 6, and 7. By following the steps, you can create advanced multipath configurations,
+such as custom aliases or device blacklists.
+Storage Administration Guide
+324
+
+The Multipath Helper also provides the multipath.conf file for a review. When you achieve the
+required configuration, download the installation script to run on your server.
+NFS HELPER
+The NFS Helper simplifies configuring a new NFS server or client. Follow the steps to specify the export
+and mount options. Then, generate a downloadable NFS configuration script.
+MULTIPATH CONFIGURATION VISUALIZER
+The Multipath Configuration Visualizer analyzes files in a sosreport and provides a diagram that
+visualizes the multipath configuration. Use the Multipath Configuration Visualizer to display:
+Hosts components including Host Bus Adapters (HBAs), local devices, and iSCSI devices on the
+server side
+Storage components on the storage side
+Fabric or Ethernet components between the server and the storage
+Paths to all mentioned components
+You can either upload a sosreport compressed in the .xz, .gz, or .bz2 format, or extract a sosreport in a
+directory that you then select as the source for a client-side analysis.
+RHEL BACKUP AND RESTORE ASSISTANT
+The RHEL Backup and Restore Assistant provides information on back-up and restore tools, and
+common scenarios of Linux usage.
+Described tools:
+dump and restore: for backing up the ext2, ext3, and ext4 file systems.
+tar and cpio: for archiving or restoring files and folders, especially when backing up the tape
+drives.
+rsync: for performing back-up operations and synchronizing files and directories between
+locations.
+dd: for copying files from a source to a destination block by block independently of the file
+systems or operating systems involved.
+Described scenarios:
+Disaster recovery
+Hardware migration
+Partition table backup
+Important folder backup
+Incremental backup
+Differential backup
+APPENDIX A. RED HAT CUSTOMER PORTAL LABS RELEVANT TO STORAGE ADMINISTRATION
+325
+
+APPENDIX B. REVISION HISTORY
+Revision 4-06
+Tue Aug 28 11 2018
+Marek Suchanek
+An asynchronous update
+Revision 4-02
+Thu May 10 2018
+Marek Suchanek
+An asynchronous update
+Revision 4-00
+Fri Apr 6 2018
+Marek Suchanek
+Document version for 7.5 GA publication.
+Revision 3-95
+Thu Apr 5 2018
+Marek Suchanek
+An asynchronous update
+Revision 3-93
+Mon Mar 5 2018
+Marek Suchanek
+New chapter: VDO Integration
+Revision 3-92
+Fri Feb 9 2018
+Marek Suchanek
+An asynchronous update
+Revision 3-90
+Wed Dec 6 2017
+Marek Suchanek
+Version for 7.5 Alpha publication.
+Revision 3-86
+Mon Nov 6 2017
+Marek Suchanek
+An asynchronous update.
+Revision 3-80
+Thu Jul 27 2017
+Milan Navratil
+Document version for 7.4 GA publication.
+Revision 3-77
+Wed May 24 2017
+Milan Navratil
+An asynchronous update.
+Revision 3-68
+Fri Oct 21 2016
+Milan Navratil
+Version for 7.3 GA publication.
+Revision 3-67
+Fri Jun 17 2016
+Milan Navratil
+An asynchronous update.
+Revision 3-64
+Wed Nov 11 2015
+Jana Heves
+Version for 7.2 GA release.
+Revision 3-33
+Wed Feb 18 2015
+Jacquelynn East
+Version for 7.1 GA
+Revision 3-26
+Wed Jan 21 2015
+Jacquelynn East
+Added overview of Ceph
+Revision 3-22
+Thu Dec 4 2014
+Jacquelynn East
+7.1 Beta
+Revision 3-4
+Thu Jul 17 2014
+Jacquelynn East
+Added new chapter on targetcli
+Revision 3-1
+Tue Jun 3 2014
+Jacquelynn East
+Version for 7.0 GA release
+Storage Administration Guide
+326
+
+INDEX
+Symbols
+/boot/ directory, The /boot/ Directory
+/dev/shm, df Command
+/etc/fstab, Converting to an ext3 File System, Mounting NFS File Systems Using /etc/fstab,
+Mounting a File System
+/etc/fstab file
+enabling disk quotas with, Enabling Quotas
+/local/directory (client configuration, mounting)
+NFS, Configuring NFS Client
+/proc
+/proc/devices, The /proc Virtual File System
+/proc/filesystems, The /proc Virtual File System
+/proc/mdstat, The /proc Virtual File System
+/proc/mounts, The /proc Virtual File System
+/proc/mounts/, The /proc Virtual File System
+/proc/partitions, The /proc Virtual File System
+/proc/devices
+virtual file system (/proc), The /proc Virtual File System
+/proc/filesystems
+virtual file system (/proc), The /proc Virtual File System
+/proc/mdstat
+virtual file system (/proc), The /proc Virtual File System
+/proc/mounts
+virtual file system (/proc), The /proc Virtual File System
+/proc/mounts/
+virtual file system (/proc), The /proc Virtual File System
+/proc/partitions
+virtual file system (/proc), The /proc Virtual File System
+/remote/export (client configuration, mounting)
+NFS, Configuring NFS Client
+A
+adding paths to a storage device, Adding a Storage Device or Path
+adding/removing
+INDEX
+327
+
+LUN (logical unit number), Adding/Removing a Logical Unit Through rescan-scsi-bus.sh
+advanced RAID device creation
+RAID, Creating Advanced RAID Devices
+allocation features
+ext4, The ext4 File System
+XFS, The XFS File System
+Anaconda support
+RAID, RAID Support in the Anaconda Installer
+API, Fibre Channel, Fibre Channel API
+API, iSCSI, iSCSI API
+ATA standards
+I/O alignment and size, ATA
+autofs , autofs, Configuring autofs
+(see also NFS)
+autofs version 5
+NFS, Improvements in autofs Version 5 over Version 4
+B
+backup/restoration
+XFS, Backing Up and Restoring XFS File Systems
+battery-backed write caches
+write barriers, Battery-Backed Write Caches
+bcull (cache cull limits settings)
+FS-Cache, Setting Cache Cull Limits
+binding/unbinding an iface to a portal
+offload and interface binding
+iSCSI, Binding/Unbinding an iface to a Portal
+block device ioctls (userspace access)
+I/O alignment and size, Block Device ioctls
+blocked device, verifying
+Fibre Channel
+modifying link loss behavior, Fibre Channel
+brun (cache cull limits settings)
+Storage Administration Guide
+328
+
+FS-Cache, Setting Cache Cull Limits
+bstop (cache cull limits settings)
+FS-Cache, Setting Cache Cull Limits
+Btrfs
+File System, Btrfs (Technology Preview)
+C
+cache back end
+FS-Cache, FS-Cache
+cache cull limits
+FS-Cache, Setting Cache Cull Limits
+cache limitations with NFS
+FS-Cache, Cache Limitations with NFS
+cache setup
+FS-Cache, Setting up a Cache
+cache sharing
+FS-Cache, Cache Sharing
+cachefiles
+FS-Cache, FS-Cache
+cachefilesd
+FS-Cache, Setting up a Cache
+CCW, channel command word
+storage considerations during installation, DASD and zFCP Devices on IBM System Z
+changing dev_loss_tmo
+Fibre Channel
+modifying link loss behavior, Fibre Channel
+Changing the read/write state
+Online logical units, Changing the Read/Write State of an Online Logical Unit
+channel command word (CCW)
+storage considerations during installation, DASD and zFCP Devices on IBM System Z
+coherency data
+FS-Cache, FS-Cache
+INDEX
+329
+
+command timer (SCSI)
+Linux SCSI layer, Command Timer
+commands
+volume_key, volume_key Commands
+configuration
+discovery
+iSCSI, iSCSI Discovery Configuration
+configuring a tftp service for diskless clients
+diskless systems, Configuring a tftp Service for Diskless Clients
+configuring an Ethernet interface to use FCoE
+FCoE, Configuring a Fibre Channel over Ethernet Interface
+configuring DHCP for diskless clients
+diskless systems, Configuring DHCP for Diskless Clients
+configuring RAID sets
+RAID, Configuring RAID Sets
+controlling SCSI command timer and device status
+Linux SCSI layer, Controlling the SCSI Command Timer and Device Status
+creating
+ext4, Creating an ext4 File System
+XFS, Creating an XFS File System
+cumulative mode (xfsrestore)
+XFS, Restoration
+D
+DASD and zFCP devices on IBM System z
+storage considerations during installation, DASD and zFCP Devices on IBM System Z
+debugfs (other ext4 file system utilities)
+ext4, Other ext4 File System Utilities
+deployment
+solid-state disks, Solid-State Disk Deployment Guidelines
+deployment guidelines
+solid-state disks, Solid-State Disk Deployment Guidelines
+determining remote port states
+Storage Administration Guide
+330
+
+Fibre Channel
+modifying link loss behavior, Fibre Channel
+dev directory, The /dev/ Directory
+device status
+Linux SCSI layer, Device States
+device-mapper multipathing, DM-Multipath
+devices, removing, Removing a Storage Device
+dev_loss_tmo
+Fibre Channel
+modifying link loss behavior, Fibre Channel
+dev_loss_tmo, changing
+Fibre Channel
+modifying link loss behavior, Fibre Channel
+df, df Command
+DHCP, configuring
+diskless systems, Configuring DHCP for Diskless Clients
+DIF/DIX-enabled block devices
+storage considerations during installation, Block Devices with DIF/DIX Enabled
+direct map support (autofs version 5)
+NFS, Improvements in autofs Version 5 over Version 4
+directories
+/boot/, The /boot/ Directory
+/dev/, The /dev/ Directory
+/etc/, The /etc/ Directory
+/mnt/, The /mnt/ Directory
+/opt/, The /opt/ Directory
+/proc/, The /proc/ Directory
+/srv/, The /srv/ Directory
+/sys/, The /sys/ Directory
+/usr/, The /usr/ Directory
+/var/, The /var/ Directory
+dirty logs (repairing XFS file systems)
+XFS, Repairing an XFS File System
+disabling NOP-Outs
+iSCSI configuration, iSCSI Root
+INDEX
+331
+
+disabling write caches
+write barriers, Disabling Write Caches
+discovery
+iSCSI, iSCSI Discovery Configuration
+disk quotas, Disk Quotas
+additional resources, Disk Quota References
+assigning per file system, Setting the Grace Period for Soft Limits
+assigning per group, Assigning Quotas per Group
+assigning per user, Assigning Quotas per User
+disabling, Enabling and Disabling
+enabling, Configuring Disk Quotas, Enabling and Disabling
+/etc/fstab, modifying, Enabling Quotas
+creating quota files, Creating the Quota Database Files
+quotacheck, running, Creating the Quota Database Files
+grace period, Assigning Quotas per User
+hard limit, Assigning Quotas per User
+management of, Managing Disk Quotas
+quotacheck command, using to check, Keeping Quotas Accurate
+reporting, Reporting on Disk Quotas
+soft limit, Assigning Quotas per User
+disk storage (see disk quotas)
+parted (see parted)
+diskless systems
+DHCP, configuring, Configuring DHCP for Diskless Clients
+exported file systems, Configuring an Exported File System for Diskless Clients
+network booting service, Setting up a Remote Diskless System
+remote diskless systems, Setting up a Remote Diskless System
+required packages, Setting up a Remote Diskless System
+tftp service, configuring, Configuring a tftp Service for Diskless Clients
+dm-multipath
+iSCSI configuration, iSCSI Settings with dm-multipath
+dmraid
+RAID, dmraid
+dmraid (configuring RAID sets)
+RAID, dmraid
+drivers (native), Fibre Channel, Native Fibre Channel Drivers and Capabilities
+Storage Administration Guide
+332
+
+du, du Command
+dump levels
+XFS, Backup
+E
+e2fsck, Reverting to an Ext2 File System
+e2image (other ext4 file system utilities)
+ext4, Other ext4 File System Utilities
+e2label
+ext4, Other ext4 File System Utilities
+e2label (other ext4 file system utilities)
+ext4, Other ext4 File System Utilities
+enablind/disabling
+write barriers, Enabling and Disabling Write Barriers
+enhanced LDAP support (autofs version 5)
+NFS, Improvements in autofs Version 5 over Version 4
+error messages
+write barriers, Enabling and Disabling Write Barriers
+etc directory, The /etc/ Directory
+expert mode (xfs_quota)
+XFS, XFS Quota Management
+exported file systems
+diskless systems, Configuring an Exported File System for Diskless Clients
+ext2
+reverting from ext3, Reverting to an Ext2 File System
+ext3
+converting from ext2, Converting to an ext3 File System
+creating, Creating an ext3 File System
+features, The ext3 File System
+ext4
+allocation features, The ext4 File System
+creating, Creating an ext4 File System
+debugfs (other ext4 file system utilities), Other ext4 File System Utilities
+e2image (other ext4 file system utilities), Other ext4 File System Utilities
+e2label, Other ext4 File System Utilities
+INDEX
+333
+
+e2label (other ext4 file system utilities), Other ext4 File System Utilities
+file system types, The ext4 File System
+fsync(), The ext4 File System
+main features, The ext4 File System
+mkfs.ext4, Creating an ext4 File System
+mounting, Mounting an ext4 File System
+nobarrier mount option, Mounting an ext4 File System
+other file system utilities, Other ext4 File System Utilities
+quota (other ext4 file system utilities), Other ext4 File System Utilities
+resize2fs (resizing ext4), Resizing an ext4 File System
+resizing, Resizing an ext4 File System
+stride (specifying stripe geometry), Creating an ext4 File System
+stripe geometry, Creating an ext4 File System
+stripe-width (specifying stripe geometry), Creating an ext4 File System
+tune2fs (mounting), Mounting an ext4 File System
+write barriers, Mounting an ext4 File System
+F
+FCoE
+configuring an Ethernet interface to use FCoE, Configuring a Fibre Channel over Ethernet
+Interface
+Fibre Channel over Ethernet, Configuring a Fibre Channel over Ethernet Interface
+required packages, Configuring a Fibre Channel over Ethernet Interface
+FHS, Overview of Filesystem Hierarchy Standard (FHS), FHS Organization
+(see also file system)
+Fibre Channel
+online storage, Fibre Channel
+Fibre Channel API, Fibre Channel API
+Fibre Channel drivers (native), Native Fibre Channel Drivers and Capabilities
+Fibre Channel over Ethernet
+FCoE, Configuring a Fibre Channel over Ethernet Interface
+file system
+FHS standard, FHS Organization
+hierarchy, Overview of Filesystem Hierarchy Standard (FHS)
+organization, FHS Organization
+structure, File System Structure and Maintenance
+File System
+Btrfs, Btrfs (Technology Preview)
+Storage Administration Guide
+334
+
+file system types
+ext4, The ext4 File System
+GFS2, Global File System 2
+XFS, The XFS File System
+file systems, Gathering File System Information
+ext2 (see ext2)
+ext3 (see ext3)
+findmnt (command)
+listing mounts, Listing Currently Mounted File Systems
+FS-Cache
+bcull (cache cull limits settings), Setting Cache Cull Limits
+brun (cache cull limits settings), Setting Cache Cull Limits
+bstop (cache cull limits settings), Setting Cache Cull Limits
+cache back end, FS-Cache
+cache cull limits, Setting Cache Cull Limits
+cache sharing, Cache Sharing
+cachefiles, FS-Cache
+cachefilesd, Setting up a Cache
+coherency data, FS-Cache
+indexing keys, FS-Cache
+NFS (cache limitations with), Cache Limitations with NFS
+NFS (using with), Using the Cache with NFS
+performance guarantee, Performance Guarantee
+setting up a cache, Setting up a Cache
+statistical information (tracking), Statistical Information
+tune2fs (setting up a cache), Setting up a Cache
+fsync()
+ext4, The ext4 File System
+XFS, The XFS File System
+G
+GFS2
+file system types, Global File System 2
+gfs2.ko, Global File System 2
+maximum size, Global File System 2
+GFS2 file system maximum size, Global File System 2
+gfs2.ko
+GFS2, Global File System 2
+INDEX
+335
+
+Global File System 2
+file system types, Global File System 2
+gfs2.ko, Global File System 2
+maximum size, Global File System 2
+gquota/gqnoenforce
+XFS, XFS Quota Management
+H
+Hardware RAID (see RAID)
+hardware RAID controller drivers
+RAID, Linux Hardware RAID Controller Drivers
+hierarchy, file system, Overview of Filesystem Hierarchy Standard (FHS)
+high-end arrays
+write barriers, High-End Arrays
+host
+Fibre Channel API, Fibre Channel API
+how write barriers work
+write barriers, How Write Barriers Work
+I
+I/O alignment and size, Storage I/O Alignment and Size
+ATA standards, ATA
+block device ioctls (userspace access), Block Device ioctls
+Linux I/O stack, Storage I/O Alignment and Size
+logical_block_size, Userspace Access
+LVM, Logical Volume Manager
+READ CAPACITY(16), SCSI
+SCSI standards, SCSI
+stacking I/O parameters, Stacking I/O Parameters
+storage access parameters, Parameters for Storage Access
+sysfs interface (userspace access), sysfs Interface
+tools (for partitioning and other file system functions), Partition and File System Tools
+userspace access, Userspace Access
+I/O parameters stacking
+I/O alignment and size, Stacking I/O Parameters
+iface (configuring for iSCSI offload)
+offload and interface binding
+Storage Administration Guide
+336
+
+iSCSI, Configuring an iface for iSCSI Offload
+iface binding/unbinding
+offload and interface binding
+iSCSI, Binding/Unbinding an iface to a Portal
+iface configurations, viewing
+offload and interface binding
+iSCSI, Viewing Available iface Configurations
+iface for software iSCSI
+offload and interface binding
+iSCSI, Configuring an iface for Software iSCSI
+iface settings
+offload and interface binding
+iSCSI, Viewing Available iface Configurations
+importance of write barriers
+write barriers, Importance of Write Barriers
+increasing file system size
+XFS, Increasing the Size of an XFS File System
+indexing keys
+FS-Cache, FS-Cache
+individual user
+volume_key, Using volume_key as an Individual User
+initiator implementations
+offload and interface binding
+iSCSI, Viewing Available iface Configurations
+installation storage configurations
+channel command word (CCW), DASD and zFCP Devices on IBM System Z
+DASD and zFCP devices on IBM System z, DASD and zFCP Devices on IBM System Z
+DIF/DIX-enabled block devices, Block Devices with DIF/DIX Enabled
+iSCSI detection and configuration, iSCSI Detection and Configuration
+LUKS/dm-crypt, encrypting block devices using, Encrypting Block Devices Using LUKS
+separate partitions (for /home, /opt, /usr/local), Separate Partitions for /home, /opt, /usr/local
+stale BIOS RAID metadata, Stale BIOS RAID Metadata
+INDEX
+337
+
+updates, Storage Considerations During Installation
+what's new, Storage Considerations During Installation
+installer support
+RAID, RAID Support in the Anaconda Installer
+interactive operation (xfsrestore)
+XFS, Restoration
+interconnects (scanning)
+iSCSI, Scanning iSCSI Interconnects
+introduction, Overview
+iSCSI
+discovery, iSCSI Discovery Configuration
+configuration, iSCSI Discovery Configuration
+record types, iSCSI Discovery Configuration
+offload and interface binding, Configuring iSCSI Offload and Interface Binding
+binding/unbinding an iface to a portal, Binding/Unbinding an iface to a Portal
+iface (configuring for iSCSI offload), Configuring an iface for iSCSI Offload
+iface configurations, viewing, Viewing Available iface Configurations
+iface for software iSCSI, Configuring an iface for Software iSCSI
+iface settings, Viewing Available iface Configurations
+initiator implementations, Viewing Available iface Configurations
+software iSCSI, Configuring an iface for Software iSCSI
+viewing available iface configurations, Viewing Available iface Configurations
+scanning interconnects, Scanning iSCSI Interconnects
+software iSCSI, Configuring an iface for Software iSCSI
+targets, Logging in to an iSCSI Target
+logging in, Logging in to an iSCSI Target
+iSCSI API, iSCSI API
+iSCSI detection and configuration
+storage considerations during installation, iSCSI Detection and Configuration
+iSCSI logical unit, resizing, Resizing an iSCSI Logical Unit
+iSCSI root
+iSCSI configuration, iSCSI Root
+K
+known issues
+adding/removing
+Storage Administration Guide
+338
+
+LUN (logical unit number), Known Issues with rescan-scsi-bus.sh
+L
+lazy mount/unmount support (autofs version 5)
+NFS, Improvements in autofs Version 5 over Version 4
+levels
+RAID, RAID Levels and Linear Support
+limit (xfs_quota expert mode)
+XFS, XFS Quota Management
+linear RAID
+RAID, RAID Levels and Linear Support
+Linux I/O stack
+I/O alignment and size, Storage I/O Alignment and Size
+logging in
+iSCSI targets, Logging in to an iSCSI Target
+logical_block_size
+I/O alignment and size, Userspace Access
+LUKS/dm-crypt, encrypting block devices using
+storage considerations during installation, Encrypting Block Devices Using LUKS
+LUN (logical unit number)
+adding/removing, Adding/Removing a Logical Unit Through rescan-scsi-bus.sh
+known issues, Known Issues with rescan-scsi-bus.sh
+required packages, Adding/Removing a Logical Unit Through rescan-scsi-bus.sh
+rescan-scsi-bus.sh, Adding/Removing a Logical Unit Through rescan-scsi-bus.sh
+LVM
+I/O alignment and size, Logical Volume Manager
+M
+main features
+ext4, The ext4 File System
+XFS, The XFS File System
+maximum size
+GFS2, Global File System 2
+INDEX
+339
+
+maximum size, GFS2 file system, Global File System 2
+mdadm (configuring RAID sets)
+RAID, mdadm
+mdraid
+RAID, mdraid
+mirroring
+RAID, RAID Levels and Linear Support
+mkfs , Formatting and Labeling the Partition
+mkfs.ext4
+ext4, Creating an ext4 File System
+mkfs.xfs
+XFS, Creating an XFS File System
+mnt directory, The /mnt/ Directory
+modifying link loss behavior, Modifying Link Loss Behavior
+Fibre Channel, Fibre Channel
+mount (client configuration)
+NFS, Configuring NFS Client
+mount (command), Using the mount Command
+listing mounts, Listing Currently Mounted File Systems
+mounting a file system, Mounting a File System
+moving a mount point, Moving a Mount Point
+options, Specifying the Mount Options
+shared subtrees, Sharing Mounts
+private mount, Sharing Mounts
+shared mount, Sharing Mounts
+slave mount, Sharing Mounts
+unbindable mount, Sharing Mounts
+mounting, Mounting a File System
+ext4, Mounting an ext4 File System
+XFS, Mounting an XFS File System
+moving a mount point, Moving a Mount Point
+multiple master map entries per autofs mount point (autofs version 5)
+NFS, Improvements in autofs Version 5 over Version 4
+N
+Storage Administration Guide
+340
+
+native Fibre Channel drivers, Native Fibre Channel Drivers and Capabilities
+network booting service
+diskless systems, Setting up a Remote Diskless System
+Network File System (see NFS)
+NFS
+/etc/fstab , Mounting NFS File Systems Using /etc/fstab
+/local/directory (client configuration, mounting), Configuring NFS Client
+/remote/export (client configuration, mounting), Configuring NFS Client
+additional resources, NFS References
+installed documentation, Installed Documentation
+related books, Related Books
+useful websites, Useful Websites
+autofs
+augmenting, Overriding or Augmenting Site Configuration Files
+configuration, Configuring autofs
+LDAP, Using LDAP to Store Automounter Maps
+autofs version 5, Improvements in autofs Version 5 over Version 4
+client
+autofs , autofs
+configuration, Configuring NFS Client
+mount options, Common NFS Mount Options
+condrestart, Starting and Stopping the NFS Server
+configuration with firewall, Running NFS Behind a Firewall
+direct map support (autofs version 5), Improvements in autofs Version 5 over Version 4
+enhanced LDAP support (autofs version 5), Improvements in autofs Version 5 over Version 4
+FS-Cache, Using the Cache with NFS
+hostname formats, Hostname Formats
+how it works, Introduction to NFS
+introducing, Network File System (NFS)
+lazy mount/unmount support (autofs version 5), Improvements in autofs Version 5 over
+Version 4
+mount (client configuration), Configuring NFS Client
+multiple master map entries per autofs mount point (autofs version 5), Improvements in
+autofs Version 5 over Version 4
+options (client configuration, mounting), Configuring NFS Client
+overriding/augmenting site configuration files (autofs), Configuring autofs
+proper nsswitch configuration (autofs version 5), use of, Improvements in autofs Version 5
+over Version 4
+RDMA, Enabling NFS over RDMA (NFSoRDMA)
+reloading, Starting and Stopping the NFS Server
+INDEX
+341
+
+required services, Required Services
+restarting, Starting and Stopping the NFS Server
+rfc2307bis (autofs), Using LDAP to Store Automounter Maps
+rpcbind , NFS and rpcbind
+security, Securing NFS
+file permissions, File Permissions
+NFSv3 host access, NFS Security with AUTH_SYS and Export Controls
+NFSv4 host access, NFS Security with AUTH_GSS
+server (client configuration, mounting), Configuring NFS Client
+server configuration, Configuring the NFS Server
+/etc/exports , The /etc/exports Configuration File
+exportfs command, The exportfs Command
+exportfs command with NFSv4, Using exportfs with NFSv4
+starting, Starting and Stopping the NFS Server
+status, Starting and Stopping the NFS Server
+stopping, Starting and Stopping the NFS Server
+storing automounter maps, using LDAP to store (autofs), Overriding or Augmenting Site
+Configuration Files
+TCP, Introduction to NFS
+troubleshooting NFS and rpcbind, Troubleshooting NFS and rpcbind
+UDP, Introduction to NFS
+write barriers, NFS
+NFS (cache limitations with)
+FS-Cache, Cache Limitations with NFS
+NFS (using with)
+FS-Cache, Using the Cache with NFS
+nobarrier mount option
+ext4, Mounting an ext4 File System
+XFS, Write Barriers
+NOP-Out requests
+modifying link loss
+iSCSI configuration, NOP-Out Interval/Timeout
+NOP-Outs (disabling)
+iSCSI configuration, iSCSI Root
+O
+offline status
+Storage Administration Guide
+342
+
+Linux SCSI layer, Controlling the SCSI Command Timer and Device Status
+offload and interface binding
+iSCSI, Configuring iSCSI Offload and Interface Binding
+Online logical units
+Changing the read/write state, Changing the Read/Write State of an Online Logical Unit
+online storage
+Fibre Channel, Fibre Channel
+overview, Online Storage Management
+sysfs, Online Storage Management
+troubleshooting, Troubleshooting Online Storage Configuration
+opt directory, The /opt/ Directory
+options (client configuration, mounting)
+NFS, Configuring NFS Client
+other file system utilities
+ext4, Other ext4 File System Utilities
+overriding/augmenting site configuration files (autofs)
+NFS, Configuring autofs
+overview, Overview
+online storage, Online Storage Management
+P
+Parallel NFS
+pNFS, pNFS
+parameters for storage access
+I/O alignment and size, Parameters for Storage Access
+parity
+RAID, RAID Levels and Linear Support
+parted , Partitions
+creating partitions, Creating a Partition
+overview, Partitions
+removing partitions, Removing a Partition
+resizing partitions, Resizing a Partition with fdisk
+selecting device, Viewing the Partition Table
+table of commands, Partitions
+viewing partition table, Viewing the Partition Table
+INDEX
+343
+
+partition table
+viewing, Viewing the Partition Table
+partitions
+creating, Creating a Partition
+formatting
+mkfs , Formatting and Labeling the Partition
+removing, Removing a Partition
+resizing, Resizing a Partition with fdisk
+viewing list, Viewing the Partition Table
+path to storage devices, adding, Adding a Storage Device or Path
+path to storage devices, removing, Removing a Path to a Storage Device
+performance guarantee
+FS-Cache, Performance Guarantee
+persistent naming, Persistent Naming
+pNFS
+Parallel NFS, pNFS

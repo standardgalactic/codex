@@ -1,0 +1,1585 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HTML and CSS for Beginners
+Jo Foster
+
+
+
+
+
+
+
+
+
+HTML and CSS for Beginners
+Copyright © 2019 Elluminet Press
+This work is subject to copyright. All rights are reserved by the Publisher, whether the whole or part of the material is concerned, specifically the rights of translation, reprinting, reuse of illustrations, recitation, broadcasting, reproduction on microfilms or in any other physical way, and transmission or information storage and retrieval, electronic adaptation, computer software, or by similar or dissimilar methodology now known or hereafter developed. Exempted from this legal reservation are brief excerpts in connection with reviews or scholarly analysis or material supplied specifically for the purpose of being entered and executed on a computer system, for exclusive use by the purchaser of the work. Duplication of this publication or parts thereof is permitted only under the provisions of the Copyright Law of the Publisher's location, in its current version, and permission for use must always be obtained from the Publisher. Permissions for use may be obtained through Rights Link at the Copyright Clearance Centre. Violations are liable to prosecution under the respective Copyright Law.
+Trademarked names, logos, and images may appear in this book. Rather than use a trademark symbol with every occurrence of a trademarked name, logo, or image we use the names, logos, and images only in an editorial fashion and to the benefit of the trademark owner, with no intention of infringement of the trademark.
+The use in this publication of trade names, trademarks, service marks, and similar terms, even if they are not identified as such, is not to be taken as an expression of opinion as to whether or not they are subject to proprietary rights.
+While the advice and information in this book are believed to be true and accurate at the date of publication, neither the authors nor the editors nor the publisher can accept any legal responsibility for any errors or omissions that may be made. The publisher makes no warranty, express or implied, with respect to the material contained herein.
+Publisher: Elluminet Press
+Director: Kevin Wilson
+Lead Editor: Steven Ashmore
+Technical Reviewer: Mike Taylor, Kevin Wilson
+Copy Editors: Joanne Taylor, James Marsh
+Proof Reader: Robert Price
+Indexer: James Marsh
+Cover Designer: Kevin Wilson
+eBook versions and licenses are also available for most titles. Any source code or other supplementary materials referenced by the author in this text is available to readers at 
+www.elluminetpress.com/resources
+For detailed information about how to locate your book's source code, go to 
+www.elluminetpress.com/resources
+
+
+
+
+
+
+
+
+
+About the Author
+Jo Foster spent years as a senior developer and is a seasoned lecturer in Computer Science. He currently teaches web programming covering HTML, CSS, Javascript and PHP. As well as computer systems, networking and hardware architecture.
+He has worked in industry building various websites using different technologies and has a wealth of experience and expertise. 
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+
+What is HTML?	8
+Structure of an HTML File	8
+HTML Element Structure	9
+Hypertext	10
+Where are the HTML Files Stored?	11
+HTML 5	12
+What is CSS?	13
+What is a URL?	14
+Web Servers	15
+Development Tools	18
+Getting Started with HTML	20
+Setting Up	20
+Tags for Formatting Text	22
+Headings	23
+Paragraphs	24
+Bold Text	24
+Italic Text	25
+Adding Images	27
+Understanding Images Dimensions	28
+Image Alignment	29
+Adding Tables	30
+Adding Links	31
+Using Images as Links	33
+Adding Lists	34
+Unordered List	34
+Ordered List	34
+Creating Forms	35
+Input Types	35
+Text Fields	35
+Text Area	35
+Radio Buttons	35
+Select Lists	36
+Labels	36
+Submission Method	37
+Adding Multimedia	40
+Adding Video	40
+Adding Audio	41
+Adding Image Maps	42
+Inline HTML Styles	46
+Adding Colour	46
+Background Colour	47
+Text Colour	48
+Fonts	48
+Cascading Style Sheets	50
+CSS Files	50
+CSS Syntax	51
+Type/Element Selector	52
+Class Selector	52
+ID Selector	54
+Styling Text	54
+Styling Layouts	55
+Block vs Inline Elements	57
+Floating & Cleared Elements	59
+Adding Structure	64
+Designing a Layout	64
+Styling the Structure with CSS Styles	65
+Building your Text Styles	68
+Building the HTML Page	69
+HTML Colour Codes	72
+HTML Tag Reference	78
+Basic Structure	78
+Text Formatting	79
+Links	80
+Lists	81
+Multimedia	81
+Tables	82
+Forms	83
+CSS Property Reference	88
+Common Web Fonts	96
+Web Safe Fonts	96
+Google Fonts	97
+
+
+
+
+
+
+
+
+
+What is HTML?
+
+
+HTML or Hyper Text Markup Language at its basic level, is used for creating and formatting web pages. It was originally developed in the early '90s by Tim Berners-Lee.
+HTML is written using tags enclosed in angle brackets   <   >  
+These tags commonly come in pairs - an opening tag and a closing tag. The closing tag contains a forward slash.
+<h1> ... </h1>
+The opening and closing tags are used to mark HTML elements. So... 
+<h1>Main Header</h1>
+...altogether would be an HTML element.
+A web browser interprets these tags and creates the page as instructed.
+
+
+
+
+
+
+
+
+
+Structure of an HTML File
+Lets go right back to the beginning and take look at a simple example. Here you can see a simplified web page broken down to its most basic elements.
+
+A web page is a text file containing the tags and information the web browser uses to display the web page. Static web pages have the file extension .htm or .html
+<html> tag contains all the HTML code and is the first tag on any HTML page
+<head> tag contains all the meta data, that is data about the web page. This data is not visible on the web page.
+<title> tag defines the title for the web page. This title is usually displayed in the title bar or tab in the web browser.
+<body> tag contains all the elements and  is where the main content is written to display on the web page.
+
+
+
+
+
+
+
+
+
+HTML Element Structure
+Lets take a closer look at how HTML elements are constructed. First we have the tag. Tags start and end with an angle bracket. Most elements will have an opening tag...
+
+...and a closing tag.
+
+HTML Elements are constructed using HTML tags surrounding some visible content - the bit you want to appear on the web page for the user to see.
+The opening HTML tag can contain some attributes to control formatting, size, link references and so on.
+
+The closing tag contains a forward slash before the tag name or ID.
+
+
+
+
+
+
+
+
+
+Hypertext
+Web pages are all linked together using clickable text or images, called hyperlinks. This enables you to create multiple pages on your website and allow the user to navigate through the site by clicking on these hyperlinks. 
+Hyperlinks can also link to pages and resources hosted on other websites. The links can be embedded into the body of a paragraph as an underlined word, or as an image or icon. This is called hypertext.
+
+As you can see in the example, on the bottom left, the hyperlinks appear in light blue underlined text. These all link to different pages with in the site using the anchor tag. For example:
+<a href = "windows10.html"> Windows 10 <a>
+Similarly with the navigation bar at the top, all these link to different pages.
+
+
+
+
+
+
+
+
+
+Where are the HTML Files Stored?
+On a web server, the HTML files are all stored in a directory called PUBLIC_HTML.
+
+Inside the PUBLIC_HTML folder, we can create sub folders. You can create one for IMAGES and any other resources you want to make available. This is the file structure I will be using during this guide.
+
+For the scope of this book, we won't be setting up a web server, but we'll save our files in the directory shown above on the computer to simulate the file structure.
+
+
+
+
+
+
+
+
+
+HTML 5
+HTML4 had quite limited functionality and relied heavily on browser plugins such as java, flash and  silverlight to play video, audio, games, layout and other functionality. It was a total nightmare to develop websites using HTML4 since it didn't cope well with different screen sizes and different platforms such as tablets and smartphones.
+The latest iteration of HTML is version 5. HTML5 brings device independence meaning websites can be developed for all different types of platforms, from PCs to smartphones, without the need to endlessly install plugins on your browser, or develop multiple versions of a website for mobile devices.
+
+HTML5 also introduces some new tags to handle page structure such as <section>, <head>, <nav>, <aside>, <footer>, and some tags to handle media such as <audio>, or <video>.
+We'll take a look at some of the new HTML5 features later in this guide.
+
+
+
+
+
+
+
+
+
+What is CSS?
+Cascading Style Sheets (CSS) are used to define and customize the styles and layout for your web pages. This means you can create style sheets to alter the design, layout and responsiveness to different screen sizes on various devices from computers to smartphones.
+In CSS, selectors declare which part of the HTML markup a style applies. The selector could be a H1 heading style, body tag, or paragraph tag. 
+So what you'll see is a selector, say H1, and inside the curly braces, you'll see a declaration block where you declare your styles for that selector.
+
+You can either add your CSS declarations to the <head> section of your HTML document between the <style>...</style> tags
+Or you can add your CSS declarations to a separate style.css file and link add a link in the <head> section of your HTML document using
+<link rel="stylesheet" type="text/css" href="styles.css">
+This is a better way since it allows you to change the styles in one place rather than in each HTML page you create.
+We'll take a closer look at CSS later in this book.
+
+
+
+
+
+
+
+
+
+What is a URL?
+Each web site on the World Wide Web has an address called a URL or Uniform Resource Locator.
+
+www means the server hosting the service, in this case www for World Wide Web. Usually points to your public_html directory on the web server.
+elluminetpress is the domain name or organisation's name and is unique to that organisation.
+.com is the type of site. It can be .co.x for country specific companies (eg .co.uk), .org for no profit organisations, or .gov for government organisations. These are known as top level domain names and are designed to identify the types of companies represented on the web.
+Remember the internet and webservers only understand numbers and IP addresses, so a DNS server will convert the URL domain names into IP addresses which can be routed across the internet.
+
+
+
+
+
+
+
+
+
+Web Servers
+Web servers are computers usually running Windows Server or more commonly, some flavour of the Linux Operating System such as CentOS. Running on these machines is a piece of software called a web server. This is usually Apache, IIS or NGNIX (Engine X).
+In the lab demonstration below, the server on the right is running CentOS Linux and has the Apache Web Server installed. The web server is pointing at our public_html directory stored on one of the server's hard drives.
+For simplicity's sake, the Apache web server is bound to port 80, which is the default port for non-encrypted connections.
+The IP address of the server is 192.168.0.100.
+To access the website on the your computer - the laptop, in your web browser you would need to type in 192.168.0.100. Bit of a pain, just imagine if every website you wanted to go to, you had to remember some string of  numbers. Fortunately we don't have to thanks to DNS servers, which convert our memorable domain names into IP addresses for us.
+To keep things simple for this exercise, we wont be setting up a DNS server in the lab, but it's worth remembering the function of a DNS server on the internet.
+When you enter the domain name into your browser, your computer will send the domain name to a DNS server. The DNS server responds with the IP address (eg 192.168.0.100). 
+Your computer (the laptop in the illustration below), uses the IP address to connect to the web server using a port. In this case port 80.
+
+The web server at 192.168.0.100 is listening on port 80, as it was bound to it earlier remember. You can see the configuration summary on the screen in the illustration below.
+
+Once a connection is established, the web server then reads the HTML files in our public_html directory, and then sends the code in the index.html file to your computer - the laptop.
+The browser on your computer then reads the HTML code and creates the web page on your computer.
+Try it out in the lab.
+
+
+
+
+
+
+
+
+
+Development Tools
+While you are learning, I suggest you stick with notepad and write the code manually so you can understand the structure and meaning.
+
+There are various tools out there you can use to build your HTML, once you know what you're doing. These tools assist you with your coding. They provide syntax highlighting and colour coding which makes reading and modifying your code much easier.
+Another code editor to try is brackets. Brackets is a free editor that you can download from the developer's website. 
+www.brackets.io
+Click the download button and run the executable installer from your downloads folder on your computer.
+
+You'll find the brackets program in your applications or start menu.
+You can see the brackets window open on the left hand side and it makes quite a nice little editor for coding. On the right hand side you can open up your live preview to see what your page looks like, as you're writing your code.
+
+Dreamweaver on the other hand is a more comprehensive tool and is more expensive and is available from Adobe's website.
+
+
+
+
+
+
+
+
+
+Getting Started with HTML
+
+
+In this chapter we'll build a very simple web page using common text formatting tags, we'll add some images, links, tables, and lists.
+This will provide you with a foundation and basic structure of a web page using HTML, which you can build on later.
+In the chapter we'll walk through the process from blank, and build a page using the different tags. 
+
+
+
+
+
+
+
+
+
+Setting Up
+For the exercises in this chapter we will be using notepad and a web browser.
+First open up your file explorer, go to your documents folder and create a new folder called public_html.
+
+Next, open up your text editor. I'm going to use notepad. Go to 'file' and click 'save as'. 
+
+From the dialog box, navigate to your 'documents' folder and select public_html.
+
+In the 'file name' field, enter the name of your web page. Make sure the file extension is .html
+index.html
+Open up your file explorer, navigate to your documents folder, then public_html, as before, and double click index.html to open it in your web browser. 
+Index.html is the default file that is usually loaded when navigating to a website address.
+Arrange your windows side by side, put notepad on the left and your web browser next to it on the right; as they are on the opposite page. You may need to resize your windows.
+Every time you make any changes to your file in notepad, you'll need to save the file, then click the refresh icon in your web browser.
+Lets get started.
+
+
+
+
+
+
+
+
+
+Tags for Formatting Text
+As you can see in the illustration below, the text in the <title> tags appear on the title tab in the web browser, and anything between the <body> tags appear in the browser window.
+
+HTML tags label the pieces of your web page, such as headings, text formatting with bold or italic, paragraphs, images, links, and tables. 
+Lets have a look at some simple formatting tags
+Main Heading Style <h1>...</h1>
+Subheading Style   <h2>...</h2>
+Bold Text          <b>...</b>
+Italic Text        <i>...</i>
+Paragraph Text     <p>...</p>
+Most tags come in pairs and you'll need to surround the piece of text or word using the start and end tags.
+For example:
+<h1> This is the main page heading </h1>
+Headings
+Lets add some of these tags to our web page. Start with the heading, using the <h1> tag.
+
+In the illustration above, the HTML document is open in a text editor on the left. The same document is open in a web browser on the right, and you can see the effect that each tag has on the text, as indicated by the red arrows.
+Browsers do not display the HTML tags, but use them to format the content of the page according to the tag's function.
+Paragraphs
+You can also add paragraphs. It is best practice to add all your paragraphs between <p>...</p> tags.
+<p> Elluminet press is a publisher devoted to meeting the needs of home users, seniors, students, and enthusiasts with more than 50 books in print and electronic formats covering a variety of genres and topics. </p>
+Bold Text
+You can also make text bold or strong using the appropriate tags. Just surround the word or words with the tags.
+<b> Essential Office 365 </b>
+<strong> Essential Office 365 </strong>
+Have a look at the example
+
+The text "Essential Office 365" appears in bold or strong text.
+
+Italic Text
+You can also make text italic or emphasized using the appropriate tags. Just surround the word or words with the tags.
+<i> Essential Windows 10: Creators Edition </i>
+<em> Essential Windows 10: Creators Edition </em>
+Have a look at the example. The text "Essential Windows 10: Fall Creator's Edition" appears in italic or emphasized text.
+
+Now lets put it all together using the information we just learned. In the body of your HTML document try this
+
+When you open the page in your web browser, you'll see this... 
+
+The heading has been rendered using <H1>, and the tag line has been rendered in bold text using <b>.
+Also we have created a paragraph using the <p> tags. This tag splits the text into neatly spaced paragraphs.
+
+
+
+
+
+
+
+
+
+Adding Images
+To add an image, use the <img> tag.
+<img src= "images/books.jpg" width="" height="">
+Use the src parameter to specify the file name and location of the image.
+
+You can also specify the size of the image using the width and height parameter measured in pixels (px). 
+
+By default, the image will be displayed according to the saved width and height of the actual image, but you can override this.
+Understanding Images Dimensions
+Image dimensions (ie the length and width) are specified in pixels (px). The image below is 300px by 200px. This means there are 300px across the length and 200px along the width.
+
+If you look at the image above, it is a bit small and could do with expanding to the length of the page.
+The width of 500px would be a better fit, so I can add a parameter width="500".
+<img src=books.jpg" width="500">
+This will widen the image and automatically adjust the length to prevent the image from being stretched.
+You can also specify both width and height.
+
+Image Alignment
+Images can be aligned to the left or to the right of the page, just like text paragraphs using the alignment attribute.
+In the example above, when we added the image to the web page, we just added it to the bottom of the page. The image is by default aligned to the left of the page.
+You can align the images in line with your paragraphs on your page. This makes a much neater article to read.
+To do this, you will need to nest the <img> tag with your paragraph <p> tag. This is simpler than it sounds.
+I'm going to align the image to the right hand side, using the align attribute, and put the <img> tag after the paragraph's <p> tag. Have a look at the illustration below.
+
+Also to make the image fit, you'll need to resize it using the width attribute on your <img> tag. The width of our page is 540px so roughly half that length would be sufficient. So set the width attribute to 250. Have a look at the highlighted line in the notepad document above.
+What happens if you change the align attribute to "left" or "middle"?
+
+
+
+
+
+
+
+
+
+Adding Tables
+To create a table, use the <table> </table> tags. Inside these tags you can use the <tr>...</tr> tags to define each table row. 
+Use the <td>...</td> tags to define each entry in that row - these become the columns.
+
+Lets add the code to our web page. Type the table code as shown in notepad on the bottom left.
+
+
+
+
+
+
+
+
+
+
+Adding Links
+Links can be added to your website using the anchor tag <a>...</a>. You can link to another website, another page, a document or something to download.
+Start with the anchor tag, then use the href parameter to specify the url of the website or page you want to link to. Type the url between the speech marks. 
+<a href="www.elluminetpress.com">
+Add the name of the link that will appear on the website between the tags.
+Click Here </a>
+So, putting it all together we get this...
+<a href="www.elluminetpress.com"> Click Here </a>
+Try adding the line to the bottom of the document in notepad.
+
+You can see the link in the web page on the right hand side has blue underlined text. This indicates a link.
+You can also link to specific files such as images, documents, or downloads. 
+
+For example if you have a document in the folder called 'resources' in your PUBLIC_HTML directory, you could have...
+<a href="resources/doc.pdf"> Download Now </a>
+If the resource, image or page is somewhere else on the web, you'll need to add the full address in the href parameter. Eg:
+www.luminescentmedia.co.uk/resources/doc.pdf
+For 100% compatibility when linking to other sites and resources outside your own site, it is good practice to add the protocol to the beginning of your href URL. Eg:
+https://www.luminescentmedia.co.uk/resources/doc.pdf
+Other protocols could be...
+ftp://
+mailto:
+file://
+http://
+...depending on where your resource is hosted.
+
+
+
+
+
+
+
+
+
+Using Images as Links
+You can also make an image into a link. To do this all you need to do is insert your image...
+<img src="books.jpg">
+...between the anchor tags <a...>  </a>. I want the image to link to the elluminet press home page.
+So you get something like this
+<a href="www.elluminetpress.com"> <img src="click.jpg"> </a>
+Lets take a look, add the code underneath. I have used an image called click.jpg in the images directory, so make sure you add...
+images/ 
+...before the file name in the src attribute of the <img> tag. Have a look at the code highlighted below in the notepad document on the left.
+
+Notice the mouse pointer turns into a hand when you hover over the image. This indicates a link. You can usually see the destination url in the status bar at the bottom of your web browser.
+
+
+
+
+
+
+
+
+
+Adding Lists
+Unordered lists appear as bulleted lists. Ordered lists appear as numbered lists.
+Unordered List
+Use the <ul>...</ul> tags. Fot each item in the list you will need to add text between the <li>...</li> tags.
+
+Ordered List
+Use the <ol>...</ol> tags. For each item in the list you will need to add the text between the <li>...</li> tags.
+
+
+
+
+
+
+
+
+
+
+Creating Forms
+Forms provide a way to acquire information from the user
+Use the tags
+<form action=" ">...</form> 
+Use the action parameter to point to a php, cgi or javascript to process the inputted data.
+Inside the <form> tags you need to add some input elements. 
+Input Types
+Input types can be text, tel, email, url, password, radio button, depending on what information you are requesting from the user.
+<input type = " " name = " ">... </input>
+Text Fields
+Text field is an input type, it can accept: text, telephone numbers, email address or passwords. Each field type is preset to expect a certain format and type of text. 
+For example, the email type expects to find an @ sign entered indicating an email address. A password type, masks the letters with *** as you type them in.
+<input type="text" name="firstname"> </input>
+Text Area
+This is a text field that will allow multiple lines of text and is best used when accepting paragraphs of text such as a message on a contact form.
+<textarea name="message" rows="5" cols="50">    </textarea>
+Radio Buttons
+Allow the user to select from preset options
+<input type="radio" name="gender" value="female">    </input>
+
+Select Lists
+Creates a dropdown list of pre-set options for the user to choose from
+<select>
+<option value="US">United States</option><option value="UK">United Kingdom</option><option value="EU">Europe</option>
+</select>
+
+Labels
+Labels are used to label the fields in your form.
+<label for = "name"> Name: </label>
+The "for" attribute must match the name of the field you're labeling. For example, the label above is labeling the text field below.
+<input type="text" name="name" width="350"> </input>
+
+Submission Method
+Get or Post, the two most common HTTP requests used to process data inputted from a form.
+In this demonstration, we have a contactus.php script that executes when the user clicks the 'submit' button, and sends the data entered into the form fields back to the server. We'll execute the script using the 'get' method, then using the 'post' method, so you can see the differences in the header inspector shown on the bottom right of the screen prints.
+The "Get" method appends the inputted data to the requesting URL usually separated by a "?".  This is called a query string.
+
+You can see the data appended to the URL of the script in the illustration above and the query string parameters in the headers inspector.
+This method should never be used to submit sensitive information as it is clearly visible on the page URL.
+Using the "Post" method, all the data is sent with the http headers of the processing script rather than through the URL.
+
+Notice that the URL in the address bar at the top of the browser is clean.
+You can see the data appended to the header of the script in the illustration above.
+Lets have a look at an example. We can start to style the form using our CSS selectors. Align all the text and items to the right with some padding around the whole form.
+
+Here's some code for a simple contact form you might find in the contacts section of a website. 
+
+We've added three text fields: one for name, tel and email. We've also added a text box and a submit button. Note that these form items will appear one after the other on the same line. To start the fields on the next line we've added a break line tag <br> after each text field.
+
+
+
+
+
+
+
+
+
+Adding Multimedia
+
+
+Using the HTML5 specification it is a lot easier to embed multimedia into your website. You can easily embed video, music, animations and sound.
+I have included a couple of files for you to try. You'll find these on the resources section of the website.
+www.elluminetpress.com/resources
+
+
+
+
+
+
+
+
+
+Adding Video
+Use the built in <video>...</video> tags.
+<video width="500" controls autoplay>
+<source src="video.mp4" type="video/mp4">
+</video>
+Use source parameter to specify the video file and format. You can list multiple formats here but H264 "MP4" seems to be the most popular.
+Use the width parameter to set the width of the video window, or use the height parameter to set the height. Note, if you want to maintain the aspect ratio of the video, you only need to specify one of the two parameters: width or height. This prevents the video getting stretched or squashed. You can also specify a percentage eg 100% to span the video across the whole page regardless of the browser window size - this is sometimes useful if you are developing for different screen sizes.
+If you want controls such as play, stop and skip to appear along the bottom of your video window, add the parameter 'controls', if not leave the parameter out. 
+If you want the video to automatically start when the page loads, add the parameter 'autoplay'. Try adding the code to your index.html file and see what happens...
+
+
+
+
+
+
+
+
+
+
+Adding Audio
+If you are adding background music or any sound to your website, make sure it is appropriate and complements the website. There is nothing worse than going to a website and have annoying music or sound blaring at you.
+To add audio, use the <audio>...</audio> tags.
+<audio controls>
+<source src="music.mp3" type="audio/mpeg">
+</audio>
+loop attribute loops the music to play over again.
+controls attribute shows play, stop, track and volume control
+autoplay attribute starts playing music automatically - do not use!! It makes websites unbearable and annoying.
+Have a look at the code highlighted in the html file below. You can see in the web page, the control has been added to the bottom of the page. Try some of the other attributes and see what happens.
+
+
+
+
+
+
+
+
+
+
+Adding Image Maps
+To demonstrate how to use create an image map, we're going to add a navigation bar image to our website.
+First insert the image in an appropriate place in your code using the <img> tag. A good place would be underneath the heading.
+<img src="nav.png" width="500" usemap="#navbar">
+Add the usemap parameter and add the image map name. 
+Now to create an image map, use the <map>...</map> tags. Give the map a name using the name parameter. This needs to match the usemap parameter in the <img> tag you added above.
+<map name="navbar">
+<area shape="rect" coords="0,0,0,0" href="about.htm">
+</map>
+Inside the <map>...</map> tags you need to define hotspots around parts of the image you want the user to click on. 
+You need to create these hotspots using a co-ordinate system (coords = "x,y,x,y"). This corresponds to x&y co-ordinates of the top left and the x&y co-ordinates of the bottom right of the hotspot within the image dimensions.
+So our navigation bar is 500px by 35px. The top left X is 90 pixels across (x) and 0 pixels down (y). So we get the co-ordinates of (0,90).
+
+Similarly, the bottom right X is 180 pixels across (x)  and 34 pixels down (y)  so (180,34). The first hotspot's co-ords are (90,0,180,34).
+You can download GIMP which is a great free alternative to Photoshop. GIMP has a pixel measuring tool which is quite useful for this task.
+www.gimp.org/downloads/
+Click 'Download GIMP directly'.
+
+Load the image in GIMP, select the measure tool from the toolbox on the left hand side. 
+
+Click on the position in the image, where the top left of the hotspot will be. Note the co-ordinates on the bottom left of the image window, circled below (90, 0).
+
+Do the same for the bottom right. Again note the co-ordinates on the bottom left (180,34)
+
+Lets give it a try. Add the co-ordinates to the area parameter in the <map>...</map> tag, highlighted below.
+
+You can see as you hover your mouse over the 'about us' part of the navigation image, the mouse pointer turns into a hand indicating this is a link.
+Try adding hotspots to the rest of the items on the navigation bar. You may need to open the nav.png file in a image editing application to measure the number of pixels in the image.
+
+
+
+
+
+
+
+
+
+Inline HTML Styles
+
+
+You can apply styles directly in the HTML code each time you want to use the style. This however, is a bit cumbersome and becomes very difficult to maintain in the long run, especially in larger projects where there is a lot of code. 
+A much better way is to use a Style Sheet or CSS. This allows you to define all your styles once and in one place, usually in a styles.css file which can be linked to in all your HTML code, which we'll look at in the next chapter.
+Lets start by taking a quick look at HTML  styles just so you get the idea. 
+
+
+
+
+
+
+
+
+
+Adding Colour
+You can add colour to your text or backgrounds using the style parameter. There are 140 different colours to choose from, I have added the names to Appendix A of this guide.
+You can change the colour using the style attribute.
+Use 'background-color:' for the background colour of the object, whether its a heading, paragraph or table.
+Use 'color:' for the text colour or object colour.
+Background Colour
+To change the background colour on any object, add the style attribute. Set it to 'background-color' then choose a colour from the HTML colours list.
+<body style = "background-color:DodgerBlue;">
+Have a look at the code below.
+
+You can also change the background colour of other objects, such as the paragraph background
+<p style = "background-color:lightgray;">
+
+Text Colour
+To change the text colour, add the style attribute to a style. Set the attribute to 'color' then select a colour from the list of HTML colours.
+<H1 style = "color:White;">
+
+
+
+
+
+
+
+
+
+
+Fonts
+To change the font, add the style attribute to a style. Set the attribute font-family to the font name you want. In this example I'm using Helvetica. 
+<h1 style="font-family:Helvetica;">Welcome to Elluminet Press</h1>
+Lets add this line to our HTML file.
+
+The font on the heading has changed to Helvetica.
+You can choose from a variety of fonts. Not all of them are supported by all browsers but most of them are.
+You can also make use of Google Fonts.
+Try some of the fonts in Appendix D of this guide.
+
+
+
+
+
+
+
+
+
+Cascading Style Sheets
+
+
+Cascading Style Sheets (CSS) are used to define and customize the styles and layouts for your web pages. 
+This means you can create style sheets to alter the design, layout and responsiveness to different screen sizes on various devices from computers to smartphones.
+
+
+
+
+
+
+
+
+
+CSS Files
+It is recommended that you add your CSS declarations to a separate text file and link that file into all the relevant HTML files. In this way you have all your style declarations in one place and can change things easily.
+As we have seen in the previous chapter, we have to style each element every time we use it. This is very inefficient. What happens if we have a large website and we've styled every heading to be 20px, white using the helvetica font, and the client wants to change the colour of the text or the font. We'd have to go through every instance and change it. Sounds like a nightmare to me. A much better way is to define all the elements, tags and so on using a style sheet. This is where CSS shows its true power. If the client came with the above request, and we used CSS style sheets, we would only have to change the declaration in the CSS and every instance would change throughout the whole site.
+Create a text file with the .CSS file extension and make sure it's in the same directory as your HTML files.
+
+All this line in the <head> section of each HTML file that is to be styled using the declarations contained in the CSS file. Use the href parameter to point to the CSS file.
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+
+
+
+
+
+
+
+
+CSS Syntax
+Lets take a look at the basic syntax of a CSS declaration. 
+
+First we declare a selector.  This could be
+
+An HTML tag (type/element selector) such as <H1> This creates a general style for that element and is best used when all instances of that element are to be styled in the same way.
+A Class Selector creates classes of elements such as .highlight
+An ID Selector to style a specific element and  can only be used once per page.#reference
+
+Use the syntax
+Tag Selector { property : value ; }
+
+
+
+
+
+
+
+
+
+Type/Element Selector
+This creates a general style for the declared element and is best used when all instances of that element are to be styled in the same way. 
+H1 {
+color: white;font-family: Helvetica;
+}
+Here, all the H1 elements will be styled in a white helvetica font.
+
+
+
+
+
+
+
+
+
+Class Selector
+A Class Selector is used to apply styles to a specific HTML element. You can name the class anything you want, and it must begin with a full stop or period. Use a class selectors when you want to style multiple elements throughout the page or site with the same look or layout.
+.highlight {
+background-color: yellow;
+}
+In your HTML code, you can assign the .highlight class you defined in your CSS declarations to any HTML element, such as headings, paragraphs and so on.
+<h2 class="highlight"> 
+A Great Place to Start Learning Something New
+</h2>
+<p class="highlight">
+Elluminet Press is a publisher...
+</p>
+Lets add this to our little web page.
+
+I've declared the .highlight class in the styles.css file. You can see it highlighted above.
+I've also applied the class to the <h2> header and the second paragraph <p>, highlighted in the index.html file above.
+
+
+
+
+
+
+
+
+
+ID Selector
+The ID selector targets a single element, and can only be used once per page. 
+ID selectors are defined in the CSS declarations using a hashtag #, and should only be used when you have a single element on the page that will have that particular style or layout.
+#footer {
+background: DodgerBlue;height: 80px;
+}
+You could the footer id using a div tag of your HTML body.
+<div id= "footer"> </div>
+
+
+
+
+
+
+
+
+
+Styling Text
+If I wanted to style the H1 tag for my headings, I could write something like this in the styles.css file.
+H1 {
+color: white;font-family: Helvetica;
+}
+This would style all the H1 tags used subsequently in the HTML file. 
+Lets take a look at what happens when we add the code to our website
+
+As you can see, the title has changed font and colour. 
+Try changing the font family and the colours in the styles.css file and see what happens.
+
+
+
+
+
+
+
+
+
+Styling Layouts
+With style sheets, you're not just limited to restyling HTML tags, you can define styles for sections. 
+HTML5 has introduced some new layout and structuring tags that help us to define and format our web page
+<header> </header>
+<nav> </nav>
+<main> </main>
+<section> </section>
+<article> </article>
+<footer> </footer>
+Lets start adding these to the relevant sections of our HTML page. Our page has a header "welcome to elluminet press" so we can surround that with the <header> tags; a navigation bar, so we can surround the nav image map with the <nav> tags
+
+The main content can go in a <section> tag, and we can add a footer using the <footer> tags.
+Once these are in place, we can start to style them using the CSS styles.
+At the moment, the whole background of the page is blue. We would rather just have the header in blue but the rest of the page white. I also want the header to be 60px high.
+You can define a style for the header in your CSS file. Lets take a look
+
+Now when we save the code and refresh the web page, the header has changed.
+The text in the header is a bit squashed in the top left. Well to space things out a bit, you can use the padding property. The padding property has 4 parameters (top, right, bottom, left).
+Lets add the line to the styles.css file.
+
+
+
+
+
+
+
+
+
+
+Block vs Inline Elements
+An inline element has no line break before or after it. The elements follow the left to right flow of the page.
+
+Links <a href = " ">...</a>
+Images <img src = " ">
+Input Fields <input type = "text"> ... </input>
+
+A block element automatically has a line break above and below it and a new block usually starts on the next line.
+
+Headings <h1> ... <h6>
+Paragraphs <p> ... </p>
+Lists <ol> <ul>
+Tables <table> ... </table>
+Forms <form> ... </form>
+Headers, footers and sections
+
+Here's an example page of some code to demonstrate.
+
+The code generates the following page. Here we have defined two headings, added and image, some paragraphs, a link and a table.
+
+You can see the headings and the paragraphs appear one below the other and usually span the full width of the screen. These are block elements.
+
+Inline elements such as the image and the link appear next to one another and follow the flow of the text rather than starting on a new line.
+
+
+
+
+
+
+
+
+
+
+Floating & Cleared Elements
+Floating elements give you more flexibility in laying out your webpage content as well as the structure.
+You can float elements in your content such as images. You can float the image to the left or right and the text will wrap around the image, making the presentation much neater.
+
+Use the float attribute when you declare your CSS styles. Eg:
+img { 
+padding: 0px 10px 0px 10px;float: right;
+}
+You can also use the float to structure your website layout. For example, you can create sections for main web content and sidebars positioned side by side.
+
+As you can see .col1 is floated to the left, and .col2 is floated to the right.
+
+The footer is cleared on both sides so none of our other floating elements appear to the left or right of the footer.
+As you can see below, if we didn't clear the footer, this is what happens to the element.
+
+The floating elements will move up to fill up the available space on the page. So any element you need to start on the next line or below the floats, you have to "clear the float" on the next element using the clear property, as we did when we declared the footer.
+
+We cleared this one on both sides, so no floating elements appear to the left or right of the footer. 
+You can just specify clear: left or clear: right, to prevent floating elements appearing on either the left of right of the element.
+
+
+
+
+
+
+
+
+
+Adding Structure
+
+
+In this chapter, we're going to build a simple structured page using the HTML we learned in the previous chapters and some CSS styling.
+We'll start by designing a simple structured layout, then we'll use our CSS styles to build the styles and use the HTML code to structure our website.
+
+
+
+
+
+
+
+
+
+Designing a Layout
+Our website at the moment looks ok, but it lacks basic structure. Look what happens if you make the browser window larger, and everything is just placed underneath.
+Expanding on our CSS style sheets, we can build up a basic structure for our website.
+This is the structure we're going to build.
+
+All these sections we can define in our CSS style sheet. We have a header, a navigation section. 
+Then below that we have our main content. We have divided this into two columns using the section selector.
+At the bottom we have our standard footer.
+
+
+
+
+
+
+
+
+
+Styling the Structure with CSS Styles
+Before we do anything else, we need to initialize our styles. At the top of the styles.css file, add the following code.
+We want to set our background to white.
+
+Set the width of our website, which in this example is 960px wide. Set the top margin to 0 so there is no gap at the top of the header. We can set the left margin to auto, so the website will reposition itself in the centre if the user happens to resize the browser window. Also we want to use the Helvetica font in the body of our website. These all affect the body of the side, so we define it using the body selector.
+
+Next, we want all the sections such as the header, footer and the columns to show as blocks rather than inline.
+
+Finally we want to remove all the padding from the tags (div, section, h1, h2, h3 & p) and set all the margins to 0, so there are no gaps between the sections as we build the site.
+
+We don't want white gaps between the header, navigation bar, columns and the footer.
+Now to define and style the layout of our website. In your style.css file enter the following code to build the layout we designed above. 
+Remember from the diagram above, we wanted the header to be 100px high, with12px of padding on the top, nothing on the left or right and 32px on the bottom. We'll also style the background 'dodgerblue'. We need to declare all that in the header selector.
+
+Next down is the navigation bar. For the navigation bar we want a gap underneath the bar so it is more spaced out and not right on top of the columns below. So we want to add a margin to the bottom of about 16px.
+
+Below that, is the main section of the website. We've split this into two columns. The first is .col 1 and we want to float that over to the left, with a width of 512px and 32px of padding along the left edge of the column.
+
+Similarly for .col2, we want to float it over to the right, with a width of 352px, with 32px of padding down the right hand edge.
+
+The float property allows you to place content side by side rather than underneath.
+Finally the footer, we want to be blue, so we set the background colour to 'dodgerblue' using the colour name. We also want to set the height of the footer to 80px.
+
+We also need to apply the 'clear' property. Clear,  
+
+
+
+
+
+
+
+
+
+Building your Text Styles
+We are using the helvetica font family for this example and the H1 style defaults to bold. I want to override this and make it normal weight. To do this set the font-weight property to normal. Also the text defaults to black. For this design, I want white text, so set the color property to white.
+
+Similarly H2 defaults to bold text. In this design I want the text to be normal weight, so again, set the font-weight to normal. Now to add a bit of creative style, I want the H2 headings to be in capitals, so set the font-varient property to small-caps.
+
+For the paragraphing, I want th increase the line spacing a bit so 'm going to set it to 1 and a half line spacing. To do this use the line-height property and set it to 1.5
+
+
+
+
+
+
+
+
+
+
+Building the HTML Page
+Finally, using the building blocks we just defined, we can start to build our web page. Going back to our original diagram of our layout at the start of the chapter, we can start to implement this using our HTML code in the <body> section of the HTML file.
+First, we can add our header using the <header> tag. Inside this, we can add our logo and our heading.
+
+Next we can add our navigation bar, this is just an image for now, but we can create a image map to create the links
+
+Next, we get to the main body of our content. Remember we split this into two columns. Now to implement the columns, we use a <section> tag. Inside the <section> tag, you'll need to specify which column you want - we created two classes, remember.
+
+Now in the <section> tag, all you need to do is specify which of these two classes you want to use. For the first column, I'm going to use .col1. So insert class = "col1" inside the <section> tag.
+
+For the second column, I'm going to use .col2. Sp add class = "col2" inside the section tag.
+
+Inside both of the <section> elements we just created, we can add our content as normal.
+When you view your HTML page in a web browser, you'll see something like this.
+
+
+
+
+
+
+
+
+
+
+HTML Colour Codes
+
+
+When using colours, you can specify the colour you want using the colour name, the hex code or the decimal codes.
+To use colour names, use the text name 
+color : aliceblue;
+Hex codes, use a hashtag # followed by a hex number 
+color : #F0F8FF;
+Decimal codes use three decimal numbers representing the intensity of each of the three primary colours: red, green and blue.
+color : rgb(240,248,255);
+
+
+
+
+
+
+
+
+
+
+
+
+
+HTML Tag Reference
+
+
+
+
+
+
+
+
+
+Basic Structure
+These set the basic structure of the page into head and body sections
+<!DOCTYPE>
+This is a Document Type Declaration that tells your browser what type of code to expect, eg HTML.
+<html>...</html>
+Enclose all the HTML code in the document between the two tags.
+<head>...</head>
+This marks the header section of the HTML page. Everything between these tags is used to help search engines classify and index your page. 
+Use <title>...</title> to set the title that appears in the title bar of your web browser
+Use <meta> to add meta data tags such as content descriptions, keywords, author, and so on. This information is specifically for search engines.
+Use <link> to associate style sheets and a favourites icon to your page.
+<body>...</body>
+Everything visible on your page that shows up in the browser window goes between these tags. 
+
+
+
+
+
+
+
+
+
+Text Formatting
+<b>...</b>
+Makes the enclosed text into bold text. 
+<blockquote>...</blockquote>
+Indents the text in from both sides.
+<br>
+Line Break. Forces text to start on a new line 
+<center>...</center>
+Aligns text, images or forms to the center of the screen. 
+<div>...</div>
+Surround distinct sections of your page in divs, primarily to align them. 
+<em>...</em>
+Emphasises the surrounded text, changing it to italics.
+<h1>...</h1>, <h2>...</h2>, <h3>...</h3>
+Sets the text as a heading, with values of h1 to h6 in decreasing size. 
+<hr>
+Inserts a grey horizontal line across the page. 
+<i>...</i>
+Make text italic
+<p>...</p>
+Makes the enclosed text a paragraph, with space at the top and bottom. 
+<q>...</q>
+Used to mark up short, inline quotations. Some browsers will add quotation marks around the text.
+<strong>...</strong>
+Creates emphasis for the selected text, rendered in bold.
+<sub>...</sub>
+Apply subscript 
+X2
+<sup>...</sup>
+Apply superscript 
+X3
+<u>...</u>
+Make enclosed text underlined
+
+
+
+
+
+
+
+
+
+Links
+<a>...</a>
+Makes the enclosed text or image a link to another file, page or site. 
+<a href="page or site"> Name of link to click on </a>
+Use href attribute to specify location and name of file, page or site
+
+
+
+
+
+
+
+
+
+Lists
+<ol>...</ol>
+Creates a numbered list. 
+
+Number One
+Number Two
+
+<ol>
+<li>Number One</li><li>Number Two</li>
+</ol>
+<ul>...</ul>
+Creates a bulleted list.  
+
+Item
+Another Item
+
+<ul>
+<li>Item</li><li>Another Item</li>
+</ul>
+
+
+
+
+
+
+
+
+
+Multimedia
+<img>
+Inserts an image on your page 
+<img src="location of image" width="" height="">
+use width and height to specify width and height of image in pixels
+<script>...</script>
+Add JavaScript to your page. Add the code between these two tags.
+<noscript>...</noscript>
+Enclose anything you want displayed by browsers that do not support scripts.
+<video>...</video>
+Use to embed a video into your webpage. 
+<video width="320" height="240" controls>
+<source src="movie.mp4" type="video/mp4">
+</video>
+Use the width & height so specify the size of the video window in pixels. 
+Use control attribute to specify if you want play, stop controls or not - leave the 'controls' attribute out if you don't want the controls to appear. 
+Use type attribute to specify type of video: mp4, ogg, etc
+<audio>...</audio>
+<audio controls autoplay loop>
+<source src=" " type="audio/mpeg">
+</audio>
+
+
+
+
+
+
+
+
+
+Tables
+<table>...</table>
+This tag creates a table
+<table>
+<tr>
+<th> Title </th><th> Cost </th>
+</tr>
+<tr>
+<td> Windows 10 </td><td> £12.99 </td>
+</tr>
+</table>
+Use <tr>...</tr> to mark each new table row. 
+Use <td>...</td> inside each <tr>...</tr> to add your data. 
+Use <th>...</th> if you want a table column header - all contents bold and aligned to the centre. 
+Use your CSS to style the table padding, borders, cell colours, fonts and so on.
+table, th, td {
+border: 1px solid black;
+padding: 10px;
+}
+
+
+
+
+
+
+
+
+
+Forms
+<form>...</form>
+This declares a form
+<form action = "..." method = "post">
+<p> <label for="name">Name:</label>
+<input name="name" size="55"> </p>
+<label for="message">Message:</label
+<p> <textarea name="message" cols=55 rows=10></textarea> </p>
+<p> <input type="submit"> <input type="reset"> </p>
+</form>
+<input type = " "> </input>
+type: radio, button, checkbox, date, email, tel, text, password, data
+<select> 
+<option value = "">...</option>
+</select>
+<textarea name = "" cols rows> </textarea>
+<label for = "" > </label>
+<optgroup label = " "> 
+<option value=" ">...</option>
+</optgroup>
+
+
+
+
+
+
+
+
+
+CSS Property Reference
+
+
+.class
+.highlight {
+background-color: yellow;
+}
+#id
+#footer {
+background: DodgerBlue;height: 80px;
+}
+element
+body { 
+background-color: dodgerblue;
+}
+align-content
+div {
+align-content: center;
+}
+background-color
+body {
+background-color: gray;
+}
+background-image
+body {
+background-image: url("bg.jpg");
+}
+border
+table {
+border: 2px solid black;
+}
+border-color
+table {
+border-color: black;
+}
+border-width
+table {
+border-width: 1px;
+}
+clear
+footer {
+clear: both;
+}
+color (text colour)
+H1 {
+color: blue;
+}
+float
+.col1 {
+float: left;
+}
+font
+H1 {
+font: 15px arial, sans-serif;
+}
+font-family
+p {
+font-family: "Helvetica";
+}
+font-weight
+p {
+font-weight: bold;
+}
+margin	
+body {
+margin: [top] [right] [bottom] [left];
+}
+margin-bottom	
+body {
+margin-bottom: 2px;
+}
+margin-left	
+body {
+margin-left: 2px;
+}
+margin-right	
+body {
+margin-right: 2px;
+}
+margin-top
+body {
+margin-top: 2px;
+}
+padding
+table {
+padding: 2px 2px 2px 2px;
+}
+padding-bottom	
+table {
+padding-bottom: 2px;
+}
+padding-left	
+table {
+padding-left: 2px;
+}
+padding-right	
+table {
+padding-right: 2px;
+}
+padding-top
+table {
+padding-top: 2px;
+}
+text-align
+table, th, td {
+text-align: center;
+}
+
+
+
+
+
+
+
+
+
+Common Web Fonts
+
+
+The fonts here are web safe, so you should be ok using these fonts for most platforms.
+There are thousands more fonts called google fonts
+
+
+
+
+
+
+
+
+
+Web Safe Fonts
+These fonts are usually supported by most web browsers and can be used in most web projects without any problem or compatibility issues.
+
+
+
+
+
+
+
+
+
+
+Google Fonts
+To use google fonts, you will need to include the following line in the <head> section for each font you want to use
+<link href="https://fonts.googleapis.com/ css?family=Lato" rel="stylesheet">
+Just change the font family name, shown above in bold-underlined, to the one you want. 
+Declare the font-family in your CSS style sheet.
+H1 {
+font-family: "lato";
+font-size: 22px;
+}
+Have a look at the code highlighted in the example below.
+
+You can find the full font list at
+fonts.google.com
+Click the red plus sign next to the font to see details of how to customize and add the fonts to your websites.
+
+
+
+
+
+
+
+
+
+
+Contents
+
+HTML for Beginners
+About the Author
+Table of Contents
+What is HTML?
+
+Structure of an HTML File
+HTML Element Structure
+Hypertext
+Where are the HTML Files Stored?
+HTML 5
+What is CSS?
+What is a URL?
+Web Servers
+Development Tools
+
+
+Getting Started with HTML
+
+Setting Up
+Tags for Formatting Text
+
+Headings
+Paragraphs
+Bold Text
+Italic Text
+
+
+Adding Images
+
+Understanding Images Dimensions
+Image Alignment
+
+
+Adding Tables
+Adding Links
+Using Images as Links
+Adding Lists
+
+Unordered List
+Ordered List
+
+
+Creating Forms
+
+Input Types
+Text Fields
+Text Area
+Radio Buttons
+Select Lists
+Labels
+Submission Method
+
+
+
+
+Adding Multimedia
+
+Adding Video
+Adding Audio
+Adding Image Maps
+
+
+Inline HTML Styles
+
+Adding Colour
+
+Background Colour
+Text Colour
+
+
+Fonts
+
+
+Cascading Style Sheets
+
+CSS Files
+CSS Syntax
+Type/Element Selector
+Class Selector
+ID Selector
+Styling Text
+Styling Layouts
+Block vs Inline Elements
+Floating & Cleared Elements
+
+
+Adding Structure
+
+Designing a Layout
+Styling the Structure with CSS Styles
+Building your Text Styles
+Building the HTML Page
+
+
+HTML Colour Codes
+HTML Tag Reference
+
+Basic Structure
+Text Formatting
+Links
+Lists
+Multimedia
+Tables
+Forms
+
+
+CSS Property Reference
+Common Web Fonts
+
+Web Safe Fonts
+Google Fonts
+
+
+
+
+
+Landmarks
+
+Cover
+Table of Contents
+
+
+
+
+

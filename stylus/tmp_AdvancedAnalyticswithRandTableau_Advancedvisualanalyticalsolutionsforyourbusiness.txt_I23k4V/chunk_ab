@@ -1,0 +1,1000 @@
+We need to get R and Tableau to communicate, and to achieve this communication, we will install and configure Rserve.
+
+
+
+
+
+
+
+
+
+
+Installing R for WindowsThe following steps shows how to download and install R on windows:The first step is to download your required version of R from the CRAN website [http://www.rproject.org/].Go to the official R website, which you can find at https://www.r-project.org/.The download link can be found on the left-hand side of the page.The next option is for you to choose the location of the server that holds R. The best option is to choose the mirror that is geographically closest to you. For example, if you are based in the UK, then you might choose the mirror that is located in Bristol.Once you click on the link, there is a section at the top of the page called Download and Install R. There is a different link for each operating system. To download the Windows-specific version of R, there is a link that specifies Download R for Windows. When you click on it, the download links will appear on the next page to download R.On the next page, there are a number of options, but it is easier to select the option that specifies install R for the first time.Finally, there is an option at the top of the page that allows you to download the latest R installation package. The install package is wrapped up in an EXE file, and both 32 bit and 64 bit options are wrapped up in the same file.Now that R is downloaded, the next step is to install R. The instructions are given here:Double-click on the R executable file, and select the language. In this example, we will use English. Choose your preferred language, and click OK to proceed: The Welcome page will appear, and you should click Next to continue: The next item is the general license agreement. Click Next to continue: The next step is to specify the destination location for R's files. In this example, the default is selected. Once the destination has been selected, click Next to proceed: In the next step, the components of R are configured. If you have a 32-bit machine, then you will need to select the 32-bit option from the drop-down list. In the next screenshot, the 64-bit User Installation option has been selected: The next option is to customize the startup options. Here, the default is selected. Click Next to continue. The next option is to select the Start Menu folder configuration. Select the default, and click Next: Next, it's possible to configure some of R's options, such as the creation of a desktop icon. Here, let's choose the default options and click Next: In the next step, the R files are copied to the computer. This step should only take a few moments: Finally, R is installed, and you should receive a final window. Click Finish: Once completed, launch RGui from the shortcut, or you can locate RGui.exe from your installation path. The default path for Windows is C:\Program Files\R\R- 2.15.1\bin\x64\Rgui.exe.Type help.start() at the R-Console prompt and press Enter. If you can see the help server page then you have successfully installed and configured your R package.
+
+
+
+
+
+
+
+
+
+
+
+
+
+RStudio
+
+
+
+The R interface is not particularly intuitive for beginners. For this reason, RStudio IDE, the desktop version, is an excellent option for interacting with R. The download and installation sequence is provided.
+There are two versions; the RStudio Desktop version, and the paid RStudio Server version. In this book, we will focus on the RStudio Desktop IDE option, which is open source.
+
+
+
+
+
+
+
+
+
+
+Prerequisites for RStudio installationIn this section, RStudio IDE is installed on the Windows 10 operating system:To download RStudio, you can retrieve it from https://www.rstudio.com/products/rstudio-desktop/.Once you have downloaded RStudio, double-click on the file to start the installation. This will display the RStudio Setup and Welcome page. Click Next to continue: The next option allows the user to configure the installation location for RStudio. Here, the default option has been retained. If you do change the location, you can click Browse to select your preferred installation folder. Once you've selected your folder, click Next to continue to the next step. In the next step, RStudio shortcuts are specified. Click on Install to proceed: RStudio installs in the next step: Once completed, launch RStudio IDE. You can find it by navigating to Start | All Programs | RStudio | RStudio.exe. Alternatively, you can type RStudio into the Cortana search box. If you specified a custom installation directory, then you can find RStudio as an EXE file. The default installation directory for RStudio IDE is C:\Program Files\RStudio\bin\rstudio.exe.Type help.start() at the RStudio prompt and press Enter. If you can see the help files on the screen then you have successfully installed and configured RStudio IDE to run with R.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Implementing the scripts for the book
+
+
+
+Now that we have installed R and RStudio, we can download and install the scripts for this book. This book's scripts and code can be found on GitHub. If the reader hasn't got a free GitHub account, then it's recommended that Git and GitHub are set up. It's good practice for storing your own R scripts at a later date. If required, the reader is referred to the GitHub site for more details. GitHub itself can be found at github.com. Training material can be found at https://training.github.com/kit/.
+After setting up Git and GitHub, you can download our data and scripts by taking a copy of this book's GitHub repository. Simply put, a fork is a copy of a repository, and it means that you can freely experiment with changes without affecting the original project. Please refer to the GitHub training material for more information on how to fork a repository, download data and scripts, and how to keep your local copy in sync with changes to the repository.
+
+Tip
+Go to the GitHub repo at https://github.com/datarelish/Advanced-AnalyticsRandTableauBook.
+
+At the top right-hand corner of the page, click Fork. This means you have forked the repository. The next step is to download the files to your local computer. To do this, you can run the following line of code in your Git Bash:
+
+git clone
+https://github.com/datarelish/Advanced-AnalyticsRandTableauBook
+
+
+
+
+
+
+
+
+
+
+
+Testing the scriptingBefore we proceed, let's proceed to run a script to test that our setup works:Open the script in RStudio's script editor.Go to the Code menu item.Choose Source from the menu.Navigate to the Packt Tableau and R Book Setup.r file.Press Ctrl + A to select the whole script.In the script window, click Run.You should see the results in the output window.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tableau and R connectivity using Rserve
+
+
+
+Rserve is a server that allows applications to access R functionality. It allows you to use a series of functions to pass R expressions to an Rserve server and obtain a result.
+If you upload a workbook that contains R functionality to the Tableau server, then the Tableau server must have a connection to an Rserve server. See R Connection, in the Tableau Desktop help, for details.
+R is not supported for Tableau Reader or Tableau Online.
+In this section, we will install, run, and configure Rserve.
+
+
+
+
+
+
+
+
+
+
+Installing RserveTo install and run Rserve, follow these steps:Open RStudio and go to the Install Packages tab on the interface.In the Packages textbox, type Rserve and click OK.Rserve will install, and you will see the output messages in the RStudio Console. When it is finished, you will see the chevron again.Now, open Control Panel on the server, and search for environment variable in the search box.Click on the Edit the System Environment Variables option.Add a new variable to the PATH variable path. Add the directory containing R.dll to your path environment variable. For example, C:\Program Files\R\R-3.0.2\bin\x64.You should see the new path in the Edit Environment Variable window. You can see a sample image here: Click OK.Let's check that Rserve is running properly:In RStudio, let's call Rserve by running the following command in the RStudio Console:
+library(Rserve)
+
+
+
+
+
+
+
+
+
+
+Configuring an Rserve ConnectionTo configure an Rserve connection, follow these steps:On the Help menu in Tableau Desktop, choose Settings and Performance | Manage R Connection to open the Rserve connection dialog box.Enter or select a server name using a domain name or an IP address.Specify a port (Port 6311) is the default port for Rserve servers.If the server requires credentials, specify a username and password.Click Test Connection.Click OK.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+In this chapter, we started on our journey of conducting Tableau analytics with the industry-standard, statistical prowess of R. In this chapter, we covered the installation of R, including a key point about ensuring the right bitness before we start. We also installed RStudio and ran a script, as a way of engaging with R. Finally, we installed and configured Rserve for Tableau.
+In our next chapter, we will learn more about the underlying data structures of R so that we can make use of the analytic power of Tableau and R more effectively.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 2. The Power of R
+
+
+
+Having understood how to integrate both the platforms in the previous chapter, we'll walk through the different ways in which you can use R to combine and compare data for analysis.
+We will cover, with examples, the core essentials of R programming such as variables and data structures in R such as matrices, factors, vectors, and data frames. We will also focus on control mechanisms in R (relational operators, logical operators, conditional statements, loops, functions, and apply) and how to execute these commands in R to get grips with it before proceeding to chapters that heavily rely on these concepts for scripting complex analytical operations.
+
+
+
+
+
+
+
+
+
+
+Core essentials of R programmingOne of the reasons for R's success is its use of variables. Variables are used in all aspects of R programming. For example, variables can hold data, strings to access a database, whole models, queries, and test results. Variables are a key part of the modeling process, and their selection has a fundamental impact on the usefulness of the models. Therefore, variables are an important place to start since they are at the heart of R programming.
+
+
+
+
+
+
+
+
+
+
+VariablesIn the following section we will deal with the variables—how to create variables and working with variables.Creating variablesIt is very simple to create variables in R, and to save values in them. To create a variable, you simply need to give the variable a name, and assign a value to it.In many other languages, such as SQL, it's necessary to specify the type of value that the variable will hold. So, for example, if the variable is designed to hold an integer or a string, then this is specified at the point at which the variable is created.Unlike other programming languages, such as SQL, R does not require that you specify the type of the variable before it is created. Instead, R works out the type for itself, by looking at the data that is assigned to the variable.In R, we assign variables using an assignment variable, which is a less than sign (<) followed by a hyphen (-). Put together, the assignment variable looks like so:Working with variablesIt is important to understand what is contained in the variables. It is easy to check the content of the variables using the ls command. If you need more details of the variables, then the ls.str command will provide you with more information.If you need to remove variables, then you can use the rm function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Data structures in R
+
+
+
+The power of R resides in its ability to analyze data, and this ability is largely derived from its powerful data types. Fundamentally, R is a vectorized programming language. Data structures in R are constructed from vectors that are foundational. This means that R's operations are optimized to work with vectors.
+
+
+
+
+
+
+
+
+
+
+VectorThe vector is a core component of R. It is a fundamental data type. Essentially, a vector is a data structure that contains an array where all of the values are the same type. For example, they could all be strings, or numbers. However, note that vectors cannot contain mixed data types.R uses the c() function to take a list of items and turns them into a vector.
+
+
+
+
+
+
+
+
+
+ListsR contains two types of lists: a basic list, and a named list. A basic list is created using the list() operator. In a named list, every item in the list has a name as well as a value. named lists are a good mapping structure to help map data between R and Tableau. In R, lists are mapped using the $ operator. Note, however, that the list label operators are case sensitive.
+
+
+
+
+
+
+
+
+
+MatricesMatrices are two-dimensional structures that have rows and columns. The matrices are lists of rows. It's important to note that every cell in a matrix has the same type.
+
+
+
+
+
+
+
+
+
+FactorsA factor is a list of all possible values of a variable in a string format. It is a special string type, which is chosen from a specified set of values known as levels. They are sometimes known as categorical variables. In dimensional modeling terminology, a factor is equivalent to a dimension, and the levels represent different attributes of the dimension. Note that factors are variables that can only contain a limited number of different values.
+
+
+
+
+
+
+
+
+
+
+
+
+Data frames
+
+
+
+The data frame is the main data structure in R. It's possible to envisage the data frame as a table of data, with rows and columns. Unlike the list structure, the data frame can contain different types of data. In R, we use the data.frame() command in order to create a data frame.
+The data frame is extremely flexible for working with structured data, and it can ingest data from many different data types. Two main ways to ingest data into data frames involves the use of many data connectors, which connect to data sources such as databases, for example. There is also a command, read.table(), which takes in data.
+
+
+
+Data Frame Structure
+
+
+ 
+Here is an example, populated data frame. There are three columns, and two rows. The top of the data frame is the header. Each row holds a line of data row, starting with the row name, and then followed by the data itself. Each data member of a row is called a cell.
+
+
+
+Example Data Frame Structure
+
+
+ 
+In R, we can create data frames by accessing external data, or we can create our own data frames by assigning data to a variable. Let's set up our own example data frame, populated with data:
+
+
+df = data.frame(
+Year=c(2013, 2013, 2013), 
+Country=c("Arab World","Carribean States", "Central Europe"),
+LifeExpectancy=c(71, 72, 76))
+
+
+As always, we should read out at least some of the data frame so we can double-check that it was set correctly. The data frame was set to the df variable, so we can read out the contents by simply typing in the variable name at the command prompt:
+
+
+
+Variable printout to the R Console
+
+
+ 
+To obtain the data held in a cell, we enter the row and column co-ordinates of the cell, and surround them by square brackets ([]). In this example, if we wanted to obtain the value of the second cell in the second row, then we would use the following:
+
+
+df[2, "Country"]
+
+
+We can also conduct summary statistics on our data frame. For example, if we use the following command:
+
+
+summary(df)
+
+
+Then we obtain the summary statistics of the data. The example output is as follows:
+
+
+
+Summary Statistics printout to the R Console
+
+
+ 
+You'll notice that the summary command has summarized different values for each of the columns. It has identified Year as an integer, and produced the Min, Quartiles, Mean, and Max for the year. The Country column has been listed, simply because it does not contain any numeric values. Life Expectancy is summarized correctly.
+We can change the Year column to a factor, using the following command:
+
+
+df$Year <- as.factor(df$Year)
+
+
+Then, we can rerun the summary command again:
+
+
+summary(df)
+
+
+On this occasion, the data frame now returns the correct results that we expect:
+
+
+
+Variable printout to the R Console
+
+
+ 
+As we proceed throughout this book, we will be building on more useful features that will help us to analyze data using data structures, and visualize the data in interesting ways using R.
+When we consume data from online data sources, it's worth double-checking the data types in the source data. The summary(df) command is very useful.
+We can retrieve data in Tableau, using commands that we have used so far in this Chapter. Firstly, however, we need to make sure that Rserve is installed and running. Let's check the installation first, with the command:
+
+
+install.packages("Rserve")
+
+
+Once the command has executed, we need to call the package so we can use it throughout the script:
+
+
+library(Rserve)
+
+
+Next, we can start the Rserve service with the following command:
+
+
+Rserve()
+
+
+In this example, however, we are simply going to work with the CSV file that contains the data. To do this, let's open up a new Tableau workbook, and we will choose excel as our format.
+Now, let's connect live to the excel data source. When we connect to the data in Tableau, we can see the interface here:
+
+
+
+ 
+As a piece of terminology, note that R talks about variables. In tableau, we talk about dimensions and when we use the Dimension Year as String, plus the Value, we get horizontal bars.
+
+
+
+ 
+We can start to add in the country, which appears as follows:
+
+
+
+ 
+However, this doesn't really give a sense of the changes over time, which is our preferred end result. To achieve this objective, let's look at the box-and-whisker plot.
+
+
+
+ 
+Here, it's clearer to see that the fertility rate has been descending over time. Let's focus on just a few countries - Rwanda, Norway, and the United States
+
+
+
+ 
+We can filter our selection down to the countries that we are most interested in. Now, we can see patterns in the data more clearly.
+
+
+
+ 
+A few simple changes have helped to illuminate the data:
+We can see that the USA and Norway track one another very closely. Rwanda, on the other hand, has the highest birth rate, which falls down over the years. The tops of the box-and-whisker plots have been changed to show a line, in order to emphasise how this metric has changed over time.
+What do the box-and-whisker plot lines actually mean? They tell us something individually about the range between the minimum and maximum numbers. Here is an example diagram:
+
+
+
+ 
+Rwanda is the upper whisker - meaning the maximum. The first and third quartiles are given, along with the median.
+The tooltip gives the viewer additional details. It is provided 'on demand', when the user hovers over that part of the chart.
+To summarise, we have seen how R and Tableau can be used together in order to display data better. Generally speaking, it is better to change the data closer to the source rather than leaving it until the front end. The reason for this is that you have only changed the data once, which then propagates through to other data sources and worksheets. It's not required for you to change it every time.
+Now that we have seen a simple example of how R and Tableau can work together, let's look at more complex R programming constructs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Control structures in R
+
+
+
+R has the appearance of a procedural programming language. However, it is built on another language, known as S programming language. S leans towards functional programming. It also has some object-oriented characteristics. This means that there are many complexities in the way that R works.
+In this section, we will look at some of the fundamental building blocks that make up key control structures in R, and then we will move onto looping and vectorized operations.
+
+
+
+
+
+
+
+
+
+
+Assignment operatorsR has five assignment operators, which are listed here:
+<-
+
+->
+
+=
+
+<<-
+
+->>
+In this book, we will use the following assignment operator:
+<-
+We will use this assignment operator here, because it is used commonly in examples on well-known internet sites such as StackOverflow (http://stackoverflow.com/). It's also possible to use the rightward assignment operator, but that is confusing for many people so it is not used here. Note also that the equals sign isn't used here, because it is often used to mean equality. Therefore, it's clearer to use the leftward assignment operator.
+
+
+
+
+
+
+
+
+
+Logical operatorsLogical operators are binary operators that allow the comparison of values:
+Operator
+
+Description
+
+
+<
+
+
+less than
+
+
+<=
+
+
+less than or equal to
+
+
+>
+
+
+greater than
+
+
+>=
+
+
+greater than or equal to
+
+
+==
+
+
+exactly equal to
+
+
+!=
+
+
+not equal to
+
+
+!x
+
+
+Not x
+
+
+x | y
+
+
+x OR y
+
+
+x & y
+
+
+x AND y
+
+
+isTRUE(x)
+
+
+test if X is TRUE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+For loops and vectorization in R
+
+
+
+Specifically, we will look at the constructs involved in loops. Note, however, that it is more efficient to use vectorized operations rather than loops, because R is vector-based. We investigate loops here, because they are a good first step in understanding how R works, and then we can optimize this understanding by focusing on vectorized alternatives that are more efficient.
+More information about control flows can be obtained by executing the command at the command line:
+
+
+Help?Control
+
+
+The control flow commands take decisions and make decisions between alternative actions. The main constructs are for, while, and repeat.
+
+
+
+
+
+
+
+
+
+
+For loopsLet's look at a for loop in more detail. For this exercise, we will use the Fisher iris dataset, which is installed along with R by default. We are going to produce summary statistics for each species of iris in the dataset.You can see some of the iris data by typing in the following command at the command prompt:
+head(iris)
+We can divide the iris dataset so that the data is split by species. To do this, we use the split command, and we assign it to the variable called IrisBySpecies:
+IrisBySpecies <- split(iris,iris$Species)
+Now, we can use a for loop in order to process the data in order to summarize it by species.Firstly, we will set up a variable called output, and set it to a list type. For each species held in the IrisBySpecies variable, we set it to calculate the minimum, maximum, mean, and total cases. It is then set to a data frame called output.df, which is printed out to the screen:
+output <- list()
+for(n in names(IrisBySpecies)){   
+  ListData <- IrisBySpecies[[n]]   
+  output[[n]] <- data.frame(species=n,
+                            MinPetalLength=min(ListData$Petal.Length),
+                            MaxPetalLength=max(ListData$Petal.Length),
+                         MeanPetalLength=mean(ListData$Petal.Length),
+                         NumberofSamples=nrow(ListData))
+  output.df <- do.call(rbind,output)
+}
+print(output.df)
+The output is as follows:Output printout to the R Console We used a for loop here, but they can be expensive in terms of processing. We can achieve the same end by using a function that uses a vector called Tapply. Tapply processes data in groups. Tapply has three parameters: the vector of data, the factor that defines the group, and a function. It works by extracting the group, and then applying the function to each of the groups. Then, it returns a vector with the results. We can see an example of Tapply here, using the same dataset:
+output <-
+data.frame(MinPetalLength=tapply(iris$Petal.Length,iris$Species,min),
+                MaxPetalLength=tapply(iris$Petal.Length,iris$Species,max),
+                     MeanPetalLength=tapply(iris$Petal.Length,iris$Species,mean),
+                     NumberofSamples=tapply(iris$Petal.Length,iris$Species,length))
+
+print(output)
+This time, we get the same output as previously. The only difference is that by using a vectorized function, we have concise code that runs efficiently.To summarize, R is extremely flexible and it's possible to achieve the same objective in a number of different ways. As we move forward through this book, we will make recommendations about the optimal method to select, and the reasons for the recommendation.
+
+
+
+
+
+
+
+
+
+
+
+
+Functions
+
+
+
+R has many functions that are included as part of the installation. In the first instance, let's look to see how we can work smart by finding out what functions are available by default.
+In our last example, we used the split() function. To find out more about the split function, we can simply use the following command:
+
+
+?split
+
+
+As an alternative, we can use the following statement:
+
+
+help(split)
+
+
+It's possible to get an overview of the arguments required for a function. To do this, simply use the args command:
+
+
+args(split)
+
+
+Fortunately, it's also possible to see examples of each function by using the following command:
+
+
+example(split)
+
+
+If you need more information than the documented help file about each function, you can use the following command. It will go and search through all the documentation for instances of the keyword:
+
+
+help.search("split")
+
+
+If you want to search the R project site from within RStudio, you can use the RSiteSearch command. For example:
+
+
+RSiteSearch("split")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Creating your own function
+
+
+
+There are a few important items to note about the creation of functions in R. Functions return a value. As a rule, functions return the value of the last expression in the function body.
+Local variables are set temporarily for the duration of the function call, and they are cleared when the function exists.
+Function parameters affect the function locally, and the original caller's value is not changed.
+You can create your own functions using the function keyword. Here is an example of a function created from an earlier piece of code:
+
+
+myfunction <- function(x, y, z) tapply(x,y,z)
+
+
+So, if we take our earlier example, we could change it so that it uses functions:
+
+
+output <-
+  data.frame(MinPetalLength=myfunction(iris$Petal.Length,iris$Species,max),
+             MaxPetalLength=myfunction(iris$Petal.Length,iris$Species,max),
+             MeanPetalLength=myfunction(iris$Petal.Length,iris$Species,mean),
+             NumberofSamples=myfunction(iris$Petal.Length,iris$Species,length))
+print(output)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Making R run more efficiently in Tableau
+
+
+
+It is recommended to preload R libraries before R starts. The library can be preloaded before Rserve starts by using an Rserve configuration file. It is possible to use a library() call in the R script, but this would mean that the library would be loaded afresh every time the view is refreshed. This is another step for the user, and we are trying to make it as simple as possible.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+In this chapter, we have looked at various essential structures in working with R. We have looked at the data structures that are fundamental to using R optimally. We have also taken the view that structures such as for loops can often be done better as vectorized operations. Finally, we have looked at the ways in which R can be used to create functions to simplify code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 3. A Methodology for Advanced Analytics Using Tableau and R
+
+
+
+In the era of big data when lack of methodology is likely to produce random and false discoveries, a robust framework for delivery is extremely important. According to a Dataversity poll in 2015, it was found that only 17% of survey respondents said they had a well-developed Predictive or Prescriptive Analytics program in place. On the other hand, 80% of respondents said they planned on implementing such a program within five years. How can we ensure that our projects are successful?
+There is an increasing amount of data in the world, and in our databases. The data deluge is not going to go away anytime soon! Businesses risk wasting the useful business value of information contained in databases, unless they are able to excise useful knowledge from the data.
+There is a saying in the world of data: garbage in, garbage out. Data needs to be cleaned before it is turned into information. There is a difference between original raw data and clean processed data, which is analysis.
+It can be hard to know how to get started. Fortunately, there are a number of frameworks in data science that help us to work our way through an analytics project. Processes such as Microsoft Team Data Science Process (TDSP) and CRISP-DM position analytics as a repeatable process that is part of a bigger vision.
+Why are they important? The Microsoft TDSP Process and the CRISP-DM frameworks are frameworks for analytics projects that lead to standardized delivery for organizations, both large and small.
+In this chapter, we will look at these frameworks in more detail, and see how they can inform our own analytics projects and drive collaboration between teams. How can we have the analysis shaped so that it follows a pattern so that data cleansing is included?
+
+
+
+
+
+
+
+
+
+
+Industry standard methodologies for analyticsThere are a few main methodologies: the Microsoft TDSP Process and the CRISP-DM methodology.Ultimately, they are all setting out to achieve the same objectives as an analytics framework. There are differences, of course, and these are highlighted here. CRISP-DM and TDSP focus on the business value and the results derived from analytics projects.Both of these methodologies are described in the following sections.
+
+
+
+
+
+
+
+
+
+
+
+
+
+CRISP-DM
+
+
+
+One common methodology is the CRISP-DM methodology (the modeling agency). The Cross Industry Standard Process for Data Mining or (CRISP-DM) model as it is known, is a process model that provides a fluid framework for devising, creating, building, testing, and deploying machine learning solutions. The process is loosely divided into six main phases. The phases can be seen in the following diagram:
+
+
+
+CRISP-DM Methodology
+
+
+ 
+Initially, the process starts with a business idea and a general consideration of the data. Each stage is briefly discussed in the following sections.
+
+
+
+
+
+
+
+
+
+
+Business understanding/data understandingThe first phase looks at the machine learning solution from a business standpoint, rather than a technical standpoint. The business idea is defined, and a draft project plan is generated. Once the business idea is defined, the data understanding phase focuses on data collection and familiarity. At this point, missing data may be identified, or initial insights may be revealed. This process feeds back to the business understanding phase.
+
+
+
+
+
+
+
+
+
+CRISP-DM model — data preparationIn this stage, data will be cleansed and transformed, and it will be shaped ready for the modeling phase.
+
+
+
+
+
+
+
+
+
+CRISP-DM — modeling phaseIn the modeling phase, various techniques are applied to the data. The models are further tweaked and refined, and this may involve going back to the data preparation phase in order to correct any unexpected issues.
+
+
+
+
+
+
+
+
+
+CRISP-DM — evaluationThe models need to be tested and verified to ensure that they meet the business objectives that were defined initially in the business understanding phase. Otherwise, we may have built models that do not answer the business question.
+
+
+
+
+
+
+
+
+
+CRISP-DM — deploymentThe models are published so that the customer can make use of them. This is not the end of the story, however.
+
+
+
+
+
+
+
+
+
+CRISP-DM — process restartedWe live in a world of ever-changing data, business requirements, customer needs, and environments, and the process will be repeated.
+
+
+
+
+
+
+
+
+
+CRISP-DM summaryCRISP-DM is the most commonly used framework for implementing machine learning projects specifically, and it applies to analytics projects as well.It has a good focus on the business understanding piece. However, one major drawback is that the model no longer seems to be actively maintained. The official site, CRISP-DM.org, is no longer being maintained. Furthermore, the framework itself has not been updated on issues on working with new technologies, such as big data.Big data technologies means that there can be additional effort spend in the data understanding phase, for example, as the business grapples with the additional complexities that are involved in the shape of big data sources.The next framework, Microsoft's Team Data Science Process framework, is aimed at including big data among its data sources.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Team Data Science Process
+
+
+
+The TDSP process model provides a dynamic framework to machine learning solutions that have been through a robust process of planning, producing, constructing, testing, and deploying models. Here is an example of the TDSP process:
+
+
+
+Credit: https://docs.microsoft.com/en-us/azure/machine-learning/data-science-process-overview
+
+
+
+ 
+The process is loosely divided into four main phases:
+
+
+Business Understanding
+Data Acquisition and Understanding
+Modeling
+Deployment
+
+
+The phases are described in the following paragraphs.
+
+
+
+
+
+
+
+
+
+
+Business understandingThe Business understanding process starts with a business idea, which is solved with a machine learning solution. The business idea is defined from the business perspective, and possible scenarios are identified and evaluated. Ultimately, a project plan is generated for delivering the solution.
+
+
+
+
+
+
+
+
+
+Data acquisition and understandingFollowing on from the business understanding phase is the data acquisition and understanding phase, which concentrates on familiarity and fact-finding about the data.The process itself is not completely linear; the output of the data acquisition and understanding phase can feed back to the business understanding phase, for example. At this point, some of the essential technical pieces start to appear, such as connecting to data, and the integration of multiple data sources. From the user's perspective, there may be actions arising from this effort. For example, it may be noted that there is missing data from the dataset, which requires further investigation before the project proceeds further.
+
+
+
+
+
+
+
+
+
+ModelingIn the modeling phase of the TDSP process, the R model is created, built, and verified against the original business question. In light of the business question, the model needs to make sense. It should also add business value, for example, by performing better than the existing solution that was in place prior to the new R model.This stage also involves examining key metrics in evaluating our R models, which need to be tested to ensure that the models meet the original business objectives set out in the initial business understanding phase.
+
+
+
+
+
+
+
+
+
+DeploymentR models are published to production, once they are proven to be a fit solution to the original business question. This phase involves the creation of a strategy for ongoing review of the R model's performance as well as a monitoring and maintenance plan. It is recommended to carry out a recurrent evaluation of the deployed models. The models will live in a fluid, dynamic world of data and, over time, this environment will impact their efficacy.The TDSP process is a cycle rather than a linear process, and it does not finish, even if the model is deployed. It is comprised of a clear structure for you to follow throughout the Data Science process, and it facilitates teamwork and collaboration along the way.
+
+
+
+
+
+
+
+
+
+TDSP SummaryThe data science unicorn does not exist; that is, the person who is equally skilled in all areas of data science, right across the board. In order to ensure successful projects where each team player contributes according to their skill set, the Team Data Science Summary is a team-oriented solution that emphasizes teamwork and collaboration throughout. It recognizes the importance of working as part of a team to deliver Data Science projects. It also offers useful information on the importance of having standardized source control and backups, which can include open source technology.Since these methodologies both cover data preparation in detail, we will focus on data preparation for the remainder of this chapter.
+
+
+
+
+
+
+
+
+
+
+
+
+Working with dirty data
+
+
+
+The process of cleaning data involves tidying the data, which usually results in making the dataset smaller because we have cleaned out some of the dirty data. What makes data dirty?
+Dirty data can be due to invalid data, which is data that is false, incomplete, or doesn't conform to the accepted standard. An example of invalid data could be formatting errors, or data that is out of an acceptable range. Invalid data could also have the wrong type. For example, the Asterix
+ is invalid because the acceptable formatted data is for letters only, so it can be removed.
+Dirty data can be due to missing data, which is data where no value is stored. An example of missing data is data that has not been stored due to a faulty sensor. We can see that some data is missing, so it is removed from consideration.
+Dirty data could also have null values. If data has null values, then programs may respond differently to the data on that basis. The nulls will need to be considered in order to remove their impact, or they could be removed.
+Dirty data could be due to duplicated data. This could occur due to invalid collection of data by a sensor, for example. Duplicated data needs to be fixed because it can increase the amount of total storage space taken up by the data.
+Altogether, data can be very messy if it has any of these characteristics, and in some unfortunate cases it can have some, or even all of these characteristics. In machine learning, we need to remove the influence of dirty data because it can produce bad results.
+Data quality is one of the issues that organizations can find very difficult to resolve. For some people, the reasons are technical in nature; the data can be very difficult to clean because of the technology itself. One of the most pernicious causes of poor data quality is due to process and user error.
+What are the consequences of poor data quality? Simply put, it's bad for a business to have inaccurate or incomplete data. Poor data quality is ubiquitous in organizations, partly due to a breakdown in communication between CIOs and business managers.
+In the following sections, we will focus on an R package known as dplyr.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Introduction to dplyr
+
+
+
+What is dplyr? Well, dplyr can be perceived as a grammar of data manipulation. It has been created for the R community by Hadley Wickham, Romain Francois, and RStudio.
+What does dplyr give the Tableau user? We will use dplyr in order to cleanse, summarize, group, chain, filter, and visualize our data in Tableau.
+
+
+
+
+
+
+
+
+
+
+Summarizing the data with dplyrFirstly, let's import the packages that we need. These packages are listed in the following table, followed by the code itself.Packages required for the hands-on exercise:
+Package Name
+
+Description
+
+Reference
+
+
+WDI
+
+
+Search, extract, and format data from the World Bank's World Development Indicators
+
+
+https://cran.r-project.org/web/packages/WDI/index.html
+
+
+
+dplyr
+
+
+
+dplyr is a grammar of data manipulation
+ As we walk through the script, the first thing we need to do is install the packages.Once you have installed the packages, we need to call each library.Once we have called the libraries, then we need to obtain the data from the World Data Bank website. When we have downloaded the data, we can assign it to a variable. In this example, we will call the variable dat. Before we do any further analysis, we will summarize the data using the summary command.To start working with the data, let's use the summary command. In this example, the summary command is given here:
+summary(dat)

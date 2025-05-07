@@ -1,0 +1,1000 @@
+--readCache={enabled | 
+disabled}
+Enables or disables the read cache within the VDO device. The default is
+disabled. The cache should be enabled if write workloads are
+expected to have high levels of deduplication, or for read intensive
+workloads of highly compressible data.
+--
+readCacheSize=megabytes
+Specifies the extra VDO device read cache size in megabytes. This
+space is in addition to a system- defined minimum. Using a value with a 
+B(ytes), K(ilobytes), M(egabytes), G(igabytes), T(erabytes), P(etabytes)
+or E(xabytes) suffix is optional. The default is 0M. 1.12 MB of memory
+will be used per MB of read cache specified, per bio thread.
+--
+vdoSlabSize=megabytes
+Specifies the size of the increment by which a VDO is grown. Using a
+smaller size constrains the total maximum physical size that can be
+accommodated. Must be a power of two between 128M and 32G; the
+default is 2G. Using a value with a S(ectors), B(ytes), K(ilobytes), 
+M(egabytes), G(igabytes), T(erabytes), P(etabytes) or E(xabytes) suffix
+is optional. If no suffix is used, the value will be interpreted as
+megabytes.
+--verbose
+Prints commands before executing them.
+--writePolicy={ auto | 
+sync | async }
+Specifies the write policy:
+auto: Select sync or async based on the storage layer
+underneath VDO. If a write back cache is present, async will
+be chosen. Otherwise, sync will be chosen.
+sync: Writes are acknowledged only after data is stably
+written. This is the default policy. This policy is not supported
+if the underlying storage is not also synchronous.
+async: Writes are acknowledged after data has been cached
+for writing to stable storage. Data which has not been flushed is
+not guaranteed to persist in this mode.
+Option
+Description
+The status subcommand returns the following information in YAML format, divided into keys as
+follows:
+Table 29.6. VDO Status Output
+Key
+Description
+VDO Status
+Information in this key covers the name of the host and date and time at which the status
+inquiry is being made. Parameters reported in this area include:
+Node
+The host name of the system on which VDO is running.
+Date
+The date and time at which the vdo status command is run.
+CHAPTER 29. VDO INTEGRATION
+295
+
+Kernel
+Module
+Information in this key covers the configured kernel.
+Loaded
+Whether or not the kernel module is loaded (True or False).
+Version
+Information
+Information on the version of kvdo that is configured.
+Configuratio
+n
+Information in this key covers the location and status of the VDO configuration file.
+File
+Location of the VDO configuration file.
+Last
+modified
+The last-modified date of the VDO configuration file.
+VDOs
+Provides configuration information for all VDO volumes. Parameters reported for each VDO
+volume include:
+Block size
+The block size of the VDO volume, in bytes.
+512 byte
+emulation
+Indicates whether the volume is running in 512-byte emulation mode.
+Enable
+deduplicatio
+n
+Whether deduplication is enabled for the volume.
+Logical size
+The logical size of the VDO volume.
+Physical
+size
+The size of a VDO volume's underlying physical storage.
+Write policy
+The configured value of the write policy (sync or async).
+VDO
+Statistics
+Output of the vdostats utility.
+Key
+Description
+29.7.2. vdostats
+The vdostats utility displays statistics for each configured (or specified) device in a format similar to the
+Linux df utility.
+The output of the vdostats utility may be incomplete if it is not run with root privileges.
+Synopsis
+vdostats [ --verbose | --human-readable | --si | --all ] [ --version ] [ 
+device ...]
+Storage Administration Guide
+296
+
+Options
+Table 29.7. vdostats Options
+Option
+Description
+--verbose
+Displays the utilization and block I/O (bios) statistics for one (or more) VDO devices.
+See Table 29.9, "vdostats --verbose Output" for details.
+--human-
+readable
+Displays block values in readable form (Base 2: 1 KB = 210 bytes = 1024 bytes).
+--si
+The --si option modifies the output of the --human-readable option to use SI
+units (Base 10: 1 KB = 103 bytes = 1000 bytes). If the --human-readable option is
+not supplied, the --si option has no effect.
+--all
+This option is only for backwards compatibility. It is now equivalent to the --verbose
+option.
+--version
+Displays the vdostats version.
+device ...
+Specifies one or more specific volumes to report on. If this argument is omitted, 
+vdostats will report on all devices.
+Output
+The following example shows sample output if no options are provided, which is described in Table 29.8,
+"Default vdostats Output":
+Device               1K-blocks    Used         Available     Use%   
+Space Saving%
+/dev/mapper/my_vdo   1932562432   427698104    1504864328    22%    21%
+Table 29.8. Default vdostats Output
+Item
+Description
+Device
+The path to the VDO volume.
+1K-blocks
+The total number of 1K blocks allocated for a VDO volume (= physical volume size *
+block size / 1024)
+Used
+The total number of 1K blocks used on a VDO volume (= physical blocks used * block
+size / 1024)
+Available
+The total number of 1K blocks available on a VDO volume (= physical blocks free *
+block size / 1024)
+CHAPTER 29. VDO INTEGRATION
+297
+
+Use%
+The percentage of physical blocks used on a VDO volume (= used blocks / allocated
+blocks * 100)
+Space Saving%
+The percentage of physical blocks saved on a VDO volume (= [logical blocks used -
+physical blocks used] / logical blocks used)
+Item
+Description
+The --human-readable option converts block counts into conventional units (1 KB = 1024 bytes):
+Device               Size   Used      Available     Use%   Space Saving%
+/dev/mapper/my_vdo   1.8T   407.9G    1.4T          22%    21%
+The --human-readable and --si options convert block counts into SI units (1 KB = 1000 bytes):
+Device               Size   Used      Available     Use%    Space 
+Saving%
+/dev/mapper/my_vdo   2.0T   438G      1.5T          22%     21%
+The --verbose (Table 29.9, "vdostats --verbose Output") option displays VDO device statistics in
+YAML format for one (or all) VDO devices.
+Statistics printed in bold in Table 29.9, "vdostats --verbose Output" will continue to be reported in future
+releases. The remaining fields are primarily intended for software support and are subject to change in
+future releases; management tools should not rely upon them. Management tools should also not rely
+upon the order in which any of the statistics are reported.
+Table 29.9. vdostats --verbose Output
+Item
+Description
+Version
+The version of these statistics.
+Release version
+The release version of the VDO.
+Data blocks used
+The number of physical blocks currently in use by a VDO volume to store data.
+Overhead blocks used
+The number of physical blocks currently in use by a VDO volume to store VDO
+metadata.
+Logical blocks used
+The number of logical blocks currently mapped.
+Physical blocks
+The total number of physical blocks allocated for a VDO volume.
+Logical blocks
+The maximum number of logical blocks that can be mapped by a VDO volume.
+1K-blocks
+The total number of 1K blocks allocated for a VDO volume (= physical volume size
+* block size / 1024)
+Storage Administration Guide
+298
+
+1K-blocks used
+The total number of 1K blocks used on a VDO volume (= physical blocks used *
+block size / 1024)
+1K-blocks available
+The total number of 1K blocks available on a VDO volume (= physical blocks free
+* block size / 1024)
+Used percent
+The percentage of physical blocks used on a VDO volume (= used blocks /
+allocated blocks * 100)
+Saving percent
+The percentage of physical blocks saved on a VDO volume (= [logical blocks used
+- physical blocks used] / logical blocks used)
+Block map cache size
+The size of the block map cache, in bytes.
+Write policy
+The active write policy (sync or async). This is configured via vdo 
+changeWritePolicy --writePolicy=auto|sync|async.
+Block size
+The block size of a VDO volume, in bytes.
+Completed recovery
+count
+The number of times a VDO volume has recovered from an unclean shutdown.
+Read-only recovery
+count
+The number of times a VDO volume has been recovered from read-only mode (via
+vdo start --forceRebuild).
+Operating mode
+Indicates whether a VDO volume is operating normally, is in recovery mode, or is
+in read-only mode.
+Recovery progress (%)
+Indicates online recovery progress, or N/A if the volume is not in recovery mode.
+Compressed
+fragments written
+The number of compressed fragments that have been written since the VDO
+volume was last restarted.
+Compressed blocks
+written
+The number of physical blocks of compressed data that have been written since
+the VDO volume was last restarted.
+Compressed fragments
+in packer
+The number of compressed fragments being processed that have not yet been
+written.
+Slab count
+The total number of slabs.
+Slabs opened
+The total number of slabs from which blocks have ever been allocated.
+Slabs reopened
+The number of times slabs have been re-opened since the VDO was started.
+Item
+Description
+CHAPTER 29. VDO INTEGRATION
+299
+
+Journal disk full count
+The number of times a request could not make a recovery journal entry because
+the recovery journal was full.
+Journal commits
+requested count
+The number of times the recovery journal requested slab journal commits.
+Journal entries batching
+The number of journal entry writes started minus the number of journal entries
+written.
+Journal entries started
+The number of journal entries which have been made in memory.
+Journal entries writing
+The number of journal entries in submitted writes minus the number of journal
+entries committed to storage.
+Journal entries written
+The total number of journal entries for which a write has been issued.
+Journal entries
+committed
+The number of journal entries written to storage.
+Journal blocks batching
+The number of journal block writes started minus the number of journal blocks
+written.
+Journal blocks started
+The number of journal blocks which have been touched in memory.
+Journal blocks writing
+The number of journal blocks written (with metadatata in active memory) minus
+the number of journal blocks committed.
+Journal entries written
+The total number of journal blocks for which a write has been issued.
+Journal blocks
+committed
+The number of journal blocks written to storage.
+Slab journal disk full
+count
+The number of times an on-disk slab journal was full.
+Slab journal flush count
+The number of times an entry was added to a slab journal that was over the flush
+threshold.
+Slab journal blocked
+count
+The number of times an entry was added to a slab journal that was over the
+blocking threshold.
+Slab journal blocks
+written
+The number of slab journal block writes issued.
+Slab journal tail busy
+count
+The number of times write requests blocked waiting for a slab journal write.
+Item
+Description
+Storage Administration Guide
+300
+
+Slab summary blocks
+written
+The number of slab summary block writes issued.
+Reference blocks written
+The number of reference block writes issued.
+Block map dirty pages
+The number of dirty pages in the block map cache.
+Block map clean pages
+The number of clean pages in the block map cache.
+Block map free pages
+The number of free pages in the block map cache.
+Block map failed pages
+The number of block map cache pages that have write errors.
+Block map incoming
+pages
+The number of block map cache pages that are being read into the cache.
+Block map outgoing
+pages
+The number of block map cache pages that are being written.
+Block map cache
+pressure
+The number of times a free page was not available when needed.
+Block map read count
+The total number of block map page reads.
+Block map write count
+The total number of block map page writes.
+Block map failed reads
+The total number of block map read errors.
+Block map failed writes
+The total number of block map write errors.
+Block map reclaimed
+The total number of block map pages that were reclaimed.
+Block map read outgoing
+The total number of block map reads for pages that were being written.
+Block map found in
+cache
+The total number of block map cache hits.
+Block map discard
+required
+The total number of block map requests that required a page to be discarded.
+Block map wait for page
+The total number of requests that had to wait for a page.
+Block map fetch required
+The total number of requests that required a page fetch.
+Block map pages loaded
+The total number of page fetches.
+Item
+Description
+CHAPTER 29. VDO INTEGRATION
+301
+
+Block map pages saved
+The total number of page saves.
+Block map flush count
+The total number of flushes issued by the block map.
+Invalid advice PBN
+count
+The number of times the index returned invalid advice
+No space error count.
+The number of write requests which failed due to the VDO volume being out of
+space.
+Read only error count
+The number of write requests which failed due to the VDO volume being in read-
+only mode.
+Instance
+The VDO instance.
+512 byte emulation
+Indicates whether 512 byte emulation is on or off for the volume.
+Current VDO IO
+requests in progress.
+The number of I/O requests the VDO is current processing.
+Maximum VDO IO
+requests in progress
+The maximum number of simultaneous I/O requests the VDO has processed.
+Current dedupe queries
+The number of deduplication queries currently in flight.
+Maximum dedupe
+queries
+The maximum number of in-flight deduplication queries.
+Dedupe advice valid
+The number of times deduplication advice was correct.
+Dedupe advice stale
+The number of times deduplication advice was incorrect.
+Dedupe advice timeouts
+The number of times deduplication queries timed out.
+Flush out
+The number of flush requests submitted by VDO to the underlying storage.
+Item
+Description
+Storage Administration Guide
+302
+
+Bios in... Bios in partial...
+Bios out... Bios meta...
+Bios journal... Bios page
+cache... Bios out
+completed... Bio meta
+completed... Bios journal
+completed... Bios page
+cache completed... Bios
+acknowledged... Bios
+acknowledged partial...
+Bios in progress...
+These statistics count the number of bios in each category with a given flag. The
+categories are:
+bios in: The number of block I/O requests received by VDO.
+bios in partial: The number of partial block I/O requests received by
+VDO. Applies only to 512-byte emulation mode.
+bios out: The number of non-metadata block I/O requests submitted by
+VDO to the storage device.
+bios meta: The number of metadata block I/O requests submitted by
+VDO to the storage device.
+bios journal: The number of recovery journal block I/O requests
+submitted by VDO to the storage device.
+bios page cache: The number of block map I/O requests submitted by
+VDO to the storage device.
+bios out completed: The number of non-metadata block I/O requests
+completed by the storage device.
+bios meta completed: The number of metadata block I/O requests
+completed by the storage device.
+bios journal completed: The number of recovery journal block I/O
+requests completed by the storage device.
+bios page cache completed: The number of block map I/O requests
+completed by the storage device.
+bios acknowledged: The number of block I/O requests acknowledged
+by VDO.
+bios acknowledged partial: The number of partial block I/O requests
+acknowledged by VDO. Applies only to 512-byte emulation mode.
+bios in progress: The number of bios submitted to the VDO which have
+not yet been acknowledged.
+There are three types of flags:
+read: The number of non-write bios (bios without the REQ_WRITE flag
+set)
+write: The number of write bios (bios with the REQ_WRITE flag set)
+discard: The number of bios with a REQ_DISCARD flag set
+Read cache accesses
+The number of times VDO searched the read cache.
+Read cache hits
+The number of read cache hits.
+Item
+Description
+29.8. STATISTICS FILES IN /SYS
+Statistics for a running VDO volume may be read from files in the 
+CHAPTER 29. VDO INTEGRATION
+303
+
+/sys/kvdo/volume_name/statistics directory, where volume_name is the name of thhe VDO
+volume. This provides an alternate interface to the data produced by the vdostats utility suitable for
+access by shell scripts and management software.
+There are files in the statistics directory in addition to the ones listed in the table below. These
+additional statistics files are not guaranteed to be supported in future releases.
+Table 29.10. Statistics files
+File
+Description
+dataBlocksUsed
+The number of physical blocks currently in use by a VDO volume to store data.
+logicalBlocksUse
+d
+The number of logical blocks currently mapped.
+physicalBlocks
+The total number of physical blocks allocated for a VDO volume.
+logicalBlocks
+The maximum number of logical blocks that can be mapped by a VDO volume.
+mode
+Indicates whether a VDO volume is operating normally, is in recovery mode, or is
+in read-only mode.
+Storage Administration Guide
+304
+
+CHAPTER 30. VDO EVALUATION
+30.1. INTRODUCTION
+VDO is software that provides inline block-level deduplication, compression, and thin provisioning
+capabilities for primary storage. VDO installs within the Linux device mapper framework, where it takes
+ownership of existing physical block devices and remaps these to new, higher-level block devices with
+data-efficiency properties. Specifically, VDO can multiply the effective capacity of these devices by ten or
+more. These benefits require additional system resources, so it is therefore necessary to measure
+VDO's impact on system performance.
+Storage vendors undoubtedly have existing in-house test plans and expertise that they use to evaluate
+new storage products. Since the VDO layer helps to identify deduplication and compression, different
+tests may be required. An effective test plan requires studying the VDO architecture and exploring these
+items:
+VDO-specific configurable properties (performance tuning end-user applications)
+Impact of being a native 4 KB block device
+Response to access patterns and distributions of deduplication and compression
+Performance in high-load environments (very important)
+Analyze cost vs. capacity vs. performance, based on application
+Failure to consider such factors up front has created situations that have invalidated certain tests and
+required customers to repeat testing and data collection efforts.
+30.1.1. Expectations and Deliverables
+This Evaluation Guide is meant to augment, not replace, a vendor's internal evaluation effort. With a
+modest investment of time, it will help evaluators produce an accurate assessment of VDO's integration
+into existing storage devices. This guide is designed to:
+Help engineers identify configuration settings that elicit optimal responses from the test device
+Provide an understanding of basic tuning parameters to help avoid product misconfigurations
+Create a performance results portfolio as a reference to compare against "real" application
+results
+Identify how different workloads affect performance and data efficiency
+Expedite time-to-market with VDO implementations
+The test results will help Red Hat engineers assist in understanding VDO's behavior when integrated into
+specific storage environments. OEMs will understand how to design their deduplication and compression
+capable devices, and also how their customers can tune their applications to best use those devices.
+Be aware that the procedures in this document are designed to provide conditions under which VDO can
+be most realistically evaluated. Altering test procedures or parameters may invalidate results. Red Hat
+Sales Engineers are available to offer guidance when modifying test plans.
+30.2. TEST ENVIRONMENT PREPARATIONS
+CHAPTER 30. VDO EVALUATION
+305
+
+Before evaluating VDO, it is important to consider the host system configuration, VDO configuration, and
+the workloads that will be used during testing. These choices will affect benchmarking both in terms of
+data optimization (space efficiency) and performance (bandwidth and latency). Items that should be
+considered when developing test plans are listed in the following sections.
+30.2.1. System Configuration
+Number and type of CPU cores available. This can be controlled by using the taskset utility.
+Available memory and total installed memory.
+Configuration of storage devices.
+Linux kernel version. Note that Red Hat Enterprise Linux 7 provides only one Linux kernel
+version.
+Packages installed.
+30.2.2. VDO Configuration
+Partitioning scheme
+File system(s) used on VDO volumes
+Size of the physical storage assigned to a VDO volume
+Size of the logical VDO volume created
+Sparse or dense indexing
+UDS Index in memory size
+VDO's thread configuration
+30.2.3. Workloads
+Types of tools used to generate test data
+Number of concurrent clients
+The quantity of duplicate 4 KB blocks in the written data
+Read and write patterns
+The working set size
+VDO volumes may need to be re-created in between certain tests to ensure that each test is performed
+on the same disk environment. Read more about this in the testing section.
+30.2.4. Supported System Configurations
+Red Hat has tested VDO with Red Hat Enterprise Linux 7 on the Intel 64 architecture.
+For the system requirements of VDO, see Section 29.2, "System Requirements".
+The following utilities are recommended when evaluating VDO:
+Storage Administration Guide
+306
+
+Flexible I/O Tester version 2.08 or higher; available from the fio package
+sysstat version 8.1.2-2 or higher; available from the sysstat package
+30.2.5. Pre-Test System Preparations
+This section describes how to configure system settings to achieve optimal performance during the
+evaluation. Testing beyond the implicit bounds established in any particular test may result in loss of
+testing time due to abnormal results. For example, this guide describes a test that conducts random
+reads over a 100 GB address range. To test a working set of 500 GB, the amount of DRAM allocated for
+the VDO block map cache should be increased accordingly.
+System Configuration
+Ensure that your CPU is running at its highest performance setting.
+Disable frequency scaling if possible using the BIOS configuration or the Linux cpupower
+utility.
+Enable Turbo mode if possible to achieve maximum throughput. Turbo mode introduces
+some variability in test results, but performance will meet or exceed that of testing without
+Turbo.
+Linux Configuration
+For disk-based solutions, Linux offers several I/O scheduler algorithms to handle multiple
+read/write requests as they are queued. By default, Red Hat Enterprise Linux uses the CFQ
+(completely fair queuing) scheduler, which arranges requests in a way that improves
+rotational disk (hard disk) access in many situations. We instead suggest using the Deadline
+scheduler for rotational disks, having found that it provides better throughput and latency in
+Red Hat lab testing. Change the device settings as follows:
+# echo "deadline" > /sys/block/device/queue/scheduler
+For flash-based solutions, the noop scheduler demonstrates superior random access
+throughput and latency in Red Hat lab testing. Change the device settings as follows:
+# echo "noop" > /sys/block/device/queue/scheduler
+Storage device configuration
+File systems (ext4, XFS, etc.) may have unique impacts on performance; they often skew
+performance measurements, making it harder to isolate VDO's impact on the results. If
+reasonable, we recommend measuring performance on the raw block device. If this is not
+possible, format the device using the file system that would be used in the target implementation.
+30.2.6. VDO Internal Structures
+We believe that a general understanding of VDO mechanisms is essential for a complete and successful
+evaluation. This understanding becomes especially important when testers wish to deviate from the test
+plan or devise new stimuli to emulate a particular application or use case. For more information, see
+Chapter 29, VDO Integration.
+The Red Hat test plan was written to operate with a default VDO configuration. When developing new
+tests, some of the VDO parameters listed in the next section must be adjusted.
+CHAPTER 30. VDO EVALUATION
+307
+
+30.2.7. VDO Optimizations
+High Load
+Perhaps the most important strategy for producing optimal performance is determining the best I/O
+queue depth, a characteristic that represents the load on the storage system. Most modern storage
+systems perform optimally with high I/O depth. VDO's performance is best demonstrated with many
+concurrent requests.
+Synchronous vs. Asynchronous Write Policy
+VDO might operate with either of two write policies, synchronous or asynchronous. By default, VDO
+automatically chooses the appropriate write policy for your underlying storage device.
+When testing performance, you need to know which write policy VDO selected. The following command
+shows the write policy of your VDO volume:
+# vdo status --name=my_vdo
+For more information on write policies, see the section called "Overview of VDO Write Policies" and
+Section 29.4.2, "Selecting VDO Write Modes".
+Metadata Caching
+VDO maintains a table of mappings from logical block addresses to physical block addresses, and VDO
+must look up the relevant mapping when accessing any particular block. By default, VDO allocates
+128 MB of metadata cache in DRAM to support efficient access to 100 GB of logical space at a time. The
+test plan generates workloads appropriate to this configuration option.
+Working sets larger than the configured cache size will require additional I/Os to service requests, in
+which case performance degradation will occur. If additional memory is available, the block map cache
+should be made larger. If the working set is larger than what the block map cache can hold in memory,
+additional I/O hover head can occur to lookup associated block map pages.
+VDO Multithreading Configuration
+VDO's thread configuration must be tuned to achieve optimal performance. Review the VDO Integration
+Guide for information on how to modify these settings when creating a VDO volume. Contact your
+Red Hat Sales Engineer to discuss how to design a test to find the optimal setting.
+Data Content
+Because VDO performs deduplication and compression, test data sets must be chosen to effectively
+exercise these capabilities.
+30.2.8. Special Considerations for Testing Read Performance
+When testing read performance, these factors must be considered:
+1. If a 4 KB block has never been written, VDO will not perform I/O to the storage and will
+immediately respond with a zero block.
+2. If a 4 KB block has been written but contains all zeros, VDO will not perform I/O to the storage
+and will immediately respond with a zero block.
+Storage Administration Guide
+308
+
+This behavior results in very fast read performance when there is no data to read. This makes it
+imperative that read tests prefill with actual data.
+30.2.9. Cross Talk
+To prevent one test from affecting the results of another, it is suggested that a new VDO volume be
+created for each iteration of each test.
+30.3. DATA EFFICIENCY TESTING PROCEDURES
+Successful validation of VDO is dependent upon following a well-structured test procedure. This section
+provides a series of steps to follow, along with the expected results, as examples of tests to consider
+when participating in an evaluation.
+Test Environment
+The test cases in the next section make the following assumptions about the test environment:
+One or more Linux physical block devices are available.
+The target block device (for example, /dev/sdb) is larger than 512 GB.
+Flexible I/O Tester (fio) version 2.1.1 or later is installed.
+VDO is installed.
+The following information should be recorded at the start of each test in order to ensure that the test
+environment is fully understood:
+The Linux build used, including the kernel build number.
+A complete list of installed packages, as obtained from the rpm -qa command.
+Complete system specifications:
+CPU type and quantity (available in /proc/cpuinfo).
+Installed memory and the amount available after the base OS is running (available in 
+/proc/meminfo).
+Type(s) of drive controller(s) used.
+Type(s) and quantity of disk(s) used.
+A complete list of running processes (from ps aux or a similar listing).
+Name of the Physical Volume and the Volume Group created for use with VDO (pvs and vgs
+listings).
+File system used when formatting the VDO volume (if any).
+Permissions on the mounted directory.
+Contents of /etc/vdoconf.yaml.
+Location of the VDO files.
+CHAPTER 30. VDO EVALUATION
+309
+
+You can capture much of the required information by running sosreport.
+Workloads
+Effectively testing VDO requires the use of data sets that simulate real world workloads. The data sets
+should provide a balance between data that can be deduplicated and/or compressed and data that
+cannot in order to demonstrate performance under different conditions.
+There are several tools that can synthetically generate data with repeatable characteristics. Two utilities
+in particular, VDbench and fio, are recommended for use during testing.
+This guide uses fio. Understanding the arguments is critical to a successful evaluation:
+Table 30.1. fio Options
+Argument
+Description
+Value
+--size
+The quantity of data fio will send to the target per job (see 
+numjobs below).
+100 GB
+--bs
+The block size of each read/write request produced by fio.
+Red Hat recommends a 4 KB block size to match VDO's 4 KB
+default
+4k
+--numjobs
+The number of jobs that fio will create to run the benchmark.
+Each job sends the amount of data specified by the --size
+parameter.
+The first job sends data to the device at the offset specified
+by the --offset parameter. Subsequent jobs write the
+same region of the disk (overwriting) unless the 
+-​-​offset_increment parameter is provided, which will
+offset each job from where the previous job began by that
+value. To achieve peak performance on flash at least two
+jobs are recommended. One job is typically enough to
+saturate rotational disk (HDD) throughput.
+1 (HDD)
+2 (SSD)
+--thread
+Instructs fio jobs to be run in threads rather than being forked,
+which may provide better performance by limiting context
+switching.
+<N/A>
+--ioengine
+There are several I/O engines available in Linux that are able
+to be tested using fio. Red Hat testing uses the asynchronous
+unbuffered engine (libaio). If you are interested in another
+engine, discuss that with your Red Hat Sales Engineer.
+The Linux libaio engine is used to evaluate workloads in
+which one or more processes are making random requests
+simultaneously. libaio allows multiple requests to be
+made asynchronously from a single thread before any data
+has been retrieved, which limits the number of context
+switches that would be required if the requests were provided
+by manythreads via a synchronous engine.
+libaio
+Storage Administration Guide
+310
+
+--direct
+When set, direct allows requests to be submitted to the
+device bypassing the Linux Kernel's page cache.
+Libaio Engine: libaio must be used with direct enabled
+(=1) or the kernel may resort to the sync API for all I​/​O
+requests.
+1 (libaio)
+--iodepth
+The number of I​/​O buffers in flight at any time.
+A high iodepth will usually increase performance,
+particularly for random reads or writes. High depths ensure
+that the controller always has requests to batch. However,
+setting iodepth too high (greater than 1K, typically) may
+cause undesirable latency. While Red Hat recommends an 
+iodepth between 128 and 512, the final value is a trade-off
+and depends on how your application tolerates latency.
+128
+(minimum)
+--
+iodepth_batch_submi
+t
+The number of I/Os to create when the iodepth buffer pool
+begins to empty. This parameter limits task switching from
+I​/​O to buffer creation during the test.
+16
+--
+iodepth_batch_compl
+ete
+The number of I/Os to complete before submitting a batch
+(iodepth_batch_complete). This parameter limits task
+switching from I​/​O to buffer creation during the test.
+16
+--gtod_reduce
+Disables time-of-day calls to calculate latency. This setting
+will lower throughput if enabled (=0), so it should be enabled
+(=1) unless latency measurement is necessary.
+1
+Argument
+Description
+Value
+30.3.1. Configuring a VDO Test Volume
+1. Create a VDO Volume with a Logical Size of 1 TB on a 512 GB Physical Volume
+1. Create a VDO volume.
+To test the VDO async mode on top of synchronous storage, create an asynchronous
+volume using the --writePolicy=async option:
+# vdo create --name=vdo0 --device=/dev/sdb \
+             --vdoLogicalSize=1T --writePolicy=async --verbose
+To test the VDO sync mode on top of synchronous storage, create a synchronous volume
+using the --writePolicy=sync option:
+# vdo create --name=vdo0 --device=/dev/sdb \
+             --vdoLogicalSize=1T --writePolicy=sync --verbose
+2. Format the new device with an XFS or ext4 file system.
+For XFS:
+CHAPTER 30. VDO EVALUATION
+311
+
+# mkfs.xfs -K /dev/mapper/vdo0
+For ext4:
+# mkfs.ext4 -E nodiscard /dev/mapper/vdo0
+3. Mount the formatted device:
+# mkdir /mnt/VDOVolume
+# mount /dev/mapper/vdo0 /mnt/VDOVolume && \
+  chmod a+rwx /mnt/VDOVolume
+30.3.2. Testing VDO Efficiency
+2. Test Reading and Writing to the VDO Volume
+1. Write 32 GB of random data to the VDO volume:
+$ dd if=/dev/urandom of=/mnt/VDOVolume/testfile bs=4096 
+count=8388608
+2. Read the data from the VDO volume and write it to another location not on the VDO volume:
+$ dd if=/mnt/VDOVolume/testfile of=/home/user/testfile bs=4096
+3. Compare the two files using diff, which should report that the files are the same:
+$ diff -s /mnt/VDOVolume/testfile /home/user/testfile
+4. Copy the file to a second location on the VDO volume:
+$ dd if=/home/user/testfile of=/mnt/VDOVolume/testfile2 bs=4096
+5. Compare the third file to the second file. This should report that the files are the same:
+$ diff -s /mnt/VDOVolume/testfile2 /home/user/testfile
+3. Remove the VDO Volume
+1. Unmount the file system created on the VDO volume:
+# umount /mnt/VDOVolume
+2. Run the command to remove the VDO volume vdo0 from the system:
+# vdo remove --name=vdo0
+3. Verify that the volume has been removed. There should be no listing in vdo list for the VDO
+partition:
+Storage Administration Guide
+312
+
+# vdo list --all | grep vdo
+4. Measure Deduplication
+1. Create and mount a VDO volume following Section 30.3.1, "Configuring a VDO Test Volume".
+2. Create 10 directories on the VDO volume named vdo1 through vdo10 to hold 10 copies of the
+test data set:
+$ mkdir /mnt/VDOVolume/vdo{01..10}
+3. Examine the amount of disk space used according to the file system:
+$ df -h /mnt/VDOVolume
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vdo0      1.5T  198M  1.4T   1% /mnt/VDOVolume
+Consider tabulating the results in a table:
+Statistic
+Bare File System
+After Seed
+After 10
+Copies
+File System Used Size
+198 MB
+ 
+ 
+VDO Data Used
+ 
+ 
+ 
+VDO Logical Used
+ 
+ 
+ 
+4. Run the following command and record the values. "Data blocks used" is the number of blocks
+used by user data on the physical device running under VDO. "Logical blocks used" is the
+number of blocks used before optimization. It will be used as the starting point for measurements
+# vdostats --verbose | grep "blocks used"
+data blocks used                : 1090
+overhead blocks used            : 538846
+logical blocks used             : 6059434
+5. Create a data source file in the top level of the VDO volume
+$ dd if=/dev/urandom of=/mnt/VDOVolume/sourcefile bs=4096 
+count=1048576
+4294967296 bytes (4.3 GB) copied, 540.538 s, 7.9 MB/s
+6. Re-examine the amount of used physical disk space in use. This should show an increase in the
+number of blocks used corresponding to the file just written:
+$ df -h /mnt/VDOVolume
+CHAPTER 30. VDO EVALUATION
+313
+
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vdo0      1.5T  4.2G  1.4T   1% /mnt/VDOVolume
+# vdostats --verbose | grep "blocks used"
+data blocks used                : 1050093 (increased by 4GB)
+overhead blocks used            : 538846 (Did not change)
+logical blocks used             : 7108036 (increased by 4GB)
+7. Copy the file to each of the 10 subdirectories:
+$ for i in {01..10}; do
+  cp /mnt/VDOVolume/sourcefile /mnt/VDOVolume/vdo$i
+  done
+8. Once again, check the amount of physical disk space used (data blocks used). This number
+should be similar to the result of step 6 above, with only a slight increase due to file system
+journaling and metadata:
+$ df -h /mnt/VDOVolume
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/mapper/vdo0      1.5T   45G  1.3T   4% /mnt/VDOVolume
+# vdostats --verbose | grep "blocks used"
+data blocks used                : 1050836 (increased by 3M)
+overhead blocks used            : 538846
+logical blocks used             : 17594127 (increased by 41G)
+9. Subtract this new value of the space used by the file system from the value found before writing
+the test data. This is the amount of space consumed by this test from the file system's
+perspective.
+10. Observe the space savings in your recorded statistics:
+Note:In the following table, values have been converted to MB/GB. vdostats "blocks" are 4,096
+B.
+Statistic
+Bare File System
+After Seed
+After 10
+Copies
+File System Used Size
+198 MB
+4.2 GB
+45 GB
+VDO Data Used
+4 MB
+4.1 GB
+4.1 GB
+VDO Logical Used
+23.6 GB*
+27.8 GB
+68.7 GB
+* File system overhead for 1.6 TB formatted drive
+Storage Administration Guide
+314
+
+5. Measure Compression
+1. Create a VDO volume of at least 10 GB of physical and logical size. Add options to disable
+deduplication and enable compression:
+# vdo create --name=vdo0 --device=/dev/sdb \
+             --vdoLogicalSize=10G --verbose \
+             --deduplication=disabled --compression=enabled
+2. Inspect VDO statistics before transfer; make note of data blocks used and logical blocks used
+(both should be zero):
+# vdostats --verbose | grep "blocks used"
+3. Format the new device with an XFS or ext4 file system.
+For XFS:
+# mkfs.xfs -K /dev/mapper/vdo0
+For ext4:
+# mkfs.ext4 -E nodiscard /dev/mapper/vdo0
+4. Mount the formatted device:
+# mkdir /mnt/VDOVolume
+# mount /dev/mapper/vdo0 /mnt/VDOVolume && \
+  chmod a+rwx /mnt/VDOVolume
+5. Synchronize the VDO volume to complete any unfinished compression:
+# sync && dmsetup message vdo0 0 sync-dedupe
+6. Inspect VDO statistics again. Logical blocks used — data blocks used is the number of 4 KB
+blocks saved by compression for the file system alone. VDO optimizes file system overhead as
+well as actual user data:
+# vdostats --verbose | grep "blocks used"
+7. Copy the contents of /lib to the VDO volume. Record the total size:
+# cp -vR /lib /mnt/VDOVolume
+...
+sent 152508960 bytes  received 60448 bytes  61027763.20 bytes/sec
+total size is 152293104  speedup is 1.00
+8. Synchronize Linux caches and the VDO volume:
+# sync && dmsetup message vdo0 0 sync-dedupe
+CHAPTER 30. VDO EVALUATION
+315
+
+9. Inspect VDO statistics once again. Observe the logical and data blocks used:
+# vdostats --verbose | grep "blocks used"
+Logical blocks used - data blocks used represents the amount of space used (in units of
+4 KB blocks) for the copy of your /lib files.
+The total size (from the table in the section called "4. Measure Deduplication") - (logical
+blocks used-data blocks used * 4096) = bytes saved by compression.
+10. Remove the VDO volume:
+# umount /mnt/VDOVolume && vdo remove --name=vdo0
+6. Test VDO Compression Efficiency
+1. Create and mount a VDO volume following Section 30.3.1, "Configuring a VDO Test Volume".
+2. Repeat the experiments in the section called "4. Measure Deduplication" and the section called
+"5. Measure Compression" without removing the volume. Observe changes to space savings in 
+vdostats.
+3. Experiment with your own datasets.
+7. Understanding TRIM and DISCARD
+Thin provisioning allows a logical or virtual storage space to be larger than the underlying physical
+storage. Applications such as file systems benefit from running on the larger virtual layer of storage, and
+data-efficiency techniques such as data deduplication reduce the number of physical data blocks needed
+to store all of the data. To benefit from these storage savings, the physical storage layer needs to know
+when application data has been deleted.
+Traditional file systems did not have to inform the underlying storage when data was deleted. File
+systems that work with thin provisioned storage send TRIM or DISCARD commands to inform the storage
+system when a logical block is no longer required. These commands can be sent whenever a block is
+deleted using the discard mount option, or these commands can be sent in a controlled manner by
+running utilities such as fstrim that tell the file system to detect which logical blocks are unused and
+send the information to the storage system in the form of a TRIM or DISCARD command.
+To see how this works:
+1. Create and mount a new VDO logical volume following Section 30.3.1, "Configuring a VDO Test
+Volume".
+2. Trim the file system to remove any unneeded blocks (this may take a long time):
+# fstrim /mnt/VDOVolume
+3. Record the initial state in following table below by entering:
+$ df -m /mnt/VDOVolume
+to see how much capacity is used in the file system, and run vdostats to see how many physical
+and logical data blocks are being used.
+Storage Administration Guide
+316
+
+4. Create a 1 GB file with non-duplicate data in the file system running on top of VDO:
+$ dd if=/dev/urandom of=/mnt/VDOVolume/file bs=1M count=1K
+and then collect the same data. The file system should have used an additional 1 GB, and the
+data blocks used and logical blocks used have increased similarly.
+5. Run fstrim /mnt/VDOVolume and confirm that this has no impact after creating a new file.
+6. Delete the 1 GB file:
+$ rm /mnt/VDOVolume/file
+Check and record the parameters. The file system is aware that a file has been deleted, but
+there has been no change to the number of physical or logical blocks because the file deletion
+has not been communicated to the underlying storage.
+7. Run fstrim /mnt/VDOVolume and record the same parameters. fstrim looks for free
+blocks in the file system and sends a TRIM command to the VDO volume for unused addresses,
+which releases the associated logical blocks, and VDO processes the TRIM to release the
+underlying physical blocks.
+Step
+File Space Used (MB)
+Data Blocks Used
+Logical Blocks Used
+Initial
+ 
+ 
+ 
+Add 1 GB File
+ 
+ 
+ 
+Run fstrim
+ 
+ 
+ 
+Delete 1 GB File
+ 
+ 
+ 
+Run fstrim
+ 
+ 

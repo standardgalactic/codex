@@ -1,0 +1,1000 @@
+In the next step, let's use the head command in order to see some of the data. Here is the command:
+head(dat)
+With the dplyr package, we can filter data so that we only see the data that we would like to see. For example, for the World Development Indicators (WDI) data, we may wish to see data that is labeled for the whole world. This means that it would match the word WORLD. In the next command, we can see the filtered data. The filter command looks for data that matches the condition in the code. In this example, the data is scanned for rows where the region is shown to be set to world:
+dat[dat$Major.area..region..country.or.area.. == "WORLD"]
+When we use the slice command, we can see that the data is shown for the rows that you specify in the command line.This means that we can slice this data so that it only shows data that appears within the number of rows by position. In this example, we restrict the slice command so that it shows only the first three lines of code. The slice command is nice and neat. In contrast, if we were to rewrite the slice command into the corresponding command in R, the command would be less readable and it would be much longer.We can also reorder data by using the arrange command. This piece of code will order the data along the lines of the columns that is stated in the function's arguments. So, for example, the following code will reorder the data using the Country.code column:
+arrange(dat, Country.code)
+We can also choose columns by using the select command. This command specifies which columns we would like to return. It allows us to rename the column names using variables, using the named arguments specified in the piece of code. Here is an example, where some of the column names are renamed.However, the select command drops all the variables that are not explicitly stated in the code. Unfortunately, this renders the select command to be not that useful. Instead, we can use the rename command to achieve the same thing as the select command, but the variables are all retained, whether they are explicitly stated or not. Here is an example of the rename command in use:
+rename(dat,Index =Index,Variant=Variant,region=Major.area..region..country.or.area.., Notes=Notes, Countrycode=Country.code )
+The select command is very useful when it is combined with the distinct command. The distinct command is designed to return the unique values in a data frame. The select command is used to retrieve data for the specified columns, and it is combined with the distinct command to return the unique values for the selected columns in a data frame. Here is an example where we use the select and distinct commands together, and the results are assigned to a variable called sampledat:
+sampledat <- distinct(select(dat,Index,Variant,region=Major.area..region..country.or.area.., Notes, Countrycode=Country.code, X2015=X2015, X2016=X2016, X2017=X2017 ) )
+Let's take a look at the output of the sampledat variable using the head command:
+head(sampledat)
+Output of sample data Now, let's repeat the command for the first 20 years in the dataset, from 2015 until 2035. To do this, we will execute a piece of code, which does the following things:It selects the relevant columns, and renames some of the columns so that they are more readable. The year column names are renamed to remove the letter X prefix, and the year names are turned into characters by virtue of being enclosed in quotation marks. Then, the code assigns the result to a variable called distinctdat:
+distinctdat <- distinct(select(dat,Index=Index,Variant=Variant,Region=Major.area..region..country.or.area.., Notes, Countrycode=Country.code,
+"2015"=X2015, "2016"=X2016,"2017"=X2017,"2018"=X2018,"2019"=X2019,"2020"=X2020,
+"2021"=X2021,"2022"=X2022,"2023"=X2023,"2024"=X2024,"2025"=X2025,"2026"=X2026,"2027"=X2027,"2028"=X2028,"2029"=X2029,
+"2030"=X2030,"2031"=X2031,"2032"=X2032,"2033"=X2033,"2034"=X2034,"2035"=X2035))
+Let's take a look at the resulting data, which is stored in the distinctdat variable, using the previous head command:
+head(distinctdat)
+This is an excerpt of the result set, contained in the distinctdat variable:Result set showing erroneous data format In the column headed 2015, it's possible to see that the values contain spaces. If we were to write this data to a CSV file, only the numbers after the space would be written to the file. This means that we will need to do something about the spaces before that point.We could use a substitution command, such as gsub, to remove the spaces for every year, from 2015 right through to 2035. However, this would mean repeating the command for each year. We could also write a function for this purpose, and call it for every year.Although this method would work, the resulting data would not appear nicely in Tableau. The reason for this is that each year is still treated separately, even though the actual metric is the same. Ideally, it's better to unpivot the data.Unpivoting columns creates an attribute column for each selected column heading and a value column for each column cell value. The attribute-value pair columns are inserted after the last column. In R, we can unpivot data using the melt command.In our example, we would like to unpivot the data held in the distinctdat variable along the attribute columns, which are Index, Variant, Region, Notes, and Countrycode. The other rows, which hold the data from 2015 to the year 2035, would all be placed into two columns. One column will hold the year, and the other column will hold the value of the projected world population. This unpivot result is achieved with the following code:
+melteddata <- melt(distinctdat, id=c("Index","Variant","Region","Notes","Countrycode"))
+In the preceding example, each date column becomes a row with an attribute column containing the date value and a value column containing the date column value. So, if we run the preceding command, then data is stored in the melteddata variable.If we slice the melteddata variable, then we can see the results more clearly: From the preceding example code output, we can see that the year data now appears in the variable column. The population count data is now held in the value column.Now it's possible to work with the value column in order to remove the spaces. Before we do that, let's tidy up the column names so that further code will be more readable.Since we looked at rename earlier, let's look at a different way of achieving the same thing, whilst showing the different functionality of dplyr. We can add a new year column, to hold the year data. Also, we can add a new column called populationcount, which is a duplicate of the value column. We can do this simply by running the following commands to create new columns:
+melteddata$PopulationCount <- melteddata$value
+melteddata$Year <- melteddata$variable
+Then, we can use the select command in dplyr to select the rest of the columns, removing the value column:
+melteddata <- select(melteddata, select=-value, -variable)
+This piece of code means that all of the columns held in the melteddata variable are selected except the value and variable columns, which are denoted with the minus in front of them. The remaining columns are assigned to the melteddata variable. We can use the slice command again to see what's contained in the melteddata variable, and you can see an example output as follows:Renamed output Let's move forward to work with the PopulationCount data, so that we can remove the spaces. In order to do that, we will use the gsub pattern matching and replacement mechanism. The gsub function replaces all occurrences of a particular pattern in a string.In order to use gsub, we have to specify that the data is a factor. The following code takes care of the conversion:
+melteddata$PopulationCount <- as.factor(melteddata$PopulationCount)
+The piece of code as.factor does the conversion part. It is more efficient than using strings. Factors can be used in statistical modeling, where they will be assigned the correct number of the degrees of freedom. Factors are also very useful when we are working with graphics in Tableau, because they will be easy for the business users to understand and use in their own analyses. As before, the new data is assigned to the old variable name.In the following piece of code, we will use gsub for the substitution process. It will replace every instance of a space with nothing, thereby removing the spaces. Then, the changes will be assigned back to the PopulationCount column. The code is given as follows:
+melteddata$PopulationCount <- gsub(" ","",melteddata$PopulationCount)
+Once the spaces have been removed, let's change the data type back so that it is a numeric data type. Down the line, this means that the output is more likely to be recognized as a number by Tableau. For users, it will be easier for them to work with the data if it is presented to them conveniently, so that they can start to get insights at the earliest. Although Tableau makes it easy for business users to change data types, users prefer not to have any impedance in their way when working with data. The command is as follows:
+melteddata$PopulationCount <- as.numeric(melteddata$PopulationCount)
+We can slice the data again, in order to see how it looks now:Completed dataset Once we have fixed our data, we can look at other activities on the data, such as grouping the data. We can use the summarise command in order to group the data. In this example, we are grouping the data so that we have the overall population mean. We have a variable called OverallPopulationmean, and it contains the overall count of rows, along with the mean of population. Here is the example code:
+OverallPopulationmean <- summarise(melteddata, count=n(), 
+                                   OverallPopulationmean = mean(melteddata$PopulationCount, na.rm=TRUE))
+The result is given here:
+  count OverallPopulationmean
+1  5733              249386.9
+However, this isn't an accurate picture, because we know that the data itself contains both summary and detail data. Let's write the data to a CSV file, and we can explore it further in Tableau:
+write.csv(melteddata, "melteddata.csv")
+When we import the cleansed data into Tableau, we can filter the data so that we can simply see the Region data. Here is an example worksheet:Sample Tableau Workbook with cleansed data We have nice, clean line charts, which explain the message of the data. According to the projections, there is a steep projected rise in Africa, with a slight fall off in Europe.What would happen if we hadn't cleansed the data? Well, let's give Tableau the dirty dataset, and let's see what happens.We can import the CSV file straight from the World Data Bank website, and into Tableau. The first thing that we notice is that instead of having a nice Year dimension, all of the years appear as individual dimensions. Here is an example:Tableau import of the Years as individual dimensions Unfortunately, this makes the data very difficult to navigate. The Tableau user would have to drag each year to the canvas. In the following example, let's take across the years from 2015 to 2030. Now let's see what happens:Tableau import of the dirty data We can see here that the results are almost impossible for Tableau to visualize. The data is difficult for Tableau to interpret, and this result isn't going to be a good experience for the end users.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+Data science requires a process to ensure that the project is successful. As we have seen from the previous frameworks, it requires many moving parts from the extraction of timely data from diverse data sources, building and testing the models, and then deploying those models to aid in or to automate day-to-day decision making processes. Otherwise, the project can easily fall through the gaps in this data so that the organization is right where they started: data rich, information poor.
+In this example, we have covered the CRISP-DM methodology and the TDSP methodology. Each of these stages has the data preparation stage clearly marked out. In order to follow this sequence, we have started with a focus on the data preparation stage using the dplyr package in R. We have cleaned some data and compared the results between the dirty and clean data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 4. Prediction with R and Tableau Using Regression
+
+
+
+In this chapter, we will consider regression from an analytics point of view. We will look at the predictive capabilities and performance of regression algorithms, which is a great start for the analytics program. At the end of this chapter, you'll have experience in simple linear regression, multi-linear regression, and k-Nearest Neighbors regression using a business-oriented understanding of the actual use cases of the regression techniques.
+We will focus on preparing, exploring, and modeling the data in R, combined with the visualization power of Tableau in order to express the findings in the data.
+Some interesting datasets come from the UCI machine learning datasets, which can be obtained from the following link: https://archive.ics.uci.edu/ml/datasets.html.
+During the course of this chapter, we will use datasets that are obtained from the UCI website, in addition to default R datasets.
+
+
+
+
+
+
+
+
+
+
+Getting started with regressionRegression means the unbiased prediction of the conditional expected value, using independent variables, and the dependent variable. A dependent variable is the variable that we want to predict. Examples of a dependent variable could be a number such as price, sales, or weight. An independent variable is a characteristic, or feature, that helps to determine the dependent variable. So, for example, the independent variable of weight could help to determine the dependent variable of weight.Regression analysis can be used in forecasting, time series modeling, and cause and effect relationships.
+
+
+
+
+
+
+
+
+
+
+Simple linear regressionR can help us to build prediction stories with Tableau. Linear regression is a great starting place when you want to predict a number, such as profit, cost, or sales. In simple linear regression, there is only one independent variable x, which predicts a dependent value, y.Simple linear regression is usually expressed with a line that identifies the slope that helps us to make predictions. So, if sales = x and profit = y, what is the slope that allows us to make the prediction? We will do this in R to create the calculation, and then we will repeat it in R. We can also color-code it so that we can see what is above and what is below the slope.Using lm() to conduct a simple linear regressionWhat is linear regression? Linear regression has the objective if finding a model that fits a regression line through the data well, whilst reducing the discrepancy, or error, between the data and the regression line. If the regression model is significant, it will be able to account for the error, and the regression line will fit the data better because it will minimize the error. The error is also known as the residuals, and it is measured as the sum of squared errors of error, which is sometimes abbreviated to SSE. It is calculated as the model's deviations predicted from actual empirical values of data. In practice, a small error amount, or SSE, indicates that the data is a close match to the model.NoteIn order to do regression, we need to measure the y distance of each of the points from a line of best fit and then sum the error margin (that is, the distance to the line).We are trying to predict the line of best fit between one or many variables from a scatter plot of points of data. To find the line of best fit, we need to calculate a couple of things about the line. We can use the lm() function to obtain the line, which we can call m:We need to calculate the slope of the line mWe also need to calculate the intercept with the y axis cSo we begin with the equation of the line:
+y = mx + c
+To get the line, we use the concept of Ordinary Least Squares (OLS). This means that we sum the square of the y-distances between the points and the line. Furthermore, we can rearrange the formula to give us beta (or m) in terms of the number of points n, x, and y. This would assume that we can minimize the mean error with the line and the points. It will be the best predictor for all of the points in the training set and future feature vectors.Let's start with a simple example in R, where we predict women's weight from their height. If we were articulating this question per Microsoft's Team Data Science Process, we would be stating this as a business question during the business understanding phase. How can we come up with a model that helps us to predict what the women's weight is going to be, dependent on their height?Using this business question as a basis for further investigation, how do we come up with a model from the data, which we could then use for further analysis? Simple linear regression is about two variables, an independent and a dependent variable, which is also known as the predictor variable. With only one variable, and no other information, the best prediction is the mean of the sample itself. In other words, when all we have is one variable, the mean is the best predictor of any one amount. The first step is to collect a random sample of data. In R, we are lucky to have sample data that we can use.To explore linear regression, we will use the women dataset, which is installed by default with R. The variability of the weight amount can only be explained by the weights themselves, because that is all we have.To conduct the regression, we will use the lm function, which appears as follows:
+model <- lm(y ~ x, data=mydata)
+To see the women dataset, open up RStudio. When we type in the variable name, we will get the contents of the variable. In this example, the variable name women will give us the data itself.The women's height and weight are printed out to the console, and here is an example:
+> women
+When we type in this variable name, we get the actual data itself, which we can see next: We can visualize the data quite simply in R, using the plot(women) command. The plot command provides a quick and easy way of visualizing the data. Our objective here is simply to see the relationship of the data.The results appear as follows: Now that we can see the relationship of the data, we can use the summary command to explore the data further:
+summary(women)
+This will give us the results, which are given here as follows: Let's look at the results in closer detail: Next, we can create a model that will use the lm function to create a linear regression model of the data. We will assign the results to a model called linearregressionmodel, as follows:
+linearregressionmodel <- lm(weight ~ height, data=women)
+What does the model produce? We can use the summary command again, and this will provide some descriptive statistics about the lm model that we have generated. One of the nice, understated features of R is its ability to use variables. Here we have our variable, linearregressionmodel - note that one word is storing a whole model!
+summary(linearregressionmodel)
+How does this appear in the R interface? Here is an example: What do these numbers mean? Let's take a closer look at some of the key numbers.
+
+
+
+
+
+
+
+
+
+
+CoefficientsWhat are coefficients? It means that one change in x causes an expected change in y. Here is how it looks in R: We can see that the values of coefficients are given as -87.51667 and 3.45000. It means that one unit change in x, the weight, causes a -87.51667 unit change in the expected value of y, the height.If we were to write this as an equation, the general model could be written as follows:
+y = a + b x
+This means that our prediction equation for the linearregressionmodel model is as follows:
+Linearregressionmodel = -87.52 + (3.45 * height)
+We can get this information another way in R. We can see the coefficients by simply using the variable name linearregressionmodel, which outputs the result as follows: 
+
+
+
+
+
+
+
+
+
+
+Residual standard errorIn the output, residual standard error is cost, which is 1.525.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Comparing actual values with predicted results
+
+
+
+Now, we will look at real values of weight of 15 women first and then will look at predicted values. Actual values of weight of 15 women are as follows, using the following command:
+
+
+women$weight
+
+
+When we execute the women$weight command, this is the result that we obtain:
+
+
+
+ 
+When we look at the predicted values, these are also read out in R:
+
+
+
+ 
+How can we put these pieces of data together?
+
+
+women$pred <- linearregressionmodel$fitted.values
+
+
+This is a very simple merge. When we look inside the women variable again, this is the result:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+Investigating relationships in the dataWe can see the column names in the model by using the names command. In our example, it will appear as follows:
+names(linearregressionmodel)
+When we use this command, we get the following columns:
+[1] "coefficients"  "residuals"     "effects"      
+[4] "rank"          "fitted.values" "assign"       
+[7] "qr"            "df.residual"   "xlevels"      
+[10] "call"          "terms"         "model"  
+We can identify the relationship between height and weight, by calculating the correlation. To do this, we can use Pearson's correlation coefficient, which is a measure of the linear correlation between two variables X and Y. It produces a result in the form of a value between +1 and −a inclusive, where 1 is a total positive correlation, 0 is no correlation, and -1 shows a perfect negative correlation. This value is known as Pearson's R.In this example, we can use the cor function to compute Pearson's correlation coefficient. In our example, it appears as follows:
+rmodel <- cor(weight,height)
+We can see the result of the model by using the following command:
+rmodel^2
+We get the result of Pearson's R as follows:
+0.9910098
+This shows a high positive correlation between height and weight. We can find out more information by using the plot command, which will provide us with four visualizations in R. The command appears as follows:
+plot(linearregression)
+In order to assess the efficiency of the model in explaining the data, R provides us with four plots, which are tabulated as follows:
+Plot Name
+
+Purpose
+
+Sample Plot
+
+Residuals versus Leverage
+
+This is a measure of the importance of determining the regression result. Cook's distance measures the importance of each observation to the regression line. Large distances indicate an outlier.
+
+
+
+Residuals versus Fitted
+
+Residual error plotted against their fitted values. The residuals should be distributed randomly along the horizontal line, marked at zero. This line identifies a residual error of zero, and it makes it easier to see the residual error. There should be no trend here.
+
+
+
+Normal Q-Q
+
+Identifies if the residuals are normally distributed.
+
+
+
+Scale-Location
+
+This shows the square root of the relative error. There should be no trend here.
+
+
+
+
+
+
+
+
+
+
+
+
+Replicating our results using R and Tableau togetherIn this topic, let's get to work! Now that we have done some analysis and data visualisation in R, we will replicate our results using R and Tableau together. In the screenshot, we can see the index, original height, and original weight along with the Predicted amount. In the first row, we can see that the weight was 115 pounds, and the predicted amount was 112.6 pounds.In Tableau, the calculation is gained using the Calculation Editor. An example is shown in the following screenshot: As we have done with height, we are also going to going to create the calculation for weight as seen in the following screenshot: When these calculated fields have been created, you can create the calculated field that holds the R calculation. The following screenshot will show a diagram of this field: Once the calculated fields have been created, you can drag the fields onto the canvas.So we can calculate the correlation for all the fields, we need an index. Move index to the Dimensions tab by dragging it up from the Measures tab:
+Create a formula for R
+SCRIPT_REAL("cor(.arg1, .arg2)", 
+([HeightSum]), ([WeightSum]) )
+Then, drag HeightSum to Columns.Next, drag WeightSum to Rows.To show all of the marks, Add Index to the Detail Mark.Add Correlation to the Detail Mark. Here is an example: When we look to see what the Correlation field is showing now, we can see that it isn't holding anything. How can we resolve that issue? Now, we need to fix the calculated field holding the R formula. It will need to be configured to show the correct settings for the calculation.Our correlation is happening at the table level. However, in order to ensure that all data points are included in the correlation, we are going to specify here that the Index column is included. This means that all data points are included. Here is an example: Once we have done all of these steps, we can see that the Correlation field is now populated with a very high population. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Getting started with multiple regression?
+
+
+
+Simple linear regression will summarize the relationship between an outcome and a single explanatory element. However, in real life, things are not always so simple! We are going to use the adult dataset from UCI, which focuses on census data with a view to identifying if adults earn above or below fifty thousand  dollars a year. The idea is that we can build a model from observations of adult behavior, to see if the individuals earn above or below fifty thousand  dollars a year.
+Multiple regression builds a model of the data, which is used to make predictions. Multiple regression is a scoring model, which makes a summary. It predicts a value between 0 and 1, which means that it is good for predicting probabilities.
+It's possible to imagine multiple regression as modeling the behavior of a coin being tossed in the air. How will the coin land—heads or tails? It is not dependent on just one thing. The reality is that the result will depend on other variables. This score is the probability of the result. In other words, the result of the coin face being heads depends on the other variables, and this score is expressed as a probability. The probability is the resulting, predicted number, which is an additive function of the inputs. The resulting model also gives an indication of the relative impact of each input variable on the output.
+
+
+
+
+
+
+
+
+
+
+Building our multiple regression modelThe first thing we need to do in the model building process is to select a dataset—this should be something that contains a fairly large number of samples (observations). We have selected some datasets here as examples.Once the dataset has been selected, we want to ensure that we can use the dataset to determine something about the business question that we are trying to answer. We are trying to make predictions on the data, so our training set should be in the same shape as the test dataset. A feature is an item that can be used to predict a value in an experiment.Once we have built our model, we can accurately test the predictions and see whether our guesses are accurate and then rank the efficiency of our model. At the end of this process, we can evaluate the model and determine whether this is a good fit or not. Ultimately, this could mean changing the way we interact with our data, or perhaps amending the algorithm we use to optimize the efficiency of the model.When we trained our model, we only selected the greater proportion of the dataset. In fact, we can use the rest of the dataset to test whether we can accurately predict a value, and this is the test dataset.Supervised learning is distinct from unsupervised learning, which we'll look at later on in this book. In the domain of supervised learning, we try to predict either a continuous variable, a number, for example, a predicted earning level for adults and other conditions or a class of output that is discrete, such as earning level. In order to do this task, we need two things:The first is features—these will need to be in a form that our machine learning algorithm can process. The mathematical term for this is a vector—so we refer to this as a feature vector.We also need a set of labels—these are generally in text form, but we may need them to be in numeric form, so as part of the input we may have to turn them into a set of numbers that our algorithm can understand.Once we have our features vectors and labels we can feed these into an algorithm that will attempt to build a model from the input data The algorithm produces a training set from part of our input dataset and we can refer to the trained model now—it is important to understand that the model can be continually trained as we discover new things and get new data—machine learning is so powerful because of the feedback cycle involved.Is the model good or bad? How do we evaluate a regression model?
+
+
+
+
+
+
+
+
+
+Confusion matrixOne way of doing this is to build in a confusion matrix from the result. A confusion matrix is a very simple and precise way of summarizing the result. The confusion matrix is a simple table that shows the actual classification against the predicted ones.It will be built from a particular class—in this case, Iris Versicolor.Starting from the top, we derived the following:12 true positives—this means we accurately predicted Iris Versicolor 12 timesThree false positives—this means that we labeled Iris Setosa and Iris Virginica incorrectly as Iris Versicolor three timesSix false negatives—this is the Iris Versicolor that were incorrectly marked as the other two typesNine true negatives—this is the remaining classes that were classified correctly as non-Iris Versicolor typesIn the next example, we will see an example of this scenario in R, and then we can visualize the results in Tableau.
+
+
+
+
+
+
+
+
+
+PrerequisitesThe following items are prerequisites for the exercise:Tableau 10Adult UCI data, which you can obtain from https://archive.ics.uci.edu/ml/datasets/AdultR and RStudio
+
+
+
+
+
+
+
+
+
+InstructionsIn order to proceed, you will need to download the data as follows:Download the CSV file containing the adult UCI data.You will need to do this for the test and also for training data.For the test data, the link is here: https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test.For the training data, the link is here: https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data.Load the CSV file into R, and assign it to the adult variable name. Your code could look like the following segment:adult.training | read.csv (C:/Users/jenst/Downloads/adult.csv)adult.test | read.csv (C:/Users/jenst/Downloads/adulttest.csv)Let's create a binary response variable called y, which will be our dependent variable. It is based on the number of records in the training dataset:
+N.obs <- dim(adult.training)[1]
+y <- rep(0, N.obs)
+
+y[class==levels(class)[2]] <- 1
+Next, we will look at the columns in the dataset, using the summary command:
+summary(adult.training)
+We can use the names command to obtain the column name:
+names(adult.training)
+We can also view some of the data in R, using the head command:
+head(adult.training)
+Now, we will use the glm function in order to create a data model, which we will assign to the adultdatamodel variable:
+## GLM fit
+adultdatamodel <- glm(y ~ age + educationnum + hoursperweek + workclass + maritalstatus + occupation + relationship + race + sex, family=binomial("logit"))
+Once we have obtained the result, we need to check the coefficients, and we will set the results to the tab variable:
+resultstable <- summary(fit)$coefficients
+sorter <- order(resultstable[,4])
+resultstable <- resultstable[sorter,]
+Now, we can move onto the test data, which is assigned to the pred variable:
+pred <- predict(fit, test.data, type="response")
+N.test <- length(pred)
+Next we will use 0.5 as a threshold for the prediction to be successful:
+y.hat <- rep(0, N.test)
+y.hat[pred>=0.5] <- 1
+We can visualize the data in a confusion.table in order to identify the true outcome versus the predicted outcome:
+## Get the true outcome of the test data
+outcome <- levels(test.data$class)
+y.test <- rep(0, N.test)
+y.test[test.data$class==outcome[2]] <- 1
+
+confusion.table <- table(y.hat, y.test)
+colnames(confusion.table) <- c(paste("Actual",outcome[1]), outcome[2])
+rownames(confusion.table) <- c(paste("Predicted",outcome[1]), outcome[2])
+Once we have our confusion table, we can print it out to a CSV file so that we can visualize it in Tableau.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Solving the business question
+
+
+
+What are we trying to do with regression? If you are trying to solve a business question that helps predict probabilities or scoring, then regression is a great place to start. Business problems that require scoring are also known as regression problems. In this example, we have scored the likelihood of the individual earning above or below fifty thousand dollars per annum.
+The main objective is to create a model that we can use on other data, too. The output is a set of results, but it is also an equation that describes the relationship between a number of predictor variables and the response variable.
+
+
+
+
+
+
+
+
+
+
+What do the terms mean?For example, you could try to estimate the probability that a given person earns above or below fifty thousand dollars:Error: The difference between predicted value and true valueResiduals: The residuals are the difference between the actual values of the variable you're predicting and predicted values from your regression--y - ŷFor most regressions, ideally, we want the residuals to look like a normal distribution when plotted. If our residuals are normally distributed, this indicates the mean of the difference between our predictions and the actual values is close to 0 (good) and that when we miss, we're missing both short and long of the actual value, and the likelihood of a miss being far from the actual value gets smaller as the distance from the actual value gets larger.Think of it like a dartboard. A good model is going to hit the bullseye some of the time (but not everytime). When it doesn't hit the bullseye, it's missing in all of the other buckets evenly (not just missing in the 16 bin) and it also misses closer to the bullseye as opposed to on the outer edges of the dartboard.Coefficient of determination/R-squared-how well the model fits the data:The proportion of the variation explained by the model1 is a perfect fitThe term error here represents the difference between the predicted value and the true value. The absolute value or the square of this difference are usually computed to capture the total magnitude of error across all instances, as the difference between the predicted and true values could be negative in some cases. The error metrics measure the predictive performance of a regression model in terms of the mean deviation of its predictions from the true values. Lower error values mean the model is more accurate in making predictions. An overall error metric of 0 means that the model fits the data perfectly.We can then pass in a single feature vector to our trained model and it will return an expected label - you can view this part of the slide in two ways: the first is that it represents a single feature vector - for example, sepal width/length and petal width/length and our output will be the name of an iris plant or we can consider this as the leftover part of our data, usually 20% of it, which is then used to determine how effective our model is by guessing the labels that we already know from our trained model, which will allow us to find out whether we have a model that is good or bad.The coefficient of determination, which is also known as R-squared, is also a standard way of measuring how well the model fits the data. It can be interpreted as the proportion of variation explained by the model. A higher proportion is better in this case, where 1 indicates a perfect fit.Another measure that's useful for these continuous models is Root Mean Square Deviation, or Root Mean Square Error - in this case, we take the square root of the MSE - this will give us a perfect match to the scale of the Y-axis, so it will measure the average error rate in a scale that is a perfect measure of our prediction assessment.
+
+
+
+
+
+
+
+
+
+Understanding the performance of the resultThe p-value is an indicator that determines the result. It tests the theory that there was no difference in the results. In other words, it tests the null hypothesis that the coefficient is equal to zero, which means that, effectively, there is no difference between the items that you are testing.A low p-value is usually denoted as < 0.05, or five percent. The p-value indicates that you can reject the null hypothesis. In other words, this means that the predictor is having an effect on the item that you are predicting, which is also known as the response variable.A predictor that has a low p-value is likely to be a meaningful addition to your model. Changes in the predictor's value are related to changes in the item that you are predicting. If there was no relationship at all, then you would have a larger p-value. The large p-value would be said to be insignificant. This means that the predictor doesn't have a significant effect on the item that you are predicting.Conversely, a larger (insignificant) p-value suggests that changes in the predictor are not associated with changes in the response.With the first useful measure when we have a continuous model, for example, trying to predict a runners average pace in a race, which is a continuous not discrete, we will end up with a predicted pace or finish time that we can check against when the runner finishes the race.In this case, we can sum up this and all of the other races that the runner has run and calculate the difference between all of the times we predicted and the actual times that the runner achieved. If we square this difference we get the Mean Square Error, which is a measure of how good our continuous model is-a zero MSE represents a perfect model where every prediction we made about the runner matches exactly what the runner achieved.A great measure for the accuracy of our model is an extension of something that we looked at in the previous module when we considered correlation - we ended up with a correlation coefficient called R that gave us a measure between -1 and 1. R2 is generally used to show whether our continuous model is a good fit - it should yield a measure of 0 to 1 - 1 being a perfect fit.The better the linear regression (on the right) fits the data in comparison to the simple average (on the left graph), the closer the value is to 1. The areas of the blue squares represent the squared residuals with respect to the continuous model. The areas of the red squares represent the squared residuals with respect to the average value (mean).If we predict the iris classes we should be able to see that we got some of them right.You can see here that out of 30 different types of iris data point measures we predicted 19 of them accurately - we need to consider these 19, but also the 11 we got wrong and how and why we got them wrong to understand the good parts and the bad parts of our model - the diagonal line in the center shows that we got 19 right.This is somewhat harder to picture because this is a many class problem, but as long as each class boils down to state we can look at whether the model is viable for making predictions from the adult dataset.Next stepsIt is good governance to carry out continual evaluation of the data model. Ongoing testing and experimentation are essential for good business decisions, which are based on using machine learning. It may seem as if the analytical process is never finished. Why is this the case?
+Andrew Grove wrote a book called Only the Paranoid Survive, which documented how Intel survived many changes and upsets in the computing industry throughout its history. Grove suggested that businesses are affected by six forces, both internal and external:Existing competitionComplementary businessesCustomersPotential customersPossibility of alternative ways of achieving the same endSuppliersGrove proposed that if these forces stayed equivalent, that the company will steer a steady course. It's important to note that these forces are highly visible in terms of the data that the company receives. This data could come from websites, customer contacts, external competitive information, stock market APIs, and so on. Data changes over time and the internal and external forces can express themselves through these changes. This is why it's important to keep evaluating our models.Within the CRISP-DM framework, evaluation is a key part of the process. It assesses the efficiency and validation of the model in preparation for deployment. It also lays out the steps required, and the instructions for carrying out those steps. It also includes a monitoring and maintenance plan, which summarizes the strategy for an ongoing review of the model's performance. It should detect any decline in model performance over time. Note that this is a cycle, and it is not a finished process. Once the models are put into production, they need to be continually checked against the data, and the original business question that they were supposed to answer. The model could be running in Azure ML, but its actual output and results may not be performing well against what it's actually intended to do.With all machine learning, it's important to prove the model's worth over a series of results. It's important to look at the larger pattern of results, rather than simply any given specific result.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sharing our data analysis using Tableau
+
+
+
+R gives you good diagnostic information to help you take the next step in your analysis, which is to visualize the results.
+
+
+
+
+
+
+
+
+
+
+Interpreting the resultsStatistics provides us with a method of investigation where other methods haven't been able to help, and their success or failure isn't clear to many people. If we see a correlation and think that the relationship is obvious, then we need to think again. Correlation can help people to insinuate causation. It's often said that correlation is not causation, but what does this mean? Correlation is a measure of how closely related two things are. We can use other statistical methods, such as structural equation modeling, to help us to identify the direction of the relationship, if it exists, using correlated data. It's a complex field in itself, and it isn't covered in this book; the main point here is to show that this is a complex question.How does correlation help us here? For our purposes, the most interesting statistic is the coefficient of determination, denoted R2 and pronounced R-squared, which indicates how well data points fit a statistical model -sometimes simply a line or curve. R-squared measures how close the data is to the fitted regression line. It is also known as the coefficient of multiple determination for multiple regression.It can be explained by R-squared = Explained variation/Total variation, and it is always explained as a percentage between 0 and 100%: Generally speaking, the higher the R-squared value, then the better the model fits the data. In our example, our model fit is found to be 69%, which is reasonably successful. We would need to map out the data to visualize it better, and to see if the model fits a linear line or not.Regression problems in business are trying to predict a continuous variable, such as the price of a car, or the amount of profit. In this example, we have created a model that can be used to predict sales. As a next step, we could try to pick apart the model to understand what variables are contributing to the success of the model, and which ones are not contributing.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+In this chapter, we reviewed ways of creating regression models and displaying our regression results using Tableau. We have reiterated the importance of the business question in understanding the data, and we have covered interpretation of the statistics in terms of their numbers, whilst being mindful of the context.
+While regression is important for scoring the data, there are business problems where we need to classify the data. Classification is one of the most important tasks in analytics today, and it's used in all sorts of examples to reach a business-oriented understanding of the business question.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 5. Classifying Data with Tableau
+
+
+
+In this chapter, we will look at ways to perform classification using R and visualizing the results in Tableau. Classification is one of the most important tasks in analytics today. By the end of this chapter, you'll build a decision tree, while retaining a focus on a business-oriented understanding of the business question using classification algorithms.
+
+
+
+
+
+
+
+
+
+
+Business understandingWhen we are modeling data, it is crucial to keep the original business objectives in mind. These business objectives will direct the subsequent work in the data understanding, preparation and modeling steps, and the final evaluation and selection (after revisiting earlier steps if necessary) of a classification model or models.At later stages, this will help to streamline the project because we will be able to keep the model's performance in line with the original requirement, while retaining a focus on ensuring a return on investment from the project.The main business objective is to identify individuals who are higher earners, so that they can be targeted by a marketing campaign. For this purpose, we will investigate the data mining of demographic data in order to create a classification model in R. The model will be able to accurately determine whether individuals earn a salary that is above or below $50K per annum. The datasets used in this chapter were taken from the University of California Irvine Data repository, which you can find at the following URL: https://archive.ics.uci.edu/ml/index.html. The dataset used is known as the Adult dataset, and it holds information on individuals such as age, level of education, sex, and current employment type.The resulting model will be used to classify individuals for the marketing campaign. To do that, we must understand the predictive significance of each characteristic.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Understanding the data
+
+
+
+We will use Tableau to look at data preparation and data quality. Though we could also do these activities in R, we will use Tableau since it is a good way of seeing data quality issues and capturing them easily. We can also see problematic issues such as outliers or missing values.
+
+
+
+
+
+
+
+
+
+
+Data preparationWhen confronted with many variables, analysts usually start by building a decision tree and then using the variables that the decision tree algorithm has selected with other methods that suffer from the complexity of many variables, such as neural networks. However, decision trees perform worse when the problem at hand is not linearly separable.In this section, we will use Tableau as a visual data preparation in order to prepare the data for further analysis. Here is a summary of some of the things we will explore:Looking at columns that do not add any value to the modelColumns that have so many missing categorical values that they do not predict the outcome reliablyReview missing values from the columns
+
+
+
+
+
+
+
+
+
+Describing the dataThe dataset used in this project has 49,000 records. You can see from the files that the data has been divided into a training dataset and a test set. The training dataset contains approximately 32,000 records and the test dataset around 16,000 records.It's helpful to note that there is a column that indicates the salary level or whether it is greater than or less than fifty thousand dollars per annum. This can be called a binomial label, which basically means that it can hold one or two possible values.When we import the data, we can filter for records where no income is specified. There is one record that has a NULL, and we can exclude it. Here is the filter: Let's explore the binomial label in more detail. How many records belong to each label?Let's visualize the finding. Quickly, we can see that 76 percent of the records in the dataset have a class label of <50K. Let's have a browse of the data in Tableau in order to see what the data looks like. From the grid, it's easy to see that there are 14 attributes in total. We can see the characteristics of the data:Seven polynomials: workclass, education, marital-status, occupation, relationship, race, sex, native-countryOne binomial: sexSix continuous attributes: age, fnlwgt, education-num, capital-gain, capital-loss, hours-per-weekYou can find out each individual value for each of the columns at the following website:
+https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.names
+ From the preceding chart, we can see that nearly 2 percent of the records are missing for one country, and the vast majority of individuals are from the United States. This means that we could consider the native-country feature as a candidate for removal from the model creation, because the lack of variation means that it isn't going to add anything interesting to the analysis.Data explorationWe can now visualize the data in boxplots, so we can see the range of the data. In the first example, let's look at the age column, visualized as a boxplot in Tableau: We can see that the values are higher for the age characteristic, and there is a different pattern for each income level.When we look at education, we can also see a difference between the two groups: We can focus on age and education, while discarding other attributes that do not add value, such as native-country. The fnlwgt column does not add value because it is specific to the census collection process.When we visualize the race feature, it's noted that the White value appears for 85 percent of overall cases. This means that it is not likely to add much value to the predictor: Now, we can look at the number of years that people spend in education. When the education number attribute was plotted, then it can be seen that the lower values tend to predominate in the <50K class and the higher levels of time spent in education are higher in the >50K class. We can see this finding in the following figure: This finding may indicate some predictive capability in the education feature. The visualization suggests that there is a difference between both groups since the group that earns over $50K per annum does not appear much in the lower education levels. To summarize, we will focus on age and education as providing some predictive capability in determining the income level.The purpose of the model is to classify people by their earning level. Now that we have visualized the data in Tableau, we can use this information in order to model and analyze the data in R to produce the model.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Modeling in R
+
+
+
+In this example, we will use the rpart package, which is used to build a decision tree. The tree with the minimum prediction error is selected. After that, the tree is applied to make predictions for unlabeled data with the predict function.
+One way to call rpart is to give it a list of variables and see what happens. Although we have discussed missing values, rpart has built-in code for dealing with missing values. So let's dive in, and look at the code.
+Firstly, we need to call the libraries that we need:
+
+
+library(rpart) 
+library(rpart.plot)
+library(caret)
+library(e1071)
+library(arules)
+
+
+Next, let's load in the data, which will be in the AdultUCI variable:
+
+
+data("AdultUCI");
+AdultUCI
+
+
+
+
+## 75% of the sample size
+sample_size <- floor(0.80 * nrow(AdultUCI))
+
+## set the seed to make your partition reproductible
+set.seed(123)
+
+## Set a variable to have the sample size
+training.indicator <- sample(seq_len(nrow(AdultUCI)), size = sample_size)
+
+# Set up the training and test sets of data
+adult.training <- AdultUCI[training.indicator, ]
+adult.test <- AdultUCI[-training.indicator, ]
+
+## set up the most important features
+features <- AdultUCI$income ~ AdultUCI$age+AdultUCI$education+AdultUCI$"education-num"
+
+# Let's use the training data to test the model
+model<-rpart(features,data=adult.training) 
+
+# Now, let's use the test data to predict the model's efficiency
+pred<-predict(model, adult.test ,type="class")
+
+# Let's print the model
+print(model)
+
+# Results
+#1) root 32561 7841 small (0.7591904 0.2408096)  
+#2) AdultUCI$"education-num"< 12.5 24494 3932 small (0.8394709 0.1605291) *
+#  3) AdultUCI$"education-num">=12.5 8067 3909 small (0.5154332 0.4845668)  
+#6) AdultUCI$age< 29.5 1617  232 small (0.8565244 0.1434756) *
+#  7) AdultUCI$age>=29.5 6450 2773 large (0.4299225 0.5700775) *
+
+printcp(model)
+
+plotcp(model)
+summary(model)
+print(pred)
+summary(pred)
+
+# plot tree
+plot(model, uniform=TRUE,
+     main="Decision Tree for Adult data")
+text(model, use.n=TRUE, all=TRUE, cex=.8)
+
+
+prp(model, faclen = 0, cex = 0.5, extra = 1)
+
+
+We can see the final result in the following diagram:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+Analyzing the results of the decision treeThe decision tree grows from top to bottom. It starts with a root decision node. The branches from this node represent two—or possibly more—different options that are available to the decision makers.At the end of the branches, we can find one of two things. Firstly, we may find an end node, which represents a fixed value. It can be understood as a stop in the decision process. Alternatively, we may find an uncertainty node, which has further possible outcomes available to it. If we were to add the probabilities of the uncertainty nodes together, they would sum to 1. Eventually, all of the branches will end in an end node.Decision trees have inputs and outputs. In this example, we have provided the decision tree with a series of data. In R, they also output a number of data. Decision trees are useful because they provide easy model interpretation, and they also demonstrate the relevant importance of the variables.Let's take a look at some of the main points of the results. From the output, we can see the following table, called Variable importance:
+Variable importance
+AdultUCI$"education-num"       AdultUCI$education             AdultUCI$age 
+44                       40                       16 
+This tells us that education-num has the highest percentage of importance, closely followed by education. Now, we could do some further analysis that would explore the correlation between these two items. If they are highly correlated, then we may consider removing one of them.Next, we have the results for each of the nodes. In this section, we get the number of observations, probabilities, and the splits for each of the nodes, until the nodes reach an end.
+
+
+
+
+
+
+
+
+
+
+
+
+Model deployment
+
+
+
+Now that we have created our model, we can reuse it in Tableau. This model will just work in Tableau, as long as you have Rserve running. You will also need to have the relevant packages installed, as per the script. In particular, the rpart package is the workhorse of this example, and it must be installed since it is self-contained as it loads the library, trains the model, and then uses the model to make predictions within the same calculation.
+There are many ways to deploy your model for future use, and this part of the process involves the CRISP-DM methodology. Here are a few ways:
+
+
+You can go through the model fitting inside R using RStudio or another IDE and save it. Then, you could simply load the model into Tableau or you can save it to a file directly from within Tableau. The advantage of doing it in this way is that you can reuse your R model in other packages as well. The downside is that you will need to switch between R and Tableau, and then back again.
+If you don't want to flip between R and Tableau, then you could add in an additional piece of code that would load the model directly from your location.
+You could also use the eval option. Eval executes the R code to follow. For example, if you had the following piece of code in your Rserv.cfg file, then it would load the model:
+eval load("C:/Users/bberan/R/mymodel.rda");
+
+
+
+In this case, we see that the second line is loading the model we created. So the person who will use the model for predictions doesn't have to know where it is saved. If they know the name of the model, they can call it from Tableau. Note that the config file is read when Rserve starts, so if you made changes to the file you need to start Rserve for them to take effect. Also, by default Rserve looks for the config file in R's working directory. In R, you can find out what your working directory is using the getwd() command:
+
+
+
+ 
+Then, we can start Rserve using the Rserve() command.
+The Rserv.cfg file goes into the working directory. In this example, the working directory is at the following location: C:/Users/jenst/Documents. When Rserve is installed, it's possible for us to call the predict function from rpart directly from the code:
+
+
+C:/Users/jenst/Documents
+SCRIPT_REAL('mydata <- data.frame(admit=.arg1, gpa=.arg2, gre=.arg3, rank=.arg4);prob <- predict(lrmodel, newdata = mydata, type = "response")',
+AVG([admit]),AVG([gpa]),AVG([gre]),AVG([rank]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Decision trees in Tableau using R
+
+
+
+When the data has a lot of features that interact in complicated non-linear ways, it is hard to find a global regression model, that is, a single predictive formula that holds over the entire dataset. An alternative approach is to partition the space into smaller regions, then into sub-partitions (recursive partitioning) until each chunk can be explained with a simple model.
+There are two main types of decision trees:
+
+
+Classification trees: Predicted outcome is the class the data belongs to
+Regression trees: Predicted outcome is a continuous variable, for example, a real number such as the price of a commodity
+
+
+There are many ensemble machine learning methods that take advantage of decision trees. Perhaps the best known is the Random Forest classifier that constructs multiple decision trees and outputs the class that corresponds to the mode of the classes output by individual trees.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bayesian methods
+
+
+
+Suppose I claim that I have a pair of magic rainbow socks. I allege that whenever I wear these special socks, I gain the ability to predict the outcome of coin tosses, using fair coins, better than chance would dictate. Putting my claim to the test, you toss a coin 30 times, and I correctly predict the outcome 20 times. Using a directional hypothesis with the binomial test, the null hypothesis would be rejected at alpha-level 0.05. Would you invest in my special socks?
+Why not? If it's because you require a larger burden of proof on absurd claims, I don't blame you. As a grandparent of Bayesian analysis, Pierre-Simon Laplace (who independently discovered the theorem that bears Thomas Bayes' name), once said: The weight of evidence for an extraordinary claim must be proportioned to its strangeness. Our prior belief—my absurd hypothesis—is so small that it would take much stronger evidence to convince the skeptical investor, let alone the scientific community.
+Unfortunately, if you'd like to easily incorporate your prior beliefs into NHST, you're out of luck. Or, suppose you need to assess the probability of the null hypothesis; you're out of luck there, too; NHST assumes the null hypothesis and can't make claims about the probability that a particular hypothesis is true. In cases like these (and in general), you may want to use Bayesian methods instead of frequentist methods. This section will tell you how. Join me!
+The Bayesian interpretation of probability views probability as our degree of belief in a claim or hypothesis, and Bayesian inference tells us how to update that belief in the light of new evidence. In that chapter, we used Bayesian inference to determine the probability that employees of Daisy Girl Inc. were using an illegal drug. We saw how the incorporation of prior beliefs saved two employees from being falsely accused and helped another employee get the help she needed even though her drug screen was falsely negative.
+In a general sense, Bayesian methods tell us how to dole out credibility to different hypotheses, given prior belief in those hypotheses and new evidence. In the drug example, the hypothesis suite was discrete: drug user or not drug user. More commonly, though, when we perform Bayesian analysis, our hypothesis concerns a continuous parameter, or many parameters. Our posterior (or updated beliefs) was also discrete in the drug example, but Bayesian analysis usually yields a continuous posterior called a posterior distribution.
+We are going to use Bayesian analysis to put my magical rainbow socks claim to the test. Our parameter of interest is the proportion of coin tosses that I can correctly predict wearing the socks; we'll call this parameter θ, or theta. Our goal is to determine what the most likely values of theta are and whether they constitute proof of my claim.
+The likelihood function is a binomial function, as it describes the behavior of Bernoulli trials; the binomial likelihood function for this evidence is shown in the following figure:
+
+
+
+ 
+For different values of theta, there are varying relative likelihoods. Note that the value of theta that corresponds to the maximum of the likelihood function is 0.667, which is the proportion of successful Bernoulli trials. This means that in the absence of any other information, the most likely proportion of coin flips that my magic socks allow me to predict is 67 percent. This is called the Maximum Likelihood Estimate (MLE).
+So, we have the likelihood function; now we just need to choose a prior. We will be crafting a representation of our prior beliefs using a type of distribution called a beta distribution, for reasons that we'll see very soon.
+Since our posterior is a blend of the prior and likelihood function, it is common for analysts to use a prior that doesn't much influence the results and allows the likelihood function to speak for itself. To this end, one may choose to use a non-informative prior that assigns equal credibility to all values of theta. This type of non-informative prior is called a flat or uniform prior.
+The beta distribution has two hyper-parameters, α (or alpha) and β (or beta). A beta distribution with hyper-parameters α = β = 1 describes such a flat prior. We will call this prior #1:
+
+
+
+ 
+This prior isn't really indicative of our beliefs, is it? Do we really assign as much probability to my socks giving me perfect coin-flip prediction powers as we do to the hypothesis that I'm full of baloney?
+The prior that a skeptic might choose in this situation is one that looks more like the one depicted in the next figure, a beta distribution with hyper-parameters alpha = beta = 50. This, rather appropriately, assigns far more credibility to values of theta that are concordant with a universe without magical rainbow socks. As good scientists, though, we have to be open-minded to new possibilities, so this doesn't rule out the possibility that the socks give me special powers—the probability is low, but not zero, for extreme values of theta. We will call this prior #2:
+
+
+
+ 
+Before we perform the Bayesian update, I need to explain why I chose to use the beta distribution to describe my priors.
+The Bayesian update—getting to the posterior—is performed by multiplying the prior with the likelihood. In the vast majority of applications of Bayesian analysis, we don't know what that posterior looks like, so we have to sample from it many times to get a sense of its shape. We will be doing this later in this chapter.
+For cases like this, though, where the likelihood is a binomial function, using a beta distribution for our prior guarantees that our posterior will also be in the beta distribution family. This is because the beta distribution is a conjugate prior with respect to a binomial likelihood function. There are many other cases of distributions being self-conjugate with respect to certain likelihood functions, but it doesn't often happen in practice that we find ourselves in a position to use them as easily as we can for this problem. The beta distribution also has the nice property that it is naturally confined from 0 to 1, just like the proportion of coin flips I can correctly predict.
+The fact that we know how to compute the posterior from the prior and likelihood by just changing the beta distribution's hyper-parameters makes things really easy in this case. The hyper-parameters of the posterior distribution are:
+
+
+
+ 
+That means the posterior distribution using prior #1 will have hyper-parameters alpha=1+20 and beta=1+1:
+
+
+
+ 
+Do not confuse this with a confidence interval. Though it may look like it, this credible interval is very different than a confidence interval. Since the posterior directly contains information about the probability of our parameter of interest at different values, it is admissible to claim that there is a 95 percent chance that the correct parameter value is in the credible interval. We could make no such claim with confidence intervals. Please do not mix up the two meanings, or people will laugh you out of town.
+Observe that the 95 percent most likely values for theta contain the theta value 0.5, if only barely. Due to this, one may wish to say that the evidence does not rule out the possibility that I'm full of baloney regarding my magical rainbow socks, but the evidence was suggestive.
+To be clear, the end result of our Bayesian analysis is the posterior distribution depicting the credibility of different values of our parameter. The decision to interpret this as sufficient or insufficient evidence for my outlandish claim is a decision that is separate from the Bayesian analysis proper. In contrast to NHST, the information we glean from Bayesian methods—the entire posterior distribution—is much richer. Another thing that makes Bayesian methods great is that you can make intuitive claims about the probability of hypotheses and parameter values in a way that frequentist NHST does not allow you to do.
+What does that posterior using prior #2 look like? It's a beta distribution with alpha = 50+20 and beta = 50+10.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Graphs
+
+
+
+A graph is a type of data structure capable of handling networks. Graphs are widely used across various domains such as the following:
+
+
+Transportation: To find the shortest routes to travel between two places
+Communication-signaling networks: To optimize the network of inter-connected computers and systems
+Understanding relationships: To build relationship trees across families or organizations
+Hydrology: To perform flow regime simulation analysis of various fluids
+
+
+
+
+
+
+
+
+
+
+
+
+Terminology and representationsA graph (G) is a network of vertices (V) interconnected using a set of edges (E). Let |V| represent the count of vertices and |E| represent the count of edges. The value of |E| lies in the range of 0 to |V|2 - |V|. Based on the directional edges, the graphs are classified as directed or undirected. In directed graphs, the edges are directed from one vertex towards the other, whereas in undirected graphs, each vertex has an equal probability of being directionally connected with the others. An undirected graph is said to be connected if all the vertices are connected with at least one edge. If the vertices are indexed, then it is said to be a labelled graph, and if the edges are associated with some value (cost or weights), then it is said to be a weighted graph. Adjacent vertices (P and Q) connected by an edge are termed as neighbors (P, Q), and the connecting edge is termed as an incident. Consider a graph with n vertices. A sequence of interconnected vertices (v1, v2, v3 ... vn) is termed as a path, and the path is said to be simple if all the vertices of the path are unique. The length of the path is the number of edges, which is one less than the number of vertices (n-1). In case the vertices of a given path are not unique and the length of the path is greater than two, then the path becomes a cycle. A cycle is simple if all the intermediate vertices are unique and only the first and last vertices are the same. An undirected graph with no cycles is called an acyclic graph, and a directed graph with no cycles is called a directed acyclic graph (DAG).
+
+
+
+
+
+
+
+
+
+Graph implementationsLet us create an Abstract Data Type (ADT) — (Graph_ADT) for the implementation of functions on a given graph. The key features of ADT for a given graph analysis are the following:Fixed number of verticesProvision for addition and deletion of edgesProvision to support a mark array, which can assist algorithms in traversing along the graphThe vertices are denoted using non-zero integer values, and can additionally store vertex names or some kinds of application-based predetermined values. The following are some ADT functions that are widely used for implementing graph functions:num_vert: This function returns the number of vertices for a given graph.num_edge: This function returns the number of edges for a given graph.weightEdge: This function returns the weight of an edge connecting two adjacent vertices. Its input is a pair of two connected vertices and its output is a numeric value indicating its weight.assignEdge: This function is used to assign weight to a given edge of a graph. The input is a pair of vertices. It can take in only a non-zero positive value, as a zero value means no connection (thereby no assignment required) and a negative value can skew the computational results.deleteEdge: This function is used to delete the weight of a given edge. The input is a pair of vertices, which has a connected edge.firstVertex: This function returns the index of the first edge vertex based on a sorted list of vertices, which are connected to a given vertex. The input is a vertex for a given graph.nextVertex: This function returns the subsequent index of vertices for a given pair of connected vertices such that the returned vertex will have an edge connecting to the first vertex. Assume that V1 is connected with V2 and V3 such that the index values of V2 are less than V3. Then, the firstVertex function will return the edge vertex of V1 as V2 (as the index value of V2 is less than V3), and the nextVertex function will return V3, as it is a subsequent connected vertex index of V1 for a given V2.isEdge: This function returns a Boolean number, where 1 represents the presence of an edge, and 0 represents the absence of an edge.getMark: This function returns the mark of a given vertex from an array mark.initMark: This function marks the unmarked vertex in an array mark.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+Although most introductory data analysis texts don't even broach the topic of Bayesian methods, you, dear reader, are versed enough in this matter to start applying these techniques to real problems.
+We discovered that Bayesian methods could—at least for the models in this chapter—not only allow us to answer the same kinds of questions we might use the binomial, one sample t-test, and the independent samples t-test for, but provide a much richer and more intuitive depiction of our uncertainty in our estimates. If these approaches interest you, I urge you to learn more about how to extend these to supersede other NHST tests. I also urge you to learn more about the mathematics behind MCMC. As with the last chapter, we covered much ground here. If you made it through, congratulations! This concludes the unit on confirmatory data analysis and inferential statistics. In the next unit, we will be less concerned with estimating parameters, and more interested in prediction. Last one there is a rotten egg!
+This current chapter covered the fundamentals of graphs and introduced terminology and representation. The later sections of this chapter covered searching techniques in graphs using DFS and BFS. This chapter also introduced in-order search in scenarios where nodes are conditionally dependent. The chapter also covered the Dijkstra algorithm widely used to estimate single-source shortest paths regardless of their directions. The concept of MST was introduced with algorithms such as Prim and Kruskal, which were covered to extract MST from a directed and weighted graph. The next chapter will extend coverage of static algorithms to randomized algorithms, and will also introduce the fundamentals of programming.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 6. Advanced Analytics Using Clustering
+
+
+
+Wouldn't it be great if you could analyze your customers better, by classifying them into groups? Or perhaps even look at crime types in groups? Do you have problems with grouping large amounts of data in a meaningful way? On the flip side, do you have problems in distinguishing groups of data?
+Data often has groups hidden in it. For example, we can group people by income, education, age, or where they live. We could also group people by their values, community involvements, family members, school membership, and other personal characteristics. We can find all sorts of insights by grouping our data together.
+Tableau brings you good news! The clustering process just got much easier in Tableau 10. Tableau has a brand new clustering feature, which groups similar data points together. Tableau makes it easy for you to find interesting patterns in data. Even better, Tableau offers a full clustering experience on any type of visualization that you want to use, and that even includes maps!
+Tableau makes it easy to solve very practical business problems that can be addressed by clustering. In this chapter, we will look at using clustering techniques in both R and in Tableau, in order to solve these common business issues.
+
+
+
+
+
+
+
+
+
+
+What is Clustering?Here we represent the elbow curve and the best number of clusters on it, which are represented on the curve line: Clustering is a way of analyzing data so that the items are grouped into similar groups, or clusters, according to their similarity. Clustering is the process of finding interesting patterns in data, and it is used to categorize and classify data into groups, as well as to distinguish groups of data from each other. Before we start to cluster the data, we don't know the cluster where each data point resides.Clustering is an example of an unsupervised method. In unsupervised methods of machine learning, unsupervised methods are not focused on trying to predict an outcome. Instead, unsupervised methods are focused on discovering patterns in the data. Using unsupervised methods means that you can take a fresh look at the data for patterns that you may not have considered previously, such as neural networks or clustering, for example.Clustering is a great tool for exploring data and reducing complexities, so it can help you to analyze data, particularly where there are no obvious distinctions contained in the data.Now, clustering is an essential tool in the analytics toolkit. Tableau reduces the learning friction by including it as a key part of the user interface. We will look at the clustering features in Tableau in the first part of this chapter. Then, we will look at the facilities for clustering in R. The purpose is not to compare Tableau versus R. Instead, we are exploring the opportunities for using both tools for advanced analytics.The key to success in implementing clustering models is to create a new model that will make its predictions based solely on previous rewards and punishments for similar predictions made on similar datasets.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Finding clusters in data
+
+
+
+Cluster analysis partitions marks in the view into clusters, where the marks within each cluster are more similar to one another than they are to marks in other clusters.
+In Tableau Desktop, you create clusters by dragging Cluster from the Analytics pane and dropping it in the view. Now you will see that there is a statistical object. Here, Tableau places it on the Color shelf. Note that, if there is already a field on Color, Tableau moves that field to Detail and replaces it on Color with the clustering results.
+Using clustering, Tableau assigns each mark to one of the clusters on the canvas. If any of the marks do not fit well in one of the clusters, then it is put into a not clustered cluster.
+Clustering has its own dialog box, which allows you to add a cluster, or edit a cluster that exists already. The clustering dialog box gives you a lot of flexibility and control over the clustering process, whilst also giving you the ability to use suggested features. For example, you can indicate the number of clusters, or stay with Tableau's proposed number of clusters.
+Tableau offers the dialogue box to enable the exploration process too. Tableau uses variables in order to compute clusters, and the dialog allows you to add variables or take them away so you can explore the data visually and easily. You can change the aggregations too, which will further allow you to explore interesting nuances in the data.
+Let's drag a Cluster over to the Data pane. You will see that it becomes a group dimension, with the clusters appearing as individual members of the dimension. Each cluster contains the individual marks that are classified as being part of each cluster.
+Your analysis can flow easily from worksheet to worksheet, as your cluster isn't restricted to the current worksheet.
+For more details you can refer to Create a Tableau Group from Cluster Results article found at: http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/clustering_group.html.
+
+
+
+
+
+
+
+
+
+
+Why can't I drag my Clusters to the Analytics pane?Sometimes, you might find that you can't drag your clusters over to the canvas. Why is that? Well, unfortunately, clustering isn't available in every scenario. Throughout this book, we have been using clustering on the Tableau Desktop, but, unfortunately, clustering is not available for authoring on the web.Clustering is also not available for every single data source. So, for example, it's not possible to use clustering if you are using a multidimensional cube source, or if you have a blended dimension. Furthermore, certain Tableau constructs can't be used as inputs for clustering. These include certain types of calculations such as table calculations, blended calculations, or ad-hoc calculations. Other Tableau constructs that can't be used as variables include groups, sets, bins, or parameters.To summarize, it isn't possible to use every Tableau construct. That being said, clustering can also surprise you with its insights, and there are still plenty of features to explore.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Clustering in Tableau
+
+
+
+Tableau's power has always been its user-focused flexibility, and working with the user in order to achieve insights at the speed of thought. Tableau's clustering functionality continues the tradition of putting the user front-and-center of the analytics process. So, for example, Tableau allows us to quickly customize geographical areas, for example, which in turn can yield new insights and patterns held within the groups.
+Tableau 10.0 comes with k-means clustering as a built-in function. K-means is a popular clustering algorithm that is useful, easy to implement, and it can be faster than some other clustering methods, particularly in the case of big datasets.
+We can see the data being grouped, or clustered, around centers. The algorithm works firstly by choosing the cluster centers randomly. Then, it works out the nearest cluster centers, and arranges the data points around it.
+K-means then works out the actual cluster center. It then reassigns the data points to the new cluster center. These steps are repeated until the data. The filled shapes represent the center of the cluster.
+
+
+
+
+
+
+
+
+
+
+How does k-means work?K-means procedure splits the data into K segments. Each segment has a centroid that corresponds to the average value for the marks in that segment. The objective of the k-means procedure is to place the centroids so that the total of the sum of distances between centroids and marks in respective segments is as small as possible.
+
+
+
+
+
+
+
+
+
+How to do Clustering in TableauIn order to create clustering in tableau we need to follow the next:In Tableau, go to the Analytics pane on the left-hand sideDrag Cluster from the Analytics pane onto the current canvas viewYou can explore your data by dragging the cluster in and out of the pane so that you can compare.Clustering feature has a describe dialog that gives you summary statistics for each cluster to help you to understand how Tableau has obtained the results with the clustering process.
+
+
+
+
+
+
+
+
+
+Creating ClustersTo find clusters in a view in Tableau, follow these steps:Create a view.Drag Cluster from the Analytics pane into the view, and drop it on the target area in the view:You can also double-click Cluster to find clusters in the view.Two things happen when you drop or double-click Cluster:Tableau adds Clusters on Color, and colors the marks in your view by clusterTableau displays a Clusters dialog box, where you can customize the cluster: Customize the cluster results by doing either of the following in the Clusters dialog box:Drag new fields from the Data pane into the Variables area of the Clusters dialog boxWhen you add variables, measures are aggregated using the default aggregation for the field; dimensions are aggregated using ATTR, which is the standard way that Tableau aggregates dimensions.Specify the number of clusters. If you do not specify a value, Tableau will go as high as 25 clusters in trying to determine the number of clusters. If you specify a value, you can choose any number between 2 and 50.When you finish customizing the cluster results, click the X in the upper-right corner of the Clusters dialog box to close it: NoteYou can move the cluster field from Color to another shelf in the view. However, you cannot move the cluster field from the Filters shelf to the Data pane.To edit Clusters you have previously created, right-click (Control-click on a Mac) the Clusters field on Color and choose Edit clusters.Or for an example showing the process of creating clusters with sample data (world economic indicators), see Example - Create Clusters from World Economic Indicators Data here: http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/clustering_example.html.If you aren't sure how many splits to use, there's no need to worry! As you know, Tableau already makes things very easy for you, by proposing the correct data visualization for you. Well, Tableau also makes analytics easier for you, by recommending the number of splits that you need. This is particularly helpful if you are simply exploring the data.Tableau is flexible, and it offers you the ability to specify your own clustering settings. For example, you can stipulate the number of clusters that you would like to create. This is a process that is similar to creating bins in Tableau. Bins have to be an equal size, however clustering allows you the flexibility to have varying sizes of clusters. This may be the preferred option if you have business reasons for wanting to combine things a little differently, and Tableau has the flexibility of allowing you to specify the number of clusters, or finding that information for you.Once you identify the clusters, you can assign them more intuitive names based on the summaries for each cluster (which, in this case, can be seen in the scatter plots). In this example, we have three clusters corresponding to developed, developing, and underdeveloped countries based on the four metrics used as the clustering criteria.You can use clustering results in other visualizations such as dimensions. You can even manually override cluster assignments if you have external domain knowledge that you want to incorporate into the results.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Clustering example in Tableau
+
+
+
+In the example, we are going to use clustering to drag the cluster pill from the sheet into the data pane on the left. You can treat the resulting field as a group. In your visualizations, Tableau will treat the cluster field like any other visualization.
+These include standardization of inputs that automatically scale the data and multiple correspondence analyses (if you're curious about the details, you can find out more about the math behind clustering in product documentation at http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/help.html#clustering.html).
+This means you can work with many different types of data with minimal preparation. You can include categorical fields such as education level in your clustering analysis alongside numeric variables such as income without worries or use it for clustering survey responses where all inputs could be categorical.
+
+
+
+
+
+
+
+
+
+
+Creating a Tableau group from cluster resultsDrag Clusters from the Marks card (or from any other shelf you had already dragged it to) to the Data pane to create a Tableau group: After you create a group from clusters, the group and the original clusters are separate and distinct. Editing the clusters does not affect the group, and editing the group does not affect the cluster results. The group has the same characteristics as any other Tableau group. It is part of the data source. Unlike the original clusters, you can use the group in other worksheets in the workbook. So if you rename the saved cluster group, that renaming is not applied to the original clustering in the view. You can get more information about Groups at http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/sortgroup_groups.html.
+
+
+
+
+
+
+
+
+
+Constraints on saving ClustersYou will not be able to save Clusters to the Data pane under any of the following circumstances:When the measures in the view are disaggregated and the measures you are using as clustering variables are not the same as the measures in the view. You can get more information about disaggregating data at http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/calculations_aggregation_disaggregatingdata.html.When the Clusters you want to save are on the Filters shelf.When Measure Names or Measure Values is in the view.When there is a blended dimension in the view.If you're looking for clusters in your sheet, just drag Cluster from the Analytics pane into the view. To see how different inputs change clustering results, you can experiment by dragging them in and out of the dialog and seeing the results in real time.
+
+
+
+
+
+
+
+
+
+
+
+
+Interpreting your results
+
+
+
+Sometimes groupings in data make immediate sense. When clustering by income and age, one could come across a group that can be labeled as young professionals.
+In UN development indicators dataset, using the Describe dialog, one can clearly see that Cluster 1, Cluster 2, and Cluster 3 correspond to Underdeveloped, Developing, and Highly Developed countries, respectively. By doing so we're using k-means to compress the information that is contained in three columns and 180+ rows to just three labels. Clustering can sometimes also find patterns your dataset may not be able to sufficiently explain by itself.
+For example, as you're clustering health records, you may find two distinct groups and why? is not immediately clear and describable with the available data, which may lead you to ask more questions and maybe later realize that difference was because one group exercised regularly while the other didn't, or one had an immunity to a certain disease. It may even indicate things such as fraudulent activity/drug abuse, which otherwise you may not have noticed. Given it is hard to anticipate and collect all relevant data, such hidden patterns are not uncommon in real life.
+
+
+
+
+
+
+
+
+
+
+
+

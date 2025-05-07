@@ -1,0 +1,1000 @@
+Save a file system image for support investigations
+A pre-repair file system metadata image can often be useful for support investigations if there is a
+possibility that the corruption was due to a software bug. Patterns of corruption present in the pre-
+repair image may aid in root-cause analysis.
+Operate only on unmounted file systems
+A file system repair must be run only on unmounted file systems. The tool must have sole access to
+the file system or further damage may result. Most file system tools enforce this requirement in repair
+mode, although some only support check-only mode on a mounted file system. If check-only mode is
+run on a mounted file system, it may find spurious errors that would not be found when run on an
+unmounted file system.
+Disk errors
+File system check tools cannot repair hardware problems. A file system must be fully readable and
+writable if repair is to operate successfully. If a file system was corrupted due to a hardware error, the
+file system must first be moved to a good disk, for example with the dd(8) utility.
+12.2. FILE SYSTEM-SPECIFIC INFORMATION FOR FSCK
+12.2.1. ext2, ext3, and ext4
+All of these file sytems use the e2fsck binary to perform file system checks and repairs. The file names 
+fsck.ext2, fsck.ext3, and fsck.ext4 are hardlinks to this same binary. These binaries are run
+automatically at boot time and their behavior differs based on the file system being checked and the state
+of the file system.
+A full file system check and repair is invoked for ext2, which is not a metadata journaling file system, and
+for ext4 file systems without a journal.
+For ext3 and ext4 file systems with metadata journaling, the journal is replayed in userspace and the
+binary exits. This is the default action as journal replay ensures a consistent file system after a crash.
+If these file systems encounter metadata inconsistencies while mounted, they record this fact in the file
+system superblock. If e2fsck finds that a file system is marked with such an error, e2fsck performs a
+full check after replaying the journal (if present).
+e2fsck may ask for user input during the run if the -p option is not specified. The -p option tells 
+e2fsck to automatically do all repairs that may be done safely. If user intervention is required, e2fsck
+indicates the unfixed problem in its output and reflect this status in the exit code.
+Commonly used e2fsck run-time options include:
+-n
+CHAPTER 12. FILE SYSTEM CHECK
+105
+
+No-modify mode. Check-only operation.
+-b superblock
+Specify block number of an alternate suprerblock if the primary one is damaged.
+-f
+Force full check even if the superblock has no recorded errors.
+-j journal-dev
+Specify the external journal device, if any.
+-p
+Automatically repair or "preen" the file system with no user input.
+-y
+Assume an answer of "yes" to all questions.
+All options for e2fsck are specified in the e2fsck(8) manual page.
+The following five basic phases are performed by e2fsck while running:
+1. Inode, block, and size checks.
+2. Directory structure checks.
+3. Directory connectivity checks.
+4. Reference count checks.
+5. Group summary info checks.
+The e2image(8) utility can be used to create a metadata image prior to repair for diagnostic or testing
+purposes. The -r option should be used for testing purposes in order to create a sparse file of the same
+size as the file system itself. e2fsck can then operate directly on the resulting file. The -Q option should
+be specified if the image is to be archived or provided for diagnostic. This creates a more compact file
+format suitable for transfer.
+12.2.2. XFS
+No repair is performed automatically at boot time. To initiate a file system check or repair, use the 
+xfs_repair tool.
+NOTE
+Although an fsck.xfs binary is present in the xfsprogs package, this is present only to
+satisfy initscripts that look for an fsck.file system binary at boot time. fsck.xfs
+immediately exits with an exit code of 0.
+Older xfsprogs packages contain an xfs_check tool. This tool is very slow and does not
+scale well for large file systems. As such, it has been deprecated in favor of xfs_repair 
+-n.
+Storage Administration Guide
+106
+
+A clean log on a file system is required for xfs_repair to operate. If the file system was not cleanly
+unmounted, it should be mounted and unmounted prior to using xfs_repair. If the log is corrupt and
+cannot be replayed, the -L option may be used to zero the log.
+IMPORTANT
+The -L option must only be used if the log cannot be replayed. The option discards all
+metadata updates in the log and results in further inconsistencies.
+It is possible to run xfs_repair in a dry run, check-only mode by using the -n option. No changes will
+be made to the file system when this option is specified.
+xfs_repair takes very few options. Commonly used options include:
+-n
+No modify mode. Check-only operation.
+-L
+Zero metadata log. Use only if log cannot be replayed with mount.
+-m maxmem
+Limit memory used during run to maxmem MB. 0 can be specified to obtain a rough estimate of the
+minimum memory required.
+-l logdev
+Specify the external log device, if present.
+All options for xfs_repair are specified in the xfs_repair(8) manual page.
+The following eight basic phases are performed by xfs_repair while running:
+1. Inode and inode blockmap (addressing) checks.
+2. Inode allocation map checks.
+3. Inode size checks.
+4. Directory checks.
+5. Pathname checks.
+6. Link count checks.
+7. Freemap checks.
+8. Super block checks.
+For more information, see the xfs_repair(8) manual page.
+xfs_repair is not interactive. All operations are performed automatically with no input from the user.
+CHAPTER 12. FILE SYSTEM CHECK
+107
+
+If it is desired to create a metadata image prior to repair for diagnostic or testing purposes, the 
+xfs_metadump(8) and xfs_mdrestore(8) utilities may be used.
+12.2.3. Btrfs
+NOTE
+Btrfs is available as a Technology Preview feature in Red Hat Enterprise Linux 7 but has
+been deprecated since the Red Hat Enterprise Linux 7.4 release. It will be removed in a
+future major release of Red Hat Enterprise Linux.
+For more information, see Deprecated Functionality in the Red Hat Enterprise Linux 7.4
+Release Notes.
+The btrfsck tool is used to check and repair btrfs file systems. This tool is still in early development
+and may not detect or repair all types of file system corruption.
+By default, btrfsck does not make changes to the file system; that is, it runs check-only mode by
+default. If repairs are desired the --repair option must be specified.
+The following three basic phases are performed by btrfsck while running:
+1. Extent checks.
+2. File system root checks.
+3. Root reference count checks.
+The btrfs-image(8) utility can be used to create a metadata image prior to repair for diagnostic or
+testing purposes.
+Storage Administration Guide
+108
+
+CHAPTER 13. PARTITIONS
+With the parted utility, you can:
+View the existing partition table.
+Change the size of existing partitions.
+Add partitions from free space or additional hard drives.
+The parted package is installed by default on Red Hat Enterprise Linux 7. To start parted, log in as root
+and enter the following command:
+# parted /dev/sda
+Replace /dev/sda with the device name for the drive to configure.
+Manipulating Partitions on Devices in Use
+For a device to not be in use, none of the partitions on the device can be mounted, and no swap space
+on the device can be enabled.
+If you want to remove or resize a partition, the device on which that partition resides must not be in use.
+It is possible to create a new partition on a device that is in use, but this is not recommended.
+Modifying the Partition Table
+Modifying the partition table while another partition on the same disk is in use is generally not
+recommended because the kernel is not able to reread the partition table. As a consequence, changes
+are not applied to a running system. In the described situation, reboot the system, or use the following
+command to make the system register new or modified partitions:
+# partx --update --nr partition-number disk
+The easiest way to modify disks that are currently in use is:
+1. Boot the system in rescue mode if the partitions on the disk are impossible to unmount, for
+example in the case of a system disk.
+2. When prompted to mount the file system, select Skip.
+If the drive does not contain any partitions in use, that is there are no system processes that use or lock
+the file system from being unmounted, you can unmount the partitions with the umount command and
+turn off all the swap space on the hard drive with the swapoff command.
+To see commonly used parted commands, see Table 13.1, "parted Commands".
+IMPORTANT
+Do not use the parted utility to create file systems. Use the mkfs tool instead.
+Table 13.1. parted Commands
+CHAPTER 13. PARTITIONS
+109
+
+Command
+Description
+help
+Display list of available commands
+mklabel label
+Create a disk label for the partition table
+mkpart part-type [fs-type] start-mb 
+end-mb
+Make a partition without creating a new file system
+name minor-num name
+Name the partition for Mac and PC98 disklabels only
+print
+Display the partition table
+quit
+Quit parted
+rescue start-mb end-mb
+Rescue a lost partition from start-mb to end-mb
+rm minor-num
+Remove the partition
+select device
+Select a different device to configure
+set minor-num flag state
+Set the flag on a partition; state is either on or off
+toggle [NUMBER [FLAG]
+Toggle the state of FLAG on partition NUMBER
+unit UNIT
+Set the default unit to UNIT
+13.1. VIEWING THE PARTITION TABLE
+To view the partition table:
+1. Start parted.
+2. Use the following command to view the partition table:
+(parted) print
+A table similar to the following one appears:
+Example 13.1. Partition Table
+Model: ATA ST3160812AS (scsi)
+Disk /dev/sda: 160GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Number  Start   End    Size    Type      File system  Flags
+ 1      32.3kB  107MB  107MB   primary   ext3         boot
+ 2      107MB   105GB  105GB   primary   ext3
+Storage Administration Guide
+110
+
+ 3      105GB   107GB  2147MB  primary   linux-swap
+ 4      107GB   160GB  52.9GB  extended        root
+ 5      107GB   133GB  26.2GB  logical   ext3
+ 6      133GB   133GB  107MB   logical   ext3
+ 7      133GB   160GB  26.6GB  logical                lvm
+Following is the description of the partition table:
+Model: ATA ST3160812AS (scsi): explains the disk type, manufacturer, model number, and
+interface.
+Disk /dev/sda: 160GB: displays the disk label type.
+In the partition table, Number is the partition number. For example, the partition with minor
+number 1 corresponds to /dev/sda1. The Start and End values are in megabytes. Valid 
+Types are metadata, free, primary, extended, or logical. The File system is the file system
+type. The Flags column lists the flags set for the partition. Available flags are boot, root, swap,
+hidden, raid, lvm, or lba.
+The File system in the partition table can be any of the following:
+ext2
+ext3
+fat16
+fat32
+hfs
+jfs
+linux-swap
+ntfs
+reiserfs
+hp-ufs
+sun-ufs
+xfs
+If a File system of a device shows no value, this means that its file system type is unknown.
+CHAPTER 13. PARTITIONS
+111
+
+NOTE
+To select a different device without having to restart parted, use the following command
+and replace /dev/sda with the device you want to select:
+(parted) select /dev/sda
+It allows you to view or configure the partition table of a device.
+13.2. CREATING A PARTITION
+WARNING
+Do not attempt to create a partition on a device that is in use.
+Procedure 13.1. Creating a Partition
+1. Before creating a partition, boot into rescue mode, or unmount any partitions on the device and
+turn off any swap space on the device.
+2. Start parted:
+# parted /dev/sda
+Replace /dev/sda with the device name on which you want to create the partition.
+3. View the current partition table to determine if there is enough free space:
+(parted) print
+If there is not enough free space, you can resize an existing partition. For more information, see
+Section 13.5, "Resizing a Partition with fdisk".
+From the partition table, determine the start and end points of the new partition and what partition
+type it should be. You can only have four primary partitions, with no extended partition, on a
+device. If you need more than four partitions, you can have three primary partitions, one
+extended partition, and multiple logical partitions within the extended. For an overview of disk
+partitions, see the appendix An Introduction to Disk Partitions in the Red Hat Enterprise Linux 7
+Installation Guide.
+4. To create partition:
+(parted) mkpart part-type name fs-type start end
+Replace part-type with with primary, logical, or extended as per your requirement.
+Replace name with partition-name; name is required for GPT partition tables.
+
+Storage Administration Guide
+112
+
+Replace fs-type with any one of btrfs, ext2, ext3, ext4, fat16, fat32, hfs, hfs+, linux-swap, ntfs,
+reiserfs, or xfs; fs-type is optional.
+Replace start end with the size in megabytes as per your requirement.
+For example, to create a primary partition with an ext3 file system from 1024 megabytes until
+2048 megabytes on a hard drive, type the following command:
+(parted) mkpart primary 1024 2048
+NOTE
+If you use the mkpartfs command instead, the file system is created after the
+partition is created. However, parted does not support creating an ext3 file
+system. Thus, if you wish to create an ext3 file system, use mkpart and create
+the file system with the mkfs command as described later.
+The changes start taking place as soon as you press Enter, so review the command before
+executing to it.
+5. View the partition table to confirm that the created partition is in the partition table with the
+correct partition type, file system type, and size using the following command:
+(parted) print
+Also remember the minor number of the new partition so that you can label any file systems on
+it.
+6. Exit the parted shell:
+(parted) quit
+7. Use the following command after parted is closed to make sure the kernel recognizes the new
+partition:
+# cat /proc/partitions 
+The maximum number of partitions parted can create is 128. While the GUID Partition Table (GPT)
+specification allows for more partitions by growing the area reserved for the partition table, common
+practice used by parted is to limit it to enough area for 128 partitions.
+13.2.1. Formatting and Labeling the Partition
+To format and label the partition use the following procedure:
+Procedure 13.2. Format and Label the Partition
+1. The partition does not have a file system. To create the ext4 file system, use:
+# mkfs.ext4 /dev/sda6
+CHAPTER 13. PARTITIONS
+113
+
+WARNING
+Formatting the partition permanently destroys any data that currently exists
+on the partition.
+2. Label the file system on the partition. For example, if the file system on the new partition is 
+/dev/sda6 and you want to label it Work, use:
+# e2label /dev/sda6 "Work"
+By default, the installation program uses the mount point of the partition as the label to make
+sure the label is unique. You can use any label you want.
+3. Create a mount point (e.g. /work) as root.
+13.2.2. Add the Partition to /etc/fstab
+1. As root, edit the /etc/fstab file to include the new partition using the partition's UUID.
+Use the command blkid -o list for a complete list of the partition's UUID, or blkid 
+device for individual device details.
+In /etc/fstab:
+The first column should contain UUID= followed by the file system's UUID.
+The second column should contain the mount point for the new partition.
+The third column should be the file system type: for example, ext4 or swap.
+The fourth column lists mount options for the file system. The word defaults here means
+that the partition is mounted at boot time with default options.
+The fifth and sixth field specify backup and check options. Example values for a non-root
+partition are 0 2.
+2. Regenerate mount units so that your system registers the new configuration:
+# systemctl daemon-reload
+3. Try mounting the file system to verify that the configuration works:
+# mount /work
+Additional Information
+If you need more information about the format of /etc/fstab, see the fstab(5) man page.
+
+Storage Administration Guide
+114
+
+13.3. REMOVING A PARTITION
+WARNING
+Do not attempt to remove a partition on a device that is in use.
+Procedure 13.3. Remove a Partition
+1. Before removing a partition, do one of the following:
+Boot into rescue mode, or
+Unmount any partitions on the device and turn off any swap space on the device.
+2. Start the parted utility:
+# parted device
+Replace device with the device on which to remove the partition: for example, /dev/sda.
+3. View the current partition table to determine the minor number of the partition to remove:
+(parted) print
+4. Remove the partition with the command rm. For example, to remove the partition with minor
+number 3:
+(parted) rm 3
+The changes start taking place as soon as you press Enter, so review the command before
+committing to it.
+5. After removing the partition, use the print command to confirm that it is removed from the
+partition table:
+(parted) print
+6. Exit from the parted shell:
+(parted) quit
+7. Examine the content of the /proc/partitions file to make sure the kernel knows the partition
+is removed:
+# cat /proc/partitions
+
+CHAPTER 13. PARTITIONS
+115
+
+8. Remove the partition from the /etc/fstab file. Find the line that declares the removed
+partition, and remove it from the file.
+9. Regenerate mount units so that your system registers the new /etc/fstab configuration:
+# systemctl daemon-reload
+13.4. SETTING A PARTITION TYPE
+The partition type, not to be confused with the file system type, is used by a running system only rarely.
+However, the partition type matters to on-the-fly generators, such as systemd-gpt-auto-generator,
+which use the partition type to, for example, automatically identify and mount devices.
+You can start the fdisk utility and use the t command to set the partition type. The following example
+shows how to change the partition type of the first partition to 0x83, default on Linux:
+# fdisk /dev/sdc
+Command (m for help): t
+Selected partition 1
+Partition type (type L to list all types): 83
+Changed type of partition 'Linux LVM' to 'Linux'.
+The parted utility provides some control of partition types by trying to map the partition type to 'flags',
+which is not convenient for end users. The parted utility can handle only certain partition types, for
+example LVM or RAID. To remove, for example, the lvm flag from the first partition with parted, use:
+# parted /dev/sdc 'set 1 lvm off'
+For a list of commonly used partition types and hexadecimal numbers used to represent them, see the
+Partition Types table in the Partitions: Turning One Drive Into Many appendix of the Red Hat
+Enterprise Linux 7 Installation Guide.
+13.5. RESIZING A PARTITION WITH FDISK
+The fdisk utility allows you to create and manipulate GPT, MBR, Sun, SGI, and BSD partition tables.
+On disks with a GUID Partition Table (GPT), using the parted utility is recommended, as fdisk GPT
+support is in an experimental phase.
+Before resizing a partition, back up the data stored on the file system and test the procedure, as the only
+way to change a partition size using fdisk is by deleting and recreating the partition.
+IMPORTANT
+The partition you are resizing must be the last partition on a particular disk.
+Red Hat only supports extending and resizing LVM partitions.
+Procedure 13.4. Resizing a Partition
+The following procedure is provided only for reference. To resize a partition using fdisk:
+1. Unmount the device:
+Storage Administration Guide
+116
+
+# umount /dev/vda
+2. Run fdisk disk_name. For example:
+# fdisk /dev/vda
+Welcome to fdisk (util-linux 2.23.2).
+Changes will remain in memory only, until you decide to write them. 
+Be careful before using the write command.
+Command (m for help):
+3. Use the p option to determine the line number of the partition to be deleted.
+Command (m for help): p
+Disk /dev/vda: 16.1 GB, 16106127360 bytes, 31457280 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk label type: dos
+Disk identifier: 0x0006d09a
+Device    Boot      Start         End      Blocks   Id  System
+/dev/vda1   *        2048     1026047      512000   83  Linux
+/dev/vda2         1026048    31457279    15215616   8e  Linux LVM
+4. Use the d option to delete a partition. If there is more than one partition available, fdisk
+prompts you to provide a number of the partition to delete:
+Command (m for help): d
+Partition number (1,2, default 2): 2
+Partition 2 is deleted
+5. Use the n option to create a partition and follow the prompts. Allow enough space for any future
+resizing. The fdisk default behavior (press Enter) is to use all space on the device. You can
+specify the end of the partition by sectors, or specify a human-readable size by using 
++<size><suffix>, for example +500M, or +10G.
+Red Hat recommends using the human-readable size specification if you do not want to use all
+free space, as fdisk aligns the end of the partition with the physical sectors. If you specify the
+size by providing an exact number (in sectors), fdisk does not align the end of the partition.
+Command (m for help): n
+Partition type:
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended
+Select (default p): *Enter*
+Using default response p
+Partition number (2-4, default 2): *Enter*
+First sector (1026048-31457279, default 1026048): *Enter*
+Using default value 1026048
+CHAPTER 13. PARTITIONS
+117
+
+Last sector, +sectors or +size{K,M,G} (1026048-31457279, default 
+31457279): +500M
+Partition 2 of type Linux and of size 500 MiB is set
+6. Set the partition type to LVM:
+Command (m for help): t
+Partition number (1,2, default 2): *Enter*
+Hex code (type L to list all codes): 8e
+Changed type of partition 'Linux' to 'Linux LVM'
+7. Write the changes with the w option when you are sure the changes are correct, as errors can
+cause instability with the selected partition.
+8. Run e2fsck on the device to check for consistency:
+# e2fsck /dev/vda
+e2fsck 1.41.12 (17-May-2010)
+Pass 1:Checking inodes, blocks, and sizes
+Pass 2:Checking directory structure
+Pass 3:Checking directory connectivity
+Pass 4:Checking reference counts
+Pass 5:Checking group summary information
+ext4-1:11/131072 files (0.0% non-contiguous),27050/524128 blocks
+9. Mount the device:
+# mount /dev/vda
+For more information, see the fdisk(8) manual page.
+Storage Administration Guide
+118
+
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS
+WITH SNAPPER
+A snapshot volume is a point in time copy of a target volume that provides a way to revert a file system
+back to an earlier state. Snapper is a command-line tool to create and maintain snapshots for Btrfs and
+thinly-provisioned LVM file systems.
+14.1. CREATING INITIAL SNAPPER CONFIGURATION
+Snapper requires discrete configuration files for each volume it operates on. You must set up the
+configuration files manually. By default, only the root user is allowed to perform snapper commands.
+The file system recommended by Red Hat with Snapper depends on your Red Hat Enterprise Linux
+version:
+In Red Hat Enterprise Linux 7.4 or earlier versions of Red Hat Enterprise Linux 7, use ext4 with
+Snapper. Use the XFS file system on lvm-thin volumes only if you are monitoring the amount of
+free space in the pool to prevent out-of-space problems that can lead to a failure.
+In Red Hat Enterprise Linux 7.5 or later versions, use XFS with Snapper.
+Note that the Btrfs tools and file system are provided as a Technology Preview, which make them
+unsuitable for production systems.
+Although it is possible to allow a user or group other than root to use certain Snapper commands,
+Red Hat recommends that you do not add elevated permissions to otherwise unprivileged users or
+groups. Such a configuration bypasses SELinux and could pose a security risk. Red Hat recommends
+that you review these capabilities with your Security Team and consider using the sudo infrastructure
+instead.
+NOTE
+Btrfs is available as a Technology Preview feature in Red Hat Enterprise Linux 7 but has
+been deprecated since the Red Hat Enterprise Linux 7.4 release. It will be removed in a
+future major release of Red Hat Enterprise Linux.
+For more information, see Deprecated Functionality in the Red Hat Enterprise Linux 7.4
+Release Notes.
+Procedure 14.1. Creating a Snapper Configuration File
+1. Create or choose either:
+A thinly-provisioned logical volume with a Red Hat supported file system on top of it, or
+A Btrfs subvolume.
+2. Mount the file system.
+3. Create the configuration file that defines this volume.
+For LVM2:
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+119
+
+# snapper -c config_name create-config -f "lvm(fs_type)" /mount-
+point
+For example, to create a configuration file called lvm_config on an LVM2 subvolume with an
+ext4 file system, mounted at /lvm_mount, use:
+# snapper -c lvm_config create-config -f "lvm(ext4)" /lvm_mount
+For Btrfs:
+# snapper -c config_name create-config -f btrfs /mount-point
+The -c config_name option specifies the name of the configuration file.
+The create-config tells snapper to create a configuration file.
+The -f file_system tells snapper what file system to use; if this is omitted snapper will
+attempt to detect the file system.
+The /mount-point is where the subvolume or thinly-provisioned LVM2 file system is
+mounted.
+Alternatively, to create a configuration file called btrfs_config, on a Btrfs subvolume that is
+mounted at /btrfs_mount, use:
+# snapper -c btrfs_config create-config -f btrfs /btrfs_mount
+The configuration files are stored in the /etc/snapper/configs/ directory.
+14.2. CREATING A SNAPPER SNAPSHOT
+Snapper can create the following kinds of snapshots:
+Pre Snapshot
+A pre snapshot serves as a point of origin for a post snapshot. The two are closely tied and designed
+to track file system modification between the two points. The pre snapshot must be created before
+the post snapshot.
+Post Snapshot
+A post snapshot serves as the end point to the pre snapshot. The coupled pre and post snapshots
+define a range for comparison. By default, every new snapper volume is configured to create a
+background comparison after a related post snapshot is created successfully.
+Single Snapshot
+A single snapshot is a standalone snapshot created at a specific moment. These can be used to
+track a timeline of modifications and have a general point to return to later.
+14.2.1. Creating a Pre and Post Snapshot Pair
+14.2.1.1. Creating a Pre Snapshot with Snapper
+Storage Administration Guide
+120
+
+To create a pre snapshot, use:
+# snapper -c config_name create -t pre
+The -c config_name option creates a snapshot according to the specifications in the named
+configuration file. If the configuration file does not yet exist, see Section 14.1, "Creating Initial Snapper
+Configuration".
+The create -t option specifies what type of snapshot to create. Accepted entries are pre, post, or 
+single.
+For example, to create a pre snapshot using the lvm_config configuration file, as created in
+Section 14.1, "Creating Initial Snapper Configuration", use:
+# snapper -c SnapperExample create -t pre -p
+1
+The -p option prints the number of the created snapshot and is optional.
+14.2.1.2. Creating a Post Snapshot with Snapper
+A post snapshot is the end point of the snapshot and should be created after the parent pre snapshot by
+following the instructions in Section 14.2.1.1, "Creating a Pre Snapshot with Snapper".
+Procedure 14.2. Creating a Post Snapshot
+1. Determine the number of the pre snapshot:
+# snapper -c config_name list
+For example, to display the list of snapshots created using the configuration file lvm_config,
+use the following:
+# snapper -c lvm_config list
+Type   | # | Pre # | Date              | User | Cleanup  | 
+Description | Userdata
+-------+---+-------+-------------------+------+----------+-------
+------+---------
+single | 0 |       |                   | root |          | current     
+|
+pre    | 1 |       | Mon 06<...>       | root |          |             
+|
+This output shows that the pre snapshot is number 1.
+2. Create a post snapshot that is linked to a previously created pre snapshot:
+# snapper -c config_file create -t post --pre-num 
+pre_snapshot_number
+The -t post option specifies the creation of the post snapshot type.
+The --pre-num option specifies the corresponding pre snapshot.
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+121
+
+For example, to create a post snapshot using the lvm_config configuration file and is linked to
+pre snapshot number 1, use:
+# snapper -c lvm_config create -t post --pre-num 1 -p
+2
+The -p option prints the number of the created snapshot and is optional.
+3. The pre and post snapshots 1 and 2 are now created and paired. Verify this with the list
+command:
+# snapper -c lvm_config list
+Type   | # | Pre # | Date              | User | Cleanup  | 
+Description | Userdata
+-------+---+-------+-------------------+------+----------+-------
+------+---------
+single | 0 |       |                   | root |          | current     
+|
+pre    | 1 |       | Mon 06<...>       | root |          |             
+|
+post   | 2 | 1     | Mon 06<...>       | root |          |             
+|
+14.2.1.3. Wrapping a Command in Pre and Post Snapshots
+You can also wrap a command within a pre and post snapshot, which can be useful when testing. See
+Procedure 14.3, "Wrapping a Command in Pre and Post Snapshots", which is a shortcut for the following
+steps:
+1. Running the snapper create pre snapshot command.
+2. Running a command or a list of commands to perform actions with a possible impact on the file
+system content.
+3. Running the snapper create post snapshot command.
+Procedure 14.3. Wrapping a Command in Pre and Post Snapshots
+1. To wrap a command in pre and post snapshots:
+# snapper -c lvm_config create --command "command_to_be_tracked"
+For example, to track the creation of the /lvm_mount/hello_file file:
+# snapper -c lvm_config create --command "echo Hello > 
+/lvm_mount/hello_file"
+2. To verify this, use the status command:
+# snapper -c config_file status 
+first_snapshot_number..second_snapshot_number
+For example, to track the changes made in the first step:
+Storage Administration Guide
+122
+
+# snapper -c lvm_config status 3..4
++..... /lvm_mount/hello_file
+Use the list command to verify the number of the snapshot if needed.
+For more information on the status command, see Section 14.3, "Tracking Changes Between
+Snapper Snapshots".
+Note that there is no guarantee that the command in the given example is the only thing the snapshots
+capture. Snapper also records anything that is modified by the system, not just what a user modifies.
+14.2.2. Creating a Single Snapper Snapshot
+Creating a single snapper snapshot is similar to creating a pre or post snapshot, only the create -t
+option specifies single. The single snapshot is used to create a single snapshot in time without having it
+relate to any others. However, if you are interested in a straightforward way to create snapshots of LVM2
+thin volumes without the need to automatically generate comparisons or list additional information,
+Red Hat recommends using the System Storage Manager instead of Snapper for this purpose, as
+described in Section 16.2.6, "Snapshot".
+To create a single snapshot, use:
+# snapper -c config_name create -t single
+For example, the following command creates a single snapshot using the lvm_config configuration file.
+# snapper -c lvm_config create -t single
+Although single snapshots are not specifically designed to track changes, you can use the snapper 
+diff, xadiff, and status commands to compare any two snapshots. For more information on these
+commands, see Section 14.3, "Tracking Changes Between Snapper Snapshots".
+14.2.3. Configuring Snapper to Take Automated Snapshots
+Taking automated snapshots is one of key features of Snapper. By default, when you configure Snapper
+for a volume, Snapper starts taking a snapshot of the volume every hour.
+Under the default configuration, Snapper keeps:
+10 hourly snapshots, and the final hourly snapshot is saved as a "daily" snapshot.
+10 daily snapshots, and the final daily snapshot for a month is saved as a "monthly" snapshot.
+10 monthly snapshots, and the final monthly snapshot is saved as a "yearly" snapshot.
+10 yearly snapshots.
+Note that Snapper keeps by default no more that 50 snapshots in total. However, Snapper keeps by
+default all snapshots created less than 1,800 seconds ago.
+The default configuration is specified in the /etc/snapper/config-templates/default file. When
+you use the snapper create-config command to create a configuration, any unspecified values are
+set based on the default configuration. You can edit the configuration for any defined volume in the 
+/etc/snapper/configs/config_name file.
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+123
+
+14.3. TRACKING CHANGES BETWEEN SNAPPER SNAPSHOTS
+Use the status, diff, and xadiff commands to track the changes made to a subvolume between
+snapshots:
+status
+The status command shows a list of files and directories that have been created, modified, or
+deleted between two snapshots, that is a comprehensive list of changes between two snapshots. You
+can use this command to get an overview of the changes without excessive details.
+For more information, see Section 14.3.1, "Comparing Changes with the status Command".
+diff
+The diff command shows a diff of modified files and directories between two snapshots as received
+from the status command if there is at least one modification detected.
+For more information, see Section 14.3.2, "Comparing Changes with the diff Command".
+xadiff
+The xadiff command compares how the extended attributes of a file or directory have changed
+between two snapshots.
+For more information, see Section 14.3.3, "Comparing Changes with the xadiff Command".
+14.3.1. Comparing Changes with the status Command
+The status command shows a list of files and directories that have been created, modified, or deleted
+between two snapshots.
+To display the status of files between two snapshots, use:
+# snapper -c config_file status 
+first_snapshot_number..second_snapshot_number
+Use the list command to determine snapshot numbers if needed.
+For example, the following command displays the changes made between snapshot 1 and 2, using the
+configuration file lvm_config.
+#snapper -c lvm_config status 1..2
+tp.... /lvm_mount/dir1
+-..... /lvm_mount/dir1/file_a
+c.ug.. /lvm_mount/file2
++..... /lvm_mount/file3
+....x. /lvm_mount/file4
+cp..xa /lvm_mount/file5
+Read letters and dots in the first part of the output as columns:
++..... /lvm_mount/file3
+||||||
+123456
+Storage Administration Guide
+124
+
+Column 1 indicates any modification of the file (directory entry) type. Possible values are:
+Column 1
+Output
+Meaning
+.
+Nothing has changed.
++
+File created.
+-
+File deleted.
+c
+Content changed.
+t
+The type of directory entry has changed. For
+example, a former symbolic link has changed to a
+regular file with the same file name.
+Column 2 indicates any changes in the file permissions. Possible values are:
+Column 2
+Output
+Meaning
+.
+No permissions changed.
+p
+Permissions changed.
+Column 3 indicates any changes in the user ownership. Possible values are:
+Column 3
+Output
+Meaning
+.
+No user ownership changed.
+u
+User ownership has changed.
+Column 4 indicates any changes in the group ownership. Possible values are:
+Column 4
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+125
+
+Output
+Meaning
+.
+No group ownership changed.
+g
+Group ownership has changed.
+Column 5 indicates any changes in the extended attributes. Possible values are:
+Column 5
+Output
+Meaning
+.
+No extended attributes changed.
+x
+Extended attributes changed.
+Column 6 indicates any changes in the access control lists (ACLs). Possible values are:
+Column 6
+Output
+Meaning
+.
+No ACLs changed.
+a
+ACLs modified.
+14.3.2. Comparing Changes with the diff Command
+The diff command shows the changes of modified files and directories between two snapshots.
+# snapper -c config_name diff 
+first_snapshot_number..second_snapshot_number
+Use the list command to determine the number of the snapshot if needed.
+For example, to compare the changes made in files between snapshot 1 and snapshot 2 that were
+made using the lvm_config configuration file, use:
+# snapper -c lvm_config diff 1..2
+--- /lvm_mount/.snapshots/13/snapshot/file4 19<...>
++++ /lvm_mount/.snapshots/14/snapshot/file4 20<...>
+@@ -0,0 +1 @@
++words
+This output shows that file4 had been modified to add "words" into the file.
+14.3.3. Comparing Changes with the xadiff Command
+Storage Administration Guide
+126
+
+The xadiff command compares how the extended attributes of a file or directory have changed
+between two snapshots:
+# snapper -c config_name xadiff 
+first_snapshot_number..second_snapshot_number
+Use the list command to determine the number of the snapshot if needed.
+For example, to show the xadiff output between snapshot number 1 and snapshot number 2 that were
+made using the lvm_config configuration file, use:
+# snapper -c lvm_config xadiff 1..2
+14.4. REVERSING CHANGES IN BETWEEN SNAPSHOTS
+To reverse changes made between two existing Snapper snapshots, use the undochange command in
+the following format, where 1 is the first snapshot and 2 is the second snapshot:
+snapper -c config_name undochange 1..2
+IMPORTANT
+Using the undochange command does not revert the Snapper volume back to its original
+state and does not provide data consistency. Any file modification that occurs outside of
+the specified range, for example after snapshot 2, will remain unchanged after reverting
+back, for example to the state of snapshot 1. For example, if undochange is run to undo
+the creation of a user, any files owned by that user can still remain.
+There is also no mechanism to ensure file consistency as a snapshot is made, so any
+inconsistencies that already exist can be transferred back to the snapshot when the 
+undochange command is used.
+Do not use the Snapper undochange command with the root file system, as doing so is
+likely to lead to a failure.
+The following diagram demonstrates how the undochange command works:
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+127
+
+Figure 14.1. Snapper Status over Time
+The diagram shows the point in time in which snapshot_1 is created, file_a is created, then file_b
+deleted. Snapshot_2 is then created, after which file_a is edited and file_c is created. This is now
+the current state of the system. The current system has an edited version of file_a, no file_b, and a
+newly created file_c.
+When the undochange command is called, Snapper generates a list of modified files between the first
+listed snapshot and the second. In the diagram, if you use the snapper -c SnapperExample 
+undochange 1..2 command, Snapper creates a list of modified files (that is, file_a is created; 
+file_b is deleted) and applies them to the current system. Therefore:
+the current system will not have file_a, as it has yet to be created when snapshot_1 was
+created.
+file_b will exist, copied from snapshot_1 into the current system.
+file_c will exist, as its creation was outside the specified time.
+Be aware that if file_b and file_c conflict, the system can become corrupted.
+You can also use the snapper -c SnapperExample undochange 2..1 command. In this case,
+the current system replaces the edited version of file_a with one copied from snapshot_1, which
+undoes edits of that file made after snapshot_2 was created.
+Using the mount and unmount Commands to Reverse Changes
+The undochange command is not always the best way to revert modifications. With the status and 
+diff command, you can make a qualified decision, and use the mount and unmount commands
+instead of Snapper. The mount and unmount commands are only useful if you want to mount snapshots
+and browse their content independently of Snapper workflow.
+If needed, the mount command activates respective LVM Snapper snapshot before mounting. Use the 
+mount and unmount commands if you are, for example, interested in mounting snapshots and
+extracting older version of several files manually. To revert files manually, copy them from a mounted
+Storage Administration Guide
+128
+
+snapshot to the current file system. The current file system, snapshot 0, is the live file system created in
+Procedure 14.1, "Creating a Snapper Configuration File". Copy the files to the subtree of the original
+/mount-point.
+Use the mount and unmount commands for explicit client-side requests. The 
+/etc/snapper/configs/config_name file contains the ALLOW_USERS= and ALLOW_GROUPS=
+variables where you can add users and groups. Then, snapperd allows you to perform mount
+operations for the added users and groups.
+14.5. DELETING A SNAPPER SNAPSHOT
+To delete a snapshot:
+# snapper -c config_name delete snapshot_number
+You can use the list command to verify that the snapshot was successfully deleted.
+CHAPTER 14. CREATING AND MAINTAINING SNAPSHOTS WITH SNAPPER
+129
+
+CHAPTER 15. SWAP SPACE
+Swap space in Linux is used when the amount of physical memory (RAM) is full. If the system needs
+more memory resources and the RAM is full, inactive pages in memory are moved to the swap space.
+While swap space can help machines with a small amount of RAM, it should not be considered a
+replacement for more RAM. Swap space is located on hard drives, which have a slower access time than
+physical memory. Swap space can be a dedicated swap partition (recommended), a swap file, or a
+combination of swap partitions and swap files. Note that Btrfs does not support swap space.
+In years past, the recommended amount of swap space increased linearly with the amount of RAM in the
+system. However, modern systems often include hundreds of gigabytes of RAM. As a consequence,
+recommended swap space is considered a function of system memory workload, not system memory.
+Table 15.1, "Recommended System Swap Space" illustrates the recommended size of a swap partition
+depending on the amount of RAM in your system and whether you want sufficient memory for your
+system to hibernate. The recommended swap partition size is established automatically during
+installation. To allow for hibernation, however, you need to edit the swap space in the custom partitioning
+stage.
+Recommendations in Table 15.1, "Recommended System Swap Space" are especially important on
+systems with low memory (1 GB and less). Failure to allocate sufficient swap space on these systems
+can cause issues such as instability or even render the installed system unbootable.
+Table 15.1. Recommended System Swap Space
+Amount of RAM in the system
+Recommended swap space
+Recommended swap space if
+allowing for hibernation
+⩽ 2 GB
+2 times the amount of RAM
+3 times the amount of RAM
+> 2 GB - 8 GB
+Equal to the amount of RAM
+2 times the amount of RAM
+> 8 GB - 64 GB
+At least 4 GB
+1.5 times the amount of RAM
+> 64 GB
+At least 4 GB
+Hibernation not recommended
+At the border between each range listed in Table 15.1, "Recommended System Swap Space", for
+example a system with 2 GB, 8 GB, or 64 GB of system RAM, discretion can be exercised with regard to
+chosen swap space and hibernation support. If your system resources allow for it, increasing the swap
+space may lead to better performance. A swap space of at least 100 GB is recommended for systems
+with over 140 logical processors or over 3 TB of RAM.
+Note that distributing swap space over multiple storage devices also improves swap space performance,
+particularly on systems with fast drives, controllers, and interfaces.
+Storage Administration Guide
+130
+
+IMPORTANT
+File systems and LVM2 volumes assigned as swap space should not be in use when
+being modified. Any attempts to modify swap fail if a system process or the kernel is using
+swap space. Use the free and cat /proc/swaps commands to verify how much and
+where swap is in use.
+You should modify swap space while the system is booted in rescue mode, see Booting
+Your Computer in Rescue Mode in the Red Hat Enterprise Linux 7 Installation Guide.
+When prompted to mount the file system, select Skip.
+15.1. ADDING SWAP SPACE
+Sometimes it is necessary to add more swap space after installation. For example, you may upgrade the
+amount of RAM in your system from 1 GB to 2 GB, but there is only 2 GB of swap space. It might be
+advantageous to increase the amount of swap space to 4 GB if you perform memory-intense operations
+or run applications that require a large amount of memory.
+You have three options: create a new swap partition, create a new swap file, or extend swap on an
+existing LVM2 logical volume. It is recommended that you extend an existing logical volume.
+15.1.1. Extending Swap on an LVM2 Logical Volume
+By default, Red Hat Enterprise Linux 7 uses all available space during installation. If this is the case with
+your system, then you must first add a new physical volume to the volume group used by the swap
+space.
+After adding additional storage to the swap space's volume group, it is now possible to extend it. To do
+so, perform the following procedure (assuming /dev/VolGroup00/LogVol01 is the volume you want
+to extend by 2 GB):
+Procedure 15.1. Extending Swap on an LVM2 Logical Volume
+1. Disable swapping for the associated logical volume:
+# swapoff -v /dev/VolGroup00/LogVol01
+2. Resize the LVM2 logical volume by 2 GB:
+# lvresize /dev/VolGroup00/LogVol01 -L +2G
+3. Format the new swap space:
+# mkswap /dev/VolGroup00/LogVol01
+4. Enable the extended logical volume:
+# swapon -v /dev/VolGroup00/LogVol01
+5. To test if the swap logical volume was successfully extended and activated, inspect active swap
+space:
+CHAPTER 15. SWAP SPACE
+131
+
+$ cat /proc/swaps
+$ free -h
+15.1.2. Creating an LVM2 Logical Volume for Swap
+To add a swap volume group 2 GB in size, assuming /dev/VolGroup00/LogVol02 is the swap
+volume you want to add:
+1. Create the LVM2 logical volume of size 2 GB:
+# lvcreate VolGroup00 -n LogVol02 -L 2G
+2. Format the new swap space:
+# mkswap /dev/VolGroup00/LogVol02
+3. Add the following entry to the /etc/fstab file:
+/dev/VolGroup00/LogVol02   swap     swap    defaults     0 0
+4. Regenerate mount units so that your system registers the new configuration:
+# systemctl daemon-reload
+5. Activate swap on the logical volume:
+# swapon -v /dev/VolGroup00/LogVol02
+6. To test if the swap logical volume was successfully created and activated, inspect active swap
+space:
+$ cat /proc/swaps
+$ free -h
+15.1.3. Creating a Swap File
+To add a swap file:
+Procedure 15.2. Add a Swap File
+1. Determine the size of the new swap file in megabytes and multiply by 1024 to determine the
+number of blocks. For example, the block size of a 64 MB swap file is 65536.
+2. Create an empty file:
+# dd if=/dev/zero of=/swapfile bs=1024 count=65536
+Replace count with the value equal to the desired block size.
+3. Set up the swap file with the command:
+Storage Administration Guide
+132
+
+# mkswap /swapfile
+4. Change the security of the swap file so it is not world readable.
+# chmod 0600 /swapfile
+5. To enable the swap file at boot time, edit /etc/fstab as root to include the following entry:
+/swapfile          swap            swap    defaults        0 0
+The next time the system boots, it activates the new swap file.
+6. Regenerate mount units so that your system registers the new /etc/fstab configuration:
+# systemctl daemon-reload
+7. To activate the swap file immediately:
+# swapon /swapfile
+8. To test if the new swap file was successfully created and activated, inspect active swap space:
+$ cat /proc/swaps
+$ free -h
+15.2. REMOVING SWAP SPACE
+Sometimes it can be prudent to reduce swap space after installation. For example, you have
+downgraded the amount of RAM in your system from 1 GB to 512 MB, but there is 2 GB of swap space
+still assigned. It might be advantageous to reduce the amount of swap space to 1 GB, since the larger 2
+GB could be wasting disk space.
+You have three options: remove an entire LVM2 logical volume used for swap, remove a swap file, or
+reduce swap space on an existing LVM2 logical volume.
+15.2.1. Reducing Swap on an LVM2 Logical Volume
+To reduce an LVM2 swap logical volume (assuming /dev/VolGroup00/LogVol01 is the volume you
+want to reduce):
+Procedure 15.3. Reducing an LVM2 Swap Logical Volume
+1. Disable swapping for the associated logical volume:
+# swapoff -v /dev/VolGroup00/LogVol01
+2. Reduce the LVM2 logical volume by 512 MB:
+# lvreduce /dev/VolGroup00/LogVol01 -L -512M
+3. Format the new swap space:
+CHAPTER 15. SWAP SPACE
+133
+
+# mkswap /dev/VolGroup00/LogVol01
+4. Activate swap on the logical volume:
+# swapon -v /dev/VolGroup00/LogVol01
+5. To test if the swap logical volume was successfully reduced, inspect active swap space:
+$ cat /proc/swaps
+$ free -h
+15.2.2. Removing an LVM2 Logical Volume for Swap
+To remove a swap volume group (assuming /dev/VolGroup00/LogVol02 is the swap volume you
+want to remove):
+Procedure 15.4. Remove a Swap Volume Group
+1. Disable swapping for the associated logical volume:
+# swapoff -v /dev/VolGroup00/LogVol02
+2. Remove the LVM2 logical volume:
+# lvremove /dev/VolGroup00/LogVol02
+3. Remove the following associated entry from the /etc/fstab file:
+/dev/VolGroup00/LogVol02   swap     swap    defaults     0 0
+4. Regenerate mount units so that your system registers the new configuration:
+# systemctl daemon-reload
+5. To test if the logical volume was successfully removed, inspect active swap space:
+$ cat /proc/swaps

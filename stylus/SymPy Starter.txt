@@ -1,0 +1,1596 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+
+Instant SymPy Starter
+
+
+Credits
+
+
+About the Author
+
+
+About the Reviewer
+
+
+www.packtpub.com
+
+
+Support files, eBooks, discount offers and more
+
+
+packtlib.packtpub.com
+
+
+Why Subscribe?
+
+
+Free Access for Packt account holders
+
+
+1. Instant SymPy Starter
+
+
+So, what is SymPy?
+
+
+Installation
+
+
+Step 1 - Trying it out online
+
+
+Step 2 - Installing the environment
+
+
+Step 3 - Installing SymPy
+
+
+Step 4 - Configuring the notebook
+
+
+And that's it
+
+
+Quick start - Automated curve sketching
+
+
+Step 1 - Handling the input
+
+
+Step 2 - Finding the domain of definition
+
+
+Step 3 - Finding the local extrema
+
+
+Step 4 - Computing the asymptotes
+
+
+Step 5 - Plotting the curve
+
+
+Step 6 - Building the figure
+
+
+Top 5 features you'll want to know about
+
+
+Creating expressions
+
+
+Symbols
+
+
+Functions
+
+
+Manipulating expressions
+
+
+The structure of expressions
+
+
+Querying properties
+
+
+Substitution
+
+
+Simplification
+
+
+Checking for mathematical equality
+
+
+Numerical evaluation
+
+
+Floating-point numbers
+
+
+Compiling expressions
+
+
+Calculus
+
+
+Derivatives
+
+
+Limits
+
+
+Integrals
+
+
+Taylor series
+
+
+Solving equations
+
+
+People and places you should get to know
+
+
+Official sites
+
+
+Articles and tutorials
+
+
+Community
+
+
+Blogs
+
+
+Twitter
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Instant SymPy Starter
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Instant SymPy Starter
+
+
+
+Copyright © 2013 Packt Publishing
+All rights reserved. No part of this book may be reproduced, stored in a retrieval system, or transmitted in any form or by any means, without the prior written permission of the publisher, except in the case of brief quotations embedded in critical articles or reviews.
+Every effort has been made in the preparation of this book to ensure the accuracy of the information presented. However, the information contained in this book is sold without warranty, either express or implied. Neither the author, nor Packt Publishing, and its dealers and distributors will be held liable for any damages caused or alleged to be caused directly or indirectly by this book.
+Packt Publishing has endeavored to provide trademark information about all of the companies and products mentioned in this book by the appropriate use of capitals. However, Packt Publishing cannot guarantee the accuracy of this information.
+First published: May 2013
+Production Reference: 1170513
+Published by Packt Publishing Ltd.
+Livery Place
+35 Livery Street
+Birmingham B3 2PB, UK.
+ISBN 978-1-78216-362-6
+
+www.packtpub.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Credits
+
+
+
+
+
+Author
+
+
+Ronan Lamy
+
+
+Reviewer
+
+
+Douglas B. Meade
+
+
+Acquisition Editor
+
+
+Mary Jasmine Nadar
+
+
+Commissioning Editors
+
+
+Maria D'souza
+Sruthi Kutty
+
+
+Technical Editor
+
+
+Jalasha D'costa
+
+
+Project Coordinator
+
+
+Sherin Padayatty
+
+
+Proofreader
+
+
+Aaron Nash
+
+
+Production Coordinator
+
+
+Conidon Miranda
+
+
+Cover Work
+
+
+Conidon Miranda
+
+
+Cover Image
+
+
+Conidon Miranda
+
+
+
+
+
+
+
+
+
+
+
+
+
+About the Author
+
+
+
+To obtain his Ph.D. in Physics, Ronan Lamy spent four years analyzing data in a proprietary computer algebra system. This taught him the power of symbolic computation. After quitting academia, and losing access to all his work, he discovered the beauty of Python and understood, a little late, the benefits of using a well-designed, general-purpose programming language with a free license.
+He is now an open source developer and Python consultant, and remains fascinated by symbolic computation. He has been a core developer of SymPy since 2009.
+
+
+
+
+
+
+
+
+
+
+
+
+
+About the Reviewer
+
+
+
+Douglas B. Meade is an Associate Professor and Director of Undergraduate Studies in the Department of Mathematics at The University of South Carolina in Columbia, SC. His research interests include numerical PDEs, mathematical modeling, and applications of computer algebra. He has been using symbolic mathematics, primarily Maple, for more than 25 years. He is a co-author of Getting Started with Maple (2009, third edition, Wiley, ISBN: 978-0470455548).
+Prof. Meade's current project is Maplets for Calculus, a collection of drill-and-practice maplets on nearly 200 topics from precalculus through vector calculus. He is intrigued by the possibilities of SymPy to facilitate the use of symbolic mathematics to an even wider range of academic and educational applications.
+
+
+
+
+
+
+
+
+
+
+
+
+
+www.packtpub.com
+
+
+
+
+
+
+
+Support files, eBooks, discount offers and more
+
+
+
+You might want to visit www.packtpub.com for support files and downloads related to your book.
+Did you know that Packt offers eBook versions of every book published, with PDF and ePub files available? You can upgrade to the eBook version at www.packtpub.com and as a print book customer, you are entitled to a discount on the eBook copy. Get in touch with us at <service@packtpub.com> for more details.
+At www.packtpub.com, you can also read a collection of free technical articles, sign up for a range of free newsletters and receive exclusive discounts and offers on Packt books and eBooks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+packtlib.packtpub.com
+
+
+
+Do you need instant solutions to your IT questions? PacktLib is Packt's online digital book library. Here, you can access, read and search across Packt's entire library of books.
+
+
+
+
+Why Subscribe?
+
+
+
+
+
+Fully searchable across every book published by Packt
+Copy and paste, print and bookmark content
+On demand and accessible via web browser
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Free Access for Packt account holders
+
+
+
+If you have an account with Packt at www.packtpub.com, you can use this to access PacktLib today and view nine entirely free books. Simply use your login credentials for immediate access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 1. Instant SymPy Starter
+
+
+
+Welcome to Instant SymPy Starter. This book has been especially created to provide you with all the information that you need to get up to speed with SymPy. You will learn the basics of SymPy, build your first SymPy code, and discover functions and tricks of the trade when it comes to using SymPy.
+This document contains the following sections:
+So, what is SymPy? helps you find out what SymPy actually is, what you can do with it, and why it's so great.
+Installation teaches you how to try out SymPy in your browser, download and install it with minimum fuss, and then set up its optional dependencies so that you can use all its functionalities.
+Quick start - Automated curve sketching will show you how to perform one of the core tasks of SymPy, automating mathematical tasks, by guiding you through the creation of a commonplace curve sketching application.
+Top 5 features you need to know about will teach you how to perform five tasks with the most important features of SymPy. By the end of this section you will be able to create symbolic expressions, manipulate them, convert them to efficient numerical functions, compute limits, integrals and derivatives, and solve equations.
+People and places you should get to know provides you with many useful links to the open source project as it is centered around a community. You will find the project page and forums, as well as a number of helpful articles, tutorials, blogs, and the Twitter feeds of SymPy contributors.
+
+
+
+
+So, what is SymPy?
+
+
+
+SymPy is a library for symbolic computation written entirely in Python and distributed under a BSD-type permissive free software license. Its core symbolic capabilities include:
+
+
+Elementary algebra
+Pattern matching and substitution
+Symbolic transformations and simplifications
+All the common mathematical functions and many special ones
+Calculus: limits, derivatives, integrals, Taylor series, and so on
+Solving many kinds of equations, including differential equations
+Linear algebra
+Polynomials
+Infinite sums and products
+Planar geometry
+Physical constants and units
+Numeric computation in arbitrary precision
+
+
+SymPy also includes subpackages dealing with advanced, specialized topics such as category theory, quantum logic, mechanical dynamics, or statistics. Even if you have no use for their functionalities, they can serve as useful examples of how to encode complex domain knowledge.
+SymPy is well integrated with the rest of the scientific Python ecosystem. Using it inside the IPython notebook provides a productive environment for prototyping and exploration of symbolic models and calculations. Powerful numerical libraries—such as NumPy, SciPy, pandas, and sklearn—are also just a few import statements away, and SymPy has features to help smooth the transition between the symbolic and numeric worlds.
+What sets SymPy apart from conventional computer algebra systems is that it is easy to integrate it into any processing pipeline. Drawing from the qualities of Python, it is easy to interface it with any other Python library or even with other languages. It can, for instance, serve as a bridge between two otherwise incompatible systems, such as a proprietary dynamical modeling application or a C library for coupled differential equations, transform user input to feed it to a renderer, or serve as an easier and less error-prone way of turning equations into efficient code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Installation
+
+
+
+In four easy steps, you can install SymPy and prepare it to be used on your system.
+
+
+
+
+Step 1 - Trying it out online
+
+
+
+The easiest way to use SymPy is to try it out in your browser. SymPy is available from http://live.sympy.org, an online Python shell, with SymPy already imported, which allows you to perform simple calculations. Take a moment to become familiar with it. Every code snippet in the online documentation can be turned into a SymPy Live shell, so you will be using it quite often. It looks as follows:
+
+
+
+The Live shell is similar to the default Python shell, with tab completion enabled and LaTeX-based pretty printing. The obvious limitations of an online app apply: the local filesystem is unavailable and computations are throttled.
+When it comes to deployment and distribution of the final product, SymPy's liberal license places no legal restriction on re-use, and being a pure-Python library, it can easily be installed into most environments, so it can easily be used to enable mathematically-aware scripting by end users.
+
+
+
+
+
+Step 2 - Installing the environment
+
+
+
+SymPy is entirely written in Python and has no mandatory dependencies. So the only thing you need to run it is an appropriate version of the Python interpreter.
+However, for developing with SymPy or using it interactively, it is highly recommended to install NumPy, matplotlib, and, most importantly, IPython. The IPython notebook provides a productive environment for interactive exploration, combined with the ability to display mathematical notation.
+On Mac and Windows devices, the easiest way is to install one of the scientific Python distributions:
+
+
+Python(x,y) - http://code.google.com/p/pythonxy/
+Enthought Python Disrtibution (EPD) - http://www.enthought.com/products/epd.php
+Anaconda CE - http://www.continuum.io/downloads.html
+
+
+Python(x, y) targets Windows and is the best choice on that platform. EPD is free to use only for academics and students. Anaconda CE has fewer features, but is free for everyone. All three provide SymPy as well as the core components of the Python scientific stack; if you install one of them, you can skip ahead to step 4.
+On Linux, the package manager simplifies the installation of packages with dependencies. The same applies to Mac users of Homebrew or Macports who want more control over their system than what the distribution route affords. Windows users with the same requirements will have to rely on the binary installers provided by the different projects or master the art of compiling Python extensions.
+The best supported version of Python is 2.7, but 2.6, 3.2, 3.3, and PyPy are also supported. Additionally, SymPy supports Python 2.5 but the IPython notebook does not. You probably already have a Python interpreter, but if it is not Version 2.7, we recommend that you install it with your package manager or go to http://www.python.org/download/ and choose the appropriate installer.
+For IPython, we need Version 0.13 or newer. Install it from your package manager if you can, noting that some distributions split its components into several packages. So, on Debian and Ubuntu, for instance, you should use the following command:
+
+$ sudo apt-get install ipython-notebook
+
+If your OS does not provide a sufficiently recent version, go to http://ipython.org and follow the installation instructions. On Ubuntu, you can also use a Personal Package Archive (PPA) at https://launchpad.net/~jtaylor/+archive/ipython.
+For NumPy and matplotlib, there are no stringent version requirements so you can probably use whatever version your package manager provides. On Debian and Ubuntu, you only need to use the following command:
+
+$ sudo apt-get install python-numpy python-matplotlib
+
+Installing the libraries from the source presents no particular difficulty if you are used to compiling C and C++ extensions. Just locate and, if needed, compile their respective dependencies, then use pip to compile and install the libraries themselves. If you do not already have pip, go to http://www.pip-installer.org/en/latest/installing.html and follow the instructions. Then, type the following command:
+
+$ [sudo] pip install numpy matplotlib ipython[zmq,notebook]
+
+
+
+
+
+
+Step 3 - Installing SymPy
+
+
+
+The easiest option is to use pip. At the command line, simply type the following command and that's it:
+
+$ [sudo] pip install sympy
+
+Another possibility is to download a source archive. Go to http://code.google.com/p/sympy/downloads/list and pick the most recent source release for your Python version (its name should look something like sympy-0.7.2.tar.gz, or sympy-0.7.2-py3.2.tar.gz if you use Python 3.*). Unpack the archive, open a console in the newly created folder, and type the following command (replace python with python3 if needed):
+
+$ python setup.py install
+
+SymPy should now be installed and you can discard the archive and the folder.
+
+
+
+Choosing the right archive to download
+
+
+Finally, on Linux, another simple alternative is to use your distribution's package manager. For example, for Debian and Ubuntu, use the following command:
+
+$ sudo apt-get install python-sympy
+
+However, you may not get the latest version of SymPy.
+In any case, to check that SymPy has been correctly installed, enter a Python shell and type import sympy. It should succeed without producing any output (ignore any warnings related to matplotlib). To make sure that all of SymPy works as intended on your system, you can additionally run the full test suite with sympy.test() (beware, it takes quite a long time).
+
+
+
+Testing a fresh installation of SymPy
+
+
+
+
+
+
+
+Step 4 - Configuring the notebook
+
+
+
+The IPython notebook is a two-process application split between a frontend and a kernel executing Python code. The frontend is a JavaScript application that runs in a web browser (all recent versions of major browsers are supported, except Internet Explorer).
+The notebook is a perfect environment for exploratory analysis. It has an intuitive and minimalist interface based on the concept of cells, that is, multiline text input boxes. They can hold text—to structure the notebook and add explanations—or Python code. Code cells are executed as a unit and the result of the last line is displayed as in a shell. There is also a rich and extensible system of magic commands that start with % and allow nearly any conceivable action inside the notebook, from configuring IPython to executing shell commands to embedding other languages. Look inside the Help menu for more information.
+The notebook has built-in support for displaying matplotlib figures in-line, and we recommend that you always use it when working with SymPy (one reason is that a quirk of the three-way interaction between sympy-0.7.2, IPython, and matplotlib prevents the latter from being properly configured once SymPy has been imported). Therefore, to start the notebook, use the following command:
+
+$ ipython notebook --pylab inline
+
+This should open your web browser on the IPython Dashboard page. Create a new notebook. To configure it for a SymPy session, type the following into the first cell and execute it by pressing Shift + Enter:
+
+%load_ext sympy.interactive.ipythonprinting
+from sympy import *
+x, y, z = symbols('x y z')
+
+
+
+The first line sets up LaTeX-based rendering of results using MathJax.
+The second one imports a large number of names from the sympy namespace. This makes it possible to type formulas in a natural way, but you should be aware that there are many name conflicts with numpy. Consequently, whenever you plan to use both libraries heavily in the same notebook, you should rather use an import shortcut trick à la import sympy as sy.
+The third line is optional and merely creates a few mathematical variables to play with.
+
+
+Now, try to enter a formula, for instance, (exp(x)/factorial(y))**z, and admire the result. You should see something like the following :
+
+
+
+
+
+
+
+
+And that's it
+
+
+
+By this point, you should have a working environment ready to make full use of SymPy. You are encouraged to play around in the notebook and discover more.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Quick start - Automated curve sketching
+
+
+
+The main use of SymPy is to automate tedious mathematical procedures, so let us look at an example of this. Curve sketching, that staple of introductory calculus classes where the student has to find out the salient features of the curve of a function through algebraic manipulations, limits, and derivatives. In this section, you will learn how to perform it automatically using SymPy.
+There are many variants of the task. For simplicity, we will reduce it to its bare essentials: identifying the local extrema and asymptotes of the curve, and highlight them on a plot of the function. We will also limit ourselves to rational fractions, which are functions equal to a ratio of polynomials.
+We shall work exclusively in the IPython notebook, taking advantage of its advanced mathematical rendering and of in-line plotting. Our goal will be to write a function that takes a string (representing a mathematical function using the Python syntax) and creates a figure similar to the following:
+
+
+
+
+
+
+
+Step 1 - Handling the input
+
+
+
+Let us choose string = '1/(x-1) + 1/(x+1) + x + 1' as the example that will guide us along the way. The sympify()function can convert a string into an expression. However, this expression needs further transformation. One issue is that SymPy defaults to computing in the complex field, but here we are only interested in real values. We also need to ensure that the expression is explicitly in the form of a rational fraction.
+Our first task is therefore to create a function that handles all these operations. Thanks to the notebook interface, you can build it step by step, first by creating a series of statements operating on the example string and then converting this series of operation into a convert_input(string) function that works on all valid input strings. These steps are illustrated as follows:
+
+
+Create a new notebook.
+In the first cell, add %load_ext sympy.interactive.ipythonprinting and from sympy import * (refer to Step 4 - Configuring the notebook of the Quick start section), and execute by pressing Shift + Enter.
+In the next cell, type string = '1/(x-1) + 1/(x+1) + x + 1'.
+Still in the second cell, add the line: expr = sympify(string) and execute it. This converts string into a SymPy expression.
+Check your result by executing expr in the third cell.
+Back in the second cell, find the symbol that expr uses with sym, = expr.free_symbols (this will fail if there are no symbols or if there are more than one). Again execute the cell and check your result.
+Create a real symbol with the same name using x = Symbol(sym.name, real=True).
+Replace sym with x in the expression using expr = expr.subs(sym, x) and check your result.
+Turn the expression into a rational fraction. For this, you need the together()function, which combines the expression into a single fraction, and the cancel() function, which simplifies the fraction.
+Finally, create the convert_input(string) function: insert the line def convert_input(string): before the second line of the cell, add return frac, x at the end, and, just for clarity, move the first line (the definition of string) elsewhere.
+
+
+You can now test your function on string and on other inputs. In the following sections, we will assume that frac, x = convert_input('1/(x-1) + 1/(x+1) + x + 1') has been run. At this point, your notebook should contain something like the following:
+
+
+
+
+
+
+
+
+Step 2 - Finding the domain of definition
+
+
+
+The domain of definition of the function is the set of values of x for which the expression is well-defined. In the case of a rational fraction, these are the values where the denominator is not zero. Computing the domain is hence just a matter of finding the (real) roots of the denominator and computing the complement of the set of roots. You can do this as follows (continue to check the results after every instruction):
+
+
+Extract the denominator of the fraction, using den = denom(x).
+Find the zeros of the denominator with poles = solve(den, x). Since x was declared as real, this call to solve() finds the real values of x for which den is zero.
+Get the domain. The full real line is Interval(-oo, oo) and the list of zeros can be converted to a symbolic set by calling FiniteSet.fromiter(poles).
+
+
+Here are the notebook cells corresponding to this step:
+
+
+
+
+
+
+
+
+Step 3 - Finding the local extrema
+
+
+
+To find the local extrema, we need to compute the derivative of the function. The zeros of the derivative give the critical points, in other words, the points where the curve has a horizontal tangent. The local extrema of the function are actually the zeros where the derivative changes sign, but for simplicity, we will ignore this detail and assume, as is usually the case, that every zero is an extremum.
+You should therefore use the following steps:
+
+
+Compute the derivative by calling diff(frac, x).
+Apply the cancel() function to the previous result to simplify the derivative. These two steps can be combined using the code: deriv = cancel(diff(frac, x)).
+Find the zeros using the following code: extrema = solve(deriv, x).
+Get the value of the function at each extremum. To do this, replace x with the location x0 of each extremum, using frac.subs(x, x0).
+
+
+Applying these instructions should give you the following:
+
+
+
+
+
+
+
+
+Step 4 - Computing the asymptotes
+
+
+
+We shall now find the asymptotes of the curve. In fact, we already know the vertical asymptotes; they are simply the lines x = x0 for each pole x0. For a rational function, the only other possible asymptote can be found by studying the function's behavior when x goes to infinity. If we have f(x) ≈ m x + p in that case, y = m x + p is the equation of the asymptote. To find m and p, we take m as the limit of f(x)/x, if it is not infinite, and then take p as the limit of f(x) - m x.
+It is actually easier to do it than to explain it - simply follow these instructions:
+
+
+Compute the limit of f(x)/x using m = limit(y/x, x, oo).
+To check that m is not infinite, use m.is_bounded
+Compute the limit of f(x) - m x, using p = limit(y - m*x, x, oo)
+Wrap this into a function find_asymptote(expr, x) that returns (m, p) if the asymptote exists and None otherwise.
+
+
+The result of this step should look as follows:
+
+
+
+
+
+
+
+
+Step 5 - Plotting the curve
+
+
+
+To create the summary plot, we will use matplotlib directly. So, let us first see how to plot just the curve. Since direct numerical evaluation inside SymPy, while precise, is rather slow, it would be inefficient to generate the curve using it. Fortunately, it is easy to "compile" a symbolic expression into a Python function that takes advantage of NumPy's fast vectorized operations. Everything else is just standard matplotlib. Follow these instructions:
+
+
+Import matplotlib and NumPy, using import matplotlib.pyplot as plt and import numpy as np.
+Compile the function using func = lambdify([x], frac).
+Create a NumPy array sampling the x-interval, with the np.linspace()function.
+Evaluate the compiled function over the array.
+Draw the plot, using plt.plot().
+Set the bounding box in the x and y directions, using the plt.xlim() and plt.ylim()functions.
+Bundle this procedure into a helper function, plot_curve(expr, x, (x_min, x_max), (y_min, y_max)).
+
+
+For this step, you should end up with the following:
+
+
+
+
+
+
+
+
+Step 6 - Building the figure
+
+
+
+To make the final figure, we need to choose a plotting domain, overlay the asymptotes and the critical points over the graph of the function, and add a descriptive title.
+Choosing a domain that gives an informative and aesthetically pleasing figure is actually an art. Doing it automatically is hence challenging. We will dodge this difficulty by simply making sure that the domain contains all the interesting values of x and y, and add a buffer of 2 on all sides. In code, this means x_min = min(xs) - 2 and x_max = max(xs) + 2.
+Here are the steps you should use:
+
+
+Write a helper function choose_domain(): it needs to take a list, convert its elements to float, and return x_min and x_max as aforementioned. Note that calling float() on symbolic SymPy objects automatically converts them into ordinary Python floats using numerical algorithms.
+Find the bounds for x, the interesting values being the origin, the poles, and the extrema. For this, you can use the following code:x_min, x_max = choose_domain([0] + poles + extrema)
+Find the bounds for y, using the origin, the extrema, and the end points of the oblique asymptote, with the following:y_min, y_max = choose_domain([0] + extrema_values + [m*x_min + p, m*x_max + p])
+Plot the curve, using plot_curve(frac, x, (x_min, x_max), (y_min, y_max)).
+Add the vertical asymptotes, using the following code:plt.vlines(poles, y_min, y_max, 'r', linewidth=2)
+Add the oblique asymptote, using the following code:plt.plot([x_min, x_max], [m*x_min + p, m*x_max + p], 'r', linewidth=2)
+Add the extrema, using the following code:plt.plot(extrema, extrema_values, 'ro')
+Finally, add the title. SymPy's latex() function returns the LaTex representation of its argument, which matplotlib can render. This allows you to use mathematical notation in the title, using the following code:plt.title("Sketch of $%s \mapsto %s$" % (latex(x), latex(frac)))
+
+
+The final result of these steps looks as follows:
+
+
+
+
+
+Tip
+
+
+Downloading the example code
+
+
+You can download the example code files for all Packt books you have purchased from your account at http://www.packtpub.com. If you purchased this book elsewhere, you can visit http://www.packtpub.com/support and register to have the files e-mailed directly to you.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Top 5 features you'll want to know about
+
+
+
+As you start to use SymPy, you will realize that there are a wide variety of things that you can do with it and many concepts you need to understand. This section will teach you all about the most fundamental features and the most commonly performed tasks in SymPy.
+
+
+
+
+Creating expressions
+
+
+
+Mathematical expressions are the most important objects in SymPy. Nearly everything you can do involves expressions at some point. In this section, you will learn how best to create mathematical expressions that SymPy can manipulate.
+The first building blocks for expressions are numbers. SymPy uses its own classes to represent them because the behavior of Python's built-in types is geared toward numerical evaluation, not symbolic computation. There are two major kinds of numbers: exact expressions and floating point numbers. The latter are represented by the class Float.
+Exact expressions can involve many different classes as follows:
+
+
+Integer represents signed integer numbers of arbitrary magnitude.
+Rational represents rational numbers, or ordinary fractions. Internally, it is implemented as a pair of integers.
+Common mathematical constants are represented by singleton classes and are directly available in the sympy namespace. Thus, pi is the diameter of a unit circle, E is the base of the natural logarithm, and I is the imaginary unit. Note that there is no separate type corresponding to complex numbers. Rather, they are represented in the same way as they are usually written with pen and paper, for example, 2 + 3*I is 2 + 3i.
+
+
+Integer objects behave mostly like Python's built-in int. The most important exception is that the division between integers is exact and returns either an Integer or Rational object. Here are a few examples of arithmetic operations:
+
+>>> Integer(3) + Integer(4)
+7
+>>> Integer(3) - Integer(4)
+-1
+>>> Integer(3) * Integer(4)
+12
+>>> Integer(4) / Integer(3)  # returns a Rational
+4/3
+>>> Integer(6) / Integer(3)  # returns an Integer
+2
+>>> Integer(3) ** Integer(4)
+81
+>>> Integer(4) // Integer(3)
+1
+>>> Integer(12) % Integer(5)
+2
+
+
+
+Note
+When you enter a number into the interpreter, such as "3", it creates a Python built-in object, of class int. To convert it to a SymPy object, you need to use the sympify() function, or the more convenient shortcut S(). Thus, you can use S(23) to create an integer. However, all operations between a SymPy object and a Python number convert the number into a SymPy object, and all the common functions do the same to their arguments. This limits the need for S()drastically. In practice, the rule to remember is that you must use S() only when dividing two integers, as in S(1)/2.
+
+
+A few additional operations are available, such as prime factor decomposition with factorint(), finding the least common multiple with lcm(), or the greatest common divisor with gcd().
+
+>>> factorint(42)
+{2: 1, 3: 1, 7: 1}
+>>> lcm(15, 20)
+60
+>>> gcd(15, 20)
+5
+
+Rationals also support all arithmetic operations. The resulting fractions are always reduced to their lowest terms. Also, raising a number to a fractional power produces algebraic nth roots. There are a few conveniences to make such calculations easier: sqrt(n) is a shortcut for n**(S(1)/2) and root(n, a) is a shortcut for n**(1/a).
+Doing calculations involving fractions and square roots with SymPy is therefore as easy as elementary arithmetic using only integers. Here are the steps to follow:
+
+
+Create the relevant numbers, using S() as necessary.
+Write the calculation in the obvious manner.
+
+
+For example, the following commands find the hypotenuse of a right triangle with sides one-half and two-thirds:
+
+>>> # Decomposing for clarity
+>>> a = S(1)/2
+>>> b = S(2)/3
+>>> sqrt(a**2 + b**2)
+5/6
+>>> # In a real setting, you would probably rather use a one-liner
+>>> # But mind the parentheses!
+>>> sqrt((S(1)/2)**2 + (S(2)/3)**2)
+5/6
+
+Roots of negative and complex numbers are supported, but note that nth roots are always defined as the principal nth root of the number. This means in particular that the third root of a negative number is a complex number with positive real and imaginary parts. Also, these roots are often expressed using fractional powers of -1, as shown in the following example:
+
+>>> root(-25, 4)
+(-1)**(1/4)*sqrt(5)
+>>> root(-1, 3) != -1
+True
+
+
+
+
+
+Symbols
+
+
+
+We have just seen how to calculate with numbers, but the real power of mathematics comes from using algebraic variables. For this, you need to use the Symbol objects. To create them, you must specify their name and you can optionally specify various "assumptions" about the variable. The available assumptions include "integer", "real", "positive", and so on. If none is specified, the Symbol object is treated as a complex variable. Implications between properties are automatically taken into account, and impossible combinations cause an error. The following are a few examples of Symbol declarations:
+
+>>> z = Symbol('z') # complex variable
+>>> x = Symbol('x', real=True) # real variable
+>>> a = Symbol('a', positive=True) # positive and therefore real
+
+The symbols()function makes it easier to create many symbols at once. The keyword arguments you give it are passed on to the Symbol() constructor. For the first argument, it accepts a mini-language inspired by the Python slice notation, which is best described by the following example:
+
+>>> symbols('x, y, z')
+(x, y, z)
+>>> symbols('a:c, i:k')
+(a, b, c, i, j, k)
+>>> symbols('x:5')
+(x0, x1, x2, x3, x4)
+>>> symbols('x3:12')
+(x3, x4, x5, x6, x7, x8, x9, x10, x11)
+
+
+
+Note
+You may find on the Internet (including SymPy's own documentation) some references to the sympy.abc module or the var function. Their sole purpose is to save a little bit of typing, while using implicit magic to do so. We recommend that you only use Symbol() or symbols() and explicit assignments to create Symbol objects.
+
+
+In the IPython notebook, symbol names containing Greek letters, underscores, and/or numbers get special rendering as shown in the following screenshot:
+
+
+
+For the remainder of the text, we will assume that the following definitions are in effect:
+
+>>> x, y = symbols('x, y', real=True)
+>>> a, b = symbols('a, b', positive=True)
+>>> z = symbols('z')
+
+All the arithmetic operators and mathematical functions operating on numbers work on symbols as well. The result is a new symbolic expression. Very simple calculations such as x + x are automatically carried out, but more complex expressions such as (x + 1) * (x - 1) are not simplified, as you can see:
+
+>>> x + 2*y + x - 3*y
+2*x - y
+>>> (x + 1)*(x - 1)
+(x - 1)*(x + 1)
+
+It is worth emphasizing that SymPy symbols are just ordinary objects, as far as the Python interpreter is concerned. Even experienced SymPy users sometimes get bitten by the semantic proximity between Python variables and mathematical variables. To prevent confusion on this subject, let us analyze the following sequence of statements:
+
+>>> t = Symbol('t')
+>>> expr = t + 1
+>>> t = 1
+>>> expr
+t + 1
+
+In the first line, a Symbol object is created with t as the value of its name attribute. This object is immediately bound to a Python variable named t. In the second line, the object (1 + Symbol('t')) is bound to the variable expr. In the third line, the t variable is re-bound to the object 1. This new binding does not affect the objects created in the first-two lines in any way, as the fourth line demonstrates.
+
+
+Note
+Confusion arises when a Symbol object is bound to a variable with the same name (for example, with the statement x = Symbol('x')). To prevent it entirely, consider using different names for the variable and the Symbol object, that is, symb = Symbol('x').
+
+
+
+
+
+
+
+Functions
+
+
+
+SymPy implements a large number of mathematical functions. Their names tend to follow programmers' naming conventions, with for example, "atanh" for the inverse hyperbolic tangent, "log" for the natural logarithm, or "sqrt" for the square root.
+Applying a function to an exact number expression always results in another exact expression. This result is usually an unevaluated expression, such as sin(1), unless a simple result exists, such as sin(0) = 0, in which case it is returned. Evaluating the result can sometimes involve floating-point computations, which are automatically performed with enough precision.
+Here is an elementary example of the use of mathematical functions:
+
+>>> cos(log(2))
+cos(log(2))
+
+It is also possible to create abstract symbolic functions; the syntax for this is Function('f'). Such functions behave like the built-in ones, except that their values always remain unevaluated, as shown in this example:
+
+>>> f = Function('f')
+>>> f(0)
+f(0)
+
+Mathematical functions defined by an expression such as g(x) = 1 - x² are represented by Lambda objects. The name of this class and the syntax it uses echo Python's Lambda keyword. Calling these objects evaluates the function according to the given expression. Here is an example demonstrating the creation and use of a Lambda object:
+
+>>> g = Lambda([x], 1 - x**2)
+>>> g
+Lambda(_x, -_x**2 + 1)
+>>> g(2)
+-3
+
+Note that the Lambda objects are rarely actually useful. The idiomatic way of studying the function g, which is previously defined, is to define expr = 1 - x**2 and to manipulate that expression.
+
+
+
+
+
+
+Manipulating expressions
+
+
+
+Once you have created expressions, you often need to transform them in some way. This section will teach you how to inspect them and to transform them in many ways.
+
+
+
+
+The structure of expressions
+
+
+
+In terms of structure, SymPy objects such as integers, rationals, constants, and symbols are called atoms. All expressions are built on top of these simpler objects. They obey the following invariant: expr == expr.__class__(*expr.args), which means that all their properties derive solely from their type and the contents of their .args attribute. Also, since the elements of expr.args are SymPy objects themselves, the whole expression actually has a tree structure with SymPy classes as nodes and atoms as leaves.
+It is easy, and often illuminating, to explore this expression tree. Here are some of the options at your disposal to do it:
+
+
+The srepr()function prints a low-level representation of the expression.
+To walk the whole expression tree, use preorder_traversal(); it returns an iterator that yields nodes in a preorder fashion. That is, it yields the root (the full expression), then its first child, then the first child's first child, and so on
+Drill down directly through the chain of args.
+
+
+The following commands show all these ways of exploring the expression exp(-x)*log(1-x)*2:
+
+>>> expr = exp(-x)*log(1-x)*2
+>>> srepr(expr)
+"Mul(Integer(2), Function('exp')(Mul(Integer(-1), Symbol('x'))), Function('log')(Add(Mul(Integer(-1), Symbol('x')), Integer(1))))"
+>>> list(preorder_traversal(expr))
+[2*exp(-x)*log(-x + 1), 2, exp(-x), -x, -1, x, log(-x + 1), -x + 1, 1, -x, -1, x]
+>>> expr.__class__, expr.args
+(, (2, exp(-x), log(-x + 1)))
+>>> expr.args[1].__class__, expr.args[1].args
+(exp, (-x,))
+
+In this example, you can see two important classes, Add and Mul, which are used internally to represent addition and multiplication, respectively. Note in particular that 1 - x is actually represented as Add(Mul(-1, x), 1), and that the actual order in which the arguments are stored internally has no relation to the order in which they were input.
+You can also obtain an aggregate view of the contents of the expression with the .atoms()method. By default, it returns the set of the atomic objects contained in the expressions. A type can also be passed to it, to return all the objects of that type appearing in the expression tree. Here are a few ways of applying it to the expression from the previous example:
+
+>>> expr.atoms()
+set([1, 2, -1, x])
+>>> expr.atoms(Integer)
+set([1, 2, -1])
+
+If you want to check which variables an expression depends on, this purely structural query does not give enough information, because some objects, such as Lambda, use Symbol internally as bound variables: in Lambda([x], x*2), the identity of the symbol does not matter and, for any practical purpose, this object is the same as Lambda([y], y**2). What you need in this case is the free_symbols property, which returns only the symbols acting as free variables. The right way of checking if some expr depends explicitly on x is therefore x in expr.free_symbols, as shown in the following example:
+
+>>> Lambda([x, y], x + y).free_symbols
+set([])
+>>> Lambda([x, y], a*x + b*y).free_symbols
+set([b, a])
+
+Conceivably, every operation on expressions could be done by walking through the expression tree and inspecting its elements as we have just seen and then constructing the result directly. And, indeed, a sizable portion of SymPy's source code does precisely that. It is, however, too cumbersome for ordinary uses and there are much more convenient ways of manipulating expressions, but exploring the expression tree should be your first reflex when debugging any problem.
+
+
+
+
+
+Querying properties
+
+
+
+Every expression has properties, which include is_integer, is_real, and so on. These allow querying the mathematical properties of the object and correspond to the similarly named assumptions on symbols. They return True, False, or None, depending on whether the mathematical property is proven to be true, proven to be false, or of uncertain truth value.
+For number expressions, they will usually return a definite answer, either True or False. For symbolic expressions, on the other hand, None is a common and meaningful result. For example, if x = Symbol('x', real=True), then x.is_positive must return None because both positive and negative values are compatible with the assumption that x is real.
+The following commands demonstrate the computation of these properties for numbers and symbolic expressions:
+
+>>> (pi**2 - 9).is_positive
+True
+>>> (x**2 + 1).is_positive
+True
+>>> (x**2 - 1).is_positive is None
+True
+
+SymPy checks the properties when performing many operations and can return different results depending on them. For instance, compare the following:
+
+>>> sqrt(z**2)  # recall that z is complex
+sqrt(z**2)
+>>> sqrt(x**2)  # x is real
+Abs(x)
+>>> sqrt(a**2)  # a is positive
+a
+
+
+
+
+
+
+Substitution
+
+
+
+SymPy objects and expressions are immutable. Transforming them actually means creating a new object differing from the initial one in some way. The most direct way of doing this is to use the .subs() method. expr.subs(old, new) returns a new expression where all the occurrences of old in expr have been replaced by new. To replace several different expressions at once, you can also pass it as a single argument a dictionary of the {old: new} pairs, as shown in the following example:
+
+>>> x, y = symbols('x, y', real=True)
+>>> (cos(x) * exp(y)).subs({x: pi, y: 2})
+-exp(2)
+
+Substitution is also the most idiomatic way of evaluating a function at a specific value. To take an example, here is what you should do if you want to compute f(2), where the function f is given by f(x) = exp(x+1)/(x^2-2):
+
+
+Create the expression corresponding to the exp(x+1)/(x**2 - 2) function.
+Substitute x by 2 in the expression.
+
+
+The corresponding commands are as follows:
+
+>>> expr = exp(x+1)/(x**2-2)
+>>> expr.subs(x, 2)
+exp(3)/2
+
+A useful trick involving substitution is to force some transformation that SymPy would not normally do. For instance, supposing you want to simplify sqrt((z-1)**2) to z-1 inside a larger expression, even though z is complex, here is what you should do:
+
+
+Identify what assumption would allow the transformation. Here you need to make the value of (z - 1).is_positive to be true.
+Find a substitution that makes the assumption true. Here, replacing z with 1 + a, a positive, would do it.
+Do the substitution:expr.subs(z, 1 + a).
+Optionally, do more manipulations on the substituted expression (not needed in this example).
+Substitute back the initial symbol.
+
+
+The corresponding commands are as follows:
+
+>>> expr = sqrt((z-1)**2)/z
+>>> tmp_expr = expr.subs(z, 1 + a)
+>>> tmp_expr
+a/(a + 1)
+>>> expr = tmp_expr.subs(a, z-1)
+>>> expr
+(z - 1)/z
+
+
+
+
+
+
+Simplification
+
+
+
+When you have a symbolic expression, a common need is to put it into a shorter form or one that is easier to understand. It is nearly always more convenient to deal with 1 than with cos(x)**2 + sin(x)**2. This is where the simplify() function comes in use.
+simplify() applies a heuristic combination of simplification algorithms. It can use trigonometric relations, apply properties of logarithms and exponentials, simplify fractions and square roots, and so on. In all these operations, it takes into account the properties of the objects, particularly is_positive and is_real, as shown in the following example:
+
+>>> simplify(cos(x)**2 + sin(x)**2
+1
+>>> simplify(cos(log(a**2))*tan(log(a**2)))
+sin(2*log(a))
+
+Note that, in general, simplification is not a well-defined concept and what is considered the simplest expression depends on how it will be used subsequently. simplify() is a good choice for interactive exploration or when you do not know much about the expression. However, SymPy has a large array of specialized simplification functions, so when you know the structure of the expression and what kind of transformation you need, it is better to use these.
+Here is a list of the most useful ones (there are more in the sympy.simplify module):
+
+
+radsimp(): This simplifies expressions with square roots
+trigsimp(): This simplifies combinations of trigonometric functions
+cancel(): This clears out common factors between the numerator and the denominator of a fraction
+together(): This puts sums of a fraction over the same denominator
+apart(): This applies partial fraction decomposition
+
+
+The following commands show how they can be used:
+
+>>> radsimp(1/(sqrt(5) - 2))
+2 + sqrt(5)
+>>> trigsimp(sin(x)**2 + cos(x)**2)
+1
+>>> cancel((x**2 - 1)/(x - 1))
+x + 1
+>>> together(1/(x-1) - 1/(x+1))
+2/((x - 1)*(x + 1))
+>>> apart(2/(x**2 - 1))
+-1/(x + 1) + 1/(x - 1)
+
+Another class of transformations is provided by the expand family of functions. They modify expressions by making their structure simpler or by replacing "advanced" objects with more elementary ones. Their result is typically longer than their input (and sometimes very much longer). expand() itself subsumes all the expand_*() functions via a complex set of keyword flags (see its docstring for details).
+Like simplify(), expand() is a good one-stop shop, but you should rather use the specialized variants when you can. Here is a selection of them, demonstrated by example:
+
+>>> expand_power_base((a*b)**3)
+a**3*b**3
+>>> expand_power_exp(2**(a+b))
+2**a*2**b
+>>> expand_log(log(a*b**2))
+log(a) + 2*log(b)
+>>> expand_complex((-1)**(S(1)/3))
+1/2 + sqrt(3)*I/2
+>>> expand_trig(cos(a+b))
+-sin(a)*sin(b) + cos(a)*cos(b)
+
+
+
+
+
+
+Checking for mathematical equality
+
+
+
+Comparing two expressions with == checks whether they are structurally identical, which is a sufficient but by no means a necessary condition for mathematical equality. Note that only expressions that are printed identically may be considered equal:
+
+>>> x + x == 2*x
+True
+>>> x*(x+1) == x**2 + x
+False
+
+To check whether two expressions are mathematically equal, you need to check whether their difference reduces to zero. To do this, apply a canonicalization function to the difference, and test whether it's equal to zero. simplify() is a generally useful choice for this, but expand() can also be used:
+
+>>> simplify(x*(x+1) - (x**2 + x)) == 0
+True
+>>> simplify(1/cos(x)**2 - (1 + tan(x)**2)) == 0
+True
+
+
+
+
+
+
+
+Numerical evaluation
+
+
+
+In this section you will learn all the best ways of obtaining numerical results from your symbolic computations.
+
+
+
+
+Floating-point numbers
+
+
+
+To represent floating point numbers, SymPy uses the class Float. The major difference between the built-in float and sympy.Float is that the latter uses arbitrary precision. This means that you can use it to obtain as many digits of precision as you want.
+Floating point numbers are approximations. Symbolic calculations work best when all objects involved are known exactly. For this reason, you should avoid letting Float objects appear in your expressions. Instead, perform your calculations with Rational and other symbolic objects and convert only the final result to a numeric value. This is done with the N() function. It takes an optional second argument, 'n', specifying the number of digits of precision of the result. By default, the result has 15 digits of precision, which is roughly as much as can be encoded in a Python float. However, a major difference between using N() and floating point arithmetic is that N() can perform intermediate computation at a much higher precision if needed. The following example illustrates this:
+
+>>> N(exp(pi*sqrt(163)))
+2.62537412640769e+17
+>>> N(exp(pi*sqrt(163)), 50)
+262537412640768743.99999999999925007259719818568888
+>>> q = exp(pi*sqrt(163))
+>>> N(ceiling(q) - q)
+7.49927402801814e-13
+
+In the last line, note the precision of the result. It can only have been obtained by using a much higher precision internally. This shows why it's important to carry out exact computations as far as possible. Indeed, if q had been converted to a double-precision float (with ~15 digits of precision), it would have been impossible to extend the precision to recover a meaningful result.
+You can see in the following code that converting to Float too early gives a wrong and even absurd result:
+
+>>> r = N(exp(pi*sqrt(163)))
+>>> ceiling(r) - r
+-6.00000000000000
+
+To get a numerical result out of a symbolic computation, it is best to use the subs option of N(), which accepts a substitution dictionary. Step by step, here is the process to follow:
+
+
+Create a symbolic expression.
+Do the computation symbolically.
+Evaluate the result using N() with the subs option.
+
+
+For instance, the following commands compute the derivative of f at x=1.2345, where f(x) = exp(x)/(x+1):
+
+>>> expr = exp(x)/(x+1)
+>>> deriv = diff(expr, x)
+>>> N(deriv, subs={x: 1.2345})
+0.849702535502635
+
+
+
+
+
+
+Compiling expressions
+
+
+
+SymPy's facilities for floating point computations are implemented in pure Python and their primary objective is precision, not speed. As a result, they are too slow for the many applications where double-precision is sufficient but many computations are required, such as plotting or numerical integration.
+The solution to this problem is to convert symbolic expressions obtained with SymPy into a more efficient form for numerical evaluation. More specifically, this form will often be a function using numpy. To obtain it, you can use lambdify(). Its interface is lambdify(args, expr), where expr is the expression you wish to convert, and args is a list of symbols that correspond to the arguments of the resulting Python callable, so that, for example, lambdify([x, y, z], x+y) is effectively equivalent to lambda x, y, z: x+y.
+Here are the steps you should follow to evaluate an expression efficiently for a large number of parameter values:
+
+
+Create the symbolic expression. It would usually be the result of some symbolic calculation, but in this example, we will use a + x**2.
+Identify all the symbols appearing in the expression. This step is often trivial (here, the symbols are obviously x and a), but nevertheless critical: if you happened to leave one symbol out, the "compiled" function would actually return a symbolic expression and be slow.
+Compile the expression using lambdify(). In this example, you should use lambdify([x, a], a + x**2, "numpy") (we will explain the meaning of the third argument in the following explanation).
+Create NumPy arrays holding the parameter values.
+Evaluate the compiled function.
+
+
+The corresponding commands are as follows:
+
+>>> f = lambdify([x, a], a + x**2, "numpy")
+>>> arr = np.random.randn(1000)
+>>> result = f(arr, 0.4)
+>>> result[:3]
+array([ 0.75059394,  4.68686571,  1.70330863])
+
+By default, lambdify() converts SymPy functions into their equivalents in either the math module in the standard library, numpy, or mpmath, by decreasing the order of preference. To get fast numerical evaluation, the best choice is to use only NumPy functions. For this, pass the string "numpy" as the third argument of lambdify.
+You can also make lambdify() use any function you wish, by passing the appropriate objects as the third argument. Passing any module will fetch the functions from it, but note that functions are matched by name, so that naming differences (for example, sympy.atan versus numpy.arctan) may prevent some functions from being translated. You can also pass a dictionary directly mapping names to functions.
+Preset dictionaries establishing the correct equivalences are also available for the modules math, numpy, mpmath, and sympy. To use them, pass the name of the module as a string.
+Finally, it is also possible to combine these mapping specifications by putting several of them in a list. For instance, assuming you have created your own approximation for sin, and wish to fallback to NumPy for any other function, you would use the following:
+
+[{'sin': mysin}, "numpy"]
+
+
+
+
+
+
+
+Calculus
+
+
+
+Calculus is probably the most important application of SymPy. In this section, you will learn how to compute derivatives, integrals, limits, and series.
+
+
+
+
+Derivatives
+
+
+
+To compute the derivative of a function, create the corresponding expression and use diff(). Its first argument is the expression and the second is the variable with regard to which you want to differentiate. The result is the expression for the derivative:
+
+>>> diff(exp(x**2), x)
+2*x*exp(x**2)
+>>> diff(x**2 * y**2, y)
+2*x**2*y
+
+Higher-order derivatives can also be computed with a single call to diff():
+
+>>> diff(x**3, x, x)
+6*x
+>>> diff(x**3, x, 2)
+6*x
+>>> diff(x**2 * y**2, x, 2, y, 2)
+4
+
+Due to SymPy's focus on expressions rather than functions, the derivatives for symbolic functions can seem a little surprising, but LaTeX rendering in the notebook should make their meaning clear.
+
+>>> f = Function('f')
+>>> diff(f(x**2), x)
+2*x*Subs(Derivative(f(_xi_1), _xi_1), (_xi_1,), (x**2,))
+
+Let's take a look at the following screenshot:
+
+
+
+
+
+
+
+
+Limits
+
+
+
+Limits are obtained through limit(). The syntax for the limit of expr when x goes to some value x0 is limit(expr, x, x0). To specify a limit towards infinity, you need to use SymPy's infinity object, named oo. This object will also be returned for infinite limits:
+
+>>> limit(exp(-x), x, oo)
+0
+>>> limit(1/x**2, x, 0)
+oo
+
+There is also a fourth optional parameter, to specify the direction of approach of the limit target. "+" (the default) gives the limit from above, and "-" is from below. Obviously, this parameter is ignored when the limit target is infinite:
+
+>>> limit(1/x, x, 0, "-")
+-oo
+>>> limit(1/x, x, 0, "+")
+oo
+
+Let's take a look at the following screenshot:
+
+
+
+
+
+
+
+
+Integrals
+
+
+
+SymPy has powerful algorithms for integration, and, in particular, can find most integrals of logarithmic and exponential functions expressible with special functions, and many more besides, thanks to Meijer G-functions.
+The main function for integration is integrate(). It can compute both antiderivatives (indefinite integrals) and definite integrals. Note that the value of an antiderivative is only defined up to an arbitrary constant but the result does not include it.
+
+>>> integrate(sin(x), x)
+-cos(x)
+>>> integrate(sin(x), (x, 0, pi))
+2
+
+Unevaluated symbolic integrals and antiderivatives are represented by the Integral class. integrate() may return these objects if it cannot compute the integral.
+It is also possible to create Integral objects directly, using the same syntax as integrate(). To evaluate them, call their .doit() method:
+
+>>> integral = Integral(sin(x), (x, 0, pi))
+>>> integral
+Integral(sin(x), (x, 0, pi))
+>>> integral.doit()
+2
+
+Let's take a look at the following screenshot:
+
+
+
+
+
+
+
+
+Taylor series
+
+
+
+A Taylor series approximation is an approximation of a function obtained by truncating its Taylor series. To compute it, use series(expr, x, x0, n), where x is the relevant variable, x0 is the point where the expansion is done (defaults to 0), and n is the order of expansion (defaults to 6):
+
+>>> series(cos(x), x)
+1 - x**2/2 + x**4/24 + O(x**6)
+>>> series(cos(x), x, n=10)
+1 - x**2/2 + x**4/24 - x**6/720 + x**8/40320 + O(x**10)
+
+The O(x**6) part in the result is a "big-O" object. Intuitively, it represents all the terms of order equal to or higher than 6. This object automatically absorbs or combines with powers of the variable, which makes simple arithmetic operations on expansions convenient:
+
+>>> O(x**2) + 2*x**3
+O(x**2)
+>>> O(x**2) * 2*x**3
+O(x**5)
+>>> expand(series(sin(x), x, n=6) * series(cos(x), x, n=4))
+x - 2*x**3/3 + O(x**5)
+>>> series(sin(x)*cos(x), x, n=5)
+x - 2*x**3/3 + O(x**5)
+
+If you want to use the expansion as an approximation of the function, the O() term prevents it from behaving like an ordinary expression, so you need to remove it. You can do so by using the aptly named .removeO() method:
+
+>>> series(cos(x), x).removeO()
+x**4/24 - x**2/2 + 1
+
+Taylor series look better in the notebook, as shown in the following screenshot:
+
+
+
+
+
+
+
+
+
+Solving equations
+
+
+
+This section will teach you how to solve the different types of equations that SymPy handles.
+The main function to use for solving equations is solve(). Its interface is somewhat complicated as it accepts many different kinds of inputs and can output results in various forms depending on the input.
+In the simplest case, univariate equations, use the syntax solve(expr, x) to solve the equation expr = 0 for the variable x. If you want to solve an equation of the form A = B, simply put it under the preceding form, using solve(A - B, x). This can solve algebraic and transcendental equations involving rational fractions, square roots, absolute values, exponentials, logarithms, trigonometric functions, and so on. The result is then a list of the values of the variables satisfying the equation.
+The following commands show a few examples of equations that can be solved:
+
+>>> solve(x**2 - 1, x)
+[-1, 1]
+>>> solve(x*exp(x) - 1, x)
+[LambertW(1)]
+>>> solve(abs(x**2-4) - 3, x)
+[-1, 1, -sqrt(7), sqrt(7)]
+
+Note that the form of the result means that it can only return a finite set of solutions. In cases where the true solution is infinite, it can therefore be misleading. When the solution is an interval, solve() typically returns an empty list. For periodic functions, usually only one solution is returned:
+
+>>> solve(0, x) # all x are solutions
+[]
+>>> solve(x - abs(x), x) # all positive x are solutions
+[]
+>>> solve(sin(x), x) # all k*pi with k integer are solutions
+[0]
+
+The domain over which the equation is solved depends on the assumptions on the variable. Hence, if the variable is a real Symbol object, only real solutions are returned, but if it is complex, then all solutions in the complex plane are returned (subject to the aforementioned restriction on returning infinite solution sets). This difference is readily apparent when solving polynomials, as the following example demonstrates:
+
+>>> solve(x**2 + 1, x)
+[]
+>>> solve(z**2 + 1, z)
+[-I, I]
+
+There is no restriction on the number of variables appearing in the expression. Solving a multivariate expression for any of its variables allows it to be expressed as a function of the other variables, and to eliminate it from other expressions. The following example shows different ways of solving the same multivariate expression:
+
+>>> solve(x**2 - exp(a), x)
+[-exp(a/2), exp(a/2)]
+>>> solve(x**2 - exp(a), a)
+[log(x**2)]
+>>> solve(x**2 - exp(a), x, a)
+[{x: -exp(a/2)}, {x: exp(a/2)}]
+>>> solve(x**2 - exp(a), x, b)
+[{x: -exp(a/2)}, {x: exp(a/2)}]
+
+To solve a system of equations, pass a list of expressions to solve(): each one will be interpreted, as in the univariate case, as an equation of the form expr = 0. The result can be returned in one of two forms, depending on the mathematical structure of the input: either as a list of tuples, where each tuple contains the values for the variables in the order given to solve, or a single dictionary, suitable for use in subs(), mapping variables to their values.
+As you can see in the following example, it can be hard to predict what form the result will take:
+
+>>> solve([exp(x**2) - y, y - 3], x, y)
+[(-sqrt(log(3)), 3), (sqrt(log(3)), 3)]
+>>> solve([x**2 - y, y - 3], x, y)
+[(-sqrt(3), 3), (sqrt(3), 3)]
+>>> solve([x - y, y - 3], x, y)
+{y: 3, x: 3}
+
+This variability in return types is fine for interactive use, but for library code, more predictability is required. In this case, you should use the dict=True option. The output will then always be a list of mappings of variables to value. Compare the following example to the previous one:
+
+>>> solve([x**2 - y, y - 3], x, y, dict=True)
+[{y: 3, x: -sqrt(3)}, {y: 3, x: sqrt(3)}]
+>>> solve([x - y, y - 3], x, y, dict=True)
+[{y: 3, x: 3}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+People and places you should get to know
+
+
+
+If you need help with SymPy, here are some people and places which will prove invaluable.
+
+
+
+
+Official sites
+
+
+
+
+
+Homepage: http://sympy.org/
+Manual and documentation: http://docs.sympy.org/
+Wiki: http://wiki.sympy.org/
+Blog: http://sympy.blogspot.com/
+Source code: https://github.com/sympy/sympy
+
+
+
+
+
+
+
+Articles and tutorials
+
+
+
+
+
+An impressive demonstration of SymPy-powered multibody dynamics by Jason Moore at http://www.moorepants.info/blog/npendulum.html
+A SymPy tutorial given at SciPy 2011 at http://mattpap.github.com/scipy-2011-tutorial/html/index.html
+SymPy's tutorial, straight from the official documentation at http://docs.sympy.org/0.7.2/tutorial.html
+
+
+
+
+
+
+
+Community
+
+
+
+
+
+Official mailing list at <sympy@googlegroups.com>
+Web interface to the mailing list at https://groups.google.com/forum/?fromgroups#!forum/sympy
+Official IRC channel: #sympy on freenode
+User FAQ at https://github.com/sympy/sympy/wiki/Faq
+
+
+
+
+
+
+
+Blogs
+
+
+
+
+
+Official blog aggregator for the whole community: http://planet.sympy.org/
+The blog of Aaron Meurer, SymPy's project leader: http://asmeurersympy.wordpress.com/
+Matthew Rocklin blogs on statistics and linear algebra in SymPy at http://matthewrocklin.com/blog/
+
+
+
+
+
+
+
+Twitter
+
+
+
+
+
+For more open source information, follow Packt at http://twitter.com/#!/packtopensource
+
+
+
+
+
+
+

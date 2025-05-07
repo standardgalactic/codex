@@ -1,0 +1,494 @@
+    while 1:
+        print('sensing...')
+        sen_humidity, sen_temperature = Adafruit_DHT.read_retry(sensor, dht_pin)
+
+        if humidity is not None and temperature is not None:
+            print('Sensing: Temperature={0:0.1f}*C  Humidity={1:0.1f}%'.format(sen_temperature, sen_humidity))
+
+            sen_temperature = 18
+            sen_humidity = 80
+            # normalization
+            norm_temperature = sen_temperature / 60.0
+            norm_humidity = sen_humidity / 100.0
+            print('Normalization: Temperature={0:0.0001f}  Humidity={1:0.0001f}'
+                  .format(norm_temperature, norm_humidity))
+
+            temp_in = temperature_category(norm_temperature)
+            hum_in = humidity_category(norm_humidity)
+            print('fuzzy membership: Temperature={0}  Humidity={1}'.format(temp_in, hum_in))
+
+            # Determine the weight and aggregate
+            rule1 = np.fmax(temp_in['hot'], hum_in['low'])
+            rule2 = temp_in['warm']
+            rule3 = np.fmax(temp_in['warm'], hum_in['high'])
+
+            imp1 = np.fmin(rule1, comfort_low)
+            imp2 = np.fmin(rule2, comfort_ave)
+            imp3 = np.fmin(rule3, comfort_very)
+
+            aggregate_membership = np.fmax(imp1, imp2, imp3)
+
+            # Defuzzify
+            result_comfort = fuzz.defuzz(comfort, aggregate_membership, 'centroid')
+            print(result_comfort)
+
+            # make decision based on experiment
+            if result_comfort >= 5.002:
+                if machine_state < 0:
+                    machine_state = 1
+                    print("turn on a machine")
+                    GPIO.output(relay_pin, GPIO.HIGH)
+                else:
+                    print("a machine already turn on")
+            else:
+                if machine_state > 0:
+                    machine_state = 0
+                    print("turn off a machine")
+                    GPIO.output(relay_pin, GPIO.LOW)
+                else:
+                    print("a machine already turn off")
+
+            time.sleep(2)
+
+        time.sleep(2)
+
+except KeyboardInterrupt:
+    GPIO.output(relay_pin, GPIO.LOW)
+    GPIO.cleanup()
+
+
+
+
+
+
+
+
+
+
+TestingIn the following screenshot we can see the results of measurements of the system acquiring data from sensors: 
+
+
+
+
+
+
+
+
+
+EnhancementThis program is a sample of how to use fuzzy logic to develop a decision system. There are many ways you can improve this program. The following is an improvement area to which you can contribute:Modify the fuzzy membership model to improve the definition of comfortAdd more input data to improve accuracyAdd fuzzy inference methods to obtain the aggregation value
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+We have reviewed some basic decision systems by taking two samples, that is, Bayesian and fuzzy logic. We also explored Python libraries for implementing Bayesian and fuzzy logic and then practiced with them. As the last topic, we deployed a decision system using fuzzy logic as a study sample on how to integrate a decision system on an IoT project with Raspberry Pi.
+
+
+
+
+
+
+
+
+
+
+
+
+
+References
+
+
+
+The following is a list of recommended books where you can learn more about the topics in this chapter:
+
+
+Introduction to Machine Learning, Ethem Alpaydin, The MIT Press, 2004.
+A First Course in Bayesian Statistical Methods, Peter D. Hoff. Springer, New York, 2009.
+Bayes' Rule: A Tutorial Introduction to Bayesian Analysis, James V Stone. Sebte Press. 2013.
+Bayesian risk management: A guide to model risk and sequential learning in financial markets, Matt Sekerke. Wiley & Sons. 2015.
+Fuzzy logic with engineering applications, 3rd Edition, Timothy J. Ross, John Wiley & Sons. 2010.
+A First Course in Fuzzy Logic, 3rd Edition, Hung T. Nguyen and Elbert A. Walker, CRC Press. 2006.
+
+
+
+
+
+
+
+
+
+
+
+Index
+A
+Abstract Data Type (ADT) / Graph implementations
+actual valuescomparing, with predicted results / Comparing actual values with predicted results
+acyclic graph / Terminology and representations
+Adult UCI datareference / Prerequisites
+Analysis of variance (ANOVA) / Describing Clusters - Models Tab
+assignment operators / Assignment operators
+Asterixabout / Working with dirty data
+Azure ML / Next steps
+
+
+
+
+
+
+
+
+
+B
+backpropagation / Different types of neural networks, Backpropagation and Feedforward neural networks
+basic list / Lists
+Bayesian methods / Bayesian methods
+Bayesian probabilityimplementing / Bayesian Theory
+business understanding / Business understanding
+
+
+
+
+
+
+
+
+
+C
+Calculation Editor / Replicating our results using R and Tableau together
+clustersaving, constraints / Constraints on saving Clusters
+clusteringabout / What is Clustering?in Tableau / Clustering in Tableau, How to do Clustering in Tableau, How Clustering Works in Tableauresults, interpreting / Interpreting your resultswithout k-means / Clustering without using k-means
+clustering algorithm / The clustering algorithm
+clustering examplein Tableau / Clustering example in Tableau
+cluster resultsTableau group, creating from / Creating a Tableau group from cluster results
+clustersfinding, in data / Finding clusters in dataAnalytics pane / Why can't I drag my Clusters to the Analytics pane?creating / Creating Clustersdefining / Describing Clusters - Summary tabtesting / Testing your Clustering
+coefficients / Coefficients
+confusion matrixbuilding / Confusion matrix
+control structures, Rabout / Control structures in Rassignment operators / Assignment operatorslogical operators / Logical operators
+correlation / Interpreting the results
+CRISP-DM methodologyabout / CRISP-DMbusiness understanding / Business understanding/data understandingdata understanding / Business understanding/data understandingdata preparation / CRISP-DM model — data preparationmodeling phase / CRISP-DM — modeling phaseevaluation / CRISP-DM — evaluationdeployment / CRISP-DM — deploymentprocess restarted / CRISP-DM — process restartedsummary / CRISP-DM summary
+Cross Industry Standard Process for Data Mining (CRISP-DM) / Backpropagation and Feedforward neural networks
+cycle / Terminology and representations
+
+
+
+
+
+
+
+
+
+D
+datasummarizing, with dplyr / Summarizing the data with dplyrrelationships, investigating in / Investigating relationships in the datadescribing / Describing the dataclusters, finding in / Finding clusters in data
+data analysissharing, Tableau used / Sharing our data analysis using Tableau
+data exploration / Data exploration
+data framesabout / Data framesstructure / Data framesexample / Data frames
+data preparation / Data preparation
+datasets, University of California Irvine Data repositoryreference / Business understanding
+data structures, Rvector / Vectorlists / Listsmatrices / Matricesfactor / Factors
+data understanding / Understanding the data
+decision functionabout / Decision system-based Bayesian
+decision maker (DM)about / Decision system-based Bayesian
+decision systemabout / Introduction to decision system and machine learningbuilding, steps / Decision system-based fuzzy logic
+decision system, and IoT projectintegrating / Integrating a decision system and IoT project
+decision system-based Bayesianabout / Decision system-based Bayesian
+decision system-based fuzzy logic / Decision system-based fuzzy logic
+decision system-based IoTbulding / Building your own decision system-based IoTwiring / Wiringprogram, writing / Writing the programtesting / Testing
+decision treeresults, analyzing / Analyzing the results of the decision tree
+decision treesclassification trees / Decision trees in Tableau using Rregression trees / Decision trees in Tableau using R
+degrees of freedom / Describing Clusters - Models Tab
+descriptive statisticsabout / Introduction to R
+directed acyclic graph (DAG) / Terminology and representations
+directed graph / Terminology and representations
+directed graphs / Terminology and representations
+dirty dataworking with / Working with dirty data
+disaggregating datareference / Constraints on saving Clusters
+dplyrabout / Introduction to dplyrdata, summarizing with / Summarizing the data with dplyr
+
+
+
+
+
+
+
+
+
+E
+edges / Terminology and representations
+error / What do the terms mean?
+
+
+
+
+
+
+
+
+
+F
+F-statistic / Describing Clusters - Models Tab
+factor / Factors
+feature / Building our multiple regression model
+Feedforward Neural Network / Different types of neural networks, Backpropagation and Feedforward neural networks
+fittedversus residuals / Investigating relationships in the data
+for loops / For loops
+functionsabout / Functionscreating / Creating your own function
+fuzzy logic / Fuzzy logic
+fuzzy logic, for decision systemenhancement / Enhancement
+
+
+
+
+
+
+
+
+
+G
+graph functionsnum_vert / Graph implementationsnum_edge / Graph implementationsweightEdge / Graph implementationsassignEdge / Graph implementationsdeleteEdge / Graph implementationsfirstVertex / Graph implementationsnextVertex / Graph implementationsisEdge / Graph implementationsgetMark / Graph implementationsinitMark / Graph implementations
+graphs / Graphs, Terminology and representationsimplementing / Graph implementations
+
+
+
+
+
+
+
+
+
+H
+hierarchical clustering / Hierarchical modeling
+
+
+
+
+
+
+
+
+
+I
+inferential statisticsabout / Introduction to R
+iris datasetreference / Using Tableau to evaluate data
+
+
+
+
+
+
+
+
+
+K
+k-means clustering / Clustering in Tableauworking / How does k-means work?
+
+
+
+
+
+
+
+
+
+L
+leverageversus residuals / Investigating relationships in the data
+Lift curves / Evaluating a neural network model
+lift scores / Lift scores
+listsabout / Lists
+Lloyd algorithm / The clustering algorithm
+lm()used, for conducting simple linear regression / Using lm() to conduct a simple linear regression
+logical operators / Logical operators
+low p-value / Understanding the performance of the result
+
+
+
+
+
+
+
+
+
+M
+machine learningabout / Introduction to decision system and machine learning
+matrices / Matrices
+Maximum Likelihood Estimate (MLE) / Bayesian methods
+model deployment / Model deployment
+modelingin R / Modeling in R
+Model Sum of Squares / Describing Clusters - Models Tab
+multiple regressionabout / Getting started with multiple regression?
+multiple regression modelbuilding / Building our multiple regression model
+
+
+
+
+
+
+
+
+
+N
+named list / Lists
+neural network, in Rabout / Neural network in R
+neural network modelevaluating / Evaluating a neural network model
+Neural network performance measuresReceiver Operating Characteristic curve / Receiver Operating Characteristic curvePrecision and Recall curve / Precision and Recall curvelift scores / Lift scores
+neural network resultsvisualizing / Visualizing neural network results
+neural networksabout / What are neural networks?layers / What are neural networks?types / Different types of neural networksstructure / Different types of neural networks
+normal Q-Q / Investigating relationships in the data
+
+
+
+
+
+
+
+
+
+O
+Ordinary Least Squares (OLS) / Using lm() to conduct a simple linear regression
+
+
+
+
+
+
+
+
+
+P
+p-value / Understanding the performance of the result, Describing Clusters - Models Tab
+Pearson's correlation coefficient / Investigating relationships in the data
+Pearson's R / Investigating relationships in the data
+perceptron / Different types of neural networks
+populated data frameexample / Data frames
+Precision/Recall curves / Evaluating a neural network model
+predicted resultsactual values, comparing with / Comparing actual values with predicted results
+predictor / Understanding the performance of the result
+
+
+
+
+
+
+
+
+
+R
+Rinstalling, for Windows / Installing R for Windowsdecision trees, in Tableau / Decision trees in Tableau using R
+R, from CRAN websitedownload link / Installing R for Windows
+R, with Tableauresults, replicating / Replicating our results using R and Tableau together
+Random Forest classifier / Decision trees in Tableau using R
+Receiver Operator Characteristic (ROC) / Evaluating a neural network model
+Receiver Operator Characteristic (ROC) curve / Receiver Operating Characteristic curve
+regressionabout / Getting started with regressionsimple linear regression / Simple linear regressionmultiple regression / Getting started with multiple regression?business question, solving / Solving the business question
+relationshipsinvestigating, in data / Investigating relationships in the data
+Relevant Analysis of variance statistics, Tableau clusteringF-statistic / Describing Clusters - Models Tabp-value / Describing Clusters - Models TabModel Sum of Squares / Describing Clusters - Models Tabdegrees of freedom / Describing Clusters - Models TabError Sum of Squares / Describing Clusters - Models Tab
+residualsversus leverage / Investigating relationships in the dataversus fitted / Investigating relationships in the data / What do the terms mean?
+residual standard error / Residual standard error
+RGui / Installing R for Windows
+R languageabout / Introduction to R
+Root Mean Square Deviation / What do the terms mean?
+Root Mean Square Error / What do the terms mean?
+R programmingcore essentials / Core essentials of R programmingdata structures / Data structures in Rcontrol structures / Control structures in R
+RserveTableau connectivity / Tableau and R connectivity using RserveR connectivity / Tableau and R connectivity using Rserveinstalling / Installing Rserve
+Rserve connectionconfiguring / Configuring an Rserve Connection
+RStudioabout / RStudioinstallation prerequisites / Prerequisites for RStudio installationdownload link / Prerequisites for RStudio installation
+R websitereference / Installing R for Windows
+
+
+
+
+
+
+
+
+
+S
+scale location / Investigating relationships in the data
+scaling / Scaling
+scikit-fuzzyabout / Fuzzy logicreference / Fuzzy logic
+scriptingtesting / Testing the scripting
+scriptsimplementing / Implementing the scripts for the book
+simple decision system-based Bayesian theorybuilding / Building a simple decision system-based Bayesian theory
+simple linear regressionabout / Simple linear regressionconducting, lm() used / Using lm() to conduct a simple linear regression
+StackOverflowreference / Assignment operators
+statistics / Interpreting the resultsfor clustering / Statistics for Clustering
+supervised learning / Building our multiple regression model
+
+
+
+
+
+
+
+
+
+T
+TableauR, improving / Making R run more efficiently in Tableauused, for sharing data analysis / Sharing our data analysis using Tableaudata, modeling / Modeling and evaluating data in Tableaudata, evaluating / Modeling and evaluating data in Tableau, Using Tableau to evaluate data
+Tableau groupcreating, from cluster results / Creating a Tableau group from cluster results
+Tapply / For loops
+TDSP processabout / Team Data Science Processbusiness understanding / Business understandingdata acquisition / Data acquisition and understandingdata understanding / Data acquisition and understandingmodeling phase / Modelingdeployment phase / Deploymentsummary / TDSP Summary
+training material, GitHubreference / Implementing the scripts for the book
+
+
+
+
+
+
+
+
+
+U
+undirected graphs / Terminology and representations
+
+
+
+
+
+
+
+
+
+V
+variablesabout / Variablescreating / Creating variablesworking with / Working with variables
+vector / Vector
+vectorization / For loops and vectorization in R, For loops
+vertices / Terminology and representations
+
+
+
+
+
+
+
+
+
+W
+WDI packagereference / Summarizing the data with dplyr
+WindowsR, installing for / Installing R for Windows
+World Development Indicators (WDI) / Summarizing the data with dplyr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

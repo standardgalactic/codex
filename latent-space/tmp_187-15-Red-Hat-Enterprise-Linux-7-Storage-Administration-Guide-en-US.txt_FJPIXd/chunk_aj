@@ -1,0 +1,1000 @@
+
+This is also known as a read only snapshot.
+Clone
+A point in time, read writeable, space efficient copy of data.
+This is also known as a read writeable snapshot.
+Copy
+A full bitwise copy of the data. It occupies the full space.
+Mirror
+A continuously updated copy (synchronous and asynchronous).
+Access group
+Collections of iSCSI, FC, and FCoE initiators which are granted access to one or more storage
+volumes. This ensures that only storage volumes are accessibly by the specified initiators.
+This is also known as an initiator group.
+Access Grant
+Exposing a volume to a specified access group or initiator. The libStorageMgmt library currently
+does not support LUN mapping with the ability to choose a specific logical unit number. The 
+libStorageMgmt library allows the storage array to select the next available LUN for assignment. If
+configuring a boot from SAN or masking more than 256 volumes be sure to read the OS, Storage
+Array, or HBA documents.
+Access grant is also known as LUN Masking.
+System
+Represents a storage array or a direct attached storage RAID.
+File system
+A Network Attached Storage (NAS) storage array can expose a file system to host an OS through an
+IP network, using either NFS or CIFS protocol. The host OS treats it as a mount point or a folder
+containing files depending on the client operating system.
+Disk
+The physical disk holding the data. This is normally used when creating a pool with RAID settings.
+This is also known as a DiskDrive using SNIA Terminology.
+Initiator
+In Fibre Channel (FC) or Fibre Channel over Ethernet (FCoE), the intiator is the World Wide Port
+Name (WWPN) or World Wide Node Name (WWNN). In iSCSI, the initiator is the iSCSI Qualified
+Name (IQN). In NFS or CIFS, the initiator is the host name or the IP address of the host.
+Child dependency
+Some arrays have an implicit relationship between the origin (parent volume or file system) and the
+child (such as a snapshot or a clone). For example, it is impossible to delete the parent if it has one
+or more depend children. The API provides methods to determine if any such relationship exists and
+Storage Administration Guide
+244
+
+a method to remove the dependency by replicating the required blocks.
+27.3. INSTALLING LIBSTORAGEMGMT
+To install libStorageMgmt for use of the command line, required run-time libraries and simulator plug-
+ins, use the following command:
+$ sudo yum install libstoragemgmt libstoragemgmt-python
+To develop C applications that utilize the library, install the libstoragemgmt-devel package with the
+following command:
+# yum install libstoragemgmt-devel
+To install libStorageMgmt for use with hardware arrays, select one or more of the appropriate plug-in
+packages with the following command:
+$ sudo yum install libstoragemgmt-name-plugin
+The following plug-ins that are available include:
+libstoragemgmt-smis-plugin
+Generic SMI-S array support.
+libstoragemgmt-netapp-plugin
+Specific support for NetApp files.
+libstoragemgmt-nstor-plugin
+Specific support for NexentaStor.
+libstoragemgmt-targetd-plugin
+Specific support for targetd.
+The daemon is then installed and configured to run at start up but will not do so until the next reboot. To
+use it immediately without rebooting, start the daemon manually.
+To manage an array requires support through a plug-in. The base install package includes open source
+plug-ins for a number of different vendors. Additional plug-in packages will be available separately as
+array support improves. Currently supported hardware is constantly changing and improving.
+The libStorageMgmt daemon (lsmd) behaves like any standard service for the system.
+To check on the status of the libStorageMgmt service, use:
+$ sudo systemctl status libstoragemgmt
+To stop the service use:
+$ sudo systemctl stop libstoragemgmt
+CHAPTER 27. EXTERNAL ARRAY MANAGEMENT (LIBSTORAGEMGMT)
+245
+
+To start the service use:
+$ sudo systemctl start libstoragemgmt
+27.4. USING LIBSTORAGEMGMT
+To use libStorageMgmt interactively, use the lsmcli tool.
+The lsmcli tool requires two things to run:
+A Uniform Resource Identifier (URI) which is used to identify the plug-in to connect to the array
+and any configurable options the array requires.
+A valid user name and password for the array.
+URI has the following form:
+plugin+optional-transport://user-name@host:port/?query-string-parameters
+Each plug-in has different requirements for what is needed.
+Example 27.1. Examples of Different Plug-in Requirements
+Simulator Plug-in That Requires No User Name or Password
+sim://
+NetApp Plug-in over SSL with User Name root
+ontap+ssl://root@filer.company.com/
+SMI-S Plug-in over SSL for EMC Array
+smis+ssl://admin@provider.com:5989/?namespace=root/emc
+There are three options to use the URI:
+1. Pass the URI as part of the command.
+$ lsmcli -u sim://...
+2. Store the URI in an environmental vairable.
+$ export LSMCLI_URI=sim:// && lsmcli ...
+3. Place the URI in the file ~/.lsmcli, which contains name-value pairs separated by "=". The
+only currently supported configuration is 'uri'.
+Determining which URI to use needs to be done in this order. If all three are supplied, only the first one
+on the command line will be used.
+Supply the password by specifying the -P option on the command line or by placing it in an
+environmental variable LSMCLI_PASSWORD.
+Storage Administration Guide
+246
+
+Example 27.2. Examples of lsmcli
+An example for using the command line to create a new volume and making it visible to an initiator.
+List arrays that are serviced by this connection.
+$ lsmcli list --type SYSTEMS
+ID     | Name                          | Status
+-------+-------------------------------+--------
+sim-01 | LSM simulated storage plug-in | OK
+List storage pools.
+$ lsmcli list --type POOLS -H
+ID   | Name          | Total space          | Free space           | 
+System ID
+-----+---------------+----------------------+----------------------
++-----------
+POO2 | Pool 2        | 18446744073709551616 | 18446744073709551616 | 
+sim-01
+POO3 | Pool 3        | 18446744073709551616 | 18446744073709551616 | 
+sim-01
+POO1 | Pool 1        | 18446744073709551616 | 18446744073709551616 | 
+sim-01
+POO4 | lsm_test_aggr | 18446744073709551616 | 18446744073709551616 | 
+sim-01
+Create a volume.
+$ lsmcli volume-create --name volume_name --size 20G --pool POO1 -H
+ID   | Name        | vpd83                            | bs  | #blocks  
+| status | ...
+-----+-------------+----------------------------------+-----+-------
+---+--------+----
+Vol1 | volume_name | F7DDF7CA945C66238F593BC38137BD2F | 512 | 41943040 | 
+OK     | ...
+Create an access group with an iSCSI initiator in it.
+$ lsmcli --create-access-group example_ag --id iqn.1994-
+05.com.domain:01.89bd01 --type ISCSI --system sim-01
+ID                               | Name       | Initiator ID              
+|SystemID
+---------------------------------+------------+---------------------
+-------------+--------
+782d00c8ac63819d6cca7069282e03a0 | example_ag | iqn.1994-
+05.com.domain:01.89bd01 |sim-01
+Create an access group with an iSCSI intiator in it:
+$ lsmcli access-group-create --name example_ag --init iqn.1994-
+05.com.domain:01.89bd01 --init-type ISCSI --sys sim-01
+ID                               | Name       | Initiator IDs              
+| System ID
+CHAPTER 27. EXTERNAL ARRAY MANAGEMENT (LIBSTORAGEMGMT)
+247
+
+---------------------------------+------------+---------------------
+-------------+-----------
+782d00c8ac63819d6cca7069282e03a0 | example_ag | iqn.1994-
+05.com.domain:01.89bd01 | sim-01
+Allow the access group visibility to the newly created volume:
+$ lsmcli access-group-grant --ag 782d00c8ac63819d6cca7069282e03a0 --vol 
+Vol1 --access RW
+The design of the library provides for a process separation between the client and the plug-in by means
+of inter-process communication (IPC). This prevents bugs in the plug-in from crashing the client
+application. It also provides a means for plug-in writers to write plug-ins with a license of their own
+choosing. When a client opens the library passing a URI, the client library looks at the URI to determine
+which plug-in should be used.
+The plug-ins are technically stand alone applications but they are designed to have a file descriptor
+passed to them on the command line. The client library then opens the appropriate Unix domain socket
+which causes the daemon to fork and execute the plug-in. This gives the client library a point to point
+communcation channel with the plug-in. The daemon can be restarted without affecting existing clients.
+While the client has the library open for that plug-in, the plug-in process is running. After one or more
+commands are sent and the plug-in is closed, the plug-in process cleans up and then exits.
+The default behavior of lsmcli is to wait until the operation is completee. Depending on the requested
+operations, this could potentially could take many hours. To allow a return to normal usage, it is possible
+to use the -b option on the command line. If the exit code is 0 the command is completed. If the exit
+code is 7 the command is in progress and a job identifier is written to standard output. The user or script
+can then take the job ID and query the status of the command as needed by using lsmcli --
+jobstatus JobID. If the job is now completed, the exit value will be 0 and the results printed to
+standard output. If the command is still in progress, the return value will be 7 and the percentage
+complete will be printed to the standard output.
+Example 27.3. An Asynchronous Example
+Create a volume passing the -b option so that the command returns immediately.
+$ lsmcli volume-create --name async_created --size 20G --pool POO1 -b 
+JOB_3
+Check to see what the exit value was, remembering that 7 indicates the job is still in progress.
+$ echo $?
+7
+Check to see if the job is completed.
+$ lsmcli job-status --job JOB_3
+33
+Check to see what the exit value was, remembering that 7 indicates the job is still in progress so the
+standard output is the percentage done or 33% based on the above screen.
+$ echo $?
+Storage Administration Guide
+248
+
+7
+Wait some more and check it again, remembering that exit 0 means success and standard out
+displays the new volume.
+$ lsmcli job-status --job JOB_3 
+ID   | Name          | vpd83                            | Block Size  
+| ...
+-----+---------------+----------------------------------+-----------
+--+-----
+Vol2 | async_created | 855C9BA51991B0CC122A3791996F6B15 | 512         | 
+...
+For scripting, pass the -t SeparatorCharacters option. This will make it easier to parse the output.
+Example 27.4. Scripting Examples
+$ lsmcli list --type volumes -t#
+Vol1#volume_name#049167B5D09EC0A173E92A63F6C3EA2A#512#41943040#214748364
+80#OK#sim-01#POO1
+Vol2#async_created#3E771A2E807F68A32FA5E15C235B60CC#512#41943040#2147483
+6480#OK#sim-01#POO1
+$ lsmcli list --type volumes -t " | "
+Vol1 | volume_name | 049167B5D09EC0A173E92A63F6C3EA2A | 512 | 41943040 | 
+21474836480 | OK | 21474836480 | sim-01 | POO1
+Vol2 | async_created | 3E771A2E807F68A32FA5E15C235B60CC | 512 | 41943040 
+| 21474836480 | OK | sim-01 | POO1
+$ lsmcli list --type volumes -s
+---------------------------------------------
+ID         | Vol1                            
+Name       | volume_name                     
+VPD83      | 049167B5D09EC0A173E92A63F6C3EA2A
+Block Size | 512                             
+#blocks    | 41943040                        
+Size       | 21474836480                     
+Status     | OK                              
+System ID  | sim-01                          
+Pool ID    | POO1                            
+---------------------------------------------
+ID         | Vol2                            
+Name       | async_created                   
+VPD83      | 3E771A2E807F68A32FA5E15C235B60CC
+Block Size | 512                             
+#blocks    | 41943040                        
+Size       | 21474836480                     
+Status     | OK                              
+System ID  | sim-01                          
+Pool ID    | POO1                            
+---------------------------------------------
+CHAPTER 27. EXTERNAL ARRAY MANAGEMENT (LIBSTORAGEMGMT)
+249
+
+It is recommended to use the Python library for non-trivial scripting.
+For more information on lsmcli, refer to the man pages or the command lsmcli --help.
+Storage Administration Guide
+250
+
+CHAPTER 28. PERSISTENT MEMORY: NVDIMMS
+Persistent memory (pmem), also called as storage class memory, is a combination of memory and
+storage. pmem combines the durability of storage with the low access latency and the high bandwidth of
+dynamic RAM (DRAM):
+Persistent memory is byte-addressable, so it can be accessed by using CPU load and store
+instructions. In addition to read() or write() system calls that are required for accessing
+traditional block-based storage, pmem also supports direct load and store programming model.
+The performance characteristics of persistent memory are similar to DRAM with very low access
+latency, typically in the tens to hundreds of nanoseconds.
+Contents of persistent memory are preserved when the power is off, like with storage.
+Using persistent memory is beneficial for use cases like:
+Rapid start: data set is already in memory.
+Rapid start is also called the warm cache effect. A file server has none of the file contents in memory
+after starting. As clients connect and read and write data, that data is cached in the page cache.
+Eventually, the cache contains mostly hot data. After a reboot, the system must start the process
+again.
+Persistent memory allows an application to keep the warm cache across reboots if the application is
+designed properly. In this instance, there would be no page cache involved: the application would
+cache data directly in the persistent memory.
+Fast write-cache
+File servers often do not acknowledge a client's write request until the data is on durable media. Using
+persistent memory as a fast write cache enables a file server to acknowledge the write request
+quickly thanks to the low latency of pmem.
+NVDIMMs Interleaving
+Non-Volatile Dual In-line Memory Modules (NVDIMMs) can be grouped into interleave sets in the same
+way as regular DRAM. An interleave set is like a RAID 0 (stripe) across multiple DIMMs.
+Following are the advantages of NVDIMMS interleaving:
+Like DRAM, NVDIMMs benefit from increased performance when they are configured into
+interleave sets.
+It can be used to combine multiple smaller NVDIMMs into one larger logical device.
+Use the system BIOS or UEFI firmware to configure interleave sets.
+In Linux, one region device is created per interleave set.
+Following is the relation between region devices and labels:
+If your ⁠NVDIMMs support labels, the region device can be further subdivided into namespaces.
+If your NVDIMMs do not support labels, the region devices can only contain a single namespace.
+In this case, the kernel creates a default namespace which covers the entire region.
+Persistent Memory Access Modes
+CHAPTER 28. PERSISTENT MEMORY: NVDIMMS
+251
+
+You can use persistent memory in sector, memory, dax (Direct Access) or raw mode:
+sector mode
+It presents the storage as a fast block device. Using sector mode is useful for legacy applications that
+have not been modified to use persistent memory, or for applications that make use of the full I/O
+stack, including the Device Mapper.
+memory mode
+It enables persistent memory devices to support direct access programming as described in the
+Storage Networking Industry Association (SNIA) Non-Volatile Memory (NVM) Programming Model
+specification. In memory mode, I/O bypasses the storage stack of the kernel, and many Device 
+Mapper drivers therefore cannot be used.
+dax mode
+The dax mode,also called device DAX, provides raw access to persistent memory by using a DAX
+character device node. Data on a DAX device can be made durable using CPU cache flushing and
+fencing instructions. Certain databases and virtual machine hypervisors might benefit from DAX
+mode. File systems cannot be created on device dax instances.
+raw mode
+The raw mode namespaces have several limitations and should not be used.
+28.1. CONFIGURING PERSISTENT MEMORY WITH NDCTL
+Use the ndctl utility to configure persistent memory devices. To install ndctl utility, use the following
+command:
+# yum install ndctl
+Procedure 28.1. Configuring Persistent Memory for device that does not support labels
+1. List the available pmem regions on your system. In the following example, the command lists an
+NVDIMM-N device that does not support labels:
+# ndctl list --regions
+[
+  {
+    "dev":"region1",
+    "size":34359738368,
+    "available_size":0,
+    "type":"pmem"
+  },
+  {
+    "dev":"region0",
+    "size":34359738368,
+    "available_size":0,
+    "type":"pmem"
+  }
+]
+Storage Administration Guide
+252
+
+OS creates a default namespace for each region because the NVDIMM-N device here does not
+support labels. Hence, the available size is 0 bytes.
+2. List all the inactive namespaces on your system:
+# ndctl list --namespaces --idle
+[
+  {
+    "dev":"namespace1.0",
+    "mode":"raw",
+    "size":34359738368,
+    "state":"disabled",
+    "numa_node":1
+  },
+  {
+    "dev":"namespace0.0",
+    "mode":"raw",
+    "size":34359738368,
+    "state":"disabled",
+    "numa_node":0
+  }
+]
+3. Reconfigure the inactive namespaces in order to make use of this space. For example, to use
+namespace0.0 for a file system that supports DAX, use the following command:
+# ndctl create-namespace --force --reconfig=namespace0.0 --
+mode=memory --map=mem 
+{
+  "dev":"namespace0.0",
+  "mode":"memory",
+  "size":"32.00 GiB (34.36 GB)",
+  "uuid":"ab91cc8f-4c3e-482e-a86f-78d177ac655d",
+  "blockdev":"pmem0",
+  "numa_node":0
+}
+Procedure 28.2. Configuring Persistent Memory for device that support labels
+1. List the available pmem regions on your system. In the following example, the command lists an
+NVDIMM-N device that support labels:
+# ndctl list --regions
+[
+  {
+    "dev":"region5",
+    "size":270582939648,
+    "available_size":270582939648,
+    "type":"pmem",
+    "iset_id":-7337419320239190016
+  },
+  {
+    "dev":"region4",
+    "size":270582939648,
+    "available_size":270582939648,
+CHAPTER 28. PERSISTENT MEMORY: NVDIMMS
+253
+
+    "type":"pmem",
+    "iset_id":-137289417188962304
+  }
+]
+2. If an NVDIMM support labels, default namespaces are not created, and you can allocate one or
+more namespaces from a region without using the --force or --reconfigure flags:
+# ndctl create-namespace --region=region4 --mode=memory --map=dev --
+size=36G
+{
+  "dev":"namespace4.0",
+  "mode":"memory",
+  "size":"35.44 GiB (38.05 GB)",
+  "uuid":"9c5330b5-dc90-4f7a-bccd-5b558fa881fe",
+  "blockdev":"pmem4",
+  "numa_node":0
+}
+Now, you can create another namespace from the same region:
+# ndctl create-namespace --region=region4 --mode=memory --map=dev --
+size=36G
+{
+  "dev":"namespace4.1",
+  "mode":"memory",
+  "size":"35.44 GiB (38.05 GB)",
+  "uuid":"91868e21-830c-4b8f-a472-353bf482a26d",
+  "blockdev":"pmem4.1",
+  "numa_node":0
+}
+You can also create namespaces of different types from the same region, using the following
+command:
+# ndctl create-namespace --region=region4 --mode=dax --align=2M --
+size=36G
+{
+  "dev":"namespace4.2",
+  "mode":"dax",
+  "size":"35.44 GiB (38.05 GB)",
+  "uuid":"a188c847-4153-4477-81bb-7143e32ffc5c",
+  "daxregion":
+  {
+    "id":4,
+    "size":"35.44 GiB (38.05 GB)",
+    "align":2097152,
+    "devices":[
+      {
+        "chardev":"dax4.2",
+        "size":"35.44 GiB (38.05 GB)"
+      }]
+  },
+    "numa_node":0
+}
+Storage Administration Guide
+254
+
+For more information on ndctl utility, see man ndctl.
+28.2. CONFIGURING PERSISTENT MEMORY FOR USE AS A BLOCK
+DEVICE (LEGACY MODE)
+To use persistent memory as a fast block device, set the namespace to sector mode.
+# ndctl create-namespace --force --reconfig=namespace1.0 --mode=sector
+{
+  "dev":"namespace1.0",
+  "mode":"sector",
+  "size":17162027008,
+  "uuid":"029caa76-7be3-4439-8890-9c2e374bcc76",
+  "sector_size":4096,
+  "blockdev":"pmem1s"
+}
+In the example, namespace1.0 is reconfigured to sector mode. Note that the block device name
+changed from pmem1 to pmem1s. This device can be used in the same way as any other block device on
+the system. For example, the device can be partitioned, you can create a file system on the device, the
+device can be configured as part of a software RAID set, and the device can be the cache device for dm-
+cache.
+28.3. CONFIGURING PERSISTENT MEMORY FOR FILE SYSTEM
+DIRECT ACCESS (DAX)
+Direct access requires the namespace to be configured to memory mode. Memory mode allows for the
+direct access programming model. When a device is configured in memory mode, a file system can be
+created on top of it, and then mounted with the -o dax mount option. Then, any application that
+performs an mmap() operation on a file on this file system gets direct access to its storage. See the
+following example:
+# ndctl create-namespace --force --reconfig=namespace0.0 --mode=memory --
+map=mem
+{
+   "dev":"namespace0.0",
+   "mode":"memory",
+   "size":17177772032,
+   "uuid":"e6944638-46aa-4e06-a722-0b3f16a5acbf",
+   "blockdev":"pmem0"
+}
+In the example, namespace0.0 is converted to namespace memory mode. With the --map=mem
+argument, ndctl puts operating system data structures used for Direct Memory Access (DMA) in system
+DRAM.
+To perform DMA, the kernel requires a data structure for each page in the memory region. The overhead
+of this data structure is 64 bytes per 4-KiB page. For small devices, the amount of overhead is small
+enough to fit in DRAM with no problems. For example, the 16-GiB namespace only requires 256MiB for
+page structures. Because the NVDIMM is small and expensive, storing the kernel's page tracking data
+structures in DRAM is preferable, as indicated by the --map=mem parameter.
+CHAPTER 28. PERSISTENT MEMORY: NVDIMMS
+255
+
+In the future, NVDIMM devices might be terabytes in size. For such devices, the amount of memory
+required to store the page tracking data structures might exceed the amount of DRAM in the system. One
+TiB of persistent memory requires 16 GiB just for page structures. As a result, specifying the --map=dev
+parameter to store the data structures in the persistent memory itself is preferable in such cases.
+After configuring the namespace in memory mode, the namespace is ready for a file system. Starting
+with Red Hat Enterprise Linux 7.3, both the Ext4 and XFS file system enable using persistent memory as
+a Technology Preview. File system creation requires no special arguments. To get the DAX functionality,
+mount the file system with the dax mount option. For example:
+# mkfs -t xfs /dev/pmem0
+# mount -o dax /dev/pmem0 /mnt/pmem/
+Then, applications can use persistent memory and create files in the /mnt/pmem/ directory, open the
+files, and use the mmap operation to map the files for direct access.
+When creating partitions on a pmem device to be used for direct access, partitions must be aligned on
+page boundaries. On the Intel 64 and AMD64 architecture, at least 4KiB alignment for the start and end
+of the partition, but 2MiB is the preferred alignment. By default, the parted tool aligns partitions on 1MiB
+boundaries. For the first partition, specify 2MiB as the start of the partition. If the size of the partition is a
+multiple of 2MiB, all other partitions are also aligned.
+28.4. CONFIGURING PERSISTENT MEMORY FOR USE IN DEVICE DAX
+MODE
+Device DAX provides a means for applications to directly access storage, without the involvement of a
+file system. The benefit of device DAX is that it provides a guaranteed fault granularity, which can be
+configured using the --align option with the ndctl utilty:
+# ndctl create-namespace --force --reconfig=namespace0.0 --mode=dax --
+align=2M
+The given command ensures that the operating system would fault in 2MiB pages at a time. For the Intel
+64 and AMD64 architecture, the following fault granularities are supported:
+4KiB
+2MiB
+1GiB
+Device DAX nodes (/dev/daxN.M) only supports the following system call:
+open()
+close()
+mmap()
+fallocate()
+read() and write() variants are not supported because the use case is tied to persistent memory
+programming.
+Storage Administration Guide
+256
+
+28.5. TROUBLESHOOTING
+Some NVDIMMs support Self-Monitoring, Analysis and Reporting Technology (S.M.A.R.T.) interfaces for
+retrieving health information.
+NOTE
+On some systems, the acpi_ipmi driver must be loaded to retrieve health information
+using the following command:
+# modprobe acpi_ipmi
+To access the health information, use the following command:
+# ndctl list --dimms --health --dimm=nmem0
+[
+  {
+    {
+      "dev":"nmem0",
+      "id":"802c-01-1513-b3009166",
+      "handle":1,
+      "phys_id":22,
+      "health":
+      {
+        "health_state":"ok",
+        "temperature_celsius":25.000000,
+        "spares_percentage":99,
+        "alarm_temperature":false,
+        "alarm_spares":false,
+        "temperature_threshold":50.000000,
+        "spares_threshold":20,
+        "life_used_percentage":1,
+        "shutdown_state":"clean"
+      }
+     }
+  }
+]
+CHAPTER 28. PERSISTENT MEMORY: NVDIMMS
+257
+
+PART III. DATA DEDUPLICATION AND COMPRESSION WITH
+VDO
+This part describes how to provide deduplicated block storage capabilities to existing storage
+management applications by enabling them to utilize Virtual Data Optimizer (VDO).
+Storage Administration Guide
+258
+
+CHAPTER 29. VDO INTEGRATION
+29.1. THEORETICAL OVERVIEW OF VDO
+Virtual Data Optimizer (VDO) is a block virtualization technology that allows you to easily create
+compressed and deduplicated pools of block storage.
+Deduplication is a technique for reducing the consumption of storage resources by eliminating
+multiple copies of duplicate blocks.
+Instead of writing the same data more than once, VDO detects each duplicate block and records
+it as a reference to the original block. VDO maintains a mapping from logical block addresses,
+which are used by the storage layer above VDO, to physical block addresses, which are used
+by the storage layer under VDO.
+After deduplication, multiple logical block addresses may be mapped to the same physical block
+address; these are called shared blocks. Block sharing is invisible to users of the storage, who
+read and write blocks as they would if VDO were not present. When a shared block is
+overwritten, a new physical block is allocated for storing the new block data to ensure that other
+logical block addresses that are mapped to the shared physical block are not modified.
+Compression is a data-reduction technique that works well with file formats that do not
+necessarily exhibit block-level redundancy, such as log files and databases. See Section 29.4.8,
+"Using Compression" for more detail.
+The VDO solution consists of the following components:
+kvdo
+A kernel module that loads into the Linux Device Mapper layer to provide a deduplicated,
+compressed, and thinly provisioned block storage volume
+uds
+A kernel module that communicates with the Universal Deduplication Service (UDS) index on the
+volume and analyzes data for duplicates.
+Command line tools
+For configuring and managing optimized storage.
+29.1.1. The UDS Kernel Module (uds)
+The UDS index provides the foundation of the VDO product. For each new piece of data, it quickly
+determines if that piece is identical to any previously stored piece of data. If the index finds match, the
+storage system can then internally reference the existing item to avoid storing the same information more
+than once.
+The UDS index runs inside the kernel as the uds kernel module.
+29.1.2. The VDO Kernel Module (kvdo)
+The kvdo Linux kernel module provides block-layer deduplication services within the Linux Device
+Mapper layer. In the Linux kernel, Device Mapper serves as a generic framework for managing pools of
+block storage, allowing the insertion of block-processing modules into the storage stack between the
+CHAPTER 29. VDO INTEGRATION
+259
+
+kernel's block interface and the actual storage device drivers.
+The kvdo module is exposed as a block device that can be accessed directly for block storage or
+presented through one of the many available Linux file systems, such as XFS or ext4. When kvdo
+receives a request to read a (logical) block of data from a VDO volume, it maps the requested logical
+block to the underlying physical block and then reads and returns the requested data.
+When kvdo receives a request to write a block of data to a VDO volume, it first checks whether it is a 
+DISCARD or TRIM request or whether the data is uniformly zero. If either of these conditions holds, kvdo
+updates its block map and acknowledges the request. Otherwise, a physical block is allocated for use by
+the request.
+Overview of VDO Write Policies
+If the kvdo module is operating in synchronous mode:
+1. It temporarily writes the data in the request to the allocated block and then acknowledges the
+request.
+2. Once the acknowledgment is complete, an attempt is made to deduplicate the block by
+computing a MurmurHash-3 signature of the block data, which is sent to the VDO index.
+3. If the VDO index contains an entry for a block with the same signature, kvdo reads the indicated
+block and does a byte-by-byte comparison of the two blocks to verify that they are identical.
+4. If they are indeed identical, then kvdo updates its block map so that the logical block points to
+the corresponding physical block and releases the allocated physical block.
+5. If the VDO index did not contain an entry for the signature of the block being written, or the
+indicated block does not actually contain the same data, kvdo updates its block map to make the
+temporary physical block permanent.
+If kvdo is operating in asynchronous mode:
+1. Instead of writing the data, it will immediately acknowledge the request.
+2. It will then attempt to deduplicate the block in same manner as described above.
+3. If the block turns out to be a duplicate, kvdo will update its block map and release the allocated
+block. Otherwise, it will write the data in the request to the allocated block and update the block
+map to make the physical block permanent.
+29.1.3. VDO Volume
+VDO uses a block device as a backing store, which can include an aggregation of physical storage
+consisting of one or more disks, partitions, or even flat files. When a VDO volume is created by a
+storage management tool, VDO reserves space from the volume for both a UDS index and the VDO
+volume, which interact together to provide deduplicated block storage to users and applications.
+Figure 29.1, "VDO Disk Organization" illustrates how these pieces fit together.
+Storage Administration Guide
+260
+
+Figure 29.1. VDO Disk Organization
+Slabs
+The physical storage of the VDO volume is divided into a number of slabs, each of which is a contiguous
+region of the physical space. All of the slabs for a given volume will be of the same size, which may be
+any power of 2 multiple of 128 MB up to 32 GB.
+The default slab size is 2 GB in order to facilitate evaluating VDO on smaller test systems. A single VDO
+volume may have up to 8096 slabs. Therefore, in the default configuration with 2 GB slabs, the
+maximum allowed physical storage is 16 TB. When using 32 GB slabs, the maximum allowed physical
+storage is 256 TB.
+For a recommendation on what slab size to choose depending on your physical volume size, see
+Table 29.1, "Recommended VDO Slab Sizes by Physical Volume Size".
+At least one entire slab will be reserved by VDO for metadata, and therefore cannot be used for storing
+user data.
+The size of a slab can be controlled by providing the --vdoSlabSize=megabytes option to the vdo 
+create command.
+Table 29.1. Recommended VDO Slab Sizes by Physical Volume Size
+Physical
+Volume
+Size
+10-99 GB
+100 GB -
+1 TB
+2-10 TB
+11-50 TB
+51-100 TB
+101-256 TB
+Slab Size
+1 GB
+2 GB
+32 GB
+32 GB
+32 GB
+32 GB
+Physical Size and Available Physical Size
+Both physical size and available physical size describe the amount of disk space on the block device
+that VDO can utilize:
+Physical size is the same size as the underlying block device. VDO uses this storage for:
+User data, which might be deduplicated and compressed
+VDO metadata, such as the UDS index
+Available physical size is the portion of the physical size that VDO is able to use for user data.
+It is equivalent to the physical size minus the size of the metadata, minus the remainder after
+dividing the volume into slabs by the given slab size.
+CHAPTER 29. VDO INTEGRATION
+261
+
+For examples of how much storage VDO metadata require on block devices of different sizes, see
+Section 29.2.3, "Examples of VDO System Requirements by Physical Volume Size".
+Logical Size
+If the --vdoLogicalSize option is not specified, the logical volume size defaults to the available
+physical volume size. Note that, in Figure 29.1, "VDO Disk Organization", the VDO deduplicated storage
+target sits completely on top of the block device, meaning the physical size of the VDO volume is the
+same size as the underlying block device.
+VDO currently supports any logical size up to 254 times the size of the physical volume with an absolute
+maximum logical size of 4PB.
+29.1.4. Command Line Tools
+VDO includes the following command line tools for configuration and management:
+vdo
+Creates, configures, and controls VDO volumes
+vdostats
+Provides utilization and performance statistics
+29.2. SYSTEM REQUIREMENTS
+Processor Architectures
+One or more processors implementing the Intel 64 instruction set are required: that is, a processor of the
+AMD64 or Intel 64 architecture.
+RAM
+Each VDO volume has two distinct memory requirements:
+The VDO module requires 370 MB plus an additional 268 MB per each 1 TB of physical storage
+managed.
+The Universal Deduplication Service (UDS) index requires a minimum of 250 MB of DRAM,
+which is also the default amount that deduplication uses. For details on the memory usage of
+UDS, see Section 29.2.1, "UDS Index Memory Requirements".
+Storage
+A single VDO volume can be configured to use up to 256 TB of physical storage. See Section 29.2.2,
+"VDO Storage Requirements" for the calculations to determine the usable size of a VDO-managed
+volume from the physical size of the storage pool the VDO is given.
+Additional System Software
+VDO depends on the following software:
+LVM
+Python 2.7
+The yum package manager will install all necessary software dependencies automatically.
+Storage Administration Guide
+262
+
+Placement of VDO in the Storage Stack
+As a general rule, you should place certain storage layers under VDO and others on top of VDO:
+Under VDO: DM-Multipath, DM-Crypt, and software RAID (LVM or mdraid).
+On top of VDO: LVM cache, LVM Logical Volumes, LVM snapshots, and LVM Thin Provisioning.
+The following configurations are not supported:
+VDO on top of VDO volumes: storage → VDO → LVM → VDO
+VDO on top of LVM Snapshots
+VDO on top of LVM Cache
+VDO on top of the loopback device
+VDO on top of LVM Thin Provisioning
+Encrypted volumes on top of VDO: storage → VDO → DM-Crypt
+Partitions on a VDO volume: fdisk, parted, and similar partitions
+RAID (LVM, MD, or any other type) on top of a VDO volume
+IMPORTANT
+VDO supports two write modes: sync and async. When VDO is in sync mode, writes to
+the VDO device are acknowledged when the underlying storage has written the data
+permanently. When VDO is in async mode, writes are acknowledged before being
+written to persistent storage.
+It is critical to set the VDO write policy to match the behavior of the underlying storage. By
+default, VDO write policy is set to the auto option, which selects the appropriate policy
+automatically.
+For more information, see Section 29.4.2, "Selecting VDO Write Modes".
+29.2.1. UDS Index Memory Requirements
+The UDS index consists of two parts:
+A compact representation is used in memory that contains at most one entry per unique block.
+An on-disk component which records the associated block names presented to the index as they
+occur, in order.
+UDS uses an average of 4 bytes per entry in memory (including cache).
+The on-disk component maintains a bounded history of data passed to UDS. UDS provides deduplication
+advice for data that falls within this deduplication window, containing the names of the most recently
+seen blocks. The deduplication window allows UDS to index data as efficiently as possible while limiting
+the amount of memory required to index large data repositories. Despite the bounded nature of the
+deduplication window, most datasets which have high levels of deduplication also exhibit a high degree
+of temporal locality — in other words, most deduplication occurs among sets of blocks that were written
+at about the same time. Furthermore, in general, data being written is more likely to duplicate data that
+CHAPTER 29. VDO INTEGRATION
+263
+
+was recently written than data that was written a long time ago. Therefore, for a given workload over a
+given time interval, deduplication rates will often be the same whether UDS indexes only the most recent
+data or all the data.
+Because duplicate data tends to exhibit temporal locality, it is rarely necessary to index every block in
+the storage system. Were this not so, the cost of index memory would outstrip the savings of reduced
+storage costs from deduplication. Index size requirements are more closely related to the rate of data
+ingestion. For example, consider a storage system with 100 TB of total capacity but with an ingestion
+rate of 1 TB per week. With a deduplication window of 4 TB, UDS can detect most redundancy among
+the data written within the last month.
+UDS's Sparse Indexing feature (the recommended mode for VDO) further exploits temporal locality by
+attempting to retain only the most relevant index entries in memory. UDS can maintain a deduplication
+window that is ten times larger while using the same amount of memory. While the sparse index provides
+the greatest coverage, the dense index provides more advice. For most workloads, given the same
+amount of memory, the difference in deduplication rates between dense and sparse indexes is
+negligible.
+The memory required for the index is determined by the desired size of the deduplication window:
+For a dense index, UDS will provide a deduplication window of 1 TB per 1 GB of RAM. A 1 GB
+index is generally sufficient for storage systems of up to 4 TB.
+For a sparse index, UDS will provide a deduplication window of 10 TB per 1 GB of RAM. A 1 GB
+sparse index is generally sufficient for up to 40 TB of physical storage.
+For concrete examples of UDS Index memory requirements, see Section 29.2.3, "Examples of VDO
+System Requirements by Physical Volume Size"
+29.2.2. VDO Storage Requirements
+VDO requires storage both for VDO metadata and for the actual UDS deduplication index:
+VDO writes two types of metadata to its underlying physical storage:
+The first type scales with the physical size of the VDO volume and uses approximately 1 MB
+for each 4 GB of physical storage plus an additional 1 MB per slab.
+The second type scales with the logical size of the VDO volume and consumes
+approximately 1.25 MB for each 1 GB of logical storage, rounded up to the nearest slab.
+See Section 29.1.3, "VDO Volume" for a description of slabs.
+The UDS index is stored within the VDO volume group and is managed by the associated VDO
+instance. The amount of storage required depends on the type of index and the amount of RAM
+allocated to the index. For each 1 GB of RAM, a dense UDS index will use 17 GB of storage,
+and a sparse UDS index will use 170 GB of storage.
+For concrete examples of VDO storage requirements, see Section 29.2.3, "Examples of VDO System
+Requirements by Physical Volume Size"
+29.2.3. Examples of VDO System Requirements by Physical Volume Size
+The following tables provide approximate system requirements of VDO based on the size of the
+underlying physical volume. Each table lists requirements appropriate to the intended deployment, such
+as primary storage or backup storage.
+Storage Administration Guide
+264
+
+The exact numbers depend on your configuration of the VDO volume.
+Primary Storage Deployment
+In the primary storage case, the UDS index is between 0.01% to 25% the size of the physical volume.
+Table 29.2. VDO Storage and Memory Requirements for Primary Storage
+Physical
+Volume Size
+10 GB - 1-TB
+2-10 TB
+11-50 TB
+51-100 TB
+101-256 TB
+RAM Usage
+250 MB
+Dense: 1 GB
+Sparse:
+250 MB
+2 GB
+3 GB
+12 GB
+Disk Usage
+2.5 GB
+Dense: 10 GB
+Sparse: 22 GB
+170 GB
+255 GB
+1020 GB
+Index Type
+Dense
+Dense or
+Sparse
+Sparse
+Sparse
+Sparse
+Backup Storage Deployment
+In the backup storage case, the UDS index covers the size of the backup set but is not bigger than the
+physical volume. If you expect the backup set or the physical size to grow in the future, factor this into
+the index size.
+Table 29.3. VDO Storage and Memory Requirements for Backup Storage
+Physical
+Volume Size
+10 GB - 1 TB
+2-10 TB
+11-50 TB
+51-100 TB
+101-256 TB
+RAM Usage
+250 MB
+2 GB
+10 GB
+20 GB
+26 GB
+Disk Usage
+2.5 GB
+170 GB
+850 GB
+1700 GB
+3400 GB
+Index Type
+Dense
+Sparse
+Sparse
+Sparse
+Sparse
+29.3. GETTING STARTED WITH VDO
+29.3.1. Introduction
+Virtual Data Optimizer (VDO) provides inline data reduction for Linux in the form of deduplication,
+compression, and thin provisioning. When you set up a VDO volume, you specify a block device on
+which to construct your VDO volume and the amount of logical storage you plan to present.
+When hosting active VMs or containers, Red Hat recommends provisioning storage at a 10:1
+logical to physical ratio: that is, if you are utilizing 1 TB of physical storage, you would present it
+as 10 TB of logical storage.
+CHAPTER 29. VDO INTEGRATION
+265
+
+For object storage, such as the type provided by Ceph, Red Hat recommends using a 3:1 logical
+to physical ratio: that is, 1 TB of physical storage would present as 3 TB logical storage.
+In either case, you can simply put a file system on top of the logical device presented by VDO and then
+use it directly or as part of a distributed cloud storage architecture.
+This chapter describes the following use cases of VDO deployment:
+the direct-attached use case for virtualization servers, such as those built using Red Hat
+Virtualization, and
+the cloud storage use case for object-based distributed storage clusters, such as those built
+using Ceph Storage.
+NOTE
+VDO deployment with Ceph is currently not supported.
+This chapter provides examples for configuring VDO for use with a standard Linux file system that can
+be easily deployed for either use case; see the diagrams in Section 29.3.5, "Deployment Examples".
+29.3.2. Installing VDO
+VDO is deployed using the following RPM packages:
+vdo
+kmod-kvdo
+To install VDO, use the yum package manager to install the RPM packages:
+# yum install vdo kmod-kvdo
+29.3.3. Creating a VDO Volume
+Create a VDO volume for your block device. Note that multiple VDO volumes can be created for
+separate devices on the same machine. If you choose this approach, you must supply a different name
+and device for each instance of VDO on the system.
+In all the following steps, replace vdo_name with the identifier you want to use for your VDO volume; for
+example, vdo1.
+NOTE
+Before creating volumes, VDO uses LVM utilities such as, pvcreate --test to validate
+block device.
+1. Create the VDO volume using the VDO Manager:
+# vdo create \
+       --name=vdo_name \
+       --device=block_device \
+       --vdoLogicalSize=logical_size
+Storage Administration Guide
+266
+
+Replace block_device with the persistent name of the block device where you want to create
+the VDO volume. For example, /dev/disk/by-id/scsi-
+3600508b1001c264ad2af21e903ad031f.
+IMPORTANT
+Use a persistent device name. If you use a non-persistent device name, then
+VDO might fail to start properly in the future if the device name changes.
+For more information on persistent names, see Section 25.7, "Persistent
+Naming".
+Replace logical_size with the amount of logical storage that the VDO volume should present:
+For active VMs or container storage, use logical size that is ten times the physical size
+of your block device. For example, if your block device is 1 TB in size, use 10T here.
+For object storage, use logical size that is three times the physical size of your block
+device. For example, if your block device is 1 TB in size, use 3T here.
+Example 29.1. Creating VDO for Container Storage
+For example, to create a VDO volume for container storage on a 1 TB block device, you
+might use:
+# vdo create \
+       --name=vdo1 \
+       --device=/dev/disk/by-id/scsi-
+3600508b1001c264ad2af21e903ad031f \
+       --vdoLogicalSize=10T
+When a VDO volume is created, VDO adds an entry to the /etc/vdoconf.yml configuration
+file. The vdo.service systemd unit then uses the entry to start the volume by default.
+IMPORTANT
+If a failure occurs when creating the VDO volume, remove the volume to clean up.
+See Section 29.4.3.1, "Removing an Unsuccessfully Created Volume" for details.
+2. Create a file system:
+For the XFS file system:
+# mkfs.xfs -K /dev/mapper/vdo_name
+For the ext4 file system:
+# mkfs.ext4 -E nodiscard /dev/mapper/vdo_name
+3. Mount the file system:
+CHAPTER 29. VDO INTEGRATION
+267
+
+# mkdir -m 1777 /mnt/vdo_name
+# mount /dev/mapper/vdo_name /mnt/vdo_name
+4. To configure the file system to mount automatically, use either the /etc/fstab file or a
+systemd mount unit:
+If you decide to use the /etc/fstab configuration file, add one of the following lines to the
+file:
+For the XFS file system:
+/dev/mapper/vdo_name /mnt/vdo_name xfs defaults,x-
+systemd.requires=vdo.service 0 0
+For the ext4 file system:
+/dev/mapper/vdo_name /mnt/vdo_name ext4 defaults,x-
+systemd.requires=vdo.service 0 0
+Alternatively, if you decide to use a systemd unit, create a systemd mount unit file with the
+appropriate filename. For the mount point of your VDO volume, create the 
+/etc/systemd/system/mnt-vdo_name.mount file with the following content:
+[Unit]
+Description = VDO unit file to mount file system
+name = vdo_name.mount
+Requires = vdo.service
+After = multi-user.target
+Conflicts = umount.target
+[Mount]
+What = /dev/mapper/vdo_name
+Where = /mnt/vdo_name
+Type = xfs
+[Install]
+WantedBy = multi-user.target
+An example systemd unit file is also installed at 
+/usr/share/doc/vdo/examples/systemd/VDO.mount.example.
+5. Enable the discard feature for the file system on your VDO device. Both batch and online
+operations work with VDO.
+For information on how to set up the discard feature, see Section 2.4, "Discard Unused
+Blocks".
+29.3.4. Monitoring VDO
+Because VDO is thin provisioned, the file system and applications will only see the logical space in use
+and will not be aware of the actual physical space available. Scripting should be used to monitor the
+actual available space and generate an alert if use exceeds a threshold: for example, when the file
+system is 80% full.
+Storage Administration Guide
+268
+
+VDO space usage and efficiency can be monitored using the vdostats utility:
+# vdostats --human-readable
+Device                   1K-blocks    Used     Available    Use%    
+Space saving%
+/dev/mapper/node1osd1    926.5G       21.0G    905.5G       2%      73%      
+/dev/mapper/node1osd2    926.5G       28.2G    898.3G       3%      64%
+29.3.5. Deployment Examples
+The following examples illustrate how VDO might be used in KVM and other deployments.
+VDO Deployment with KVM
+To see how VDO can be deployed successfully on a KVM server configured with Direct Attached
+Storage, see Figure 29.2, "VDO Deployment with KVM".
+Figure 29.2. VDO Deployment with KVM
+More Deployment Scenarios
+For more information on VDO deployment, see Section 29.5, "Deployment Scenarios".
+29.4. ADMINISTERING VDO
+29.4.1. Starting or Stopping VDO
+To start a given VDO volume, or all VDO volumes, and the associated UDS index(es), storage
+management utilities should invoke one of these commands:

@@ -1,0 +1,1000 @@
+
+
+How Clustering Works in Tableau
+
+
+
+Cluster analysis partitions the marks in the view into clusters, where the marks within each cluster are more similar to one another than they are to marks in other clusters. Tableau distinguishes clusters using color.
+
+Tip
+For additional insight into how clustering works in Tableau, see the blog post Understanding Clustering in Tableau 10 at https://boraberan.wordpress.com/2016/07/19/understanding-clustering-in-tableau-10/.
+
+
+
+
+
+
+
+
+
+
+
+The clustering algorithmTableau uses the k-means algorithm for clustering. For a given number of clusters k, the algorithm partitions the data into k clusters. Each cluster has a center (centroid) that is the mean value of all the points in that cluster. The k-means locates centers through an iterative procedure that minimizes distances between individual points in a cluster and the cluster center. In Tableau, you can specify a desired number of clusters, or have Tableau test different values of k and suggest an optimal number of clusters (see Determining the optimal number o
+f clusters section at http://onlinehelp.tableau.com/v10.0/pro/desktop/en-us/clustering_howitworks.html#Determining_the_Optimal_Number_of_Clusters for further details).K-means requires an initial specification of cluster centers. Starting with one cluster, the method chooses a variable whose mean is used as a threshold for splitting the data in two. The centroids of these two parts are then used to initialize k-means to optimize the membership of the two clusters. Next, one of the two clusters is chosen for splitting and a variable within that cluster is chosen whose mean is used as a threshold for splitting that cluster in two. K-means is then used to partition the data into three clusters, initialized with the centroids of the two parts of the split cluster and the centroid of the remaining cluster. This process is repeated until a set number of clusters is reached.Tableau uses the Lloyd algorithm with squared Euclidean distances to compute the k-means clustering for each k. Combined with the splitting procedure to determine the initial centers for each k > 1, the resulting clustering is deterministic, with the result dependent only on the number of clusters.
+
+
+
+
+
+
+
+
+
+
+
+
+Scaling
+
+
+
+Tableau scales values automatically so that columns having a larger range of magnitudes don't dominate the results. For example, an analyst could be using inflation and GDP as input variables for clustering, but because GDP values are in trillions of dollars, this could cause the inflation values to be almost completely disregarded in the computation. Tableau uses a scaling method called min-max normalization, in which the values of each variable are mapped to a value between 0 and 1 by subtracting its minimum and dividing by its range.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Clustering without using k-means
+
+
+
+Now, Tableau can only do k-Means clustering. On the other hand, R can offer a variety of other clustering methodologies, such as hierarchical clustering.
+In this topic, we will look at how R can do other types of clustering, which completes the picture of clustering in Tableau.
+
+
+
+
+
+
+
+
+
+
+Hierarchical modeling
+Hierarchical modeling is aimed at finding hierarchies of clusters. This facility is available to us in R. To do this, let's use the Iris dataset with an R script, which will focus on hierarchical clustering. The script is as follows:IrisSample <- sample(1:dim(iris)[1],40)
+IrisSample$Species <- NULL
+
+dim(IrisSample)
+hc <- hclust(dist(IrisSample), method="ave")
+hc
+
+plot(hc, hang = -1, labels=iris$Species[IrisSample])In the following figure we can represent a cluster dendogram, which means the hierarchies of clusters. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Statistics for Clustering
+
+
+
+The Describe Clusters dialog box provides information about the models that Tableau computed for clustering. You can use these statistics to assess the quality of the clustering.
+When the view includes clustering, you can open the Describe Clusters dialog box by right-clicking Clusters on the Marks card (Control-clicking on a Mac) and choosing Describe Clusters. The information in the Describe Clusters dialog box is read-only, though you can click Copy to Clipboard and then paste the screen contents into a writeable document.
+The Describe Clusters dialog box has two tabs: a Summary tab and a Models tab.
+
+
+
+
+
+
+
+
+
+
+Describing Clusters - Summary tabThese are described in the following table:
+
+Number of Clusters
+
+
+The number of individual clusters in the clustering.
+
+
+Number of Points
+
+
+The number of marks in the view.
+
+
+Between-group sum of squares
+
+
+A metric quantifying the separation between clusters as a sum of squared distances between each cluster's centre (average value), weighted by the number of data points assigned to the cluster, and the centre of the data set. The larger the value, the better the separation between clusters.
+
+
+Within-group sum of squares
+
+
+A metric quantifying the cohesion of clusters as a sum of squared distances between the centre of each cluster and the individual marks in the cluster. The smaller the value, the more cohesive the clusters.
+
+
+Total sum of squares
+
+
+Totals the between-group sum of squares and the within-group sum of squares. The ratio (between-group sum of squares)/(total sum of squares) gives the proportion of variance explained by the model.
+
+
+Cluster Statistics
+
+
+For each cluster in the clustering, the following information is provided.
+
+
+# Items
+
+
+The number of marks within the cluster.
+
+
+Centers
+
+
+The average value within each cluster (shown for numeric items).
+
+
+Most Common
+
+
+The most common value within each cluster (only shown for categorical items).
+Testing your ClusteringSince clustering models are unsupervised, they can be harder to evaluate. The clusters are created by the modeling procedure, and it's not immediately obvious how the clusters were generated.Evaluation is a matter of checking observable summaries about the clustering. There are some key metrics that need to be taken into consideration, and they are discussed next.
+
+
+
+
+
+
+
+
+
+Describing Clusters - Models Tab
+Analysis of variance (ANOVA) is a collection of statistical models and associated procedures useful for analyzing variation within and between observations that have been partitioned into groups or clusters. In this case, analysis of variance is computed per variable, and the resulting analysis of variance table can be used to determine which variables are most effective for distinguishing clusters.
+Relevant Analysis of variance statistics for Tableau clustering include:F-statistic: The F-statistic for one-way, or single-factor, ANOVA is the fraction of variance explained by a variable. It is the ratio of the between-group variance to the total variance.The larger the F-statistic, the better the corresponding variable is distinguishing between clusters.p-value: The p-value is the probability that the F-distribution of all possible values of the F-statistic takes on a value greater than the actual F-statistic for a variable. If the p-value falls below a specified significance level, then the null hypothesis (that the individual elements of the variable are random samples from a single population) can be rejected. The degrees of freedom for this F- distribution are (k - 1, N - k), where k is the number of clusters and N is the number of items (rows) clustered.The lower the p-value, the more the expected values of the elements of the corresponding variable differ among clusters.Model Sum of Squares and degrees of freedom: The Model Sum of Squares is the ratio of the between-group sum of squares to the model degrees of freedom. The between group sum of squares is a measure of the variation between cluster means. If the cluster means are close to each other (and therefore close to the overall mean), this value will be small. The model has k-1 degrees of freedom, where k is the number of clusters.Error Sum of Squares and Degrees of Freedom: The Error Sum of Squares is the ratio of within-group sum of squares to the error degrees of freedom. The within-group sum-of-squares measures the variation between observations within each cluster. The error has N-k degrees of freedom, where N is the total number of observations (rows) clustered and k is the number of clusters.The Error Sum of Squares can be thought of as the overall Mean Square Error, assuming that each cluster center represents the "truth" for each cluster.
+
+
+
+
+
+
+
+
+
+
+
+
+Introduction to R
+
+
+
+The R language, as the descendant of the statistics language, S, has become the preferred computing language in the field of statistics. Moreover, due to its status as an active contributor in the field, if a new statistical method is discovered, it is very likely that this method will first be implemented in the R language. As such, a large quantity of statistical methods can be fulfilled by applying the R language.
+To apply statistical methods in R, the user can categorize the method of implementation into descriptive statistics and inferential statistics:
+
+
+Descriptive statistics: These are used to summarize the characteristics of the data. The user can use mean and standard deviation to describe numerical data, and use frequency and percentages to describe categorical data.
+Inferential statistics: Based on the pattern within sample data, the user can infer the characteristics of the population. The methods related to inferential statistics are for hypothesis testing, data estimation, data correlation, and relationship modeling. Inference can be further extended to forecasting, prediction, and estimation of unobserved values either in or associated with the population being studied.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+Our goal was to deliver clustering examples with results that are repeatable with good performance. This is a tough balancing act, and it's important to keep. Quality and repeatability are must haves for trusting the results while good performance encourages experimentation with different filters, levels of detail, input variables, and so on, which is the path to more insights.
+In the next chapter we will see how to an unsupervised learning technique requires a different approach than the ones you have seen previously.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 7. Advanced Analytics with Unsupervised Learning
+
+
+
+Would you like to know how to make predictions from a dataset? Alternatively, would you like to find exceptions, or outliers that you need to watch out for?
+Neural networks are used in business to answer these business questions. They are used to make predictions from a dataset, or to find unusual patterns. They are best used for regression or classification business problems.
+In this chapter, we will look at neural networks as a specific example of advanced analytics, and how they can be used to answer real-life business questions.
+
+
+
+
+
+
+
+
+
+
+What are neural networks?Neural networks are one of the most interesting machine learning models. Neural networks are inspired by the structures of the brain. Neural networks are algorithms that mimic the functioning of the brain. They are unsupervised algorithms, which means that we do not always know what the outputs should be.Neural networks have layers, which can be categorized into the following:InputMiddleOutput layersThe input layer consumes the data, and the output layer represents the result. The middle layer represents the part of the algorithm that indicates how the input layer gets to the output layer.
+
+
+
+
+
+
+
+
+
+
+Different types of neural networksThe simplest type of neural network is known as a Feedforward Neural Network. It feeds information in one direction only, from the front to the back. This type of network is also known as a perceptron. The following figure illustrates a perceptron:Neural network training process Neural networks can also feed information back down through the layers. One method for this process is known as backpropagation, which feeds back through the system to generate the difference between the target and actual output values.NoteNeural nets are complex because they contain many hidden layers. The middle layer works to map the inputs to the outputs. To achieve this function, the neural network needs to undergo a lot of training.Here is an illustration of how these neural networks might look. Error is fed back to modify future learning iteration: Training involves getting the errors from the first pass through the learning process. The error is then fed back through the network, and it's used to help point the neural network more closely to the expected output.At its most basic level, the neural network consumes a number of inputs, and tries to crunch the data down to a small number of outputs. The inputs are made up of the values in a data record, and the output layer is represented by a node, which could be 1 for correct, and 0 for the others.The neural network does this by creating a middle layer, which looks at various ways in which the numbers can be manipulated and combined to produce results that are as close to the target as possible.The number of layers and the processing points within the layer are part of the black magic of the data scientist. Sometimes this is a best fit, and sometimes it isn't a black and white, clear cut answer. There are several guidelines, however, that might help in the process.Firstly, as the complexity in the input and output increases, then the number of processing points in the hidden layer will also increase. Furthermore, if the model can be split out into separate stages, then different layers may be incorporated into the model.
+
+
+
+
+
+
+
+
+
+
+
+
+Backpropagation and Feedforward neural networks
+
+
+
+Training a neural network is an iterative process, which involves discovering values for its weights and its bias terms. These are used in conjunction with the input values to create outputs. After much iteration, the model is tested for the purposes of becoming a full production model that can be used to make predictions.
+Training a neural network model is an iterative process, which is a key part of the Cross Industry Standard Process for Data Mining (CRISP-DM) as an integral part of the modeling phase. Training involves working out weights and bias values that lead the inputs towards the preferred output. As part of the training process, the model can be presented with the test data in order to evaluate its accuracy. This will help us to understand how well the model will perform when it is given new data, and we don't know the true output results.
+During the training process, rows are presented to the neural network consecutively, one at a time. The weights associated with each input value are adjusted each time. Then, once all the rows from the training set are presented, the process starts again. During the model learning phase, the neural network adjusts the weights so that the cases are predicted by the correct output nodes.
+The weights and functions in the hidden layer are readjusted so that the resulting findings are compared against the actual outputs. The error value is then fed back through the system, hence the name backpropagation. The middle layer is then adjusted to cater for the next inbound record.
+
+Note
+It should be noted that the same training set of data can be processed many times throughout the training process. Once this is deemed to be completed, the test data is presented to the network to see how well it performs.
+Finally, it's crucial to split your data into training and test data. The training data sets an upper bound for the number of processing points in the hidden layer.
+
+It would be strange, for example, if the number of points was greater than the number of training cases. It's possible to calculate the upper bound by using the number of training cases, and divide it by sum of the number of nodes in both the input and output layers in the network. Then, we take that result and divide it by a scaling factor between five and ten. If the data is less noisy, then it's possible to use a larger scaling factor. This process can help us to get a balance between training individual cases, and making the network inefficient to deal with new datasets.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Evaluating a neural network model
+
+
+
+Another fundamental phase of the CRISP-DM methodology is the evaluation phase, which focuses on the quality of the model, and its ability to meet the overall business objectives. If the model can't meet the objectives, then it's important to understand if there is a business reason why the model doesn't meet the objectives, in addition to technical possibilities that might account for failure. It's also a good time to pause and consider the testing results that you have generated thus far. This is a crucial stage because it can reveal challenges that didn't appear before. That said, it is an interesting phase because you can find new and interesting things for future research directions. Therefore, it's important not to skip it!
+Fortunately, we can visualize the results using Tableau so that the neural networks are easier to understand. There are several performance measures for neural networks, and we will explore these in more detail along with a discussion of how the performance measures are visualized. You can view the results as Receiver Operator Characteristic (ROC) curves, Precision/Recall curves, or Lift curves. Additional data visualizations could include a confusion matrix, and cumulative values for the area under the curve (AUC). Let's look at these measurements in more detail.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Neural network performance measures
+
+
+
+In the meantime, however, let's make the concepts of the neural net clear by looking at the options for visualizing the results.
+
+
+
+
+
+
+
+
+
+
+Receiver Operating Characteristic curveHere is an example of a Receiver Operator Characteristic (ROC) curve, where we can see the data analysis and the changes we have in the data accordingly to the time. The closer this curve is to the upper left corner, the better the model's performance is. It means it is better at identifying the true positive rate while minimizing the false positive rate. In this example, we can see that the model is performing well.
+
+
+
+
+
+
+
+
+
+Precision and Recall curvePrecision and Recall curve are very useful for assessing models in terms of business questions. They offer more detail and insights into the model's performance. Here is an example: Precision can be described as the fraction of times that the model classifies the number of cases correctly. It can be considered as a measure of confirmation, and it indicates how often the model is correct.Recall is a measure of utility, which means that it identifies how much the model finds of all that there is to find within the search space. Both scores combine to make the F1 score. The F1 score combines Precision and Recall. If either precision or recall is small, then the F1 score value will be small.
+
+
+
+
+
+
+
+
+
+Lift scoresWe can also look at the lift score. A lift chart visually represents the improvement that a model provides when compared against a random guess. Here is an example lift chart in the following screenshot: This is called a lift score. With a lift chart, you can compare the accuracy of predictions for the models that have the same predictable attribute.
+
+
+
+
+
+
+
+
+
+
+
+
+Visualizing neural network results
+
+
+
+Let's work through an example of a neural network, using publicly accessible data. We will use R to create the neural network, and then we will visualize the results in Tableau.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Neural network in R
+
+
+
+Let's load up the libraries that we need. We are going to use the neuralnet package. The neuralnet package is a flexible package that is created for the training of neural networks using the backpropagation method. We discussed the backpropagation method previously in this chapter.
+Let's install the package using the following command:
+
+
+install.packages("neuralnet")
+
+
+Now, let's load the library:
+
+
+library(neuralnet)
+
+
+We need to load up some data. We will use the iris quality dataset from the UCI website, which is installed along with your R installation. You can check that you have it, by typing in iris at the Command Prompt. You should get 150 rows of data.
+If not, then download the data from the UCI website, and rename the file to iris.csv. Then, use the Import Dataset button on RStudio to import the data.
+Now, let's assign the iris data to the data command. Now, let's look at the data to see if it is loaded correctly. It's enough to look at the first few rows of data, and we will do this by using the head command:
+
+
+head(data)
+
+
+Let's look and see how many rows and columns we have for the wine dataset. This will help later, when we look at how many rows we want in the training and the test set:
+
+
+dim(data)
+
+
+When we run this command, we see that we have 150 rows and 5 columns. Let's plot the wine in RStudio so we can see how it looks:
+
+
+plot(data)
+
+
+When we run this command, we get a lattice plot that compares all the variables together. Here is an example:
+
+
+
+ 
+This visualization is quite difficult to read. Let's move forward with the issue of adding more contexts to the data. The following code creates a new column for each of the iris types, and populates the corresponding column with TRUE if the iris is of the given type. So, for example, if the iris type is setosa, then the code returns TRUE in the setosa column:
+
+
+data$setosa <- c(data$Species == 'setosa')
+data$versicolor <- c(data$Species == 'versicolor')
+data$virginica <- c(data$Species == 'virginica')
+
+
+Once we have run these commands, we can use the head command again to see the values. Here is an example result:
+
+
+
+ 
+We could normalize the data before we use it for the neural net. In theory, we don't always need to standardize the inputs to the neural net. The reason for this is that any rescaling of an input could be undone, or redone by any amendment of the corresponding weights and biases. In practice, however, standardizing inputs can make R faster. Therefore, normalizing is one technique that you could consider, particularly when we are handling a lot of data.
+Let's start producing Train and Test datasets. We can use the following formula to count the number of rows. Then, we can create an index, which will be used to assign data to either the test or training sets.
+Now, we will train the data using set.seed, which allows us to reproduce a particular sequence of random numbers. The seed itself carries no inherent meaning; it's simply a way of telling the random number generator where to start. Here, we are going to set the seed to make the partition reproducible:
+
+
+set.seed(123)
+
+
+Next, we will work out the training and test set. Firstly, we calculate the total number of rows and then we sample the data so that 75 percent of the data is training, and the remainder is test data:
+
+
+totalrows <- nrow(data)
+totalrows
+samplesize <- floor(0.75 * nrow(data))
+
+
+The samples are indexed separately, using the marker iris_ind. Data with the marker iris_ind goes to the training dataset, and rest of the data goes to the test dataset.
+Next, we can assign the data to the training set or the test set:
+
+
+train <- winequality[wine_ind, ]
+test <- winequality[-wine_ind, ]
+
+
+Now, we will call the neuralnet function to create a neural network. We are training the data, so we are going to use the training set of data. As a starting point, we are going to work with three hidden layers. The neural network is going to be assigned to the variable nn:
+
+
+nn <- neuralnet(train$setosa + train$versicolor + train$virginica ~ train$Sepal.Length + train$Sepal.Width + train$Petal.Length + train$Petal.Width, data, hidden=3, lifesign='full')
+
+
+Now we've created the model, let's try to use it with the test data. To do this, we use the predict command, specifying the first four columns:
+
+
+predict <- compute(nn, test[1:4])
+
+
+Now, let's test use this model to predict our results with the test data. In the neuralnet package, this method is used to predict objects of class nn, typically produced by neuralnet.
+Firstly, the dataframe is changed by a mean response value, and the data error is worked out between the original response and the new mean response. Then, all duplicate rows are removed to clarify the data.
+Eventually, we get our predictions, and we can start to visualize the predicted results of the neural network using Tableau.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Modeling and evaluating data in Tableau
+
+
+
+Neural networks are often difficult to understand. When the data is loaded into Tableau, we can visually understand the distinctions made by the underlying model. Since we can easily load data into Tableau, we can do this on an ongoing basis.
+In this example, we will use Tableau as part of the testing process. We will present the model with data, and see how well the R model can distinguish between the three types of iris. Once we have set up the Tableau workbook, we can load more data into the workbook, using the connect to data facility. This would help us to see if the model continues to distinguish between the model types, and we could continue to test the model on an ongoing basis.
+
+
+
+
+
+
+
+
+
+
+Using Tableau to evaluate dataLet's load more data into Tableau. For our testing purposes, we will reuse the iris data that we used in the earlier example. However, if this was real life, this would not be the best practice for testing purposes. Here, we are reusing the data so we can be certain that our results in Tableau match our results in R. Then, in real life, we would move forward by using new test data.To load in the iris dataset, refer to the UCI Machine Learning website. Here is the URL for reference: http://mlr.cs.umass.edu/ml/datasets.html.Once the data is downloaded and imported into Tableau, you will see the headers appear. Here is an example: After the data is imported, let's write a small script that will access the neural network in R. Here is the code:
+SCRIPT_REAL(
+'library(neuralnet); predict <- compute(nn,data.frame(.arg1,.arg2,.arg3,.arg4));predict$net.result[1,]',
+SUM([Petal.Length]), SUM([Petal.Width]),SUM([Sepal.Length]),SUM([Sepal.Width]))
+Let's break the script down.Initially, the code calls the neuralnet library, so that the rest of the script will run. The predict variable is used to hold the results of the compute format. It needs four arguments to run, and those are the columns in the Tableau notation at the end.To put the script into Tableau, go to the Measures option and right-click to get the menu for Calculated Fields. We will put the script into a Calculated Field. In our example, we will give it a name: Predicted Output. When we put it into Tableau, it appears as follows: Once the formula is in place, we can look at producing visualizations to show the differences in the cluster. Here, we will start with the end result, and then step back so we can see how it was done: In this example, we can see that the predicted output for each iris type is clear, and it's distinct in terms of the actual number, and the actual color.To create this workbook, we have simply dragged over the Species and the Predicted Output pills onto the canvas, and used Predicted Output for the color. It's great to have visualizations empowered with R, which we can use easily in Tableau.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary
+
+
+
+In this chapter you have learned how to manipulate data using unsupervised learning techniques and algorithms applying R and Tableau. The usage Tableau is simple; we use it to visualize the analytics. Also we can develop data analytics using it and delivering the overall data science project, by helping business users to evaluate and understand the models that they have been given. We can get the data, analyze it, and evaluate it with a real approach.
+In the next chapter we will see how to interpret the results and the numbers, when you have them, how to make them understandable for real applications in real life, applying the data in real situations and visualization.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 8. Interpreting Your Results for Your Audience
+
+
+
+If we feel a cold, then we use a jacket. When we are hungry, we decide to eat. These decisions can be made by us, but how does a machine make a decision? In this chapter, we will learn how to build a decision system that can be implemented on IoT devices. All of these systems can analyze with all the chapters seen in this book. The main idea of this chapter is to use the analytics algorithms, and to learn how to apply them in IoT projects
+We will explore the following topics:
+
+
+Introduction to decision system and machine learning
+Building a simple decision system-based Bayesian theory
+Integrating a decision system and IoT project
+Building your own decision system-based IoT
+
+
+
+
+
+
+
+
+
+
+
+
+Introduction to decision system and machine learningA decision system that makes a decision based on several input parameters. A decision system is built on decision theories. Being human involves making decisions for almost all life cases.The following are examples of decisions that humans make:Shall I buy the car today? The decision depends on my preferences. This car looks fine, but it is too expensive for me.Shall I bring an umbrella today? This decision depends on the current condition in the area where we are staying. If it is cloudy, it's better to bring an umbrella even though it may not rain.Generally speaking, we teach a machine such as a computer in order to understand and achieve a specific goal. This case is called machine learning. Varieties of programs are implemented in machines so they can make decisions. Machine learning consists of using various algorithms to build a decision system. In this book, I use fuzzy logic and Bayesian algorithms to make a decision system. I will explain them in the next section.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Decision system-based Bayesian
+
+
+
+Bayesian uses the manipulation of conditional probabilities approach to interpret data. In this section, we build a decision system using the Bayesian method. Consider D, called the decision space, which denotes the space of all possible decisions d that could be chosen by the decision maker (DM). Θ is the space of all possible outcomes or state of nature ω, ω
+∈
+Θ.
+Decision system-based Bayesian is built by Bayesian theory. For illustration, I show a simple spam filter using Bayesian. Imagine the sample space X is the set of all possible datasets of words, from which a single dataset word x will result. For each ω
+∈
+Θ and x
+∈
+X, the sampling model P(ω) describes a belief that x would be the outcome of spam probability. P(x|ω), prior to distribution, is the true population characteristics and supposes a spam probability for x.P(ω|x), posterior distribution, describes a belief that ω is the true value of spam, having observed dataset x.
+The posterior distribution is obtained using Bayes' rule as follows:
+
+
+
+ 
+This result will return a spam probability value.
+Now we can build a decision system. Consider λ (ω,d) as a lost function that states exactly how costly each action d is. Lost function λ(di|ωi) is the loss incurred for taking action di, where the class is ωi. The expected loss or conditional risk is defined as follows:
+
+
+
+ 
+A decision function d(x) is a mapping from observations to actions. The total risk of a decision function can be calculated as given in the following equation:
+
+
+
+ 
+A decision function is optimal if it minimizes the total risk. A decision is made based on a minimum risk value for each action. This is a simple explanation. To get further information about Bayesian theory, I suggest you read a textbook about Bayesian.
+
+
+
+
+
+
+
+
+
+
+Decision system-based fuzzy logicConsider you want to make a decision based on the current temperature, for instance, if the room's temperature is 30°C, then you turn on a cooler machine. Otherwise, if the room's temperature is 18°C, you turn on a heater machine.This decision happens because we already defined exact values for turning on the machines. What's happening is that we say that we want to turn on the cooler machine if the room's temperature is hot. Furthermore, we also want to turn on the heater machine if the room's temperature is cold.Cold and hot are two terms related to human linguistics. We should determine how what cold and hot criteria are. A human differentiates the criteria for cold and hot, but how can a computer and machine know?This problem can be solved using fuzzy logic. The idea of fuzzy logic was first introduced by Dr. Lotfi Zadeh from the University of California at Berkeley in the 1960s. The theory of fuzzy logic is developed with fuzzy sets and memberships.In general, decision system-based fuzzy logic is described in the following figure: We can build a decision system with the following steps:Define independent variables that represent your problem. This step is a part of the extraction process. These variables usually have numeric values.Build fuzzy sets that consist of linguistic variables, for instance, cold, warm, and hot.Execute the fuzzification process, which transforms independent variables (numerical values) to dependent variables (linguistic values).Build fuzzy inference rules to map between a given input and an output. We can use the if-then approach.After aggregating all outputs, we do defuzzification to obtain a single number.From the output of a single number, we can make a decision. We will do an experiment on how to build a decision system using fuzzy logic in the next section.
+
+
+
+
+
+
+
+
+
+
+
+
+Bayesian Theory
+
+
+
+We can implement Bayesian probability using Python. For our demo, we generate output values from two independent variables, x1 and x2. The output model is defined as follows:
+
+
+
+ 
+
+c is a random value. We define α, β1, β2, and σ as 0.5, 1, 2.5, and 0.5.
+These independent variables are generated using a random object from the NumPy library. After that, we compute the model with these variables.
+We can implement this case with the following scripts:
+
+
+import matplotlib
+matplotlib.use('Agg')
+import numpy as np
+import matplotlib.pyplot as plt
+# initialization
+np.random.seed(100)
+alpha, sigma = 0.5, 0.5
+beta = [1, 2.5]
+size = 100
+
+# Predictor variable
+X1 = np.random.randn(size)
+X2 = np.random.randn(size) * 0.37
+# Simulate outcome variable
+Y = alpha + beta[0]*X1 + beta[1]*X2 + np.random.randn(size)*sigma
+fig, ax = plt.subplots(1, 2, sharex=True, figsize=(10, 4))
+fig.subplots_adjust(bottom=0.15, left=0.1)
+ax[0].scatter(X1, Y)
+ax[1].scatter(X2, Y)
+ax[0].set_ylabel('Y')
+ax[0].set_xlabel('X1')
+ax[1].set_xlabel('X2')
+plt.grid(True)
+fig.savefig('predict.png', dpi=100)
+print("finish")
+
+
+You can save these scripts into a file, called ch02_predict.py.
+Here is the result of getting the data:
+
+
+
+ 
+This program will also generate three files, alpha.png, beta.png, and theta-3.png. A sample of the alpha.png file is depicted in the following figure:
+
+
+
+ 
+You can see alpha values, which are random values with normal distribution alpha.png. Furthermore, beta values are generated with normal distribution. You can see beta values in the beta.png file in the following figure:
+
+
+
+ 
+The last of the program output is the theta-3.png file, which shows how theta values are computed by a formula. You can see it in the following figure:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fuzzy logic
+
+
+
+One of the famous Python libraries for fuzzy logic is scikit-fuzzy. Several fuzzy logic algorithms have already been implemented on this library. Since scikit-fuzzy is an open source library, you can review the source code at https://github.com/scikit-fuzzy/scikit-fuzzy.
+Before you install this library, you should already have installed NumPy and SciPy libraries. You can install scikit-fuzzy using pip, by typing the following command:
+
+
+$ sudo pip install scikit
+-fuzzy
+
+
+As another option, you can install the scikit-fuzzy library from source code.
+Type these commands:
+
+
+$ git clone https://github.com/scikit-fuzzy/scikit-fuzzy
+$ cd scikit-fuzzy/
+$ sudo python setup.py install
+
+
+After completing the installation, you can use scikit-fuzzy. To test how to work with scikit-fuzzy, we will build a fuzzy membership for temperature using the fuzz.trimf() function. You can write the following scripts:
+
+
+import matplotlib
+matplotlib.use('Agg')
+
+import numpy as np
+import skfuzzy as fuzz
+import matplotlib.pyplot as plt
+
+# Generate universe variables
+x_temp = np.arange(0, 11, 1)
+
+# Generate fuzzy membership functions
+temp_lo = fuzz.trimf(x_temp, [0, 0, 5])
+temp_md = fuzz.trimf(x_temp, [0, 5, 10])
+temp_hi = fuzz.trimf(x_temp, [5, 10, 10])
+
+# Visualize these universes and membership functions
+fig, ax = plt.subplots()
+ax.plot(x_temp, temp_lo, 'b--', linewidth=1.5, label='Cold')
+ax.plot(x_temp, temp_md, 'g-', linewidth=1.5, label='Warm')
+ax.plot(x_temp, temp_hi, 'r:', linewidth=1.5, label='Hot')
+ax.set_title('Temperature')
+ax.legend()
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.get_xaxis().tick_bottom()
+ax.get_yaxis().tick_left()
+ax.set_ylabel('Fuzzy membership')
+
+
+plt.tight_layout()
+print('saving...')
+plt.grid(True)
+fig.savefig('fuzzy_membership.png', dpi=100)
+print('done')
+
+
+This program will generate a fuzzy_membership.png file. A sample of this file is depicted as follows:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Building a simple decision system-based Bayesian theory
+
+
+
+In this section, we build a simple decision system using Bayesian theory. A smart water system is a smart system that controls water. In general, you can see the system architecture in the following figure:
+
+
+
+ 
+After using a sensing process on water to obtain the water quality, you can make a decision. If the water quality is good, we can transfer the water to customers. Otherwise, we purify the water.
+To implement a decision system-based Bayesian theory, firstly we define the state of nature. In this case, we define two states of nature:
+
+
+ω1: Water is ready for drinking
+ω2: Water should be cleaned (kotor)
+
+
+For inputs, we can declare x1 and x2 as negative and positive as the observation results. We define prior values and class conditional probabilities as follows:
+
+
+
+ 
+To build a decision, we should make a loss function. The following is a loss function for our program:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Integrating a decision system and IoT project
+
+
+
+IoT boards help us to perform sensing and actuating. To build a decision system with IoT boards, we can use a sensing process on IoT boards as input parameters for our decision system. After performing decision computing, we can make some actions through actuating on IoT boards.
+In general, we can integrate our decision system with IoT boards, as shown in the following figure:
+
+
+
+ 
+Several sensor devices can be attached to the IoT board that is used for sensing. Depending on what you need; you can gather environmental data, such as temperature, as digital inputs that will be used for our decision system. You can see samples of sensor devices in the following figure:
+
+
+
+ 
+Several actuator devices can be used in our decision system. Each final output from a system can be mapped into an action. This action can be represented as turning on an actuator device.
+Some systems may not do sensing on their environment to gather input data. We can obtain data from a database or another system through a network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Building your own decision system-based IoT
+
+
+
+In this section, we build a simple decision system using fuzzy logic on Raspberry Pi. We use Python for implementation. We build a system to monitor temperature and humidity in a room to decide if the environment is comfortable or not. If the environment is not comfortable, then we turn on a cooler machine.
+The following is our design system:
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+WiringWe use DHT22 and relay modules for our wiring. Connect the DHT22 module into the following connections:DHT22 pin 1 (VDD) is connected to the 3.3V pin from Raspberry PiDHT22 pin 2 (SIG) is connected to the GPIO23 (see the BCM column) pin from Raspberry PiDHT22 pin 4 (GND) is connected to the GND pin from Raspberry PiA relay VCC is connected to the 3.3V pin from Raspberry PiA relay GND is connected to the GND pin from Raspberry PiA relay signal is connected to the GPIO26 (see the BCM column) pin from Raspberry PiThe complete wiring is shown in the following figure: 
+
+
+
+
+
+
+
+
+
+Writing the programWe build a fuzzy logic to implement a decision system. Two inputs from the sensing are temperature and humidity. In this case, we start developing a fuzzy membership for temperature and humidity. For testing, I build the following fuzzy membership models for temperature and humidity, which are shown in the following figure: In the temperature model, we create three categories: cold, warm, and hot. Also, we make two categories for humidity: low and high.The code:
+import matplotlib
+matplotlib.use('Agg')
+import numpy as np
+import skfuzzy as fuzz
+import matplotlib.pyplot as plt
+import Adafruit_DHT
+import RPi.GPIO as GPIO
+import time
+After that, we initialize Raspberry Pi GPIO for DHT22 and the relay module:
+print('initialization...')
+
+### initialization GPIO
+relay_pin = 26
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(relay_pin, GPIO.OUT)
+sensor = Adafruit_DHT.DHT22
+# DHT22 pin on Raspberry Pi
+dht_pin = 23
+The next step is to build a fuzzy logic model by starting to create fuzzy membership for temperature and humidity.We create the temperature_category() and humidity_category() functions to map from sensing input to system:
+########## INPUTS ########################
+#Input Universe functions
+temperature = np.arange(0, 11, 0.1)
+humidity = np.arange(0, 11, 0.1)
+
+# Input Membership Functions
+# Temperature
+temperature_cold = fuzz.gaussmf(temperature, 0, 1.5)
+temperature_warm = fuzz.gaussmf(temperature, 5, 1.5)
+temperature_hot = fuzz.gaussmf(temperature, 10, 1.5)
+
+# Humidity
+humidity_low = fuzz.trapmf(humidity, [0, 0, 1, 3])
+humidity_high = fuzz.gaussmf(humidity, 10, 1.5)
+
+
+########## OUTPUT ########################
+# comfort
+# Output Variables Domain
+comfort = np.arange(0, 30, 0.1)
+
+# Output Membership Function
+
+comfort_low = fuzz.trimf(comfort, [0, 5, 10])
+comfort_ave = fuzz.trimf(comfort, [10, 15, 25])
+comfort_very = fuzz.trimf(comfort, [20, 25, 30])
+def temperature_category(temperature_in=18):
+
+
+temperature_cat_cold = fuzz.interp_membership(temperature,
+temperature_cold, temperature_in)
+temperature_cat_warm = fuzz.interp_membership(temperature,
+temperature_warm, temperature_in)
+temperature_cat_hot = fuzz.interp_membership(temperature,
+temperature_hot, temperature_in)
+return dict(cold=temperature_cat_cold, warm=temperature_cat_warm,
+hot=temperature_cat_hot)
+
+def humidity_category(humidity_in=2):
+humidity_cat_low = fuzz.interp_membership(humidity, humidity_low,
+humidity_in)
+humidity_cat_high = fuzz.interp_membership(humidity, humidity_
+high, humidity_in)
+return dict(low=humidity_cat_low, high=humidity_cat_high)
+We also print our membership for reference into a file. It's done using a matplotlib library. We save fuzzy memberships for temperature and humidity:
+# print membership
+# Visualize these universes and membership functions
+
+print('saving membership...')
+fig, ax = plt.subplots(2, 1)
+[t1, t2, t3] = ax[0].plot(temperature, temperature_cold, 'r',
+temperature, temperature_warm, 'm+', temperature,
+temperature_hot, 'b--', label=['Temp. cold',
+'Temp. warm', 'Temp. hot'])
+
+ax[0].set_ylabel('Fuzzy membership')
+ax[0].set_title('Temperature')
+ax[0].set_ylim(-0.05, 1.05)
+ax[0].set_xlim(0, 10)
+
+
+lgd1 = ax[0].legend([t1, t2, t3], ['Temp. cold', 'Temp. warm', 'Temp.
+hot'], loc='center left', bbox_to_anchor=(1, 0.5))
+
+[t1, t2] = ax[1].plot(humidity, humidity_low, 'r', humidity, humidity_
+high, 'b+')
+ax[1].set_ylabel('Fuzzy membership')
+ax[1].set_title('Humidity')
+ax[1].set_ylim(-0.05, 1.05)
+ax[1].set_xlim(0, 10)
+
+
+lgd2 = ax[1].legend([t1, t2], ['Hum. low', 'Hum. high'], loc='center
+left', bbox_to_anchor=(1, 0.5))
+
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+fig.savefig('fuzzy_mem_temp_hum.png', dpi=100, bbox_extra_
+artists=(lgd1, lgd2, ), bbox_inches='tight')
+print('done')
+Now we are ready to read temperature and humidity via the DHT22 module. Then, we compute them into our fuzzy logic system. Furthermore, we make fuzzy inferences from our input data. We do fuzzy aggregation to generate the output.The output is a numeric form. We can map it as low, average, and very comfortable. From this situation, we can make a decision about whether we want to turn a cooler machine on or not:
+# sensing and make decision
+print('program is ready for making decision based fuzzy logic')
+machine_state = -1
+try:

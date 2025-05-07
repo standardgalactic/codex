@@ -1,0 +1,1000 @@
+Extended attributes (xattr)
+This allows the system to associate several additional name/value pairs per file. It is enabled by
+default.
+Quota journaling
+This avoids the need for lengthy quota consistency checks after a crash.
+Project/directory quotas
+This allows quota restrictions over a directory tree.
+Subsecond timestamps
+Storage Administration Guide
+20
+
+This allows timestamps to go to the subsecond.
+Default atime behavior is relatime
+Relatime is on by default for XFS. It has almost no overhead compared to noatime while still
+maintaining sane atime values.
+3.1. CREATING AN XFS FILE SYSTEM
+Prerequisites
+Create or reuse a partition on your disk. For information on creating MBR or GPT partitions, see
+Chapter 13, Partitions.
+Alternatively, use an LVM or MD volume or a similar layer below XFS.
+Procedure
+Procedure 3.1. Creating an XFS File System
+To create an XFS file system, use the following command:
+# mkfs.xfs block_device
+Replace block_device with the path to a partition or a logical volume. For example, 
+/dev/sdb1, /dev/disk/by-uuid/05e99ec8-def1-4a5e-8a9d-5945339ceb2a, or 
+/dev/my-volgroup/my-lv.
+In general, the default options are optimal for common use.
+When using mkfs.xfs on a block device containing an existing file system, add the -f
+option to overwrite that file system.
+Example 3.1. mkfs.xfs Command Output
+Following is a sample output of the mkfs.xfs command:
+meta-data=/dev/device            isize=256    agcount=4, agsize=3277258 
+blks
+         =                       sectsz=512   attr=2
+data     =                       bsize=4096   blocks=13109032, 
+imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0
+log      =internal log           bsize=4096   blocks=6400, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-
+count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+CHAPTER 3. THE XFS FILE SYSTEM
+21
+
+NOTE
+After an XFS file system is created, its size cannot be reduced. However, it can still be
+enlarged using the xfs_growfs command. For more information, see Section 3.4,
+"Increasing the Size of an XFS File System").
+Striped Block Devices
+For striped block devices (for example, RAID5 arrays), the stripe geometry can be specified at the time of
+file system creation. Using proper stripe geometry greatly enhances the performance of an XFS
+filesystem.
+When creating filesystems on LVM or MD volumes, mkfs.xfs chooses an optimal geometry. This may
+also be true on some hardware RAIDs that export geometry information to the operating system.
+If the device exports stripe geometry information, the mkfs utility (for ext3, ext4, and xfs) will
+automatically use this geometry. If stripe geometry is not detected by the mkfs utility and even though
+the storage does, in fact, have stripe geometry, it is possible to manually specify it when creating the file
+system using the following options:
+su=value
+Specifies a stripe unit or RAID chunk size. The value must be specified in bytes, with an optional k, 
+m, or g suffix.
+sw=value
+Specifies the number of data disks in a RAID device, or the number of stripe units in the stripe.
+The following example specifies a chunk size of 64k on a RAID device containing 4 stripe units:
+# mkfs.xfs -d su=64k,sw=4 /dev/block_device
+Additional Resources
+For more information about creating XFS file systems, see:
+The mkfs.xfs(8) man page
+The Red Hat Enterprise Linux Performance Tuning Guide, chapter Tuning XFS
+3.2. MOUNTING AN XFS FILE SYSTEM
+An XFS file system can be mounted with no extra options, for example:
+# mount /dev/device /mount/point
+The default for Red Hat Enterprise Linux 7 is inode64.
+NOTE
+Unlike mke2fs, mkfs.xfs does not utilize a configuration file; they are all specified on
+the command line.
+Write Barriers
+Storage Administration Guide
+22
+
+By default, XFS uses write barriers to ensure file system integrity even when power is lost to a device
+with write caches enabled. For devices without write caches, or with battery-backed write caches,
+disable the barriers by using the nobarrier option:
+# mount -o nobarrier /dev/device /mount/point
+For more information about write barriers, see Chapter 22, Write Barriers.
+Direct Access Technology Preview
+Since Red Hat Enterprise Linux 7.3, Direct Access (DAX) is available as a Technology Preview on
+the ext4 and XFS file systems. It is a means for an application to directly map persistent memory into its
+address space. To use DAX, a system must have some form of persistent memory available, usually in
+the form of one or more Non-Volatile Dual Inline Memory Modules (NVDIMMs), and a file system that
+supports DAX must be created on the NVDIMM(s). Also, the file system must be mounted with the dax
+mount option. Then, an mmap of a file on the dax-mounted file system results in a direct mapping of
+storage into the application's address space.
+3.3. XFS QUOTA MANAGEMENT
+The XFS quota subsystem manages limits on disk space (blocks) and file (inode) usage. XFS quotas
+control or report on usage of these items on a user, group, or directory or project level. Also, note that
+while user, group, and directory or project quotas are enabled independently, group and project quotas
+are mutually exclusive.
+When managing on a per-directory or per-project basis, XFS manages the disk usage of directory
+hierarchies associated with a specific project. In doing so, XFS recognizes cross-organizational "group"
+boundaries between projects. This provides a level of control that is broader than what is available when
+managing quotas for users or groups.
+XFS quotas are enabled at mount time, with specific mount options. Each mount option can also be
+specified as noenforce; this allows usage reporting without enforcing any limits. Valid quota mount
+options are:
+uquota/uqnoenforce: User quotas
+gquota/gqnoenforce: Group quotas
+pquota/pqnoenforce: Project quota
+Once quotas are enabled, the xfs_quota tool can be used to set limits and report on disk usage. By
+default, xfs_quota is run interactively, and in basic mode. Basic mode subcommands simply report
+usage, and are available to all users. Basic xfs_quota subcommands include:
+quota username/userID
+Show usage and limits for the given username or numeric userID
+df
+Shows free and used counts for blocks and inodes.
+CHAPTER 3. THE XFS FILE SYSTEM
+23
+
+In contrast, xfs_quota also has an expert mode. The subcommands of this mode allow actual
+configuration of limits, and are available only to users with elevated privileges. To use expert mode
+subcommands interactively, use the following command:
+# xfs_quota -x
+Expert mode subcommands include:
+report /path
+Reports quota information for a specific file system.
+limit
+Modify quota limits.
+For a complete list of subcommands for either basic or expert mode, use the subcommand help.
+All subcommands can also be run directly from a command line using the -c option, with -x for expert
+subcommands.
+Example 3.2. Display a Sample Quota Report
+For example, to display a sample quota report for /home (on /dev/blockdevice), use the
+command xfs_quota -x -c 'report -h' /home. This displays output similar to the following:
+User quota on /home (/dev/blockdevice)
+Blocks
+User ID      Used   Soft   Hard Warn/Grace
+---------- ---------------------------------
+root            0      0      0  00 [------]
+testuser   103.4G      0      0  00 [------]
+...
+To set a soft and hard inode count limit of 500 and 700 respectively for user john, whose home
+directory is /home/john, use the following command:
+# xfs_quota -x -c 'limit isoft=500 ihard=700 john' /home/
+In this case, pass mount_point which is the mounted xfs file system.
+By default, the limit subcommand recognizes targets as users. When configuring the limits for a
+group, use the -g option (as in the previous example). Similarly, use -p for projects.
+Soft and hard block limits can also be configured using bsoft or bhard instead of isoft or ihard.
+Example 3.3. Set a Soft and Hard Block Limit
+For example, to set a soft and hard block limit of 1000m and 1200m, respectively, to group 
+accounting on the /target/path file system, use the following command:
+# xfs_quota -x -c 'limit -g bsoft=1000m bhard=1200m accounting' 
+/target/path
+Storage Administration Guide
+24
+
+NOTE
+The commands bsoft and bhard count by the byte.
+IMPORTANT
+While real-time blocks (rtbhard/rtbsoft) are described in man xfs_quota as valid
+units when setting quotas, the real-time sub-volume is not enabled in this release. As
+such, the rtbhard and rtbsoft options are not applicable.
+Setting Project Limits
+Before configuring limits for project-controlled directories, add them first to /etc/projects. Project
+names can be added to /etc/projectid to map project IDs to project names. Once a project is added
+to /etc/projects, initialize its project directory using the following command:
+# xfs_quota -x -c 'project -s projectname' project_path
+Quotas for projects with initialized directories can then be configured, with:
+# xfs_quota -x -c 'limit -p bsoft=1000m bhard=1200m projectname'
+Generic quota configuration tools (quota, repquota, and edquota for example) may also be used to
+manipulate XFS quotas. However, these tools cannot be used with XFS project quotas.
+IMPORTANT
+Red Hat recommends the use of xfs_quota over all other available tools.
+For more information about setting XFS quotas, see man xfs_quota, man projid(5), and man 
+projects(5).
+3.4. INCREASING THE SIZE OF AN XFS FILE SYSTEM
+An XFS file system may be grown while mounted using the xfs_growfs command:
+# xfs_growfs /mount/point -D size
+The -D size option grows the file system to the specified size (expressed in file system blocks).
+Without the -D size option, xfs_growfs will grow the file system to the maximum size supported by
+the device.
+Before growing an XFS file system with -D size, ensure that the underlying block device is of an
+appropriate size to hold the file system later. Use the appropriate resizing methods for the affected block
+device.
+CHAPTER 3. THE XFS FILE SYSTEM
+25
+
+NOTE
+While XFS file systems can be grown while mounted, their size cannot be reduced at all.
+For more information about growing a file system, see man xfs_growfs.
+3.5. REPAIRING AN XFS FILE SYSTEM
+To repair an XFS file system, use xfs_repair:
+# xfs_repair /dev/device
+The xfs_repair utility is highly scalable and is designed to repair even very large file systems with
+many inodes efficiently. Unlike other Linux file systems, xfs_repair does not run at boot time, even
+when an XFS file system was not cleanly unmounted. In the event of an unclean unmount, xfs_repair
+simply replays the log at mount time, ensuring a consistent file system.
+WARNING
+The xfs_repair utility cannot repair an XFS file system with a dirty log. To clear
+the log, mount and unmount the XFS file system. If the log is corrupt and cannot be
+replayed, use the -L option ("force log zeroing") to clear the log, that is, 
+xfs_repair -L /dev/device. Be aware that this may result in further
+corruption or data loss.
+For more information about repairing an XFS file system, see man xfs_repair.
+3.6. SUSPENDING AN XFS FILE SYSTEM
+To suspend or resume write activity to a file system, use the following command:
+# xfs_freeze mount-point
+Suspending write activity allows hardware-based device snapshots to be used to capture the file system
+in a consistent state.
+NOTE
+The xfs_freeze utility is provided by the xfsprogs package, which is only available on
+x86_64.
+To suspend (that is, freeze) an XFS file system, use:
+# xfs_freeze -f /mount/point
+To unfreeze an XFS file system, use:
+
+Storage Administration Guide
+26
+
+# xfs_freeze -u /mount/point
+When taking an LVM snapshot, it is not necessary to use xfs_freeze to suspend the file system first.
+Rather, the LVM management tools will automatically suspend the XFS file system before taking the
+snapshot.
+For more information about freezing and unfreezing an XFS file system, see man xfs_freeze.
+3.7. BACKING UP AND RESTORING XFS FILE SYSTEMS
+XFS file system backup and restoration involve these utilities:
+xfsdump for creating the backup
+xfsrestore for restoring from backup
+3.7.1. Features of XFS Backup and Restoration
+Backup
+You can use the xfsdump utility to:
+Perform backups to regular file images.
+Only one backup can be written to a regular file.
+Perform backups to tape drives.
+The xfsdump utility also allows you to write multiple backups to the same tape. A backup can
+span multiple tapes.
+To back up multiple file systems to a single tape device, simply write the backup to a tape that
+already contains an XFS backup. This appends the new backup to the previous one. By default, 
+xfsdump never overwrites existing backups.
+Create incremental backups.
+The xfsdump utility uses dump levels to determine a base backup to which other backups are
+relative. Numbers from 0 to 9 refer to increasing dump levels. An incremental backup only backs
+up files that have changed since the last dump of a lower level:
+To perform a full backup, perform a level 0 dump on the file system.
+A level 1 dump is the first incremental backup after a full backup. The next incremental
+backup would be level 2, which only backs up files that have changed since the last level 1
+dump; and so on, to a maximum of level 9.
+Exclude files from a backup using size, subtree, or inode flags to filter them.
+Restoration
+The xfsrestore utility restores file systems from backups produced by xfsdump. The xfsrestore utility
+has two modes:
+CHAPTER 3. THE XFS FILE SYSTEM
+27
+
+The simple mode enables users to restore an entire file system from a level 0 dump. This is the
+default mode.
+The cumulative mode enables file system restoration from an incremental backup: that is, level 1
+to level 9.
+A unique session ID or session label identifies each backup. Restoring a backup from a tape containing
+multiple backups requires its corresponding session ID or label.
+To extract, add, or delete specific files from a backup, enter the xfsrestore interactive mode. The
+interactive mode provides a set of commands to manipulate the backup files.
+3.7.2. Backing Up an XFS File System
+This procedure describes how to back up the content of an XFS file system into a file or a tape.
+Procedure 3.2. Backing Up an XFS File System
+Use the following command to back up an XFS file system:
+# xfsdump -l level [-L label] -f backup-destination path-to-xfs-
+filesystem
+Replace level with the dump level of your backup. Use 0 to perform a full backup or 1 to 9 to
+perform consequent incremental backups.
+Replace backup-destination with the path where you want to store your backup. The
+destination can be a regular file, a tape drive, or a remote tape device. For example, 
+/backup-files/Data.xfsdump for a file or /dev/st0 for a tape drive.
+Replace path-to-xfs-filesystem with the mount point of the XFS file system you want to back
+up. For example, /mnt/data/. The file system must be mounted.
+When backing up multiple file systems and saving them on a single tape device, add a
+session label to each backup using the -L label option so that it is easier to identify them
+when restoring. Replace label with any name for your backup: for example, backup_data.
+Example 3.4. Backing up Multiple XFS File Systems
+To back up the content of XFS file systems mounted on the /boot/ and /data/ directories
+and save them as files in the /backup-files/ directory:
+# xfsdump -l 0 -f /backup-files/boot.xfsdump /boot
+# xfsdump -l 0 -f /backup-files/data.xfsdump /data
+To back up multiple file systems on a single tape device, add a session label to each backup
+using the -L label option:
+# xfsdump -l 0 -L "backup_boot" -f /dev/st0 /boot
+# xfsdump -l 0 -L "backup_data" -f /dev/st0 /data
+Additional Resources
+Storage Administration Guide
+28
+
+For more information about backing up XFS file systems, see the xfsdump(8) man page.
+3.7.3. Restoring an XFS File System from Backup
+This procedure describes how to restore the content of an XFS file system from a file or tape backup.
+Prerequisites
+You need a file or tape backup of XFS file systems, as described in Section 3.7.2, "Backing Up
+an XFS File System".
+Procedure 3.3. Restoring an XFS File System from Backup
+The command to restore the backup varies depending on whether you are restoring from a full
+backup or an incremental one, or are restoring multiple backups from a single tape device:
+# xfsrestore [-r] [-S session-id] [-L session-label] [-i]
+             -f backup-location restoration-path
+Replace backup-location with the location of the backup. This can be a regular file, a tape
+drive, or a remote tape device. For example, /backup-files/Data.xfsdump for a file or 
+/dev/st0 for a tape drive.
+Replace restoration-path with the path to the directory where you want to restore the file
+system. For example, /mnt/data/.
+To restore a file system from an incremental (level 1 to level 9) backup, add the -r option.
+To restore a backup from a tape device that contains multiple backups, specify the backup
+using the -S or -L options.
+The -S lets you choose a backup by its session ID, while the -L lets you choose by the
+session label. To obtain the session ID and session labels, use the xfsrestore -I
+command.
+Replace session-id with the session ID of the backup. For example, b74a3586-e52e-
+4a4a-8775-c3334fa8ea2c. Replace session-label with the session label of the backup.
+For example, my_backup_session_label.
+To use xfsrestore interactively, use the -i option.
+The interactive dialog begins after xfsrestore finishes reading the specified device.
+Available commands in the interactive xfsrestore shell include cd, ls, add, delete, and
+extract; for a complete list of commands, use the help command.
+Example 3.5. Restoring Multiple XFS File Systems
+To restore the XFS backup files and save their content into directories under /mnt/:
+# xfsrestore -f /backup-files/boot.xfsdump /mnt/boot/
+# xfsrestore -f /backup-files/data.xfsdump /mnt/data/
+To restore from a tape device containing multiple backups, specify each backup by its session label
+or session ID:
+CHAPTER 3. THE XFS FILE SYSTEM
+29
+
+# xfsrestore -f /dev/st0 -L "backup_boot" /mnt/boot/
+# xfsrestore -f /dev/st0 -S "45e9af35-efd2-4244-87bc-4762e476cbab" 
+/mnt/data/
+Informational Messages When Restoring a Backup from a Tape
+When restoring a backup from a tape with backups from multiple file systems, the xfsrestore utility
+might issue messages. The messages inform you whether a match of the requested backup has been
+found when xfsrestore examines each backup on the tape in sequential order. For example:
+xfsrestore: preparing drive
+xfsrestore: examining media file 0
+xfsrestore: inventory session uuid (8590224e-3c93-469c-a311-fc8f23029b2a) 
+does not match the media header's session uuid (7eda9f86-f1e9-4dfd-b1d4-
+c50467912408)
+xfsrestore: examining media file 1
+xfsrestore: inventory session uuid (8590224e-3c93-469c-a311-fc8f23029b2a) 
+does not match the media header's session uuid (7eda9f86-f1e9-4dfd-b1d4-
+c50467912408)
+[...]
+The informational messages keep appearing until the matching backup is found.
+Additional Resources
+For more information about restoring XFS file systems, see the xfsrestore(8) man page.
+3.8. CONFIGURING ERROR BEHAVIOR
+When an error occurs during an I/O operation, the XFS driver responds in one of two ways:
+Continue retries until either:
+the I/O operation succeeds, or
+an I/O operation retry count or time limit is exceeded.
+Consider the error permanent and halt the system.
+XFS currently recognizes the following error conditions for which you can configure the desired behavior
+specifically:
+EIO: Error while trying to write to the device
+ENOSPC: No space left on the device
+ENODEV: Device cannot be found
+All other possible error conditions, which do not have specific handlers defined, share a single, global
+configuration.
+You can set the conditions under which XFS deems the errors permanent, both in the maximum number
+of retries and the maximum time in seconds. XFS stops retrying when any one of the conditions is met.
+Storage Administration Guide
+30
+
+There is also an option to immediately cancel the retries when unmounting the file system, regardless of
+any other configuration. This allows the unmount operation to succeed even in case of persistent errors.
+3.8.1. Configuration Files for Specific and Undefined Conditions
+Configuration files controlling error behavior are located in the /sys/fs/xfs/device/error/
+directory.
+The /sys/fs/xfs/device/error/metadata/ directory contains subdirectories for each specific
+error condition:
+/sys/fs/xfs/device/error/metadata/EIO/ for the EIO error condition
+/sys/fs/xfs/device/error/metadata/ENODEV/ for the ENODEV error condition
+/sys/fs/xfs/device/error/metadata/ENOSPC/ for the ENOSPC error condition
+Each one then contains the following configuration files:
+/sys/fs/xfs/device/error/metadata/condition/max_retries: controls the
+maximum number of times that XFS retries the operation.
+/sys/fs/xfs/device/error/metadata/condition/retry_timeout_seconds: the
+time limit in seconds after which XFS will stop retrying the operation
+All other possible error conditions, apart from those described in the previous section, share a common
+configuration in these files:
+/sys/fs/xfs/device/error/default/max_retries: controls the maximum number of
+retries
+/sys/fs/xfs/device/error/default/retry_timeout_seconds: controls the time limit
+for retrying
+3.8.2. Setting File System Behavior for Specific and Undefined Conditions
+To set the maximum number of retries, write the desired number to the max_retries file.
+For specific conditions:
+# echo value > 
+/sys/fs/xfs/device/error/metadata/condition/max_retries
+For undefined conditions:
+# echo value > /sys/fs/xfs/device/error/default/max_retries
+value is a number between -1 and the maximum possible value of int, the C signed integer type. This
+is 2147483647 on 64-bit Linux.
+To set the time limit, write the desired number of seconds to the retry_timeout_seconds file.
+For specific conditions:
+CHAPTER 3. THE XFS FILE SYSTEM
+31
+
+# echo value > 
+/sys/fs/xfs/device/error/metadata/condition/retry_timeout_seconds
+For undefined conditions:
+# echo value > 
+/sys/fs/xfs/device/error/default/retry_timeout_seconds
+value is a number between -1 and 86400, which is the number of seconds in a day.
+In both the max_retries and retry_timeout_seconds options, -1 means to retry forever and 0 to
+stop immediately.
+device is the name of the device, as found in the /dev/ directory; for example, sda.
+NOTE
+The default behavior for a each error condition is dependent on the error context. Some
+errors, like ENODEV, are considered to be fatal and unrecoverable, regardless of the retry
+count, so their default value is 0.
+3.8.3. Setting Unmount Behavior
+If the fail_at_unmount option is set, the file system overrides all other error configurations during
+unmount, and immediately umnounts the file system without retrying the I/O operation. This allows the
+unmount operation to succeed even in case of persistent errors.
+To set the unmount behavior:
+# echo value > /sys/fs/xfs/device/error/fail_at_unmount
+value is either 1 or 0:
+1 means to cancel retrying immediately if an error is found.
+0 means to respect the max_retries and retry_timeout_seconds options.
+device is the name of the device, as found in the /dev/ directory; for example, sda.
+IMPORTANT
+The fail_at_unmount option has to be set as desired before attempting to unmount
+the file system. After an unmount operation has started, the configuration files and
+directories may be unavailable.
+3.9. OTHER XFS FILE SYSTEM UTILITIES
+Red Hat Enterprise Linux 7 also features other utilities for managing XFS file systems:
+xfs_fsr
+Storage Administration Guide
+32
+
+Used to defragment mounted XFS file systems. When invoked with no arguments, xfs_fsr
+defragments all regular files in all mounted XFS file systems. This utility also allows users to suspend
+a defragmentation at a specified time and resume from where it left off later.
+In addition, xfs_fsr also allows the defragmentation of only one file, as in xfs_fsr 
+/path/to/file. Red Hat advises not to periodically defrag an entire file system because XFS
+avoids fragmentation by default. System wide defragmentation could cause the side effect of
+fragmentation in free space.
+xfs_bmap
+Prints the map of disk blocks used by files in an XFS filesystem. This map lists each extent used by a
+specified file, as well as regions in the file with no corresponding blocks (that is, holes).
+xfs_info
+Prints XFS file system information.
+xfs_admin
+Changes the parameters of an XFS file system. The xfs_admin utility can only modify parameters of
+unmounted devices or file systems.
+xfs_copy
+Copies the contents of an entire XFS file system to one or more targets in parallel.
+The following utilities are also useful in debugging and analyzing XFS file systems:
+xfs_metadump
+Copies XFS file system metadata to a file. Red Hat only supports using the xfs_metadump utility to
+copy unmounted file systems or read-only mounted file systems; otherwise, generated dumps could
+be corrupted or inconsistent.
+xfs_mdrestore
+Restores an XFS metadump image (generated using xfs_metadump) to a file system image.
+xfs_db
+Debugs an XFS file system.
+For more information about these utilities, see their respective man pages.
+3.10. MIGRATING FROM EXT4 TO XFS
+Starting with Red Hat Enterprise Linux 7.0, XFS is the default file system instead of ext4. This section
+highlights the differences when using or administering an XFS file system.
+The ext4 file system is still fully supported in Red Hat Enterprise Linux 7 and can be selected at
+installation. While it is possible to migrate from ext4 to XFS, it is not required.
+3.10.1. Differences Between Ext3/4 and XFS
+File system repair
+CHAPTER 3. THE XFS FILE SYSTEM
+33
+
+Ext3/4 runs e2fsck in userspace at boot time to recover the journal as needed. XFS, by comparison,
+performs journal recovery in kernelspace at mount time. An fsck.xfs shell script is provided but
+does not perform any useful action as it is only there to satisfy initscript requirements.
+When an XFS file system repair or check is requested, use the xfs_repair command. Use the -n
+option for a read-only check.
+The xfs_repair command will not operate on a file system with a dirty log. To repair such a file
+system mount and unmount must first be performed to replay the log. If the log is corrupt and cannot
+be replayed, the -L option can be used to zero out in the log.
+For more information on file system repair of XFS file systems, see Section 12.2.2, "XFS"
+Metadata error behavior
+The ext3/4 file system has configurable behavior when metadata errors are encountered, with the
+default being to simply continue. When XFS encounters a metadata error that is not recoverable it will
+shut down the file system and return a EFSCORRUPTED error. The system logs will contain details of
+the error encountered and will recommend running xfs_repair if necessary.
+Quotas
+XFS quotas are not a remountable option. The -o quota option must be specified on the initial
+mount for quotas to be in effect.
+While the standard tools in the quota package can perform basic quota administrative tasks (tools
+such as setquota and repquota), the xfs_quota tool can be used for XFS-specific features, such as
+Project Quota administration.
+The quotacheck command has no effect on an XFS file system. The first time quota accounting is
+turned on XFS does an automatic quotacheck internally. Because XFS quota metadata is a first-
+class, journaled metadata object, the quota system will always be consistent until quotas are
+manually turned off.
+File system resize
+The XFS file system has no utility to shrink a file system. XFS file systems can be grown online via the
+xfs_growfs command.
+Inode numbers
+For file systems larger than 1 TB with 256-byte inodes, or larger than 2 TB with 512-byte inodes, XFS
+inode numbers might exceed 2^32. Such large inode numbers cause 32-bit stat calls to fail with the
+EOVERFLOW return value. The described problem might occur when using the default Red Hat
+Enterprise Linux 7 configuration: non-striped with four allocation groups. A custom configuration, for
+example file system extension or changing XFS file system parameters, might lead to a different
+behavior.
+Applications usually handle such larger inode numbers correctly. If needed, mount the XFS file
+system with the -o inode32 parameter to enforce inode numbers below 2^32. Note that using 
+inode32 does not affect inodes that are already allocated with 64-bit numbers.
+Storage Administration Guide
+34
+
+IMPORTANT
+Do not use the inode32 option unless it is required by a specific environment. The 
+inode32 option changes allocation behavior. As a consequence, the ENOSPC error
+might occur if no space is available to allocate inodes in the lower disk blocks.
+Speculative preallocation
+XFS uses speculative preallocation to allocate blocks past EOF as files are written. This avoids file
+fragmentation due to concurrent streaming write workloads on NFS servers. By default, this
+preallocation increases with the size of the file and will be apparent in "du" output. If a file with
+speculative preallocation is not dirtied for five minutes the preallocation will be discarded. If the inode
+is cycled out of cache before that time, then the preallocation will be discarded when the inode is
+reclaimed.
+If premature ENOSPC problems are seen due to speculative preallocation, a fixed preallocation
+amount may be specified with the -o allocsize=amount mount option.
+Fragmentation-related tools
+Fragmentation is rarely a significant issue on XFS file systems due to heuristics and behaviors, such
+as delayed allocation and speculative preallocation. However, tools exist for measuring file system
+fragmentation as well as defragmenting file systems. Their use is not encouraged.
+The xfs_db frag command attempts to distill all file system allocations into a single fragmentation
+number, expressed as a percentage. The output of the command requires significant expertise to
+understand its meaning. For example, a fragmentation factor of 75% means only an average of 4
+extents per file. For this reason the output of xfs_db's frag is not considered useful and more careful
+analysis of any fragmentation problems is recommended.
+WARNING
+The xfs_fsr command may be used to defragment individual files, or all files
+on a file system. The later is especially not recommended as it may destroy
+locality of files and may fragment free space.
+Commands Used with ext3 and ext4 Compared to XFS
+The following table compares common commands used with ext3 and ext4 to their XFS-specific
+counterparts.
+Table 3.1. Common Commands for ext3 and ext4 Compared to XFS
+Task
+ext3/4
+XFS
+Create a file system
+mkfs.ext4 or mkfs.ext3
+mkfs.xfs
+File system check
+e2fsck
+xfs_repair
+
+CHAPTER 3. THE XFS FILE SYSTEM
+35
+
+Resizing a file system
+resize2fs
+xfs_growfs
+Save an image of a file system
+e2image
+xfs_metadump and 
+xfs_mdrestore
+Label or tune a file system
+tune2fs
+xfs_admin
+Backup a file system
+dump and restore
+xfsdump and xfsrestore
+Task
+ext3/4
+XFS
+The following table lists generic tools that function on XFS file systems as well, but the XFS versions
+have more specific functionality and as such are recommended.
+Table 3.2. Generic Tools for ext4 and XFS
+Task
+ext4
+XFS
+Quota
+quota
+xfs_quota
+File mapping
+filefrag
+xfs_bmap
+More information on many the listed XFS commands is included in Chapter 3, The XFS File System. You
+can also consult the manual pages of the listed XFS administration tools for more information.
+Storage Administration Guide
+36
+
+CHAPTER 4. THE EXT3 FILE SYSTEM
+The ext3 file system is essentially an enhanced version of the ext2 file system. These improvements
+provide the following advantages:
+Availability
+After an unexpected power failure or system crash (also called an unclean system shutdown), each
+mounted ext2 file system on the machine must be checked for consistency by the e2fsck program.
+This is a time-consuming process that can delay system boot time significantly, especially with large
+volumes containing a large number of files. During this time, any data on the volumes is unreachable.
+It is possible to run fsck -n on a live filesystem. However, it will not make any changes and may
+give misleading results if partially written metadata is encountered.
+If LVM is used in the stack, another option is to take an LVM snapshot of the filesystem and run fsck
+on it instead.
+Finally, there is the option to remount the filesystem as read only. All pending metadata updates (and
+writes) are then forced to the disk prior to the remount. This ensures the filesystem is in a consistent
+state, provided there is no previous corruption. It is now possible to run fsck -n.
+The journaling provided by the ext3 file system means that this sort of file system check is no longer
+necessary after an unclean system shutdown. The only time a consistency check occurs using ext3 is
+in certain rare hardware failure cases, such as hard drive failures. The time to recover an ext3 file
+system after an unclean system shutdown does not depend on the size of the file system or the
+number of files; rather, it depends on the size of the journal used to maintain consistency. The default
+journal size takes about a second to recover, depending on the speed of the hardware.
+NOTE
+The only journaling mode in ext3 supported by Red Hat is data=ordered (default).
+Data Integrity
+The ext3 file system prevents loss of data integrity in the event that an unclean system shutdown
+occurs. The ext3 file system allows you to choose the type and level of protection that your data
+receives. With regard to the state of the file system, ext3 volumes are configured to keep a high level
+of data consistency by default.
+Speed
+Despite writing some data more than once, ext3 has a higher throughput in most cases than ext2
+because ext3's journaling optimizes hard drive head motion. You can choose from three journaling
+modes to optimize speed, but doing so means trade-offs in regards to data integrity if the system was
+to fail.
+NOTE
+The only journaling mode in ext3 supported by Red Hat is data=ordered (default).
+Easy Transition
+CHAPTER 4. THE EXT3 FILE SYSTEM
+37
+
+It is easy to migrate from ext2 to ext3 and gain the benefits of a robust journaling file system without
+reformatting. For more information on performing this task, see Section 4.2, "Converting to an ext3
+File System" .
+NOTE
+Red Hat Enterprise Linux 7 provides a unified extN driver. It does this by disabling the
+ext2 and ext3 configurations and instead uses ext4.ko for these on-disk formats. This
+means that kernel messages will always refer to ext4 regardless of the ext file system
+used.
+4.1. CREATING AN EXT3 FILE SYSTEM
+After installation, it is sometimes necessary to create a new ext3 file system. For example, if a new disk
+drive is added to the system, you may want to partition the drive and use the ext3 file system.
+Prerequisites
+Create or reuse a partition on your disk. For information on creating MBR or GPT partitions, see
+Chapter 13, Partitions.
+Alternatively, use an LVM or MD volume or a similar layer below ext3.
+Procedure
+Procedure 4.1. Creating an ext3 File System
+1. Format the partition or LVM volume with the ext3 file system using the mkfs.ext3 utility:
+# mkfs.ext3 block_device
+Replace block_device with the path to a partition or a logical volume. For example, 
+/dev/sdb1, /dev/disk/by-uuid/05e99ec8-def1-4a5e-8a9d-5945339ceb2a, or 
+/dev/my-volgroup/my-lv.
+2. Label the file system using the e2label utility:
+# e2label block_device volume_label
+Configuring UUID
+It is also possible to set a specific UUID for a file system. To specify a UUID when creating a file system,
+use the -U option:
+# mkfs.ext3 -U UUID device
+Replace UUID with the UUID you want to set: for example, 7cd65de3-e0be-41d9-b66d-
+96d749c02da7.
+Replace device with the path to an ext3 file system to have the UUID added to it: for example, 
+/dev/sda8.
+Storage Administration Guide
+38
+
+To change the UUID of an existing file system, see Section 25.7.3.2, "Modifying Persistent Naming
+Attributes"
+Additional Resources
+The mkfs.ext3(8) man page
+The e2label(8) man page
+4.2. CONVERTING TO AN EXT3 FILE SYSTEM
+The tune2fs command converts an ext2 file system to ext3.
+NOTE
+To convert ext2 to ext3, always use the e2fsck utility to check your file system before
+and after using tune2fs. Before trying to convert ext2 to ext3, back up all file systems in
+case any errors occur.
+In addition, Red Hat recommends creating a new ext3 file system and migrating data to it,
+instead of converting from ext2 to ext3 whenever possible.
+To convert an ext2 file system to ext3, log in as root and type the following command in a terminal:
+# tune2fs -j block_device
+block_device contains the ext2 file system to be converted.
+Issue the df command to display mounted file systems.
+4.3. REVERTING TO AN EXT2 FILE SYSTEM
+In order to revert to an ext2 file system, use the following procedure.
+For simplicity, the sample commands in this section use the following value for the block device:
+/dev/mapper/VolGroup00-LogVol02
+Procedure 4.2. Revert from ext3 to ext2
+1. Unmount the partition by logging in as root and typing:
+# umount /dev/mapper/VolGroup00-LogVol02
+2. Change the file system type to ext2 by typing the following command:
+# tune2fs -O ^has_journal /dev/mapper/VolGroup00-LogVol02
+3. Check the partition for errors by typing the following command:
+# e2fsck -y /dev/mapper/VolGroup00-LogVol02
+CHAPTER 4. THE EXT3 FILE SYSTEM
+39
+
+4. Then mount the partition again as ext2 file system by typing:
+# mount -t ext2 /dev/mapper/VolGroup00-LogVol02 /mount/point
+Replace /mount/point with the mount point of the partition.
+NOTE
+If a .journal file exists at the root level of the partition, delete it.
+To permanently change the partition to ext2, remember to update the /etc/fstab file, otherwise it will
+revert back after booting.
+Storage Administration Guide
+40
+
+CHAPTER 5. THE EXT4 FILE SYSTEM
+The ext4 file system is a scalable extension of the ext3 file system. With Red Hat Enterprise Linux 7, it
+can support a maximum individual file size of 16 terabytes, and file systems to a maximum of 50
+terabytes, unlike Red Hat Enterprise Linux 6 which only supported file systems up to 16 terabytes. It also
+supports an unlimited number of sub-directories (the ext3 file system only supports up to 32,000), though
+once the link count exceeds 65,000 it resets to 1 and is no longer increased. The bigalloc feature is not
+currently supported.
+NOTE
+As with ext3, an ext4 volume must be umounted in order to perform an fsck. For more
+information, see Chapter 4, The ext3 File System.
+Main Features
+The ext4 file system uses extents (as opposed to the traditional block mapping scheme used by ext2
+and ext3), which improves performance when using large files and reduces metadata overhead for
+large files. In addition, ext4 also labels unallocated block groups and inode table sections
+accordingly, which allows them to be skipped during a file system check. This makes for quicker file
+system checks, which becomes more beneficial as the file system grows in size.
+Allocation Features
+The ext4 file system features the following allocation schemes:
+Persistent pre-allocation
+Delayed allocation
+Multi-block allocation
+Stripe-aware allocation
+Because of delayed allocation and other performance optimizations, ext4's behavior of writing files to
+disk is different from ext3. In ext4, when a program writes to the file system, it is not guaranteed to be
+on-disk unless the program issues an fsync() call afterwards.
+By default, ext3 automatically forces newly created files to disk almost immediately even without 
+fsync(). This behavior hid bugs in programs that did not use fsync() to ensure that written data
+was on-disk. The ext4 file system, on the other hand, often waits several seconds to write out
+changes to disk, allowing it to combine and reorder writes for better disk performance than ext3.
+WARNING
+Unlike ext3, the ext4 file system does not force data to disk on transaction
+commit. As such, it takes longer for buffered writes to be flushed to disk. As with
+any file system, use data integrity calls such as fsync() to ensure that data is
+written to permanent storage.
+
+CHAPTER 5. THE EXT4 FILE SYSTEM
+41
+
+Other ext4 Features
+The ext4 file system also supports the following:
+Extended attributes (xattr) — This allows the system to associate several additional name
+and value pairs per file.
+Quota journaling — This avoids the need for lengthy quota consistency checks after a crash.
+NOTE
+The only supported journaling mode in ext4 is data=ordered (default).
+Subsecond timestamps — This gives timestamps to the subsecond.
+5.1. CREATING AN EXT4 FILE SYSTEM
+Prerequisites
+Create or reuse a partition on your disk. For information on creating MBR or GPT partitions, see
+Chapter 13, Partitions.
+Alternatively, use an LVM or MD volume or a similar layer below ext4.
+Procedure
+Procedure 5.1. Creating an ext4 File System
+To create an ext4 file system, use the following command:
+# mkfs.ext4 block_device
+Replace block_device with the path to a partition or a logical volume. For example, 
+/dev/sdb1, /dev/disk/by-uuid/05e99ec8-def1-4a5e-8a9d-5945339ceb2a, or 
+/dev/my-volgroup/my-lv.
+In general, the default options are optimal for most usage scenarios.
+Example 5.1. mkfs.ext4 Command Output
+Below is a sample output of this command, which displays the resulting file system geometry and
+features:
+~]# mkfs.ext4 /dev/sdb1
+mke2fs 1.41.12 (17-May-2010)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+245280 inodes, 979456 blocks
+48972 blocks (5.00%) reserved for the super user
+First data block=0
+Storage Administration Guide
+42
+
+Maximum filesystem blocks=1006632960
+30 block groups
+32768 blocks per group, 32768 fragments per group
+8176 inodes per group
+Superblock backups stored on blocks: 
+ 32768, 98304, 163840, 229376, 294912, 819200, 884736
+Writing inode tables: done                            
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+IMPORTANT
+It is possible to use tune2fs to enable certain ext4 features on ext3 file systems.
+However, using tune2fs in this way has not been fully tested and is therefore not
+supported in Red Hat Enterprise Linux 7. As a result, Red Hat cannot guarantee
+consistent performance and predictable behavior for ext3 file systems converted or
+mounted by using tune2fs.
+Striped Block Devices
+For striped block devices (for example, RAID5 arrays), the stripe geometry can be specified at the time of
+file system creation. Using proper stripe geometry greatly enhances the performance of an ext4 file
+system.
+When creating file systems on LVM or MD volumes, mkfs.ext4 chooses an optimal geometry. This
+may also be true on some hardware RAIDs which export geometry information to the operating system.
+To specify stripe geometry, use the -E option of mkfs.ext4 (that is, extended file system options) with
+the following sub-options:
+stride=value
+Specifies the RAID chunk size.
+stripe-width=value
+Specifies the number of data disks in a RAID device, or the number of stripe units in the stripe.
+For both sub-options, value must be specified in file system block units. For example, to create a file
+system with a 64k stride (that is, 16 x 4096) on a 4k-block file system, use the following command:
+# mkfs.ext4 -E stride=16,stripe-width=64 /dev/block_device
+Configuring UUID
+It is also possible to set a specific UUID for a file system. To specify a UUID when creating a file system,
+use the -U option:
+# mkfs.ext4 -U UUID device
+Replace UUID with the UUID you want to set: for example, 7cd65de3-e0be-41d9-b66d-
+96d749c02da7.
+CHAPTER 5. THE EXT4 FILE SYSTEM
+43
+
+Replace device with the path to an ext4 file system to have the UUID added to it: for example, 
+/dev/sda8.
+To change the UUID of an existing file system, see Section 25.7.3.2, "Modifying Persistent Naming
+Attributes"
+Additional Resources
+For more information about creating ext4 file systems, see:
+The mkfs.ext4(8) man page
+5.2. MOUNTING AN EXT4 FILE SYSTEM
+An ext4 file system can be mounted with no extra options. For example:
+# mount /dev/device /mount/point
+The ext4 file system also supports several mount options to influence behavior. For example, the acl
+parameter enables access control lists, while the user_xattr parameter enables user extended
+attributes. To enable both options, use their respective parameters with -o, as in:
+# mount -o acl,user_xattr /dev/device /mount/point
+As with ext3, the option data_err=abort can be used to abort the journal if an error occurs in file data.
+# mount -o data_err=abort /dev/device /mount/point
+The tune2fs utility also allows administrators to set default mount options in the file system superblock.
+For more information on this, refer to man tune2fs.
+Write Barriers
+By default, ext4 uses write barriers to ensure file system integrity even when power is lost to a device
+with write caches enabled. For devices without write caches, or with battery-backed write caches,
+disable barriers using the nobarrier option, as in:
+# mount -o nobarrier /dev/device /mount/point
+For more information about write barriers, refer to Chapter 22, Write Barriers.
+Direct Access Technology Preview
+Starting with Red Hat Enterprise Linux 7.3, Direct Access (DAX) provides, as a Technology Preview
+on the ext4 and XFS file systems, a means for an application to directly map persistent memory into its
+address space. To use DAX, a system must have some form of persistent memory available, usually in
+the form of one or more Non-Volatile Dual In-line Memory Modules (NVDIMMs), and a file system that
+supports DAX must be created on the NVDIMM(s). Also, the file system must be mounted with the dax
+mount option. Then, an mmap of a file on the dax-mounted file system results in a direct mapping of
+storage into the application's address space.
+5.3. RESIZING AN EXT4 FILE SYSTEM
+Storage Administration Guide
+44
+
+Before growing an ext4 file system, ensure that the underlying block device is of an appropriate size to
+hold the file system later. Use the appropriate resizing methods for the affected block device.
+An ext4 file system may be grown while mounted using the resize2fs command:
+# resize2fs /mount/device size
+The resize2fs command can also decrease the size of an unmounted ext4 file system:
+# resize2fs /dev/device size
+When resizing an ext4 file system, the resize2fs utility reads the size in units of file system block size,
+unless a suffix indicating a specific unit is used. The following suffixes indicate specific units:
+s — 512 byte sectors
+K — kilobytes
+M — megabytes
+G — gigabytes
+NOTE
+The size parameter is optional (and often redundant) when expanding. The resize2fs
+automatically expands to fill all available space of the container, usually a logical volume
+or partition.
+For more information about resizing an ext4 file system, refer to man resize2fs.
+5.4. BACKING UP EXT2, EXT3, OR EXT4 FILE SYSTEMS
+This procedure describes how to back up the content of an ext4, ext3, or ext2 file system into a file.
+Prerequisites
+If the system has been running for a long time, run the e2fsck utility on the partitions before
+backup:
+# e2fsck /dev/device
+Procedure 5.2. Backing up ext2, ext3, or ext4 File Systems
+1. Back up configuration information, including the content of the /etc/fstab file and the output of
+the fdisk -l command. This is useful for restoring the partitions.
+To capture this information, run the sosreport or sysreport utilities. For more information
+about sosreport, see the What is a sosreport and how to create one in Red Hat Enterprise
+Linux 4.6 and later? Kdowledgebase article.
+2. Depending on the role of the partition:
+CHAPTER 5. THE EXT4 FILE SYSTEM
+45
+
+If the partition you are backing up is an operating system partition, boot your system into the
+rescue mode. See the Booting to Rescue Mode section of the System Administrator's Guide.
+When backing up a regular, data partition, unmount it.
+Although it is possible to back up a data partition while it is mounted, the results of backing
+up a mounted data partition can be unpredictable.
+If you need to back up a mounted file system using the dump utility, do so when the file
+system is not under a heavy load. The more activity is happening on the file system when
+backing up, the higher the risk of backup corruption is.
+3. Use the dump utility to back up the content of the partitions:
+# dump -0uf backup-file /dev/device
+Replace backup-file with a path to a file where you want the to store the backup. Replace device
+with the name of the ext4 partition you want to back up. Make sure that you are saving the
+backup to a directory mounted on a different partition than the partition you are backing up.
+Example 5.2. Backing up Multiple ext4 Partitions
+To back up the content of the /dev/sda1, /dev/sda2, and /dev/sda3 partitions into
+backup files stored in the /backup-files/ directory, use the following commands:
+# dump -0uf /backup-files/sda1.dump /dev/sda1
+# dump -0uf /backup-files/sda2.dump /dev/sda2
+# dump -0uf /backup-files/sda3.dump /dev/sda3
+To do a remote backup, use the ssh utility or configure a password-less ssh login. For more
+information on ssh and password-less login, see the Using the ssh Utility and Using Key-based
+Authentication sections of the System Administrator's Guide.
+For example, when using ssh:
+Example 5.3. Performing a Remote Backup Using ssh
+# dump -0u -f - /dev/device | ssh root@remoteserver.example.com dd 
+of=backup-file
+Note that if using standard redirection, you must pass the -f option separately.
+Additional Resources
+For more information, see the dump(8) man page.
+5.5. RESTORING EXT2, EXT3, OR EXT4 FILE SYSTEMS
+This procedure describes how to restore an ext4, ext3, or ext2 file system from a file backup.
+Prerequisites
+Storage Administration Guide
+46
+
+You need a backup of partitions and their metadata, as described in Section 5.4, "Backing up
+ext2, ext3, or ext4 File Systems".
+Procedure 5.3. Restoring ext2, ext3, or ext4 File Systems
+1. If you are restoring an operating system partition, boot your system into Rescue Mode. See the
+Booting to Rescue Mode section of the System Administrator's Guide.
+This step is not required for ordinary data partitions.
+2. Rebuild the partitions you want to restore by using the fdisk or parted utilites.
+If the partitions no longer exist, recreate them. The new partitions must be large enough to
+contain the restored data. It is important to get the start and end numbers right; these are the
+starting and ending sector numbers of the partitions obtained from the fdisk utility when
+backing up.
+For more information on modifying partitions, see Chapter 13, Partitions
+3. Use the mkfs utility to format the destination partition:
+# mkfs.ext4 /dev/device
+IMPORTANT
+Do not format the partition that stores your backup files.
+4. If you created new partitions, re-label all the partitions so they match their entries in the 
+/etc/fstab file:
+# e2label /dev/device label
+5. Create temporary mount points and mount the partitions on them:
+# mkdir /mnt/device
+# mount -t ext4 /dev/device /mnt/device
+6. Restore the data from backup on the mounted partition:
+# cd /mnt/device
+# restore -rf device-backup-file
+If you want to restore on a remote machine or restore from a backup file that is stored on a
+remote host, you can use the ssh utility. For more information on ssh, see the Using the ssh
+Utility section of the System Administrator's Guide.
+Note that you need to configure a password-less login for the following commands. For more
+information on setting up a password-less ssh login, see the Using Key-based Authentication
+section of the System Administrator's Guide.
+To restore a partition on a remote machine from a backup file stored on the same machine:
+# ssh remote-address "cd /mnt/device && cat backup-file | 
+CHAPTER 5. THE EXT4 FILE SYSTEM
+47
+
+/usr/sbin/restore -r -f -"
+To restore a partition on a remote machine from a backup file stored on a different remote
+machine:
+# ssh remote-machine-1 "cd /mnt/device && RSH=/usr/bin/ssh 
+/usr/sbin/restore -rf remote-machine-2:backup-file"
+7. Reboot:
+# systemctl reboot
+Example 5.4. Restoring Multiple ext4 Partitions
+To restore the /dev/sda1, /dev/sda2, and /dev/sda3 partitions from Example 5.2, "Backing up
+Multiple ext4 Partitions":
+1. Rebuild partitions you want to restore by using the fdisk command.
+2. Format the destination partitions:
+# mkfs.ext4 /dev/sda1
+# mkfs.ext4 /dev/sda2
+# mkfs.ext4 /dev/sda3
+3. Re-label all the partitions so they match the /etc/fstab file:
+# e2label /dev/sda1 Boot1
+# e2label /dev/sda2 Root
+# e2label /dev/sda3 Data
+4. Prepare the working directories.
+Mount the new partitions:
+# mkdir /mnt/sda1
+# mount -t ext4 /dev/sda1 /mnt/sda1
+# mkdir /mnt/sda2
+# mount -t ext4 /dev/sda2 /mnt/sda2
+# mkdir /mnt/sda3
+# mount -t ext4 /dev/sda3 /mnt/sda3
+Mount the partition that contains backup files:
+# mkdir /backup-files
+# mount -t ext4 /dev/sda6 /backup-files
+5. Restore the data from backup to the mounted partitions:
+# cd /mnt/sda1
+# restore -rf /backup-files/sda1.dump
+# cd /mnt/sda2
+Storage Administration Guide
+48
+
+# restore -rf /backup-files/sda2.dump
+# cd /mnt/sda3
+# restore -rf /backup-files/sda3.dump
+6. Reboot:
+# systemctl reboot

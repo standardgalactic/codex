@@ -1,0 +1,2283 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LINUX
+Learn the Ultimate Strategies to Master Operating System and Command Line. Improve Your Computer Programming Skills and Start Coding
+Dan Phillips
+
+
+
+
+
+
+
+
+© Copyright 2020 - All rights reserved.
+The content contained within this book may not be reproduced, duplicated or transmitted without direct written permission from the author or the publisher.
+Under no circumstances will any blame or legal responsibility be held against the publisher, or author, for any damages, reparation, or monetary loss due to the information contained within this book, either directly or indirectly.
+Legal Notice:
+This book is copyright protected. It is only for personal use. You cannot amend, distribute, sell, use, quote or paraphrase any part, or the content within this book, without the consent of the author or publisher.
+Disclaimer Notice:
+Please note the information contained within this document is for educational and entertainment purposes only. All effort has been executed to present accurate, up to date, reliable, complete information. No warranties of any kind are declared or implied. Readers acknowledge that the author is not engaging in the rendering of legal, financial, medical or professional advice. The content within this book has been derived from various sources. Please consult a licensed professional before attempting any techniques outlined in this book.
+By reading this document, the reader agrees that under no circumstances is the author responsible for any losses, direct or indirect, that are incurred as a result of the use of information contained within this document, including, but not limited to, errors, omissions, or inaccuracies.
+
+
+
+
+
+
+
+Table of Contents
+
+Introduction
+
+
+The Current Development of Linux
+
+
+Who Owns Linux?
+
+
+CHAPTER 1. Basic Linux commands
+
+
+Changing Directories
+
+
+'Less' Command
+
+
+'Ln' Command
+
+
+'Locate' Command
+
+
+'Logout' Command
+
+
+'Ls' Command
+
+
+'More' Command
+
+
+'Mv' Command
+
+
+'Sudo' Command
+
+
+'Mkdir' Command
+
+
+'Uname' Command
+
+
+'Touch' Command
+
+
+'Cal' Command
+
+
+'Date' Command
+
+
+CHAPTER 2. Linux Installation
+
+
+What Makes Linux Different?
+
+
+How Was Linux Created?
+
+
+CHAPTER 3. File System
+
+
+Categorization of Files
+
+
+The Art of Partitioning
+
+
+Directories: The Root Directory & Subdirectories
+
+
+The Role of an Inode
+
+
+What Is The Superblock?
+
+
+What Is a Group Descriptor?
+
+
+File Modification: Finding, Mounting & Changing Sizes
+
+
+CHAPTER 4. Basic Shell Programming
+
+
+What is a Shell?
+
+
+Types of shell
+
+
+How does the bash shell work?
+
+
+Advantages of the shell
+
+
+First shell script
+
+
+Debugging the shell scripts
+
+
+Built-in Shell Commands
+
+
+1) Alias
+
+
+2) Unalias
+
+
+3) bg,fg,jobs
+
+
+4) cd
+
+
+5) Declaring variables
+
+
+6) Break
+
+
+7) Continue
+
+
+8) Eval
+
+
+9) Exec
+
+
+10) Exit
+
+
+11) Export
+
+
+12) Kill
+
+
+13) Read
+
+
+14) ulimit
+
+
+15) Test
+
+
+Fundamentals of Shell Programming
+
+
+Variables
+
+
+Variable naming
+
+
+Variable assignments
+
+
+Special variables
+
+
+Arrays
+
+
+Constants
+
+
+Namespaces
+
+
+Operators
+
+
+CHAPTER 5. What To Do Next With Linux?
+
+
+CHAPTER 6. Basic Kali Linux tools
+
+
+CHAPTER 7. Command Syntax Patterns
+
+
+CHAPTER 8. Linux Files and Directories
+
+
+CHAPTER 9. Linux File System Searching
+
+
+CHAPTER 10. User and Group Management
+
+
+Users and Groups
+
+
+Who is a user?
+
+
+What is a group?
+
+
+Getting Superuser Access
+
+
+The root user
+
+
+Using Su to Switch Users
+
+
+sudo and the root
+
+
+CHAPTER 11. Commands and Functions for the Beginner
+
+
+CHAPTER 12. Using Linux Text Editors
+
+
+How to Use GUI Text Editors
+
+
+Using ed and vi as Text Editors
+
+
+ed
+
+
+vi
+
+
+CHAPTER 13. Exercises
+
+
+How to create a blank file
+
+
+Copying a file or a directory
+
+
+CHAPTER 14. Building Scripts
+
+
+Writing Shell Scripts
+
+
+Command Aliases
+
+
+Pipes
+
+
+Mathematical Operations in Script Building
+
+
+CHAPTER 15. Securing Your Linux Server
+
+
+CHAPTER 16. GNU Utilities
+
+
+What is GNU?
+
+
+Example of GNU Utilities
+
+
+About installing Linux OS
+
+
+Steps to Follow to Install Linux OS
+
+
+Linux System Requirements for Major Distributions
+
+
+Installing Linux Mint in VirtualBox
+
+
+CHAPTER 17. Control Privileged User
+
+
+Types of Linux Accounts
+
+
+Sudo
+
+
+The Sudoers File
+
+
+Conclusion
+
+
+
+
+
+
+
+
+Introduction
+The mid-1990s was when Linux stopped being a tool of hobbyists and started to be used in the supercomputing community. When Linux first started taking off, it was met with support from companies like Dell, IBM, and HP so that Linux could escape the monopoly in the operating system market Microsoft had. This was when it found its first commercial use. Later, organizations like NASA started using Linux devices and started replacing their expensive machines with large numbers of Linux computers, as they were far less expensive and could do the same job. Today, you can find Linux system everywhere, from supercomputers to embedded systems. They have secured themselves a permanent place in many server installations such as the LAMP application stack, which is very popular.
+Usage in machines in the household has been increasing as well, in addition to enterprise desktops. Linux is very popular in the netbook market, as well. Many distributors ship their products with a customized Linux installed on them. Even Google released an OS for notebooks of their own called the Chrome OS. Linux has had the most success in the mobile device market. This is due to Android being a very popular option when it comes to not only smartphones but tablets and wearables as well. Valve has been showing support for Linux, which opened up a gaming market for the system, releasing their own Linux distribution made for gaming. Linux distributions have also started being popular when it comes to administrative work. Some local and national governments use it, one of which is the government of Brazil.
+The Current Development of Linux
+Currently, Linux is developed by several sources. The original Linux kernel is maintained and guided by Greg Kroah-Hartman. Kroah-Hartman is one of the most important people working on Linux. Before working for Linux he worked in SUSE labs where he gained a load of experience in the field. He not only maintains the many subsystems of Linux, but he was also responsible for the Linx-hotplug, Linux Driver Project, and the udev project. He made great efforts into assisting the growth of Linux, being the author and co-author of many books that went deep into Linux. He made many tutorials and detailed works on how Linux functions and where it is going next. Currently, he is helping the development of the kernel through detailed talks and tutorials. In 2006 he made a CD that helps new programmers work with Linux.
+Richard Stallman is the head of the Free Software Foundation which helps support the GNU components. Stallman is one of the people most responsible for the fact that Linux has remained a free source for all this time. He is an aggressive advocate of free software. He firmly believes that every program should be available to everyone equally. He once said that hiding codes, no matter how important, is a crime against humanity. Due to his efforts, the GNU components are being developed and, with them, Linux itself.
+Last, but not least, a great portion of the credit for Linux's continued functioning and development falls onto the corporations and the people who work hard at developing third-party non-GNU components. These components make up a huge portion of work and account for user applications and modules, as well as kernel modules.
+The different communities and vendors combine components of different kinds. They combine the GNU components, non-GNU components, and the kernel, along with package management software to form different Linux distributions. Many different Linux distributions are available to be downloaded and all of them are free. 
+Most of these distributions are specialized for some type of work. There are some distributions made for programming, while others can be made for graphic design or gaming. There are many options that are well crafted to suit different needs. This is where Linux is strongest—it can be used for anything and will excel at it.
+Who Owns Linux?
+Technically, nobody owns Linux. That is the virtue of open source licensing. The only thing that is really trademarked is the name Linux. The copyrights belong to Linus Torvalds. Linux itself, however, is technically owned by many individuals. Due to such a large number of contributors around the globe, it would be a hassle to contact all of them. Thanks to the GPLv2 license, you do not have to. This means that the program will remain a free source for as long as the license is perpetually renewed.
+
+
+
+
+
+
+
+CHAPTER 1. Basic Linux commands
+In this section, we will explore the basic Linux commands that are necessary to get started. You can now open the terminal. Right-click on the Desktop and choose 'Open Terminal'.
+If you don't see this option, look for 'Applications' at the top of the window. Click on 'Applications' and go to 'Accessories'. Choose 'Open terminal' and open the text editor, that is, 'Gedit'. Just click on the search and type "text editor". Add some text of your choice to the file and save it, maybe on the desktop. I have saved my file with the name first with the following text:
+I am a Linux Guru
+I am enjoying reading this book
+Now go to the terminal and type the following:
+cat first
+After pressing the enter key, the contents of the file will be displayed in the window. To list the content contained in a short file, this method is 
+appropriate.
+Changing Directories
+You might also want to navigate or change directories via the terminal. To achieve this, use the command 'cd' which stands for "change directory".
+Example:
+cd /home
+The above command will change the working directory to the '/home' directory. The use of forwarding slash (/) is to mean relative to the root, meaning that this command will be executed regardless of the directory that you are currently in. Now type the following command:
+cd httpd
+The directory will be changed to 'httpd' but relative to the '/home' directory. The full working directory will be '/home/httpd'. Now type the following command:
+cd ..
+This command will change the working directory to the parent directory of the current directory. In our case, we will move from '/home/httpd' to the '/home' directory. Type the following command:
+cd ~
+This command changes the directory to the user's home directory '/home/(username)'. The "username" will be the name you have used on the computer. The symbol "~" is called the tilde and it is used in Linux to represent the user's home directory.
+Copying Files
+The command 'cp,' which stands for "copy files" is used for copying files. Note that the file is not deleted from its initial location and a duplicate of the same is made at the specified location. Type the following command:
+cp first me
+The command above will make a duplicate of the file first at the same directory but with a new name, that is 'me'. If the file 'me' exists in the directory, it will be overwritten and you will not be warned before this command is executed. Consider the command below:
+cp -i first me
+Notice that in the above command we have added the '-i' option. If the file 'me' exists in the directory, you will be notified before it is overwritten. Next, try the following command:
+cp -i /d/file
+With the above command, the file '/d/file' will be copied into the same current directory and then named 'file'. Note that we have used the '-i' option so if it already exists we will be notified before it is overwritten.
+You might also need to copy all the files contained in a particular directory to another directory. This can be achieved as follows:
+cp -dpr sourcedirectory destinationdirectory
+All the files in the directory 'sourcedirectory' will be copied to the directory 'destinationdirectory'. Notice that we have used the option '-dpr'. This means the following:
+-d - means that links will be preserved
+-p - file attributes will be preserved
+-r - copying will be done recursively
+It is good to specify those options if needed while copying all the files from a directory, otherwise, the default settings will be applied which might produce an unwanted result.
+To show the amount of space on a disk used on each of the mounted file systems, use the command 'df'.
+'Less' Command
+The less command is the same as the more command. The difference comes in that with this command the user can page up or down through the file. Consider the example below:
+less first
+The above command will display the contents of the file 'first'.
+'Ln' Command
+This command creates a symbolic link to a certain file. Write and run the following command:
+ln -s first slink
+The command above will create a symbolic link named 'slink' which will link to the file 'first'. The command ls '-i first slink' will show that the two files are different and have different "inodes".
+'Locate' Command
+This is used for searching in the database. Run the following command:
+slocate -u
+A database named 'slocate' will be created. This will take some time to complete, so be patient. Before you will be able to search for a file, this command must be run first. However, on most systems, 'cron' will run this command on periodical basis. Again, run the following command:
+locate whois
+This command will look for files in your system whose name contains the string "whois".
+'Logout' Command
+The command is used to logout the user who is currently logged into the system. Just go to the terminal and type this command:
+logout
+You will then be logged out and returned to the login screen.
+'Ls' Command
+'Ls' stands for list. It is used for listing files in a directory. However, it comes with many options which need to be known as well, otherwise, you will become confused. If you need to list all the files in the current directory except those starting with "." then just type in the command:
+ls
+
+
+The figure above is the Desktop directory and it contains the files shown. Note that only the file names will be listed.  You might need to show more details about the files in the directory such as the ownership permissions, their size, time and date stamp, etc. This can be achieved with the following command:
+ls -al
+As shown above, the command 'ls-al' is more extensive compared to the previous command. You can use it if you want more details about the file.
+'More' Command
+Send contents of a file one page at a time to the screen. It can also work on piped output. Let us list the contents of the file '/etc/profile' to the screen. This is an in-built file, meaning that it comes with the operating system and it contains the profiles for the users of the system:
+more /etc/profile
+
+
+Note that the contents of the file will be displayed one page at a time. This is because the content is too big to be displayed on a single page. Consider the command below:
+ls -al| more
+The command will list all files in the directory and output will be piped through 'more'. If the output from the directory can't fit in one page, it will be listed on an additional page.
+'Mv' Command
+This command stands for "move" and is used for renaming or moving files. Consider the command below:
+mv -i first first2
+The file will be moved from 'first' to 'first2', meaning it will be renamed to 'firts2' rather than 'first'.
+mv /d/first
+The above command will move the file 'first' from the directory '/d' to the current working directory. Now you have seen how the 'mv' command is a powerful tool.
+Now that we have been talking of working directories, what are they exactly? And how can we know in which directory they currently are? Just type the command:
+pwd
+After pressing the enter key, you notice that the output is a directory. This shows the directory which you are currently in. The abbreviation 'pwd' stands for "print working directory" and is used for the purpose to show the current working directory.
+'Shutdown' Command
+This command is used for shutting down the system. The purpose of this command is to halt the current process and shut down the system immediately. To do this use the following code:
+shut down -h now -.
+The next command is used to reboot the system, meaning that it will immediately shut down and restart the system. To do this use the command below:
+shut down -r now-
+'Whereis' Command
+This command is used for showing the manual, source, and binary files for a command. Consider the command below:
+whereis ls
+This command will show the manual and binary files for the command 'ls'. To see the list of commands which have been on your system previously, use the command 'history':
+Above is the list of commands which have been run on my system. You can try on your system and observe the output.
+'Sudo' Command
+This stands for "superuser do". It has the purpose of allowing a permitted user to execute commands as a "superuser". This is usually defined in the 'sudo'-er's list. It has the importance of ensuring security by making sure that sensitive commands are only executed by the correct people. Another command, the 'su' command enables you to log in to the system as a superuser. The purpose of 'sudo' is to borrow privileges from the superuser. This explains the difference between these two commands, the 'su' and the 'sudo' commands. The 'sudo' command is normally used in commands which will change the system files, such as when updating or upgrading the OS. This shows how secure the command is compared to the 'su' command.
+'Mkdir' Command
+This command stands for "make directory". It creates a new directory and names its path. If this path is already in existence, an error saying that the folder cannot be created will be outputted. Consider the figure shown below:
+I have made a directory named "m". Once I list the available directories after creating the directory, I find that it has been created. Notice that I have run the command as 'sudo'. Without this, the command won't run. This is for security purposes. Once you use the 'sudo' command for the first time, you will be prompted to provide the password for the superuser to do so. It is good to note that you can only create a directory inside a folder and you must have a "write permission" on that folder. Otherwise, you will be unable to do so.
+'Uname' Command
+It stands for "Unix name". With this command, you can get detailed information about the operating system, kernel and the machine. Consider the figure below:
+Information about the OS, the kernel, and the machine have been shown.
+Ubuntu- the name of the kernel of the machine
+SMP- the machine's node name
+I686- processor configuration
+GNU/Linux- the name of the operating system.
+You can see how the command gives detailed information.
+'Touch' Command
+This command is used to create a file if and only if it does not exist. It stands for Update the access and modification times of each file to the current time. In case the file already exists, its timestamp will be changed but its contents will remain the same. It is possible to use the command to create a file in which you have a "write permission" if the file does not exist. To create a file named 'touchfile':
+touch touchfile
+If the file does not exist in the directory, it will then be created.
+'Cal' Command
+It can be used to display the month of the current date or the month of a past or advancing year.
+Let us show the month of February for the year 1900:
+
+
+You can also show the month of an advancing year as shown below:
+
+
+We have shown the month of February of the year 2100. This command is very good when it comes to determining the dates of future or previous events.
+'Date' Command
+Used for displaying both the current date and time on the terminal as shown below:
+
+
+If the current date of your system is wrong, you can set it to the correct date and time as follows:
+Date -set='21  march 2015 18:50'
+In the above command, we have set both the date and the time. 
+
+
+
+
+
+
+
+CHAPTER 2. Linux Installation
+Many people already hate the process of installing an operating system because of the difficulties they encounter before they are done. The good news is that with Linux, you will have a very easy and stress-free time as you install it. Installing Linux is easier when compared to installing all the other operating systems.
+Most of the Linux distributions offer a Live Distribution option, which allows you to install and run the system directly from a CD, DVD or a USB Flash Drive without affecting your hard drive in any way. If you go this way, you will still have a fully operational operating system with all the features that come with it. If you run it directly, you will not have to commit to installing it, and this means that you can always avoid the hassle involved with installations.
+Once you have checked it out and agreed that it is just what you want, you will then hit the installation button, and the quick process will be over before you know it. The installation wizards will take you through the simple process with the following steps:
+a)   
+ Preparation- This is where you make sure that your computer meets the requirements for installation. You will also be required to choose whether you want to install third-party software.
+b)  
+ Wireless setup, only if it is necessary- If your machine is using a wireless network, you will have to connect to the network for the installation process to commence.
+c)   
+ Hard Drive Allocation- This is where you choose how you want your operating system to be installed.
+Select your location from the map, your system's keyboard layout and your username and password.
+This is how easy and fast it is to install the Linux system. Once the process is done, reboot and you will be ready to use it!
+Newbies can quickly go through the Linux installation process without anyone's help.
+How To Install Ubuntu Linux
+This example will give you an idea of what to do when the time to install your chosen Linux distribution will come. Being the most popular Linux distribution, its installation process is not any different from others. The step by step installation process will make things much easy for you.
+
+
+CD/DVD Installation
+
+
+Booting Ubuntu Linux from a CD or DVD is one of the two ways through which you can install the system on your computer.
+
+
+Download the Ubuntu ISO file from Ubuntu software. This form of file is one that will be burned to a CD or DVD before you can use it.
+
+
+Burn the ISO file using your burning program of choice. There are free and paid programs available that can burn an ISO file to a CD or DVD without having to download a separate program. You can choose the one you prefer the most.
+
+
+Boot from the disk. Once the program is burned into the disk, you can restart your computer and choose to boot from the CD or DVD. You may be required to change your boot preferences. Do this by hitting the Setup key when the computer is restarting.
+
+
+Linux gives users the option of trying it out before you can install it in order first to be sure that this is just what you need. You can do this at this level; try Ubuntu first, and if you feel that it is the operating system you want to use, you can install it. You will be able to view the layout of the operating system when it is still running from the disc.
+
+
+Install Ubuntu. You will have to be connected to a power source if you are using a laptop because the process could drain your battery. You need to be connected to an internet source as well.
+
+
+Decide what to do with your other operating system. You will be given two options; whether to install Ubuntu Linux alongside the other operating system or to replace the old operating system with Ubuntu. If you choose to have the two, you will always be required to choose the operating system to use every time you reboot your computer.
+
+
+Set your partition size. This will be necessary if you will choose to have the two operating systems on your computer. You can use the slider to adjust the amount of space you want to set aside for Ubuntu. Remember that you will also need enough space for files and programs, therefore, leave out enough space for your new system.
+
+
+Choose your location. This happens automatically if you are connected to the internet.
+
+
+Set your keyboard layout. The right thing to do here is to click detect keyboard layout for Ubuntu to automatically choose the right one.
+
+
+Enter your login information. Set a username and password. You can choose to have Ubuntu log you in automatically, or you can always enter your login information whenever you want to use your computer.
+
+
+Wait for the installation process to finish. Restart the computer once the installation is finished and Ubuntu will load.
+
+
+
+
+Windows Installer
+
+
+The windows installer will install Ubuntu Linux alongside the other operating system that you are using. The programs and files will not be affected, but you will always have to choose the operating system to use whenever you reboot your computer.
+
+
+Download the installer from Ubuntu website. You can select run, save or open if your browser prompts you to do that.
+
+
+Create a username and password that you will be using to log in to the computer
+
+
+Click Install to start the process
+
+
+Restart your computer once the installation is finished and choose Ubuntu Linux as the operating system to load
+
+
+Important Note:
+
+❖
+       It is always a good idea to run such a program on CD or DVD in order to have a first look at it; then, install it if you like what you see. Test driving will help you in making a decision you will not regret when it comes to installing operating systems.
+
+❖
+       Make sure that you backup all your files, programs, personal data and settings first before installations begin so that you will not lose them.
+Installing New Software on Linux
+Installing new software on Linux Operating System is as easy as it is when you are installing the operating system itself. Everything has been made very easy for the users. This is, therefore, no reason to worry if you have been having a hard time installing anew system on other operating systems in the past.
+Most of the Linux distributions have an app store, or something close to that, which represents a central area where all applications are stored. What you do is to go through them and install the apps that you want to use on your machine. This makes it so easy for you to locate the app that you want to install on your computer. The Ubuntu Software Center is an example of such a centralized place for the Ubuntu Linux. Deepin has the Deepin Software Center. Some distributions rely on GNOME software while others rely on Synaptic.
+All these tools mean and do the same thing; they provide a central place from where you can search and install Linux software with ease. The presence of a GUI is important though, for you to go through the installation process of another software. If you do not have a GUI, you will have to rely on the command line interface to do the installations.
+What users need to know is that it is very easy to install software on any Linux machine. New computer users will also find this very easy and less time-consuming. The operating system has been designed in order to give computer users an easy time on everything that they do, and this is just one of them. After the installation of the operating system, you can start installing any app that you will need in the use of your machine or device.
+Linux is everywhere. You can find it in your house, your car, and even in electrical appliances. Of course, the place you will most commonly find it in is computers. At first glance, Linux can look like any other operating system. It sits below all of your other software and relays the signals to your hardware. It has a graphical interface, like most other operating systems and has software equivalents for most functions that other systems have. If you have ever used any operating system, you should have no trouble with using Linux. What people usually don't know is that Linux is used very often. Other than being one of the most used operating systems for personal computers, it is used to run many servers and embedded systems across the globe. It is used to run a huge portion of the internet, as well as many supercomputers that manage stocks and make scientific breakthroughs. Before all of this, however, Linux had a reputation of being one of the most worry-free, safe, and reliable systems out there. The reputation is well deserved and Linux's quality just keeps getting more and more evident.
+Linux is a flexible tool that can be customized for any line of work you might be interested in. Users are always free to further develop it, which means that it will always be in the process of becoming better and better. The fact that it solely relies on the community itself makes Linux an even more impressive achievement. It also makes Linux seem a bit more reliable because no greed comes into play with the distribution. The system is a tool from the people, to the people, and grows with the trends. It grows with the help of the users and based on the needs of the users. 
+The different variations of Linux are called distributions. Distributions are packages of different components that are selected and sewn together in order to perform a well-defined function. A distribution is made out of the kernel and supporting libraries and system software. Most of these are provided by the GNU Project. Even though most distributions use the word "Linux" in their name, there was a bit of controversy over the naming convention of the distributions as the Free Software Foundation preferred the name GNU/Linux in order to emphasize the importance of GNU software. This did not sit well with Torvalds, the creator of Linux, who immediately boycotted this. Ever since then, tensions have been high when it comes to the names of distributions.
+Some of the most popular Linux distributions are Fedora, Ubuntu, and Debian. There are many distributions that are used commercially. Some of them are the Red Hat Enterprise Linux and the SUSE Linux Enterprise Server. The desktop distributions of Linux usually include a windowing system like Wayland or X11 and a desktop environment like the KDE Plasma 5 or the GNOME. Other distributions that are made for servers usually do not have graphics and include solution packs. An example of a solution pack is LAMP. There are numerous distributions available out there. What makes the possibilities even greater is the fact that you can make your own distribution for whichever purpose due to Linux being freely distributable.
+Linux was originally made for personal computers and was based on Intel x86 architecture. Since then, it has been ported to many platforms, more than any other operating system. When it comes to servers and mainframe computers, Linux has the lead over any other operating system. On top of that, it is the only operating system used by the top 500 supercomputers, where it has been gradually eliminating competition ever since November of 2017. Around 2.3 percent of desktop computers run on it. It takes up 20 percent of notebook sales for notebooks under $300 with the Chrome OS that is based on Linux kernel. With this, it easily dominates the K-12 education market in the US.
+Linux is also used in embedded systems. These are devices whose operating system is built into the firmware and is tailored to the system itself. Routers, TVs, automation controls, video game consoles, digital video recorders, and smartwatches are examples of embedded systems. Linux derivatives are often used in smartphones and tablet computers. Due to how dominant Android has been in the smartphone market, Linux, by proxy, has the largest installed base amongst the general-purpose OSs.
+Linux stands tall as a testament to success in the face of difficult odds. It is a statement of how far the collaboration of independent creators can go. It is a prominent example of open-source software collaboration.  The fruits of labor are obvious. In 2001, a study was made about Red Hat Linux 7.1. The study showed that the distribution had 30 million source lines of code. The study also found that, for this distribution to be created by a single person, it would take eight thousand years of development time. The development would have cost 1.57 billion dollars if the system was made with conventional proprietary means in the US. About 70 percent of the source code was written in the C programming language. You could consider the rest patchwork of a sort, since it was written in many different languages like C++, assembly language, Lisp, Python, Perl, Fortran, and many shell scripting languages. More than half of the 30 million lines of code were under GPL. The kernel made up about eight percent of the code, which amounts to about 2.4 million lines of code.
+There was another study in 2007. This one was performed on Debian v4.0. This system would have cost around 8.66 billion US dollars to develop conventionally. It had 283 million lines of code and, if a single person were to make it, it would have taken them seventy-three thousand years. This speaks volumes on what kind of project Linux is. You can easily say that it is quite something based on the sheer volume of work that has been put into it.
+What Makes Linux Different?
+As I have mentioned before, Linux does the same job any other operating system would. What makes Linux special, however, is the fact that it is open source. In fact, it is the most used open-source operating system. This means that the source code used to create Linux is available to the public for viewing and editing. This also means that talented individuals can contribute to the development of Linux by adding some improvements to the system. On top of that, the system is highly customizable. There are many versions, also known as distributions that are different from one another. They come in different kinds of software. Even though the core part of the system is mostly the same, you can choose different browsers, word processors, and applications to make your system truly your own. You can also change up the core components like user-interface components and graphic components. Linux is very user-friendly and simple to use. On top of that, it has many ways in which you can customize it for whatever you need.
+How Was Linux Created?
+You must have heard of Unix, the operating system made in the 1970s. It was an excellent tool for its time and was used for academic and commercial needs. Similar to Linux, Unix had plenty of different variations. The system started off as a tool for programmers that made it easier to develop software. In time, it started spreading in academic circles where people added their own tools and shared them with their colleagues. The system itself works on the Unix philosophy. This means that the system prefers using small, interconnected programs that have limited functions. All of the interconnected programs have well-defined functions and are very good at doing them.
+Linux started off as a way to emulate Unix as closely as possible. Many people tried to do the same. These programs were called "Unix-like" or "Unix-compatible," but none have been as successful as Linux. Linux was the most popular and was the closest to Unix. It had similar ways of interfacing, file stream layouts, key components, and programming tools. In the sea of Unix clones, Linux managed to stand out. This was all thanks to the man named Linus Torvalds. 
+In 1991, Torvalds took an interest in operating systems. He was frustrated by the licensing of MINIX which was limited to academic use. He used his outrage to create his system which is now known as the Linux kernel. He used MINIX as a platform and added most of MINIX's apps to Linux. After that, the system kept maturing and evolving, eventually meeting new developments on Linux systems. Due to the availability of the codes that are licensed under GNU GPL, it was seen as advantageous to use them. GNU replaced all of the components of MINIX. GNU Project allowed the codes to be used for as long as the program is released under a compatible license. Due to this, Torvalds switched from his original license to the GNU GPL. The original license did not allow for further redistribution of the software, however, with the license switch, the program was finally made open source. Many people worked on Linux in order to properly integrate the GNU components into the kernel. Finally, the system became free operating and fully functional.
+The original name for the Linux was Freax, a wordplay on free and Unix. For a period of six months, the makefiles of the project included the name "Freax." The name Linux, though given to the project later down the line, was considered as a possible name for the project even before Freax, but Torvalds found it to be too egotistical and dismissed it.
+Files were uploaded onto the FTP server of FUNET in order to facilitate the further development of Linux. This happened in September 1991 with the help of Ari Lemmle, a coworker of Torvald's at the Helsinki University of Technology, and a few other individuals who volunteered as administrators for the FTP server. Ari thought that "Freax" was not a good name. Without Torvalds's knowledge, he changed the name of the project to Linux, which, eventually, Torvalds consented to. 
+Enough background info! It's time to dive into the meat of the topic and learn about what Linux can do for you.
+
+
+
+
+
+
+
+CHAPTER 3. File System
+Linux's file system is outstanding when it comes to flexibility. Its design allows it to support regular, as well as special types of file formats. It can support text, programs, images, services, output, and input devices. Therefore, since it supports a variety of file formats, it can coexist with another OS.
+Moreover, in the system, there is hardly a distinguishable factor between a file and a directory. It follows that directions are simply locations of file stacks.
+Categorization of Files
+To ensure a better understanding of the Linux file system, files are categorized. While it is considered safe to assume, knowing more information about a particular file allows programmers and system administrators to avoid complexities when using Linux. This also prevents them from performing long listings.
+File categories:
+
+
+Directory (d) - a file that is a list of a stack of files
+
+
+
+
+Link (l) - a system that allows the visibility of a particular file in multiple parts of a file tree
+
+
+
+
+Pipe (p) - a system that allows inter-process communication
+
+
+
+
+Regular (-) - a normal file
+
+
+
+
+Socket (s) - a special file that provides inter-process networking
+
+
+
+
+Special (c) - a mechanism used for output and input
+
+
+The Art of Partitioning
+Partitioning in Linux began when power failures threatened the majority of Linux users. There were days when an outage meant serious damages to a system.
+Moreover, the primary reason for partitioning is to achieve a much higher data security level. The hard disk's division allows safe grouping and protection.
+Due to successful partitioning, you can prioritize data groups with more importance. When part of a hard disk is compromised, only that part of the disk is affected. The rest that is stored in other partitions remains untouched.
+Two major partitions in a Linux system:
+
+
+Swap - refers to extra memory or an expansion
+
+
+Data - refers to normal data; refers to the necessities for starting and running  a system
+
+
+Recommended partitions:
+
+
+A partition for necessary data
+
+
+A partition for server programs and configuration data
+
+
+A partition for programs and applications
+
+
+At least one partition for user mails, archives, and database tables
+
+
+At least one partition for specific files
+
+
+At least one partition for virtual memory
+
+
+Common partitions:
+
+
+A partition that contains personal data
+
+
+A partition that stores temporary files
+
+
+A partition that stores third-party data
+
+
+A partition that is solely for programs
+
+
+Directories: The Root Directory & Subdirectories
+In Linux, there is a directory called The Root Directory. It serves as the main directory and as programmers and system administrators would refer to it, it is the directory of all directories.
+With The Root Directory come the subdirectories. These subdirectories manage files according to their assigned tasks.
+Subdirectories and their content:
+
+
+/home - home directory
+
+
+/boot - the kernel and startup files; files that attempt to eliminate unnecessary bootloaders
+
+
+/initrd - data regarding booting information
+
+
+/dev - contains references to all CPU hardware peripherals
+
+
+/bin - common shared system programs
+
+
+/etc - important systems configuration data
+
+
+/lib - library files
+
+
+/lost+found - retrieved data from failures
+
+
+/opt - files from third-party sources
+
+
+/net - remote file systems' standard mount point
+
+
+/misc - miscellaneous data
+
+
+/proc - information regarding system resources
+
+
+/mnt - external file systems' standard mount point
+
+
+The Role of an Inode
+In a Linux file system, an inode represents a file. An inode is a type of serial number that contains important information. Its primary role revolves around defining the number of files in a partition.
+Throughout a Linux file system, especially one with multiple partitions, there are files with similar inode. To avoid complications, each partition is assigned its own inode.
+Moreover, an assigned inode provides a description of a hard disk's data structure. Once a hard disk's initialization is finished, it can accept data storage during two points. One, data storage is acceptable during the installation process. Two, data storage is acceptable upon the addition of storage space to an existing system.
+Information contained in an inode:
+
+
+File type
+
+
+File size
+
+
+Owner or group owner of the file
+
+
+Date and time of the creation
+
+
+Date and time of the latest modification
+
+
+Permissions
+
+
+Number of links
+
+
+Data address
+
+
+What Is The Superblock?
+In Linux's file system, the information about basic file size and shape is called The Superblock. It allows a file system manager to peruse and maintain a file system's quality.
+Information in The Superblock:
+
+
+Free blocks - displays the number of a system's free blocks
+
+
+Free inode - shows the original inode assignment
+
+
+Free inodes - displays the number of a system's free inodes
+
+
+Block group number - refers to a number assigned to The superblock
+
+
+Blocks per group - displays a group's number of blocks
+
+
+Block size - refers to a system's block size; information is shown in bytes
+
+
+Magic number - refers to the permission granted to mounting software for assessment
+
+
+Mount count - refers to a system's allowance for assessment
+
+
+Revision level - refers to a system's allowance for revision level confirmation
+
+
+What Is a Group Descriptor?
+A group descriptor is in charge of labeling a file's data structure. It contains details to avoid duplication of data. Due to its role, a system's possibility of corruption is minimal.
+Information in a group descriptor:
+
+
+Blocks bitmap
+
+
+Free blocks count
+
+
+Free inodes count
+
+
+Inode bitmap
+
+
+Inode table
+
+
+Used directory count
+
+
+File Modification: Finding, Mounting & Changing Sizes
+A Linux file is usually easy to locate. Just search for a directory and the name that succeeds a "/" or a forward slash might be your preferred file.
+Sample:
+/home/lp.txt
+As the sample shows, "/home/" is the directory and "lp.txt" is a file.
+You can then start mounting. When mounting a file, the availability of a Linux kernel is necessary to check the standards. Its presence allows the validation of all of a system's passed arguments.
+Sample:
+# mount
+iso898 /dev/rom /dev/cdrom
+As the sample shows, you are mounting three kinds of information. "iso898", "/dev/rom", and "/dev/cdrom".
+Apart from finding and mounting a file, you have the option to change a file's size. This is done due to the occurrence of a file's fragmentation.
+Since files become inefficient during fragmentation, changing a file's size allows the allocation of files. Consequently, the system becomes more stable.
+You are introduced to the commands "truncate" and "fallocate". Both commands allow you to create a file with a preferred size.
+Sample:
+# truncate -s 19MB mop1.txt
+# fallocate -l 19000000 mop2.txt
+# ls -ls mop.txt
+0 -rw-rw--r-- 2 trs trs 19000000 Aug 12 02:44 mop1.txt
+14819 -rw-rw--r-- 2 trs trs 19000000 Aug 12 02:45 mop2.txt
+As the sample shows, you created a "19MB" file called "mop" on "Aug 12".
+
+
+
+
+
+
+
+CHAPTER 4. Basic Shell Programming
+In this chapter, we will dive into one of the hacker's secrets weapons that are scripting. There is quite a small difference between programmers and hackers. Programmers use scripting to build systems whereas hackers use scripting to exploit systems. Without creating their scripts, a novice hacker can never become a professional Hacker but will remain as a script kiddie who just uses other tools to crack systems. Thus, scripting knowledge is a must in the checklist for anyone trying to master hacking. To help you out this chapter will introduce a lot of bash scripting concepts with real-world coding examples. Let's have fun with some scripting now!  
+First of all, we need to know about the shell in detail. 
+What is a Shell?
+A shell is that cursor you observe when you first connect to a server using a password or when you make yourself connected to a system using remote desktop tools like SSH. In other words, if you want it to look solely from a programming point of view you would be delighted because it acts just as an interpreter between the user and system just like how an operating system does. 
+But it just sends the input advises from the user to the Linux kernel and sends the output that is the result back to the system user. 
+Types of shell
+There are types of shells that exist according to the Linux official documents. Out of both the first one stands for a GUI whereas the second one stands for CLI. 
+There are a lot of shells that have been manufactured with the Distros like Bourne shell, C shell, korne shell, and Bash shell. 
+Out of all different types of shells that are present bash shell is one of the most famous that ever existed. It is pre-installed in almost all the famous Linux Distros. It also acts as an interceptive language that helps the Linux kernel understand the instructions we are giving logically.
+How does the bash shell work?
+There are two types of modes that one can work shell with. Out of which one is an interactive mode and the other is a script mode. 
+a) Interactive mode
+In this mode, the Linux user can enter the functions or the bash code one by one and wait until the result is given. If there is an error in the middle the user cannot proceed further. It just works interactively like in an old handheld video game. 
+b) Script mode
+In this mode first of all the bash code will be written in a text file and then will make to run the script file using the command-line interface. While using this mode the user can get all the results that he was looking for all at once. Hackers need to be more perfect in script mode because it will be easy to exploit systems fast using this way. However, programmers that are who create systems will prefer interactive mode more. 
+Before knowing more about the grammatical structure of the shell it would be better if we have a good overview of the advantages of the shell. 
+Advantages of the shell 
+1) It is very easy to learn inline programming languages that differ a lot in both execution and implementation. 
+2) It has a lot of help documents that will help the hackers to rectify the errors as soon as possible. 
+3) It has an added advantage because it is an explanatory language. That is, it need not be compiled before running. So, hackers can easily cross-check the code before trying to implement it on the victim's system. 
+Apart from this shell is also fast and works efficiently. Due to all these reasons, hackers should mandatorily learn about the implementation of the shell. 
+Let's go!
+First shell script  
+Let us create a shell script of the name sample.sh. create a shell script using the following command. 
+cat sample.sh
+Location of the shell program 
+echo " This is very regressive" 
+Now we will explain this in detail. Line by line. 
+a) #! This represents the starting of a shell script that we are trying to write. 
+b) If it starts with only a hash # then it is called a comment. Comments are annotations that are used to make it easy for reference or for other users that want to look at the code. It may seem unnecessary to write comments for small shell scripts. But it is a good practice to start writing comments. 
+c) echo is a shell default command that lets the interpreter display the content that is written. 
+Here to run the shell you need to use the following command: 
+bash sample.sh
+And then the output will appear 
+For this example, the output is as follows: 
+This is very regressive  
+There is also another feature that will let you run the script with additional permissions. As we discussed earlier Linux has a set of permissions and if you don't provide with necessary permissions the script may not run perfectly. So, to provide permission use the following command  
+Debugging is one of the most important programming tasks. Even hackers need to be perfect at this because wrong debugging of code may result in bad adaptation of the task.  
+Debugging the shell scripts  
+Normally when you enter a wrong default command in the script such as shown below in the code. 
+vulnerhost @ example: ech 7898
+This code will not run and show an error as shown below 
+the ech command is not found 
+This is exactly what debugging is. Debugging features informs the user about the errors in the script. 
+There are also a lot of shell debugging tools that perform the tasks we do in a command-line interface. Tools like bashdb are famous for this. This section will help hackers understand the basics of shell programming effectively. Let's go! 
+Built-in Shell Commands  
+Before entering into a deep discussion about the built-in commands it is important to know that these built-in commands cannot be used as variable names. Variables are an important functionality of shell programming that helps to define things. 
+Linux provides a command called type that will let you cross-check whether a command is a built-in command or not. 
+The command works as follows: 
+type echo  
+The output is as follows: 
+echo is a built-in shell  
+Another example,
+type trump
+The output is as follows: 
+Trump is not a built-in shell  
+Also, remember that two dots that is (••) is used to determine the successful working or execution of the script. Here are the in-built commands we are going to discuss in detail. 
+1) Alias
+Normally Linux commands are a little trickier to type. I suppose you have to type echo every time it may be difficult. For this reason, you can use an alias to give shortcut for a command. 
+Below we describe the command that needs to be entered to make alias work. 
+example@ linuxwar : Alias groupecho
+However, it should be remembered that aliases work only until the shell environment is open. That is if the shell is exited there is no way to access it again. Also, the alias functions are stored in the bashrc directory of the user environment. Aliases are an easy way to increase productivity. Hackers use a lot of aliases to make deciphering the script a lot trickier.  
+2) Unalias  
+As you might have guessed already unalias is used to delete the alias systems that are present. By using this command, you can delete any alias command that you have created before.  
+Below is the command that will let us understand how it works: 
+example@ linuxwar : unalias groupecho
+You can also use -a to delete all the aliases that are present at once. However, as we said before ending a shell environment will delete all the aliases that are present but using unalias. will help you to delete things while you are still scripting. 
+3) bg,fg,jobs
+A lot of shellcode is done in interactive mode. Sometimes when you are trying to exploit a system you need to perform various tasks at once. These tasks are called jobs in Linux terms. So for everyone's convenience jobs are divided into two types. The first one is a foreground job where we can see the procedure that is going on. The classic example of foreground jobs is the installation of system programs. You can't handle other jobs while doing foreground jobs.  
+Solely, for this reason, background jobs are developed. Background jobs can help things run in the background. Hackers should be well aware of this because they are ought to work with multiple processes.  
+Below are the commands for the job functionalities:
+example@ linuxwar : bg job1
+example@ linuxwar : fg job2
+example@ linuxwar : view jobs
+4) cd
+Cd is the classic Linux shell command that is famous for its huge usage. When performing tasks users usually are thrown into the root directory by the shell. Huge usage of root directory can make it scattered and messy. For this reason, Linux users use CD to change their directory and perform actions.  
+Below is the command for the change directory:
+example@ linuxwar : cd /etc/read
+5) Declaring variables  
+Variables are classic programming declarations. They are usually used to declare a position for the data. Variables also have a type declaration known as data types. With this, we can easily assign the type they are ought to use. There are many data types such as int, float, string.
+6) Break  
+Scripting languages usually include Conditionals and loops that are used for repetitive and logical tasks. They can be used for both of them aligned. While doing repetitive tasks it is obvious that there should be some endpoints for better interaction and processing.  
+For this reason, shell language uses a statement called break that will stop the task of the logic it has provided satisfies. Break statements can also be used to print the statements using the echo command.  
+Here is an example for break command:  
+example@ linuxwar : beep.sh
+for(i=0)
+x>1
+y>2
+if(b>2)
+break:
+7) Continue  
+In loops where a break can stop the loop at once, there is a statement called continue that can help to switch the available loops. Suppose if there are five loop statements in the shellcode by using continue the loops can be interchanged. This will help to create a detailed exploiting code that can compromise systems and do multiple cross re-checks.  
+Below is an example of the continue statement:  
+example@ linuxwar : beep.sh
+for(i=0)
+x>1
+y>2
+if(b>2)
+continue:
+8) Eval  
+Linux and shellcode usually consist of a lot of arguments that need to be processed. There will be a lot of problems if strings and variables are parsed in the same way. For this reason, a command called eval is introduced in the bash shell.  
+eval command replaces the arguments that are present with the variables that are pointed out. You can even use eval command to parse strings into commands for execution as shown below.  
+example@ linuxwar : eval beep.sh 
+9) Exec  
+Execution is a process that is said to start the task. Every installation file is an execution format because it starts a new system shell in the background. Hackers should be aware of execution shells because they perform a lot of initiation and analysis tasks.  
+When the exec command is entered in the Linux command shell the screen or the interface that we are working on refreshes out.
+This is the command that explains exec command in detail:
+example@ linuxwar : exec beep.sh
+10) Exit  
+A shell window is complex and deals with a lot of tasks. However, when you complete the task it is a good practice to exit the shell. If not, the processes would still be running and may result in unnecessary system power consumption. For this, a quick command called exit has been introduced in the shell language for this exact reason.  
+Exit command also clears all the tasks that are present. So, make sure that everything is fine before making this happen. You can also exit individual processes or programs with a shell script.  
+Below is a simple command example for exit:
+example@ linuxwar : exit shell.sh
+11) Export  
+Usually when the system boots up the first shell command is created in the kernel system. This is called a parent shell. And the next ones that followed are called child shells unless the parent shell is exited or killed.  
+So, while working with the different numbers of shells we will deal with a lot of variables. And sometimes we may need the same variables that we used in the other shell environments. For this exporting of variables, the shell provides us with an export option.  
+After using the export command all the child shells can use the parent variables. However, remember that the child shells cannot use their sibling's variables that are the other child shells that are present.  
+Here is an example that demonstrates this process:
+example@ linuxwar : export example.sh to /etc/dir
+12) Kill  
+Killing processes is an important skill to learn for hackers. Processes have three distinct distinctions. One of them is an interaction that is a usual shell interface. The second one is a batch process where everything that needs to be applied is done in a sequential process. And the last one is monitoring the process where everything that is being done is monitored. For example, a task management system.  
+When you are running a bunch of these processes you may get distracted with signals that they come with. For this reason, killing processes is a good process if you find that they are unnecessary. When you are trying to exploit a system you need to kill the antivirus process that is running in the background. You can even use the killing process to stop the logging files that record your every move.  
+Below is the simple demonstration of kill command:  
+example@ linuxwar : kill process
+example@ linuxwar : killall
+13) Read  
+Read command can be used to read the bash scripts when you are performing the tasks. Or it can be even used to perform a thorough check of the shellcode that has been written. Read statement is a basic shell command and can help hackers interpret and cross-check things easily.  
+Here is the command with an example:  
+example@ linuxwar : read bash.sh
+14) ulimit  
+Priority is one of the most underused functionalities of the shellcode. Priority can be both incremental and decrement also. By using ulimit the hacker can increase or decrease the priority of the process.  
+Why prioritizing processes is necessary?  
+When a user is dealing with a lot of background processes that are constantly functioning this may decrease the processing speed of other processes. For this reason, administrators prioritize anti-virus software's at first level of the priority. With this method, any boot level executions can be eliminated.  
+However, a lot of system administrators don't take this problem seriously and make hackers exploitation easy. Below is the example command that explains how to prioritize the processes that are present.  
+example@ linuxwar : ulimit PID 2345
+Always remember that PID is the most necessary thing that needs to be used to prioritize.  
+15) Test  
+Shellcode consists of a lot of loop and conditional codes. Before experimenting with these repetitive tasks with a system shell it is a good practice to check them in the old shell. For this purpose, the test command is introduced.  
+Below is the command that takes care of the testing:  
+example@ linuxwar : test PID 3634
+With this, we have completed an explanation about some of the built-in shell commands that are present in Linux systems. This should have given a good overview of the hacking environment to you.  
+But before learning about it let us learn about the installation of a bash shell, the most famous shell environment.  
+Installation of bash environment  
+1) you can use wget to get the system files that are present in the server. The below command will download the files from the mirror websites and will help users install them in their system. 
+wget bash.com/download
+2) in the next step you need to mention or input the configuration of the system that you are using. Otherwise, it may not get installed.  
+3) After installation, you may need to check the settings and input the default directory. Normally it is entered as the root directory. Also, the shell versions can be easily known using the help command.  
+With this, we have installed the bash environment and good to go to learn about some fundamentals of shell programming. Remember that these topics very much coincides with python scripting which is another good alternative scripting language for hackers.  
+Fundamentals of Shell Programming  
+The shell consists of a group of systematic instructions or commands. Let us go and learn about some of the basic components that comprise the shell language. 
+Variables  
+Variables are a piece of memory in the computer random access system that is used to store the data. As discussed before variables are the most important components of a programming language and it is often called while writing functions or templates.  
+Usually, there are two types of variables:  
+a) Local variables
+b) environmental variables  
+Let us discuss the functionalities of these variables in detail along with few command-line examples. 
+a) Local variables  
+Local variables are the one can which can be used in a private or single environment that is these cannot be used in other shell scripts even with a reference. These types of variables are used in short shell scripts.  
+b) Global variables  
+Global variables are also known as environmental variables. These variables differ from the first one because these can be used in any shell script with a reference. For using the global variables, you need to export them to the local shell script file.  
+Variable naming  
+Variables present in the shell language should follow some varied instructions while naming. Remember that shell in-built commands like exit cannot be used for the names of variables.  
+Here are the instructions that need to be followed for naming a variable:  
+a) In shell language, variables differ from the capital and small letters.  
+b) A variable name should never start with a number or special character. Doing this may give an error saying that the variable name cannot be initialized.  
+Here are some of the various examples that can be used  
+love
+dude
+ra344
+And here are some of the variable names that cannot be used 
+1hjsd
+#fege
+Variable assignments  
+Variable assignments are the assignment values that are used to give a value to the variable.  
+It works in the following way:
+variable name = variable value  
+You can insert a lot of data types in the variable value. Data types are the ones in which variables are defined. Some data types consist of integers, floating-point numbers, and even strings sometimes.  
+Here is an example that describes the assignment value:  
+sample = 22
+Special variables  
+Special variables such as usnet can be used to delete a defined variable from the memory. In this, we can store the random memory management.  
+There are also special variables that start with a $ parameter. These variables can be used to define additional parameters that the system may require during the process execution or advanced shell analysis.  
+Here is the example for some of the special variable commands with a $ 
+$dude = ' string' 
+The biggest advantage of using special variables is that they can be easily filtered and aliased with the help of the character that is present at the beginning of the variable. 
+Arrays  
+The array is a famous data structure that is capable of holding multiple items of elements. Programming languages use a lot of arrays because they are easy to implement unlike other data structures like trees or graphs and also they are fast. Shell also supports arrays to input elements. In this section, we will discuss arrays in detail.  
+a) definition of array  
+Normally arrays consist of a subscript that defines the number of the element along with the name of the array.  
+Here is the command for an array example:  
+example[]
+b) Giving value to an array  
+All elements that are present in an array can be given a value using the symbol. You can also give the value using the individual array assignment like as shown below  
+sample = "America"  
+You can insert any data type in arrays just like variables and the use of arrays can be very essential when you are dealing with loops and conditionals with complex code in it.  
+You can even connect both arrays to get the desired results. This scenario is shown below for your better understanding:  
+sample = value
+Constants  
+As we all know already that constant means something that cannot be changed. Constant values exist always and can be used to explain values like pi that have a constant numerical value. Whenever you try to change this constant variable an error or warning will appear in front of the shell that says this cannot be possible.  
+Here is an example of the constant command:  
+pi = 3.1427
+Namespaces  
+We already have discussed variables in detail and namespaces mean that variables that are in a defined scope. These are created for a reason that whenever users try to create variables that are of similar type a conflict always occurs and makes things difficult to organize.  
+For this exact reason, namespaces are invented and are used to define citations and references which can be used multiple times in a shell interface or a shell script.  
+Here is an example that explains in detail about this concept:  
+Operators  
+Operators are the most important regions of a scripting language. Operators can help to mix or change the variable values. As of the shell, programming goes there are a lot of operators that can be used. We will discuss some of them now in detail:  
+1) Arithmetic operators  
+Arithmetic operators deal with mathematical calculations such as addition and subtraction. These are important for programming because they can add up things and multiply variable count easily.  
+Here is an example command for the arithmetic operators:  
+>>> 2+3
+>>> 2-1
+>>> 6 * 2
+>>> 7/3
+>>>  4 % 7
+2) Relational operators  
+Relational operators are significant operators and can be used to change things easily. They can be used to compare two things easily. Few of the relational operators are AND, OR and NOT. These relational operators can be easily implemented in any shell language code.  
+Here is a command-line example that deals with relational operators:  
+>>>> 2 ! = 7 
+>>>> x === y
+3) Assignment operator  
+The assignment operator just gives the value to a variable or loop code. By using this operator one can easily assign things to the element.  
+Here is the example for the assignment operator:  
+x = 7
+With this, we have completed a brief exploration of the scripting world. Shell language is a must for any hacker that is serious about his job. You can also implement these concepts with python programming for doing advanced tasks in hacking. Let us start!
+
+
+
+
+
+
+
+CHAPTER 5. What To Do Next With Linux?
+We will continue to navigate the Ubuntu distro as we outline how to install and set up your operating system. Remember that one of the assets of any Linux OS is that you can customize it to work for you.
+Desktop Version
+With the Desktop version, you will mostly find that most of it is plug and play. Graphics and text will guide you. Apps will allow you to navigate the functions that you need to do and to have, just as with Windows or MAC OS. Again, you will see icons, taskbars and menus that look familiar.
+Graphics and CLI?
+As mentioned earlier, although you are relying on the desktop version to provide a GUI, you will still have the ability to use the Command Line Interface (CLI) whenever you would like to do this. Different distros of Linux will have different ways of getting to these prompts. With Ubuntu in its various versions it may be some arrangement of clicking the Applications Menu, Accessories and finally, the Terminal which is where you can get the prompt to enter the Commands.
+You may feel that you chose the GUI edition to get away from having to use a CLI at all. Some people really like having this combination of graphics and the prompt, however. Any future tutorials that you may watch or read may include some Commands that you may use at the prompts even with the desktop version. They may still apply to you. Some things to note about this are that it can be very useful to do things such as to automate tasks if you do the same things, often. It can also be very handy in times such as when your GUI crashes. It would be good to learn some of the basics, as you never know when you may need them!
+Applications and Software
+Upon installation, your Ubuntu distro already comes with many pre-installed apps and programs. These may include: Firefox, OpenOffice, music and video players, social media and messaging tools, and some of the usual apps that help make things useful or fun.
+The best part about Linux is customization. You should do a Google search for the best app, program or software for your needs if you are not sure what you should install, but the beauty is that you can customize, unlike preloaded systems with a lot of third parties or proprietary stuff that most of us are used to having. Many of these come from repositories. Linux Repositories are places that house many programs and Apps that you can tap into at any time. Most of these are also open source. Some may not be.
+With Ubuntu you will access news apps and software easily and at the touch of a mouse, quickly retrieve and install whatever you need. 
+
+
+Fetching New Apps (www.webupd8.org
+).
+One quick and easy way to access the repositories is through what is called the Synaptic Package Manager. With this, you can access games to MS Office.  To into your System file, then under Administration click on the Synaptic Package Manager. Look for "ubuntu-restricted-extras" and install that through the package manager. This will allow access to some proprietary applications. In general, from this manager, you can check what app you would like and install.
+Another way to access the repository on the desktop version is to use the CLI Command. This will be outlined more in the Server section, where the CLI is essential, with the lack of the GUI. You will use Commands such as "apt-get-install" to fetch applications from the same repositories, but this will be text-based through the CLI interface. Again, there are lists at the end of the guide. You will see a beginner's basic Command list that will be extremely helpful for navigating the CLI, even at the Desktop level. You will also see a more comprehensive list that will aid a beginner as well as move you into some intermediary learning.
+One of the beauties of the Desktop version is this versatility.
+Security, Updates and Efficiency
+Every Linux user or developer will advise you to do some very specific things before you go in and play or do too much at first installing your version of Ubuntu. Security and Stability are also key for maintaining your Linux and you will enjoy it for many years. Here is a top 10 list of things Linux users recommend to do after the install.
+
+
+Immediately Install and Update the Ubuntu version (although this sounds unnecessary if it is your first time using the system). This should be done in the case that there have been updates by the developers to patch and repair anything since the version was made available.
+
+
+Adjust settings, appearances, and behaviors to your needs.
+
+
+Be sure to adjust any Privacy settings as well to make things more secure.
+
+
+Adjust themes, wallpapers and menus to your liking. A Tweak Tool may help provide more options.
+
+
+Install AppGrid and Synaptic Package Manager to help find and install things quickly.
+
+
+Install GetDeb and PlayDeb repositories, and sources of updates of software Personal Package Archives (PPAs), and be sure to Enable Partner Repositories (to access licensed software).
+
+
+Disable Ads.
+
+
+Install any media codecs, audio players and drivers now.
+
+
+Install free apps and programs such as Google Chrome, Skype, GIMP, Spotify, etc.
+
+
+Set up messaging, social media accounts, and cloud connections.
+
+
+Creating Multiple Workspaces for the Desktop
+You can also use workspaces to really maximize your desktop Ubuntu, to get more out of it, and to multitask for fun or pleasure. Some versions won't prominently display these options but they can be enabled in different distros, in different ways. You should check your distro and do a web search for how to activate Workspaces with your version. It usually just takes a few clicks.
+Depending on the version of Ubuntu for example, in each of the environments you will need to click to either: Enable or Manage Workspaces, Add Applets, or Add Pager Widget to use these. Soon, you will have multiple workspaces that can help with organizing and separating your activities, assuming you have more than one at any time this will be quite useful. You should try and activate them, and test them out.
+
+
+Multiple Workspaces in Ubuntu Linux
+CLI
+You should also probably learn some basic Commands that you could use at the Prompts, just in case (and, yes, that has been suggested a few times already!) You will find that if you go into Applications, then Accessories, then get to the Terminal you can access the CLI and you will see a prompt. This is where the Commands come into play. Some users really like having this additional way to customize what they would like the system to do, to automate things, to take shortcuts.
+Additionally, if you move on to the Server version at some point in time, you will already have some appreciation and knowledge of the Commands, as well as a better understanding of the structure and location of the system files. As you will later read, everything in Linux is a file. They differ in structure from those of Windows for example. By using the GUI you will see this from one perspective. When you use the CLI you truly will better understand how the file trees and directories work with the hardware and software to make what is known as your operating system. This is also where Linux enthusiasts get the feeling of freedom that comes with not only the open sourcing of applications and other system resources but the freedom and flexibility to truly have your computer actively work for you.
+Getting Around in the Server Version
+Some time will need to be spent with the Server version however. It is not as straightforward and there are some particulars that will be very useful to know before, and during, exploring Linux in this way. If you know DOS it will be just a matter of learning Commands and code. If you do not, you will have a decent-sized learning curve ahead of you.
+To begin, you will log in to your new Server Version, with the information you have provided. You will see just DOS screen with prompts at the Shell. You will not see the Graphic User Interface (GUI) as you would with the Desktop Version. You will now need to use commands to go anywhere at all within this new operating system. You should set up a very secure password and root (user) name. Make sure to document this exactly as is. Punctuation will matter very much with Linux. Different spelling equates to something entirely different. You will see this reminder again.
+The Root of Everything
+The word Root, in Linux, has a few meanings. The Root User is the Administrator (as the User name root) for the computer, which is the lightest level user, with full privileges.
+Root also is the highest level, or core, of anything in Linux. It also is the location where it is installed, the equivalent to C:/Home in Windows. It's the highest level of the file so to speak. All in Linux is either a directory or a file inside the directory, all within the Root directory.
+The Command "sudo" means "Super User Do". This signifies that you, the Root User (i.e., the Administrator), have full permission to access files and programs. In some distros, you will need to use this to preface some Commands.
+
+
+www.ubuntuserverguide.com
+Get-Command over Your Commands
+As with most anything these days, you can do some simple research on Google to obtain large directories of Commands for Linux. And with these, you can navigate anywhere with Linux. You should not expect to memorize this list however, you should begin to get familiar with the language of Linux.
+Some of the most important and useful Commands will get you in, out, and around. To stress and expand upon an earlier point, your use of capitalization in Commands matters. Commands are very specific in their spelling so be careful to use proper capitalization. Spacing and word order also matter. You may not get anywhere, or you may end up somewhere that you did not intend to go.
+In the long list of Commands and combinations of commands for Linux, there are also some "builtin" commands. Just as it sounds, Builtin commands are already contained within the Bash shell itself. When the first word of a simple command is a builtin, the shell carries out that command without requiring another program.
+As said before, each distro will have its strengths and challenges. Something to note is that Commands for each distro may or may not be the same. Given that the Commands are the only way to navigate this version of Linux, this is key. You should definitely have done some research not only on the distro that you have chosen, in regards to the compatibility and usage, but you also now want to research the specific Commands for that particular distro.
+You will see there are some common roots to many of the Commands, and that you can build upon some with other Commands, keywords, file or program names.  There are a few Commands that the beginner will need to use immediately. Follow along and try some out.
+Get Help When You Need It
+Here are a few simple things to know right off the bat. These may be your life jackets. "Man" pages are manual (as in instructional) pages. You will also, like the "sudo" Command, preface another Command with this Command. Using "man" opens up a screen with everything you need to know, as a digital manual page. Try these variations when in need. Knowing how to get somewhere, how to get out, and how to ask for help may seem very basic, but when you are learning the system these can be very frustrating.
+"man -k"  To Search for all commands that involve a term. You may also use "apropos".
+"man" To Display help information.
+"info" To Display help information (differently).
+"whatis" To Display a description about a man page.
+"whereis" To tell the location of a man page.
+To Exit a man page, you type "Q" (Quit), to drop out.  This is the only way to back out of the manual pages.
+To Exit out of most other places, simply type "Exit".
+The Commands "more" and "less" are also useful for displaying showing files that go past the screen you are on. You may need to read more information than what you can see on one screen on the help pages. This is especially important for a beginner on the system. Simply scroll down by using the space bar after typing the Command.
+To get out, type in "q" for quit.
+Moving around           
+You will soon learn that there are many directories in Linux, and you should get familiar with them. Although everything is a file Linux, a directory is a special type of file. Directories appear in lists, and related as a tree. Unlike OS that uses GUI, you will not see the extension file names. Therefore you need to know how to navigate, find and change them. You should do a Google search for a list of them in order to properly navigate your system.
+Just as with Commands, directory spelling and symbols also matter. As another note, the space bar comes handy when you need a legitimate space between letters and slashes, or letters from other words. It saves time and strokes. Missing these small details can also result in your being somewhere you don't need to or do not want to be. They can also dead-end you with an error message. In worst-case scenarios, mistakes in Linux could do some serious damage like deleting files. You should use underscore instead of spaces when setting up new file names. These small things will make a difference. A few directories and functions that beginners should become familiar with are:
+
+
+/home- This is your root, file storage for documents and settings
+
+
+
+
+/dev- Holds the device files
+
+
+
+
+/cd- Change directory
+
+
+/etc- This is similar to a control panel
+
+
+Using directories
+The Command "pwd" will print your working directory. This is also a good place to see where you are starting.
+To see what is in the directories, beginning with your home directory, and any others thereafter, you can type "ls" to list what is in the directory.
+Note that there are also hidden files that come with your home directory when the server account was configured. To see them listed, you must use a period character. For example, you would not just type "ls", but you would type "ls -b" to see the hidden files.
+You will also learn to combine Commands as with the ones prior. For example, to move to a sub-folder named "xyz", you would preface the xyz as such, "cd xyz".
+An example of the "cd" Command to navigate to your desktop directory,
+type "cd ~/Desktop".
+To return back to the root directory, type "cd~". An example of the same command used to navigate into the root directory is to type "cd /". To go to the parent directory, just before your current one), you should type "cd.."
+You may want to explore some directories and try moving around to get your bearings before you proceed.
+How to Install Programs
+The Command "apt-get" gets and installs individual visual software packages. This is how you will create your server. You will manually pull in anything that you need to individualize your Linux server, using select Commands.
+Repositories house many Linux programs that you can tap into at any time. These are also open source. You should do a Google search for the best software fit for your needs if you do not know what you need at this point.
+To then access the Repository, for example, you would type "sudo apt-get install (program name)" to retrieve a copy to automatically install.
+The Command "tasksel" means task-select with Ubuntu. If you run this, a screen will appear that gives you a list of common server types, packages and tasks. You can select and install whatever you need for your server.
+For example, you would say "sudo apt-get install tasksel" to get the tasksel function, and then use it by using "sudo apt-get install (then the name of the task you want, the server you want, etc.)".
+If you wanted to install the LAMP server, you would type the command "sudo apt-get install lamp-server" to automate this.
+
+
+An example of an apt-get install (www.en.flossmanuals.net
+).
+If you need help at any time, now that you know the man page Command, you would type: "man taskel". You would see man pages appear to address your needs.
+How to Uninstall
+To uninstall, you would simply type "apt-get remove (and the name of the server in this case)". Use this Command for obtaining most of your software, and opting for the free, open source software to start.
+Updates
+After installation of your software, you can use the upgrade command "sudo apt-get upgrade". Easy updates by way of the repository. It is easy to manually update them than to set automatic updates. You won't need them that often due to Linux efficiency. It is also more secure.
+Task Manager: The "top" prompt command is similar to the "task manager" to see processes and how much space each is taking, or to stop things from running.
+Use Command "h" for a list of Commands you may need at any time.
+Enter the Command "sudo top" (to access the task manager or the top), then the Command "K" (for kill) and then type the process ID number (called a PID) that you see next to the process that you want to kill.
+Stop/Start/Restart Services
+Linux servers need very infrequent rebooting, but at times when you may need to restart software or service.
+To start/stop or restart you will type in the Command:
+"sudo/etc/init.d/(name of the program) start" : (or stop or restart), to make changes, and go offline while you work on the changes, such as with a crash, or reconfiguring files.
+###
+Now that you have some basic knowledge of where you are, where to go, how to get, install, or remove things, take some time to test these out. A list of Common Commands follows, as well as a more Comprehensive (but not exclusive) list. This is in no way exhaustive, but it does show some of the tasks that you may be able to do right now, or that you may look forward to learning.
+Linux is an evolving OS, and given the diversity of distros and environments, things will only continue to change. As we advanced technologically, there are more and more opportunities to improve upon and to utilize Linux systems.
+
+
+
+
+
+
+
+CHAPTER 6. Basic Kali Linux tools
+After a brief explanation of installation of the Kali Linux and a detailed overview of various types of tools that are present in the Kali operating system in this chapter, we will go through some practical scenarios with the help of Tools present in kali that will help us understand the basics of hacking in detail.
+How hacking should be done?
+There is no particular hacker guideline that can teach you hacking with perfection. But there is always a famous procedure that good hackers follow subconsciously for better results.
+The Hacking Roadmap
+Hacking is like cooking. You need to get ready with all the ingredients (i.e. programs) and know in detail about the properties of that ingredients (or programs) and use them together to produce a culinary material. What if the food doesn't taste good? That is if you are unable to get better results after all the hacking process? There is only one way you can do i.e.; to try again. There are five important areas you need to learn in detail to master hacking.
+1) Information Gathering
+2) Automatic Vulnerability Scanning
+3) Exploiting
+4) Password Attacks
+5) Sniffing and wireless attacks
+1)  Information gathering
+Information-gathering is always considered a pivotal job hacker should do before attacking a target. It roughly sums up that by using information gathering tools we can acquire a lot of information about the target hosts, which can help us create exploits that would help us create a backdoor for further exploitation. We can even use tons of publicly available information about the target to get a good idea of what strategy we should use to make this attack successful.
+2)  Automatic Vulnerability
+scanning Vulnerability Scanner is a program that automatically finds and discovers security vulnerabilities in computers, network applications, web applications and software. It detects the target system through the network, generates data to the target system, and matches the feedback data with the built-in vulnerability signature database to enumerate the security vulnerabilities existing on the target system. Vulnerability scanning is an indispensable means to ensure system and network security. In the face of Internet intrusion, if users can detect security vulnerabilities through network scanning as soon as possible according to the specific application environment, and timely take appropriate measures to repair, it can effectively prevent the occurrence of intrusion events. Because the work is relatively boring, we can implement it with some convenient tools, such as Nessus and OpenVAS.
+3)  Exploiting Exploiting
+is an important way to gain control of the system. The user finds a vulnerable vulnerability from the target system and then uses the vulnerability to obtain permissions to control the target system. In order to facilitate the user's practice, this chapter will introduce Metasploitable 2 released by Metasploit. Users can use it as a Linux operating system for practice. This chapter will use the vulnerabilities on the Metasploitable system to introduce various penetration attacks, such as MySQL database, PostgreSQL database and Tomcat service. Privilege escalation is to maximize the minimum privilege a user has. Often, the users we gain access to may have the lowest permissions. However, if you want to perform a penetration attack, you may need the administrator account permissions, so you need to increase the permissions. Permission elevation can be achieved by using fake tokens, local privilege escalation, and social engineering.
+4)  Password Attacks
+A password attack is to recover the password plaintext without knowing the key. Password attacks are an important part of all penetration testing. If you are a penetration tester and don't understand passwords and password cracking, it's hard to imagine. So, no matter what you do or how far our technical capabilities are, passwords still seem to be the most common way to protect data and restrict access to the system. This chapter describes various password attack methods, such as password online attacks, router password attacks, and creating password dictionaries.
+5)  Sniffing and wireless attacks
+This is where people use wireless network tools along with a network adapter to capture packets and crack the password or acquire sensitive information from the target. Sniffing tools like Wireshark are famous and can be used for a lot of attacks and finding out the packets. First of all, we will go through the information gathering process where we will scan open ports with the help of a famous reconnaissance tool called Nmap.
+Information Gathering
+Information gathering is an important pre-attack phase where the hackers collect a lot of information that is available in public about the target he is going to attack. Many hackers use social engineering techniques to get a solid bunch of information about the target and the technology it is using along with the operating system and version it uses. Every hacker uses a different set of methodologies to create good information about the host before targeting. There are three important phases in information gathering as explained below
+1) Gathering information from search engines Use search engines like Google to get good information about the host you are trying to attack. You will be surprised by the fact that how much you can find public information.
+2) Social engineering techniques are crazy because you can just psychologically trick an employee or the target you are chasing with a simple thing like phishing email to create a backdoor via your exploit. All great hackers rely on social engineering instead of doing things in a more complex way.
+3) Port Scanning If you are curious to know about what a port scan is associated with follow the next few paragraphs carefully. There are various services provided by the server, such as publishing a home page and sending and receiving e-mails. Services that perform network communication include a window called "port" for communication, which is managed by numbers. For example, well-known services are basically pre-assigned port numbers, such as 80 for HTTP services that publish their home pages on the Internet and 587 for sending emails. The act of investigating from the outside (attacker point of view) that what kind of port the server is opening is called "port scan".
+How a port scan is done?
+Port scanning is the process of sending specific data from the outside and examining the corresponding responses in order to investigate the running services on servers connected to the network. By analyzing the response obtained, you can identify the version of the service running on the server, the OS, etc. There were several tools like Nmap and Zenmap do port scanning.
+Nmap is a Command interface tool whereas Zenmap is a graphic interface tool. Both use the same techniques and are free of cost. Try to use your computer while reading this book, After all, it is a known fact that you can learn hacking or programming by doing them but not just by reading.
+Nmap
+Nmap is one of the famous hacking tools and is widely known for its popularity among penetration testers. People often mistake that Nmap is only popular for its information gathering abilities but often doesn't understand that Nmap can also be used as a vulnerability detector that can be automated. It can be used in various operating systems that are open source and in Windows. Nmap is a powerful tool that can be used for port discovery, host discovery, service discovery, detection of operating system and its version. Nmap can be used in both command line and with graphical user interface (GUI). But remember that good hackers use the Command line.
+How Nmap works?
+Nmap is programmed in a way such that it can perform scanning using different technologies like TCP and FTP protocol scans. All these scans are prone to their strengths and weaknesses and hackers can understand it vividly when they are trying to attack hosts with Nmap. In hacking terminology, we call the target technically as the target host. When using Nmap we need to first understand the complexity of target to decide which scan to use either simple easy scan or a complex scan that would take a lot more time. We need to polish our skills to use some very complex and intuitive techniques to get past from intrusion detection systems to get good results. Below are some strategies that will help you appreciate various operations Nmap can perform:
+1)  You can scan a single host with the following command
+# nmap www.hackingtools.com
+# nmap 192.232.2.1
+2)  You can scan an entire subnet with the following command
+# nmap 192.232.2.1/24
+3)  Nmap can also be used to scan multiple targets with the following command
+#nmap 192.232.2.1 192.232.2.4
+4)  There is also an option in Nmap that will let you scan a range of targets as follows
+#nmap 192.232.2.1-100 (This in precise scans every host that is in between the IP addresses 192.232.2.1 and 192.232.2.100)
+5)  Nmap has an option where you can store all the Ip addresses you have in a text file that is in .txt format and place in the same directory of Nmap so that it can scan every IP address present in the text file without manually entering each one of them.
+#nmap -iL  sampleip.txt
+6)  If you want to see a list of all the hosts you need to scan you can enter the following command
+#nmap -sL 192.232.2.1/24
+7)  Nmap provides an option where we can exclude a single IP address from scanning with subnet hosts
+#nmap 192.232.2.1/24 -exclude 192.232.2.4
+And if you want to exclude more than one IP, you can include all of them in a text file so that they can be excluded while doing the subnet scan as shown below.
+#nmap 192.232.2.1/24 -exclude excludeIp.txt
+Before learning about the scanning procedures Nmap offers to let us know about scanning ports on a specific host. You can scan individual ports in a host using the following command.
+#nmap -p78,56,23 192.232.2.1 Scanning technology in Nmap There are different types of scanning strategies that Nmap follows to do the work. In this section, we will describe these procedures in detail along with few commands that will give you a good overview.
+1)  sS scan ( Tcp SYN )
+This is a typical scan that Nmap uses if nothing is specified by the hacker to the software. In this scan usually, Nmap will not give a full handshake to the target system. It will just send an SYN packet to the target host, which will then check for any open ports, but not creating any sessions that may be used after logging. This is one of the greatest strengths of this scanning strategy. To use this scan the hacking tool should be given root access otherwise it will show an error. Below we give the command line for this scan.
+hacking@kali #nmap -sS  262.232.2.1
+2)  sT scan
+( TCP connect) If the sS scan is not used due to the reason that it is not feasible for the current attack situation people normally use sT scan as their next savior. It gives three handshakes with open ports and calls a method called connect () which makes the software find TCP ports. sT scan when preferred can also be used to find UDP ports although people use it rarely. Below is the command for -sT scan:
+hacking @kali #nmap -sT 292.232.2.1
+3)  sU scan ( UDP scan)
+This scanning is also in the penetration-testing checklist after the importance of -sS scan. There is no need to send SYN packets like in TCP scan because this will just find UDP ports that are open. When the hackers start using the scan A UDP packet reaches the target host and waits for a positive response. If at all a response is received an open port is found. If it sends an error message with an Echo command then the port is closed.
+Below is the command line for -sU scan hacking
+@ kali #nmap -sU 292.232.2.1
+4) sF scan ( FIN scan)
+This is a special type of scan that is used because some targets may have installed intrusion detection systems and firewalls that stop SYN packets that are sent using a TCP scan. For this sole reason, Fin scan is used if there is any extra detection scan happening on the other side. Fin scan does not save any log information to be detected so there is a great chance of the Fin packet to find out few open ports by sneaking into the target systems. Here is the command for -sF scan
+hacking@kali #nmap -sF 292.232.2.1
+5) sP scan ( Ping scan)
+Ping is a famous network protocol method that checks whether a host is live or not by trying to connect to the target host. Ping scanning in Nmap also is used for the same purpose and is not used to check open ports. Ping scan asks for root access to start a scan. If you are not ready to provide the administrative privileges you can just use the connect method to start a ping sweep from Nmap. Here is the command for -sP scan hacking @ kali #nmap -sP 292.232.2.1
+6) sV scan ( version detection scan) A version detection scan is one of the obsessive usages of Nmap for hackers. To attack a target system, you need to know about the technology and operating system the host is using so you create your exploits and backdoor strategies to break into the system. However, unlike TCP scans version detection scan takes a lot of time because when we start a sV scan in the background TCP scan gets started and searches for the open ports. After the hunt for open ports gets finished sV scan automatically analyzes them and determines the information about the target host. Due to this complex procedure, it may take a lot of time. Here is the command for -sV scan hacking @ kali #nmap -sV 292.232.2.1
+7) sL scan ( Idle scan) This is one of the craziest features of Nmap because it just acts like a proxy server while doing attacks. When using an idle scan you can send packets using another host Ip. This anonymity can help hackers to stay in the dark if something goes wrong or severe. Protecting himself from the investigation is what every hacker strives for especially in these modern times. Here is the command for -sL scan hacking @ kali #nmap -sL 292.432.2.6 292.432.2.1
+Things Nmap can detect:
+Nmap can detect the Device type of the host that is (router, workgroup, etc.), running operating system, operating system details i.e. version and network distance (approximate distance between the target and the attacker). While using Nmap always use a ping scan only when necessary because some firewalls in the target hosts can detect that an attack is going to happen and will block the attacker's addresses to make any connection. By using the below command you are saying to the software that doesn't ping the remote host:
+hacking @ kali # nmap -O -PN 292.428.5.6/ 12
+Using the-PN parameter can bypass the Ping Command, but it does not affect the discovery of the host system. NMAP operating system detection is based on open and closed ports. If Os scan cannot detect at least one open or closed port, it will return the following error. The error code is below: Warning: we cannot find any open or closed ports to get information on the target system It is difficult to accurately detect the remote operating system with NMAP, so we need to use NMAP's guess function, osscan-guess operation guesses which operating system type is closest to the target.
+#nmap -O -osscan -guess 192.232.2.1
+By using the following commands and strategies, you can research a lot of information about the target point and can use that information to create backdoors and exploit the system. The exploitation of the system using Metasploit will be explained in further chapters but only after a description of Nessus an automatic vulnerability assessment tool that finds vulnerabilities automatically otherwise which you need to find manually by boring procedures. Before going to talk about Nessus let us have a simple exercise. Please try to do this exercise for a better understanding of the Information Gathering.
+Exercise:
+Start Kali Linux terminal and enter into Nmap using the commands. Find the subnet masks for www.nmap.com and find the operating system and version that it uses. Complete different scans and create a detailed report on all the available ports.
+Automatic vulnerability Scanning
+First of all, let us learn in detail about what vulnerability means along with examples of a few vulnerabilities.
+What is vulnerability?
+Vulnerability is a defect in the host system that lets hackers create backdoors to enter into the system by creating an exploit for the vulnerability. For example, Ransomware has used a vulnerability in windows to exploit hundreds of systems worldwide. Web applications also are prone to vulnerabilities. XSS vulnerability, CSRF detection and others are declared high-risk vulnerabilities by OWSAP, which determines the severity of vulnerabilities.
+What is Automatic Vulnerability Scanning?
+Vulnerabilities can be easily found out with manual testing after the coding. However, it is so boring and time-consuming that many avoid it. For this purpose, certain automated scanners are made to scan the system and detect any if coincided from the database that they have. Software's like Nessus and Burp suite make this automatic scanning effective and are prone to get good results if done well.
+Nessus
+Nessus is said to be an automatic scanning tool that has a wide database with well-known vulnerabilities, which the tool will use to scan the target and give results for the attacker. For Penetration Tester, Nessus is one of the essential tools. A summary of Nessus typically includes thousands of up-to-date vulnerabilities, a variety of scanning options, and an easy-to-use graphical interface and effective reporting. Nessus is loved because it has several characteristics.
+Here's how it works:
+To provide a complete computer vulnerability scanning service and update its vulnerability database at any time; different from the traditional vulnerability scanning software Nessus can analyze and scan the vulnerability of the system at the same time, and its efficiency can be adjusted according to the resources of the system. If the host is configured with more resources (such as faster CPU speed or increased memory size), its performance can be improved because of the abundance of resources; it can define its own plug-in; NASL (Nessus Attack Scripting Language) is a Language issued by Tenable, security Test Options for Writing Nessus; full support for SSL (Secure Socket Layer). Nessus is preinstalled in the Kali Linux and can be open from the menu or by using a search box. It has a GUI and can be easily understood. On Linux, the Nessus tool is installed by default in the / opt / Nessus directory. 1.4 Nessus is enabled and accessed using the browser. For example, if your Ip is 192.232.2.1, the browser enters the https protocol under https://192.232.2.1:8834.  First, we need to register a login and password to use Nessus. You can do that by going to the Nessus official website.
+Creating a Basic Scan in Nessus
+Step 1: Usually when we want to Scan a host or website, click My Scans in the Nessus menu and then click on New Scan, which creates a New Scan. We can select Web Application Tests if we are scanning a website; if we are scanning a host, we need to select Advanced Scan.
+Step 2: Then into the following page, we enter the desired name in the Name of the SCAN. We write a description along with the target's Ip address and click save. After that, you can go to Myscans page and click on start scanning which will initiate the process.
+Step 3: When the scan is complete, there will be a scanned structure, with five levels of vulnerability, the highest Critical and the lowest info. We can click through to see the details of each vulnerability description information, through the analysis of vulnerabilities and can better strengthen our system. It can be used for multiple purposes like Information Gathering, Communication and Backdoor creation. It is called Netcat and also famously known as the swiss army knife of the Kali Linux tools. It comes pre-installed with Kali Linux.
+Netcat
+Netcat is the Swiss army knife of network hacking tools, which can read and write data over the network through TCP and UDP. By combining and redirecting with other tools, you can use it in a variety of ways in your scripts. Netcat does many amazing things that hackers often ask for. Netcat works basically on a principle that helps to transfer data between two systems that is server and client. If you have been successful in establishing two servers there is no stopping to doing crazy things. You can set up a chat communication in command line and also can stream video. There are innumerable advantages to a netcat server. We will further discuss in detail about them.
+Examples of Netcat:
+[A(192.232.2.23)
+B(192.232.2.43)]
+[ a(192.232.2.23)
+b(192.232.2.43)]
+How Netcat can be used in Kali Linux?
+How to start netcat? When you are in the Linux Terminal enter nc like below and click enter. This will start the netcat tool.
+$nc
+1)  Netcat for Port Scanning Beginners always get confused with the term port scanning due to its popularity in penetration testers. If we want to explain about port scanning in layman terms it is a process of trying to find open ports that are vulnerable via tools for hope to find a vulnerability or backdoor which can be used for exploitation. Here is the command to do port scanning using netcat utility.
+$nc -z -v -n 192.232.2.3 21-25
+2)  Using Netcat to start a chat server Imagine yourself in a restricted location like in workspace where you can't use messaging services. netcat can solve you that problem by creating a chat server that can be used to converse with other systems in the Network. You can then create a server that will act as a chat system to whomever you want to communicate within the network.
+Server $ nc -l 2343
+Client $ nc 192.232.2.1 2343
+All your messages will be transported to the client using netcat server and the best thing is that the communications will be encrypted and cannot be caught by any sniffing software like Wireshark.
+3)  File Transfer A lot of hackers when attacking in premises of a network are required to exchanges files between two computers or devices. Normally people use File transfer protocol to transfer files between hosts. But when you are in a private network that doesn't allow you to install additional software Netcat is your safe bet to transfer files. You can send for example an .avi file from X to Y system by making either one of them as a client and other as the server.
+Server
+$nc -l 6870 < example.avi
+Client
+$nc -n 292.232.2.1 6870 > example.avi
+B as Server
+$nc -l 6870 > example.txt
+Client $nc 292.232.2.1 6870 < example.avi
+4)  Stream a Video in the server There are many other ways to do this but if using command line this can be an easy way.
+Server
+$cat tutorial.avi | nc  -l 2343
+Looking at the following examples you might have understood how useful Netcat is. There are several tens of experiments that you can do with Netcat in such a way that can help you increase your hacking skills. In this chapter, we have dealt in detail about the hacking tools like Nmap, Nessus and Netcat along with explaining potential examples that can give you good clarity over things that happen in the background.
+
+
+
+
+
+
+
+CHAPTER 7. Command Syntax Patterns
+Let's discuss some common usage patterns shared by many Linux commands. Having a good feel for these basics can make learning your way around much faster. Invoking a command always starts with the command name. In some cases, as with the "ls" command, just the name on its own is enough to return a result. Still, you'll generally need to add some combination of arguments and parameters to get the most of a tool. You've already learned about how adding "-a" to the "ls" command will display all the files in a directory, even hidden files. But you can get the same results using two dashes and the word "all". Providing these alternatives make command arguments more accessible for all kinds of people, those who remember things better through more complete descriptions and those who perform a task often enough that they can enjoy the speed of a single-letter argument. Looking at the "man" file for "ls" will show you that many other short arguments also have two-dash longer equivalents. There are exceptions to that argument syntax usage. The networking administration "ip command" can use the "addr" argument without a dash to show the IP addresses associated with your system's network interfaces. On most Linux systems this can even be shortened to a simple "a", also without a dash. You can combine multiple short arguments in a single command. "ls-l" will list the contents of a directory in long-form, displaying object permissions, ownership, size, and age details. Running that again with the "h" command will give you the file system in a human-readable format. And adding "t" will organize the objects in descending chronological order. Besides arguments, most commands can also read properly formatted parameters. This example will list the full contents of the "etc" directory from wherever you happen to be in the filesystem. As all the best system administrators are extremely lazy, you can expect that there are going to be some pretty serious command line shortcuts hiding in plain sight. The most powerful of them is probably called autocomplete. Bash watches what you're typing and can often anticipate what it is you're after. For example to see the compressed tar archive file in a directory you can start typing the "tar" command for extracting the contents. Then you can stop at the letter "n". Rather than having to enter the entire filename, you can just hit the Tab key, and Bash will do the rest for you. Bash understands the context of the command, so it gives you the archive, but not the subdirectory that's using a similar name. If you were to run the change directory command, "cd" with the letter "n" however, hitting Tab would correctly give you the directory name. Unsurprisingly, autocomplete will only work when there's only one matching possibility in the directory. You might sometimes need to provide a few more characters to get a good match. Speaking of "cd" and shortcuts, you can type simply "cd" from anywhere in a filesystem, and you'll be taken right back to your users home directory. You can cycle through recent commands by hitting the up arrow key. With an old command displayed, you only need to hit Enter and run it again. Of course, you may have moved to a different location in the meantime, so the command context might've changed. The 1, 000 most recent commands are stored in a hidden file in your users home directory called "bash_history" and can be seen by running the "history" command. There are some characters known as regular expressions that the shell won't necessarily interpret the way you might expect. One example is a simple space. Other examples include the dot, square brackets, the asterisk, and the question mark. Bash will often interpret those as command instructions rather than simple characters. Suppose you decide to create a file with the name "this is my story". Running the command "touch" and an unused file name is one quick way to create an empty file. But if you run "touch" like this, things won't work out the way you probably expect. Listing the files in the directory will show you that there are now four files, each with a single-word name. "Touch" figured you wanted to create four separate files and got right to work doing it. If you want to get rid of that, you can enclose the whole filename, spaces included, within quotation marks. This tells Linux that it's all one string. Another way to force Bash to preserve the literal value of your input is to use the backslash as an escape character. The way that would work for your problem would be to type the backslash before each space in the string. When you list the contents of the directory, you would now have a single file with the name, another four-word name. The truth is that you might better off, in the long run, getting into the habit of creating single-word filenames by using dashes or underscores. They can simplify your file management. 
+Summary:
+You have learned about Linux's primary inline documentation system, "man", and how to use it to quickly find operational information for just about any Linux command. You have also learned that the info system, the contents of the "usr/share/doc" directories, and even running a command followed by "—help" can also provide valuable information and resources. You have also learned how the behavior of both login and non-login command line "shell sessions" is controlled by files like "bashrc" and "profile". You have also discovered how arguments and parameters are passed to Bash commands, in the case of arguments both their short and long formats and learned to take advantage of some helpful shortcuts, including accessing command history through the up and down arrow keys and contextual autocomplete suggestions using Tab. Lastly, you now understand how some characters, like spaces, are treated differently by a dash, sometimes requiring escape characters to get the right results. 
+
+
+
+
+
+
+
+CHAPTER 8. Linux Files and Directories
+If you're going to get stuff done on Linux, especially using the command line, you'll need a solid sense of where files are kept and how to work with them. The good news is that figuring all that out isn't as hard as it might seem. In this chapter, we're going to learn some basic file and directory administration skills, explore some powerful tools you can use to search for both files and text strings contained within those files, and then manipulate the data you find. Moreover, you will learn how to create and use compressed data archives, and then identify hardware peripherals on your system and if required, enable the kernel modules you'll need to use your devices. 
+When identifying directory trees, you can use the forward slash. Thus, the absolute address of a directory called scripts in your home directory would be "/home/ubuntu/scripts" where Ubuntu is the name of your account. If you would preface the tree with "cd", which stands for change directory, you would move to that directory. Once you ready, just try it out; Type the command: "pwd", which stands for present work directory, and you will see your new directory location displayed. To make it easier to understand the basic Linux file and directory management commands, create a new directory and populate it with some useless stuff. The command "mkdir" will make a directory called "data." list the contents of the parent directory to show the new subdirectory and then change location to that directory. To create a few files, you can launch the text editor "nano" followed by the name of either an existing or a new file. In this case, it'll be "new". You can enter some text and then type Ctrl and "X" and then "Y" to save and exit. "File1" now should exist. A quick way to create empty files with unused names is through "touch". Using "touch" on an existing file will simply update the date timestamp of the file, which can be useful for some administrative purposes. You can hit the up arrow and raise the number a few times to make it easier to create a few more files. Once you have a series of empty numbered files, let's create a new directory within data and call it "newdata". If you would want to copy files to "newdata", you can use "cp". This will create a copy of the "file1" file. But it would be boring to have to repeat that command for each of the files in your series, so you can use what's called "globbing". The command "globbing" just a way of spreading an action across on a global target. So typing "cp file* new data" will copy all files that begin with file no matter what characters follow that string. Type "cd" to "newdata" to see what's there. The asterisk will cause a Linux command to act on any string starting with file no matter how many characters follow. However, you can also limit the action to a single character using the question mark. You can create a couple more files with longer names, and use "rm" with a question mark to delete or remove all files starting with "file", but having only a single digit extra. You should see that some of your files are still there. If you were to use "rm file" with an asterisk, all files would be removed as well. Additionally, to move a file rather than just make a new copy, use the command "mv". If you want to clean up your files, you can use the command "rm" and an asterisk to remove all the files in our "newdata" directory. Be careful with this because you can sometimes end up deleting a lot more than you expected, and you should definitely keep in mind the Linux terminal has no "trashcan" from which deleted files can be restored. You can "cd back up to data" and run "rm dir" to remove the "newdata" directory.
+
+
+
+
+
+
+
+CHAPTER 9. Linux File System Searching
+A busy Linux system can contain a lot of files. In fact, some workstations can easily have over 2-3 million files. Tracking down individual system and configuration files is going to be important from time to time. But visually scanning for them one directory at a time can be incredibly boring. The quickest and easiest way to find files by using the command "locate". Suppose you couldn't remember where they'd hidden the configuration file controlling the way the "adduser" command works? You could simply run locate using "adduser" as a parameter. The most likely candidate from the list is the one in the "etc" directory, which happens to be where most configuration files are kept. You can then open the file in a text editor by pointing to its address. "Locate" works very quickly because it simply reads a precompiled index of all the files and directories on the system. If you're looking for files that may have been added recently, you might need to update the index. You can do that by running the command "update db". That'll get you going when you need to find a file. But since pretty much all the action in Linux is controlled through file contents, you'll need a way to search inside those files. As an example, many programs will regularly generate thousands or even millions of text messages that are written to log files so that later you can revisit critical events. To manage the problem of working with all this data, Bash comes with a full set of text manipulation tools for reading, transforming, and redirecting text. You are already aware of how the command "less" reads a file and displays it one screen at a time. Rather than printing the text directly to the screen, however, it can also search and, if desired, manipulate the contents of a file by sending it through what's called a pipe. Multiple text manipulation tools can then be invoked to filter the streaming text. You can use the command "cat" to read the group file that contains information about system groups and that lives in the "etc" directory. But rather than just dump its contents to the screen, you can pipe it to the command "grep" filtering program using the vertical line produced by Shift and backslash. You will tell "grep" to read through the text and print only those lines that contain a certain word you specify. If you need it to, rather than printing the output to the screen, you could use it to populate a file. You can do this by adding a redirect with a couple of right arrows and the name of the file. The only thing is that if you would've used only one right arrow for the redirect rather than two, the text selected by "grep" would have overwritten any existing content to the file. Two arrows will append the text to the end of the file. That's an important distinction that you should keep in mind. Since the group is a rather line file, this is a good way to illustrate how you can use some more tools. The command "head", by default, will print only the first 10 lines of a file, and "tail" will print the last 10 lines. Of course, the real value of a file like a group is any data that it contains. Each line follows a similar pattern, first a group name, then a colon and an x, another colon and the group ID number. It might be useful to be able to pull out one field of data from each line and process them all together. For that, you can use "cut.-d" tells Linux to use every colon as a field delimiter, meaning to consider every appearance of a colon as the end of one field and the beginning of another ".-f3" is our way of saying that we're only interested in processing the contents of the third field of each line. This would successfully print only the ID number of each group. In case you'd like to see these numbers printed in ascending order, you have to pipe your output to sort "-n". If you're a descending order kind of person, just add an "r" or reverse to the sort arguments. While this example was pointless, I still feel that there's a certain beauty to squeezing so much function into a single short line of code. On the other hand, I'm confident that you can see how each of these tools can be really useful when you've got a pressing need to quickly analyze a large text file like a system log, and you just don't have the time to read through it line by line. 
+If you'd like to see how many lines, words, and characters a file contains, run the command "wc", which stands for word count. Since I mentioned redirects using arrows, you might just type it out. The word redirect implies that you are handling the text differently than it would otherwise have been managed. How would that normally have gone? Well, that depends on the kind of text it was. You've got three to choose from, standard input often referred to as "stdin", standard output, or "stdout", and "stderr" for standard error. Standard in is normally coming from the keyboard through which it's made available to Bash. A standard in redirect would accept input from an alternate source. This example will open the "MySQL" database engine as the root user and import the "mydatabase.sql" database file use the left arrow character to tell Bash where to find the file. The command "standard out" will, by default, be sent to the terminal display. Redirecting standard out to a file would work like this. Remember, one right arrow will erase any existing text in the file and replace it with the input, and two arrows will append the new text. Lastly, the standard error will write any errors generated by a command. By default, those errors will also go to the terminal display. If you run the command "wget" against an incorrect web address for google.com with two "ms" to explain how that would normally work. You would see that "wget" would fail to resolve the address. Hardly a surprise considering that there is no such address. However, if I'd like the error message written to a file, I'd use "wget", the incorrect address, the number 2, a single right arrow, and the next of the file I'd like to correct. The number 2 is a designation for standard error. Zero is standard in, and 1 is standard out.
+
+
+
+
+
+
+
+CHAPTER 10. User and Group Management 
+In this chapter, we will learn about users and groups in Linux and how to manage them and administer password policies for these users. By the end of this chapter, you will be well versed in the role of users and groups on a Linux system and how they are interpreted by the operating system. You will learn to create, modify, lock and delete user and group accounts, which have been created locally. You will also learn how to manually lock accounts by enforcing a password-aging policy in the shadow password file.  
+Users and Groups
+In this section, we will understand what users and groups are and what is their association with the operating system.  
+Who is a user? 
+Every process or a running program on the operating system runs as a user. The ownership of every file lies with a user in the system. A user restricts access to a file or a directory. Hence, if a process is running as a user, that user will determine the files and directories the process will have access to.  
+You can know about the currently logged-in user using the id command. If you pass another user as an argument to the id command, you can retrieve basic information of that other user as well.  
+If you want to know the user associated with a file or a directory, you can use the ls -l command and the third column in the output shows the username.  
+You can also view information related to a process by using the ps command. The default output to this command will show processes running only in the current shell. If you use the ps an option in the command, you will get to see all the processes across the terminal. If you wish to know the user associated with a command, you can pass the u option with the ps command and the first column of the output will show the user. 
+The usernames are mapped to numbers using a database in the system. There is a flat file stored at /etc/passwd, which stored the information of all users. There are seven fields for every user in this file.  
+username: password:UID:GID:GECOS:/home/dir:shell
+username:
+Username is simply the pointing of a user ID UID to a name so that humans can retain it better. 
+password:
+This field is where passwords of users used to be saved in the past, but now they are stored in a different file located at /etc/shadow 
+UID:
+It is a user ID, which is numeric and used to identify a user by the system at the most fundamental level 
+GID:
+This is the primary group number of a user. We will discuss groups in a while 
+GECOS:
+This is a field using arbitrary text, which usually is the full name of the user 
+/home/dir:
+This is the location of the home directory of the user where the user has their personal data and other configuration files 
+shell:
+This is the program that runs after the user logs in. For a regular user, this will mostly be the program that gives the user the command line prompt 
+What is a group? 
+Just like users, there are names and group ID GID numbers associated with a group. Local group information can be found at /etc/group 
+There are two types of groups. Primary and supplementary. Let's understand the features of each one by one.  
+Primary Group:  
+
+
+There is exactly one primary group for every user 
+
+
+The primary group of local users is defined by the fourth field in the /etc/passwd file where the group number GID is listed 
+
+
+New files created by the user are owned by the primary group 
+
+
+The primary group of a user by default has the same name as that of the user. This is a User Private Group (UPG) and the user is the only member of this group 
+
+
+Supplementary Group:
+
+
+A user can be a member of zero or more supplementary groups 
+
+
+The primary group of local users is defined by the last field in the /etc/group file. For local groups, the membership of the user is identified by a comma separated list of user, which is located in the last field of the group's entry in /etc/group
+
+
+groupname: password: GID:list, of, users, in, this, group 
+
+
+The concept of supplementary groups is in place so that users can be part of more group and in turn have to resources and services that belong to other groups in the system 
+
+
+Getting Superuser Access
+In this section, we will learn about what the root user is and how you can be the root or superuser and gain full access over the system. 
+The root user
+There is one user in every operating system that is known as the superuser and has all access and rights on that system. In a Windows-based operating system, you may have heard about the superuser known as the administrator. In Linux based operating systems, this superuser is known as the root user. The root user has the power to override any normal privileges on the file system and is generally used to administer and manage the system. If you want to perform tasks such as installing new software or removing existing software, and other tasks such as manage files and directories in the system, a user will have to escalate privileges to the root user.  
+Most devices on an operating system can be controlled only by the root user, but there are a few exceptions. A normal user gets to control removable devices such as a USB drive. A non-root user can, therefore, manage and remove files on a removable device but if you want to make modifications to a fixed hard drive, that would only be possible for a root user.  
+But as we have heard, with great power comes great responsibility. Given the unlimited powers that the root user has, those powers can be used to damage the system as well. A root user can delete files and directories, remove or modify user accounts, create backdoors in the system, etc. Someone else can gain full control over the system if the root user account gets compromised. Therefore, it is always advisable that you login as a normal user and escalate privileges to the root user only when absolutely required.  
+It is a practice in Linux to login as a regular user and then uses tools to gain certain privileges of the root account.  
+Using Su to Switch Users 
+You can switch to a different user account in Linux using the su command. If you do not pass a username as an argument to the su command, it is implied that you want to switch to the root user account. If you are invoking the command as a regular user, you will be prompted to enter the password of the account that you want to switch to. However, if you invoke the command as a root user, you will not need to enter the password of the account that you are switching to.  
+su - <username>
+[student@desktop ~]$ su - 
+Passord: rootpassword
+[root@desktop ~]#
+If you use the command su username, it will start a session in a non-login shell. But if you use the command as su - username, there will be a login shell initiated for the user. This means that using su - username sets up a new and clean login for the new user whereas just using su username will retain all the current settings of the current shell. Mostly, to get the new user's default settings, administrators usually use the su - command.  
+sudo and the root 
+There is a very strict model implemented in Linux operating systems for users. The root user has the power to do everything while the other users can do nothing related to the system. The common solution, which was followed in the past was to allow the normal user to become the root user using the su command for a temporary period until the required task was completed. This, however, has the disadvantage that a regular user literally would become the root user and gain all the powers of the root user. They could then make critical changes to the system like restarting the system and even delete an entire directory like /etc. Also, gaining access to become the root user would involve another issue that every user switching to the root user would need to know the password of the root user, which is not a very good idea.  
+This is where the sudo command comes into the picture. The sudo command lets a regular user run command as if they are the root user, or another user, as per the settings defined in the /etc/sudoers file. While other tools like su would require you to know the password of the root user, the sudo command requires you to know only your own password for authentication, and not the password of the account that you are trying to gain access to. By doing this, it allows the administrator of the system to allow a certain list of privileges to regular users such that they perform system administration tasks, without actually needing to know the root password.  
+Lets us see an example where the student user through sudo has been granted access to run the usermod command. With this access, the student user can now modify any other user account and lock that account 
+[student@desktop ~]$ sudo usermod -L username 
+[sudo] password for student: studentpassword 
+Another benefit of using the sudo access is that all commands that any user runs using sudo are logged to /var/log/secure.
+
+
+
+
+
+
+
+CHAPTER 11. Commands and Functions for the Beginner
+Here we present two guides for the Linux newbie. The first will be a handy cheat sheet so to speak. If you have to memorize anything for the desktop or server, this is the way to go. The second list is more comprehensive, but again, it is not the end of the Commands needed to truly advance to novice levels with Linux.
+List of Top 29 Commands for Beginners- If you have to memorize them
+
+
+apt-get  Search for software packages and install
+
+
+bzip2    Compress/decompress a file
+
+
+cd       Change Directory
+
+
+chmod    Change access permissions for a file
+
+
+cp       Copy one or more files or directories location
+
+
+date     Display or set the date & time
+
+
+df       Display free and used disk space
+
+
+emacs  Text editor
+
+
+exit     Exit shell
+
+
+find     Search for files that meet a certain pattern
+
+
+hostname Print or change system name
+
+
+install  Copy files, set/change attributes
+
+
+locate   Search and find files
+
+
+ls       List information about directory contents
+
+
+man     Display help information for a certain command
+
+
+mkdir    Create new folder/directory
+
+
+mv       Move or rename directories and files
+
+
+nano   Text editor with shortcuts to menus
+
+
+open     Open a file in original application
+
+
+ps       Display of current process status
+
+
+pwd      Display/Print working directory
+
+
+quota    Display disk use, limits
+
+
+reboot   Reboot system
+
+
+rm       Remove, delete directories or files
+
+
+rmdir    Remove, delete, empty directories or folders
+
+
+shutdown Shutdown or restart
+
+
+sftp     Secure File Transfer Program
+
+
+sudo  Execute command as certain user with all permissions
+
+
+tar      Store, list or extract files from a tarfile or tarball/archive
+
+
+
+
+
+
+
+
+
+CHAPTER 12. Using Linux Text Editors 
+Even though you are capable of using a desktop that has a functional graphic interface, you will find the desire to interact with the Linux environment by editing and creating files using editors that belong outside the GUI. Learning how to use text editors will allow you to make your own shell scripts and communicate with the programs that you want to run in your operating system. At the same time, you will also be able to fix possible problems in your configuration files, especially when the X Window System fails to load. 
+In this chapter, you will learn how to use GUI and text mode editors, which will both allow you to configure and create text files. 
+How to Use GUI Text Editors 
+The GUI desktops KDE and GNOME come with built-in text editors that have their own graphical user interfaces. You can load these editors from the main menu. For example, if you want to open the GUI text editor for GNOME, navigate to Applications->Text Editor and then select the file gedit. Once the editor loads, you can select the Open option found on the toolbar and then pull up a file that you want to edit or change directories that contain the file that you want in the dialog box labeled Open File.  
+GNOME's text editor is also capable of loading multiple files at a time and even switch in between windows to work with them. A typical editing session will look like this: 
+Image from: Linux All-in-One for Dummies  
+Looking at this image, you will notice that there are two files loaded in the editor - one appears to be a new file, and the other is named motd. You can find the names of the files that are being edited in the tabs, which you can also click to switch windows. 
+If you open a file that is only available to be read, you will see a text that displays "Read Only" added to the filename displayed in the window title. If you have access to superuser privileges, you can of course change the ownership of the file in order for you to make edits. 
+If you have a KDE desktop, you can pull up the KWrite text editor by navigating to Applications -> Accessories -> Text Editor.  
+Just like in the GNOME text editor, you can click on the Open icon or navigate to File -> Open in order to load the file that you want to edit. This is how the KWrite editor looks like: 
+Image from: Linux All-in-One for Dummies  
+Using ed and vi as Text Editors 
+As you may have noticed, text editors that have GUIs allow you to edit files using your mouse and keyboard similar to how you would type a document in a word processor. However, text mode editors are more complex than that - you only have your keyboard as you input device and you will have to type in commands in order to perform tasks such as copying, pasting, or cutting texts. 
+Text editors that come native with Linux are called ed and vi. 
+ed
+This line oriented editor is going to be extremely useful when you loaded a minimal version of the OS and you do not have the support that you need yet for a full-screen editor yet. You may encounter this situation when you load up Linux from a boot disk. 
+Using ed allows you to work in these modes: 
+
+
+Command mode - this is the default mode, in which everything that you type is being interpreted by Linux as a command. In this mode, ed has a rather simple set of commands, wherein each command is made up of one or multiple characters. 
+
+
+Text input mode - this mode is for typing longer texts. You can enter this mode when you enter the commands a (meaning append), c (meaning change), or i (meaning insert). When you are done entering several lines of text, you can leave this mode by putting only a period on an empty line. 
+
+
+To practice using ed as an editor, perform the following commands: 
+This will copy the file /etc/fstab in your home directory. To start editing this file, key in this command; 
+The editor will then respond to display this output: 
+From this example, the -p option allowed you to set the colon (the symbol :) as your prompt and also opened the fstab file copy that you have in your home directory. Each time the ed editor pulls up a file for editing, it displays the number of characters that are within the editable file and then displays the colon prompt that signals you can enter your commands through the editor. 
+Tip: when you want to edit using ed, see to it that you have turned on the prompt using the -p option. This will help you distinguish that you are in the text input mode and not in the command mode. 
+Once ed has opened up a file that you want to edit, you will immediately be in the last line of the file. To see what the current line number is, or the line where the command that you are going to input is going to be placed, you can use the .= command, which will appear like this: 
+From this result, you know now that the file fstab contains 9 lines. Now, if you want to see all the lines that are contained in the file, you can use the following command: 
+This will return with an output that appears like this: 
+If you want to go to a line number that you want to edit (line 2, for example), simply type in the line number on the prompt. The editor will then respond by displaying that particular line: 
+If, for example, you want to delete a line that contains the word cdrom, all you need to do is to search for that particular string. You can do this by typing the / sign, then the string that you need to find: 
+This will return with the line that contains the line that you want to edit, which becomes the current line. To delete it, simply enter d on the prompt. 
+To replace a specific string with a different one, the s command will be handy to use. For example, if you want to replace the string "cdrom" with "cd", enter this command: 
+To input a line in front of the line that you are currently editing, use the following command: 
+From this point, you can enter as many lines that you want. If you are done typing, enter the period sign on an empty line to indicate that you are ending the text input mode. After doing so, you will see that ed switches back to the command mode. 
+If you want to save the changes that you have made to the file, enter the w command on the prompt. If you want to save the changes and exit the editor, key in wq on the prompt to perform both actions. The output will appear like this: 
+The editor will then save all changes that you have performed and then display the number of characters that were saved. Afterward, Linux will exit the editor. However, if you want to exit without saving any changes that you have made to the file, key in the q command to exit without writing to the file. 
+Of course, there are different other commands that you can use in ed. Here is a summary of the most common commands used in the ed editor: 
+Image from: Linux All-in-One for Dummies  
+vi
+The editor vi is definitely easier to use compared to ed, although it is still considered as a command line editor. The vi allows you to use a text editor in a full screen mode, which means that you can view multiple lines at the same time. It also helps to know that most of the Unix systems (this includes Linux) come with this text editor; which means that once you understand how this editor works, you will be able to modify text files in any system that is based in Unix. 
+Note: When you edit a text file using vi, the editor reads it into a buffer memory. This means that you can change the file in the buffer. At the same time, this editor also makes use of temporary files during an edit session, which means that no changes are made in the original file unless you save any changes that you made. 
+To start editing with vi, key in vi followed by the filename: 
+This will allow vi to load the file, then display the first lines of the text file in to the screen. The cursor will also be positioned on the first line: 
+Image from: Linux All-in-One for Dummies 
+The last line that you see in this example shows the pathname, along with the number of lines and characters in the file. You will also notice that the file is read-only. This means that you are viewing the file as a normal user. You may have also noticed that since the number of lines does not occupy the rest of your screen, the unused lines are marked with the tilde (~) sign. The current line is marked by a black rectangle on top of the character that is being edited. 
+The vi editor allows you to enter the following modes: 
+
+
+Visual command - this is the default mode, wherein everything that you key in is considered by Linux as a command to be applied to the current line. All vi commands are the same as ed commands. 
+
+
+Colon command - this mode is set for writing or reading files, setting up options for vi, and exiting vi. As the name implies, all commands in this mode start with the colon. When you key in the colon symbol, the editor moves the cursor to the last line and then prompts you to enter the command. The editor will apply the command once you hit the Enter key. 
+
+
+Text input - this is the mode that you need to use when you want to enter text into the file. You are able to enter this mode when you use the following commands:  
+
+
+Once you are done typing in your text, press Esc to exit this mode and return to visual command. 
+Tip: It may be a bit difficult to tell what command mode you are in when you are using the vi editor. There may be circumstances that you have typed a long line of text only to realize that you are not in the text input mode, which can be a little frustrating. If you want to see to it that you are in command mode, press Esc a couple of times. 
+It is also helpful to know that you can make use of the arrow keys and some keyboard to move the cursor and the screen around. Try these commands out: 
+Image from: Linux All-in-One for Dummies  
+You can also jump to a specific line using the colon command. For example, if you want to switch immediately to line 6, just type 6 after the colon and then hit Enter: 
+Keep in mind that when you enter the colon symbol, the vi editor will display it at the last line of the screen. After doing so, vi will consider any text that you enter as a command. 
+To search for a particular string, key in the / symbol and then hit Enter. The / symbol will appear at the last line, which prompts you to enter the string that you want to search for. Once it is found, vi will position the cursor at the beginning of the matching entry in a line of the text. For example, if you want to search for the string "cdrom" in the /etc/fstab file, key in: 
+If you wish to delete the line where the cursor is placed, type the command dd. The editor will then delete that line and then change into the next line as the current line. 
+If you wish to enter text at the cursor, type the command i. The editor will change its mode to become text input, which will then allow you to type in your desired text. Once you are done, hit Esc. The vi editor will revert to visual command afterward. 
+Once you are done modifying the file, you can save changes that you have made by entering the :w command. To save the file and exit the editor, enter the :wq command. Alternatively, you can also perform save and exit at the same time by holding down the Shift key and then hitting Z twice. 
+To exit the editor without saving, enter the :q! command.  
+Here are other commands that are commonly used by the vi editor: 
+Image from: Linux All-in-One for Dummies
+
+
+
+
+
+
+
+CHAPTER 13. Exercises
+As we have already learned above, the creation of a directory is pretty easy. In the same manner, removing or deleting a directory from the Linux system is also very simple. One thing that you have to bear in mind, however, once you remove or delete a directory from the Linux system, there is no way to undo that task. Therefore, the best thing is whenever you are running any command on Linux; the first thing is to be careful with what you do. If it means double checking the command before running it, the better. The command we are going to use to remove or delete a directory is rmdir which stands for remove directory. The things that you have to take note of here is that rmdir command supports the -p and -v options in the same manner as mkdir command. Additionally, the directory has to be empty before t is removed. We will learn how to get around this later.  
+
+
+rmdir linux_tutorial/beginner/commands  
+
+
+ls linux_tutorial/beginner  
+
+
+How to create a blank file 
+Many commands that are involved in data manipulation within a file have a superb feature that they will create a file automatically when we refer to it, and we find that it does not exist. As a matter of fact, we can manipulate this feature to create a blank file using the touch command. In other words, you type the command touch followed by the command line option and the file name. 
+
+
+pwd  
+
+
+/home/Gary/linux_tutorial  
+
+
+ls  
+
+
+beginner  
+
+
+touch practice_exercise1  
+
+
+ls practice_exercise1 commands 
+
+
+Copying a file or a directory   
+Let us consider the following example: 
+
+
+user@bash: ls  
+
+
+practice_exercise1 commands  
+
+
+cp practice_exercise1 Exercise1 
+
+
+ls  
+
+
+practice_exercise1 Exercise1 commands 
+
+
+An important thing that we have to note in this case is the source and the destination point at the paths. Some examples that we can consider here include: 
+
+
+cp /home/Gary/linux_tutorial/Exercise1 Exercise2 
+
+
+cp Exercise2 ../../backups 
+
+
+cp Exercise2 ../../backups/Exercise3 
+
+
+When you use the cp command, the destination of the file can represent a path to a file or a directory. If the destination is to a file such as Exercise1, 2 and 3, then this will create a copy of the files in the destination file, but the original remains in the source file or directory. If we copy the files into a directory, the files will maintain the names in the destination directory. In the default behavior of the cp command, it will only copy a file. The term recursive in this case means that you would wish to copy the directory and all the contents of that very directory which could include files, directories, and subdirectories among others. 
+Let us consider the following example: 
+
+
+user@bash: ls  
+
+
+Gary Practicals transfers 
+
+
+user@bash: cp Practicals Practicals_beginner 
+
+
+cp: omitting directory 'Practicals.' 
+
+
+user@bash: cp -r Practicals Practicals_beginner  
+
+
+user@bash: ls  
+
+
+Gary Practicals transfers Practicals_beginner 
+
+
+Bear in mind that any files or directories that are within the Practicals directory will be copied into the Practicals_beginner directory. 
+
+
+
+
+
+
+
+CHAPTER 14. Building Scripts
+In this chapter you will learn
+Writing Shell scripts
+Command aliases and substitutions
+Pipes
+Files, Descriptors and exit status
+Structured commands (if, for, while, until, break, continue).
+In this chapter, you are going to gain a comprehensive understanding of script building with examples. The key to script building is your familiarity with commands. Scripting is highly advantageous, as it can process more than one command, process the results, and feed one result to the other building a chain.
+You already know how to execute multiple commands using ';'. For instance, pwd; cd ..; is a combination. What is it? It is a basic shell script!
+Writing Shell Scripts
+To write a shell script you simply need some understanding of Linux commands and a text editor. On Ubuntu, the default editor can be used (gedit). Let's examine the components. 
+A shell script starts with a comment at the top. 
+#!/bin/shell_type
+For instance, #!/bin/bash
+This is a comment as it starts with the '#'. These lines are not interpreted by the shell! To comment, '#' should be used. However, this specific line tells the shell what shell to use to execute this script on. We call #! Shebang.
+The next part will be a set of commands with explanations. If you are familiar with programming, shell scripting is similar.
+If we create a script with the following example, 
+#!/bin/bash
+who
+#who command displays the account you are currently logged into and at what #time the user logged into the system.
+pwd
+it should work as expected.
+Image: who commands in a script
+
+
+You could also use the absolute or relative path.
+The next thing you need to do is the changing of permissions. Why? Let's create a file and examine the permissions.
+
+
+According to the result, there are insufficient permissions to execute this file. The system treats itself as a script, but it hasn't modified the permissions. It is up to the user.
+To provide execution permissions, chmod command can be used.
+chmod u+x Myscript
+
+
+Once this step is complete, the script is ready to be executed.
+
+
+If you want to display text guides, the output of environment variables and such, you can use the echo command. We have learned environment variables in a previous lesson.
+Command Aliases
+Using a command alias can save a lot of time. To define an alias, you have to do a simple assignment.
+Syntax: alias=command(s)
+Examples:
+-       alias L="ls -al"
+-       alias search=grep
+Command Substitution
+It is also possible to use an output of a command as an input to a variable. This is a great feature to continue the script and execute it with dynamic data.
+To achieve this, you must use $().
+Example: user_name=$(USERNAME)
+Example Script:
+#!/bin/bash
+user_name=$(who)
+echo "Your username is :" $user_name
+
+
+Creating Files
+Another great feature is that you can output the results. You can even name the file according to your needs. This is explained in the next example.
+#!/bin/bash
+mydate=$(date +%Y%m%d)
+echo "Today is :" $mydate
+who > log.$mydate
+ls -l log.$mydate
+
+
+Here, we create a date and format it. %Y is the year in YYYY format. The month is in numeric format (e.g., 09) and the date is in a numeric format as well. The output is similar to YYYYMMDD. The output is taken into a variable. Then we echo the variable. Finally, we use the who command and redirect it's input to a new file using the redirect operator >. The file name is created as the "log".YYYYMMDD. This is how we create logs to keep records. If the script runs on the next day, the filename will be log.20190925.
+Redirection is an extremely useful feature. Instead of using commands like touch, you can redirect the output to a file. Yet, you can even create files from scripts by using the touch command. For instance,
+#!/bin/bash
+mydate=$(date +%Y%m%d)
+echo "Today is :" $mydate
+touch log.$mydate#Creates a file and name the first part .lo and later using #our variable
+who >> log.$mydate#Append the output of 'who' command to the file.
+
+
+
+
+You can also do reverse the process we performed using the '>' operator. This is known as input redirection. For instance, we could get an entry of a file to a new variable or a command directly. The following example explains this in detail.
+#!/bin/bash
+wc < log.20190924
+# wc is a new command to you. It counts the number of lines, words and #characters.
+
+
+Finally, we will look into the '<<' operator. This is known as the inline input operator.
+Example: wc << lastLine
+
+
+As you notice, until the lastLine was entered as text input, it captured the user input. 
+Other examples:
+Redirecting error and standard output to the same file. You could use the following command.
+Example: ls Test Test2 Test3> dirlist 2>&1
+Here, we are trying to list the properties of the Test directory. Remember, ls command supports multiple file or directory names. It then lists each file's or directory's properties. Test and Test2 directories are on my desktop. Test3 directory does not exist. I am redirecting the output of this command as well as the error into a new file called dirlist.
+
+
+Standard File Descriptors
+We are revisiting the file descriptors again.
+Standard Input - 0: STDIN
+Standard Output - 1: STDOUT
+Standard Error - 2: STDERR
+The first is standard input, the next are standard output and standard error. The numerical values are file descriptors.
+In addition to these techniques, pipes are extensively used in scripts.
+Pipes
+Piping is useful when an output of a command is required as an input of another. This is something we have learned so far. The operator used is '|'.
+Example:
+#!/bin/bash
+cat employee.txt | sort -nr -k 2
+#Here we redirect the file entry we obtain to the sort function. It sorts by numeric #values, in reverse order and sort by column id (2nd column).
+
+
+Mathematical Operations in Script Building
+Any script can be used to perform certain calculations. There are some built-in commands in Linux. We are looking into the command expr. This stands for the expression. These are the operators for expr command.
+
+
+Image: expr operators
+
+
+Examples:
+
+
+
+
+Rather than using the expr command, it is more convenient to use brackets.
+#!/bin/bash
+var1=2
+var2=6
+var3=3
+var4=$(expr $var1 \* $var2)
+echo $var4
+var5=$[ ($var1 * $var2)/$var3]
+echo $var5
+
+
+The Bash Calculator
+When you want to perform more complex mathematical functions, there is a built-in bash tool to perform this. It is the bash calculator. The command is bc.
+
+
+
+
+The bash calculator supports the following.
+-       Numerical values (integer and floating-point numbers).
+-       Variables.
+-       Expressions.
+-       Functions.
+-       Statements (i.e., if-then-else).
+-       Comments.
+
+
+In the last line, you can see a problem. 8.45/5 = 1. This is inaccurate unless it is rounded up. The problem here is the number of decimal places. It is handled by a built-in variable known as scale. To receive the intended output, we need to modify the scale.
+
+
+
+
+The bc command supports variables. The following example uses variables instead of numerical values.
+
+
+The next important task is to get bc working in a script. In this case, we need to depend on pipes. 
+#!/bin/bash
+var1=10
+var2=2
+var3=$(echo "$var1 ^ $var2" | bc)
+echo "The answer is: "$var3
+
+
+Another example using the scale option.
+#!/bin/bash
+var1=10
+var2=3
+var3=$(echo " scale=3; $var1 / $var2" | bc)
+echo "The answer is: "$var3
+
+
+The next example will be looking into how the inline input operator can be used with the bc command in a script.
+#!/bin/bash
+var1=8
+var2=1.75
+var3=3
+varF=$(bc << EOF # EOF stands for End of File
+scale = 4
+v1 = ( $var1 * $var2)
+v2 = ($var1 /  $var3)
+v1 + v2
+EOF
+)
+echo The final calculation is: $varF
+
+
+
+
+
+
+
+
+
+CHAPTER 15. Securing Your Linux Server
+If you don't incorporate security considerations into every step of your planning and every layer of your actual deployment, then you can be fairly confident that someday something is going to happen. In this chapter you are going to learn about permissions, metadata associated with all Linux filesystem objects that control who gets to do what. First I will be talking about hardening your server by regularly applying software updates and patches, and by ensuring that there aren't any network ports sitting open and unprotected. Next, we will discuss protecting your data at rest and in transit by encrypting your disks, websites, and email servers. But it will be nice to see those permissions and attributes in action. While I explain how to do that, you'll also learn just how Linux permissions actually work. 
+Every object in a Linux filesystem, whether it's a file or a directory, has unique metadata associated with it. This metadata is represented by characters displayed when you run "ls" with the "-l" argument where "l" stands for the long version. If you check out "cd" to the secret directory and then type "su bob". The command "su" stands for switch user. And this means you would be logged on as Bob. You can use "touch" to have Bob create a new file called "data.txt". If Bob wasn't a member of the "secret group" group and if the secret directory wasn't owned by "secret group", then this would be impossible. You can prove that by having Bob try to create a file called stuff in the "/var/log" directory, which is owned by "root". It will not work. That's why it can be so useful to associate groups with particular assets, like directories. It's not just about Bob. You could add any number of users to this group and they'd all have the ability to create and edit files in any directories belonging to the group. Let's find out how it works. You can run "ls -l" within your "/var/secret" directory to display the file attributes of the contents. You can run "ls" with the "d" argument, which will list the attributes, not of the contents, but of the secret directory itself. If you look at what those two commands give you; first, the file "data.txt". The 10 characters at the beginning of that line are really made up of 4 groups. The first dash would, if this directory was a directory, be a "d". If you jump down a couple of lines, you should see that the first character of the directory secret attributes is, in fact, a "d". 
+The next three characters, "r", "w", and "dash", represent the ways that the object's owner can use the file. 
+In this case, the "r" tells that the owner can read the file contents, the "w" means to write or edit, which includes delete, and the "dash" is in place of an "x", which would mean that Bob can, if appropriate, execute the file. 
+In this case, the "dash" means that the owner does not have to execute rights. The next three characters represent the permissions of members in the owning group; Bob's group, in this case. All group members will have both read and write authority, but not execute. 
+The final cluster of three characters represents the rights of all other "non-root" users. They can read, but not write or execute. 
+The next field tells you that the file owner is Bob, and its group is Bob. Even though the directory is owned by root, the file is Bob's because he's the one who created it. Now let's look at the directory's attributes. Already mentioned the "d" for directory, but you should also see how both the owner and group have full rights, read, write, and execute. 
+Others will be able to read and execute, but not write. Why is the directory owned by root? Because it was created using "sudo", which is effectively acting as "root". 
+The "change own operation" you should have run a while back changed only the group, but not the owner. To do that, you should have included some value, like your own username before the colon, and then "secret-group" after the colon to set the group. 
+You can change an object's attributes using "change mod". It wouldn't hurt you to try a few more of these to make sure the process is perfectly clear. 
+Add execute powers over "data.txt" for others. You can use "o" for others, the plus sign to say that you are adding power, and "x" to indicate executable. There are two points that should be emphasized here. The first is that since you are currently logged in as Bob, who is the owner of "data.txt", you didn't need to use "sudo" for this operation. 
+The second point is that this operation would be pointless. Unless Bob happens to turn the file into a script, as you'll never need to execute a simple data file. 
+I can't move on without telling you about a different way of representing object attributes using numeric notation. You will remember that there are three kinds of permissions, read, write, and execute. Well, if you use the number 4 to represent read, 2 for write, and 1 for execution; based on this, by adding together the value of those 3 permissions, 7 would indicate the highest permissions level possible for plus 2 plus 1 equals 7. 
+Someone with reading and execute powers, but not write, will be worth 5, while someone with only executes powers would be 1. So how would you describe the current values of "data.txt" where the user and group both have read and write while others have read and execute? 
+That would be 6, 6, 5. The secret directory, on the other hand, would be 7, 7, 5. Work that out for yourself. You can use this notation with "change mod", applying 7, 7, 7 to "data.txt", for instance would add execute powers to the user and group and write to others. 
+This is one of those things that will become like second nature to you after you've done it a bunch of times in the real world, but right now, it's probably kind of hard to absorb. The solution is to practice as much as possible!
+
+
+
+
+
+
+
+CHAPTER 16. GNU Utilities
+In this chapter, we will cover the general components of the Linux operating system. We will delve into the critical elements that work together to make Linux the most versatile operating system. You will understand the difference between the GNU project and the GPL. 
+All Linux distributions come with software developed under the GNU project. When you use the distro in text terminal mode, you will be able to see the GNU utilities. 
+What is GNU?
+GNU (GNU's Not Unix) is a free operating system of GNU packages that were released under the GNU project and other third parties free software. Linux has become the most preferred operating system recently because it comes with all the software installed. Linux distributions come with graphics software, office packages, and even coding packages under the GNU GPL license. 
+In 1984, Richard Stallman started the GNU project, which was intended to be a UNIX based Operating system. 
+GNU utilities are a collection of GNU software that contains tools like Is, Cat, and rm, which are mostly implemented in Unix Operating systems. 
+rm - is a command used to remove objects like computer files, directories, and links from file systems. 
+cat - is a Unix utility that reads files in sequence and writes them as standard output. Name derived from its functionality; to concatenate. 
+ls - is the command used to list files in Unix System and all UNIX based systems. 
+The GNU General Public License (GPL) for Linux, ensures that the software is always free and open to anyone. No single person or/and a company can claim ownership or control its use. Additionally, any user can copy, edit, and re-distribute the software's source code. 
+You may ask yourself, then who funds the GNU project? How do they raise funds? The Free Software Foundation funds the project (FSF), a tax-exempted charity organization. To support the project, log on to www.gnu.org
+ for details. 
+The GNOME GUI and the bash are both programs made under the GNU project. The Shell is the GNU program that executes your commands, most commonly referred to as the command interpreter. 
+Linux distributions are developed using GNU C and C++ compiler. Text files in Linux are edited using the ed and emacs editors. 
+Example of GNU Utilities
+Other popular GNU utilities include: 
+
+
+Binutils -  is comprised of different packages for handling binary files. Accompanying packages include ar, as, gasp, id, nm, objcopy, objdump, ranlib, readlf, size, and strip. 
+
+
+Bash - is the GNU package responsible for interpreting shell commands in Linux. 
+
+
+Automake - is the GNU software for generating a makefile.in files that are used with Autoconf.
+
+
+Autoconf - is the package for generating shell scripts that are used for configuring source-code packages. 
+
+
+Emacs - is the text editor package for Linux. 
+
+
+Ed - is the line-oriented text editor. 
+
+
+Diff - is the package used to compare files and show the difference line by line. 
+
+
+GNU Chess - is the package for running the Linux chess game.
+
+
+The GIMP - is a GNU program for manipulating images. It's like photoshop for Linux.
+
+
+GNOME - provides the display or GUI for Linux Distributions.  
+
+
+Gnumeric - is a spreadsheet GNU program that works on GNOME GUIs. It's an equivalent of MS. Excel. 
+
+
+Time - is a GNU program that manages time for the user. 
+
+
+Installation and Setting up Linux System
+In this chapter, we will learn the necessary steps for installing and setting up Linux. The beauty of Linux OS is that it usually comes with pre-installed basic programs. Here we will understand the installation steps, minimum requirements for installation and configurations settings, and needs for different distributions. 
+About installing Linux OS
+Most computers usually come pre-installed with either Windows or MS. DOS system. Although recently, some computer manufacturers sell PCs with Linux pre-installed. 
+If your PC is not pre-installed with Linux, you will have to install it yourself. The first step is to choose the flavor/distribution that you would wish to install.
+You can choose to either install the Linux distribution or run it directly from a Live CD. A Live CD allows you to boot the Linux system directly from the disc without necessarily installing. This feature makes Linux into a portable Operating system. 
+Alternatively, you can choose to add Linux OS as a virtual OS within Windows. To do this, you will need to install a virtual box first. Once the VirtualBox is installed in Windows, you can install Linux in the virtual environment. Thus you will have to partition your hard drive to accommodate the two operating systems. 
+Partitioning of the hard drive is not necessary if you opt to use Live CDs.
+Steps to Follow to Install Linux OS
+Installing Linux OS is not rocket science. A series of easy to follow steps are all you need to know to install Linux. In this chapter, we will go through the necessary steps that apply to most distributions. We will later go through steps for installing and setting up the Linux Mint distribution. 
+We will, first of all, go through the general installation requirements and procedures. 
+Before installing some Linux distribution, you may be required to at least know your system's requirements, like the hardware and other components. Below are the simple steps for installation of any Linux distribution:
+
+
+The first step in the installation of a Linux Distribution is downloading the distro from the web. All you need to do is to download the software and burn it on a CD. You can also copy the installation files onto a USB stick and install from it. 
+
+
+It's essential to confirm that your PC is set to boot from CD or USB stick. Some PCs will require the settings changed in the BIOS before booting. On most PCs, on the booting screen, you press F2 or F8 (depending on BIOS version) to go to boot settings. While in the settings, change the boot priority to start with the CD or USB stick (where your Linux OS resides).
+
+
+If you plan to run from the Live CD, all you need now to do is to restart your system. But if you plan to install, the third step will be to create some space (partition) on the hard drive, where Linux installed. 
+
+
+If you want to create a partition on your disk, it's safe to use a partitioning program like partition magic. Download the partition magic software from www.powerquest.com
+. 
+
+
+Once you have the partition prepared, you can now boot your system to start the Linux installation. 
+
+
+The particular steps may vary from one distribution to another. The GUI will guide the user through the installation process. 
+
+
+You will be required to set the timezone, network settings, and the installer will automatically complete the remaining steps. Linux will install all the default programs necessary for running the system. 
+
+
+After the installation is complete, reboot your PC. You will be prompted to make configuration settings after that. You can as well install additional packages. 
+
+
+Linux System Requirements for Major Distributions
+As mentioned earlier, it's important to know your system's attributes before installing a Linux distribution. Many Linux distributions have varying minimum requirements for installation. Consider this as the pre-installation requirements for Linux OS. 
+We will discuss some of the minimum system requirements for installation of Linux: 
+
+
+Most Linux system requires a CD/DVD drive to install. Although you can also use a USB stick to install or/and run the Linux OS. Most PCs come fixed with internal IDE or ATA DVD drives. You can as well use an external DVD drive connected via USB. 
+
+
+The next thing to check before installing Linux is the hard drive. Linux works with almost all IDE hard disks. Some PCs have SCSI (Small Computer System Interface) hard disks. Linux can equally work well with SCSI drives. Most distributions require a minimum of at least 5GB of hard drive space to install. Remember, if you run the Live CD; you don't need hard disk space. 
+
+
+Ensure you also have a compatible keyboard, although most keyboards work effectively on Linux. Most USB keyboards are plug and play, thus reducing the complexity of setting up keyboards. 
+
+
+If you plan to access the internet using your Linux system, you need a modem that is compatible with Linux. Check the manufacturer manual for compatibility with Unix based system. Most manufacturers nowadays usually indicate this on the user manual with steps to follow in case setting up is needed. 
+
+
+Your display option is important too, although not sensitive since most basic monitors can work with many of the latest resolutions. All you need to confirm is that the monitor can work well with the available graphics cards installed in your system.
+
+
+The type of mouse you use is equally important. Most Linux distributions work with both PS/2 and USB mouse. 
+
+
+If your PC uses a PC card to connect to the internet or local area network, it's important to check compatibility with Linux. During installation, Linux will check the compatibility of your card. 
+
+
+Another essential pre-installation requirement for Linux is the Processor. Most Linux distribution requires processors of at least 400MHz (Pentium II). Although the latest distros require multi-thread processors, it's crucial to ensure you choose a distro that can run effectively on your system. 
+
+
+Your RAM (Random Access Memory) is a critical component. This is the memory available for your system processes. The more, the better, although for effective running, you will require at least 256MB and above of RAM. To comfortably run a GUI desktop, because of the graphics, it's important to have sufficient memory. 
+
+
+Something else you need to confirm is the sound card. Linux will work with most sound cards to play media. See the manufacturer manual for necessary settings after installing Linux. Some audio card manufacturers will share Linux specif drivers for their sound cards. 
+
+
+Check your graphic cards for compatibility. If you install GUI Linux, you will need a graphic card that can work with the X window system. Linux can detect and indicate whether a graphics card is compatible with the Linux system. 
+
+
+If you have a printer installed, it's advisable to check the user manual for instruction on compatibility with Unix based systems. Most manufacturers share a CD that contains drivers for both Windows and Linux based systems.
+
+
+Installing Linux Mint in VirtualBox
+There are occasions where you would want to maintain your Windows installation but still have Linux installed on the same PC. To achieve this, you will have to install a virtual box in Windows. 
+A virtual box is a virtual environment that allows you to install Linux within it. Alternatively, a virtual box can assist you in installing more than one distribution in your PC. One will be installed on a partition on your hard disk, and the other will be installed in the virtual box. 
+
+
+
+
+
+
+
+CHAPTER 17. Control Privileged User
+At this point, it is time to begin discussing the security and privileges of users that can access your OS or server. Especially today, people seem to think that technology and servers are less safe than ever, but contrary to popular belief, there is actually plenty of support available to keep systems safe and secure. One such way is through controlling privileged users, which this chapter will teach you to do.
+In reading this chapter, you will be guided through various types of linux accounts, such as the root user, normal user, and system user. You will discover sudo, which stands for the super user do. This is the command for the system admin—it is the one command that allows access to everything and anything, so long as you are on the right account with the proper privileges to use it. Lastly, you will be walked through the sudoers file. This file is essentially the underlying programming behind the sudo—it controls the sudo and who has access to the sudo command in the first place. 
+All of this will help you juggle the users on your server or machine, allowing you to ensure that the proper security systems are in place. With everything in place and a secure system, you are able to rest easy and feel like your system is truly safe. 
+Types of Linux Accounts
+First, we will be discussing the root, normal, and system users before progressing to anything beyond this. You must have a complete understanding of these three user account types to really understand how sudo and sudoers play into the security of the system.
+Because Linux is so incredibly flexible, you have the option to create several different types of accounts. In fact, you can have several root accounts if you need them, or accounts with different permissions in different categories. All that matters is that the needs you have are met effectively. 
+Keep in mind that just because you have root accounts does not mean that you should not have some sort of security system in place—you should absolutely have a password protecting the root accounts to ensure that no one else is ever able to access those files and overtake them without your permission at all. This means that you will be able to ensure that the files themselves have yet another layer of protection. Now, without further ado, 
+let's begin to dig into the three primary user types of Linux.
+Root user
+The first user that you must know is the root user. This is also commonly referred to as the super user, especially in the acronym sudo. The super user or root user is the individual that is on the default admin account. This person has full control over the system, much like how an administrative account would have control over Windows. With the root privileges that are given by default, this user is able to execute any of his or her commands and directly control or alter the services and accounts of other people.
+Effectively, this should be your account if you are the one setting up the system. This account is the one that is able to rule over the other accounts, managing and monitoring them all without need for extra permissions. All permissions are granted for the root user. They are able to change the permissions of other users, move files around, change the ownership of files, and do anything else within the system.
+Keep in mind that, because you have the power to do literally anything within the program, you will not have the OS telling you not to do something. There is no safeguard for you, and you must be careful when using this account. If you delete a system file, there may be no hope for going back if you have not been regularly keeping archives and backups of your file. If there is a user that is capable of doing catastrophic damage to your program, it is the super user or root user. 
+Linux assumes that the root user has a pretty good grasp over what they are doing, and because of that, if you are unsure of what you are doing at any point in time, it is better safe than sorry, and you should try reaching out to someone else for help if you think it is necessary. Overall, while this should be your account with your own privileges, you should also try to avoid this account as much as humanly possible in order to ensure that you are not risking destroying everything at all.
+There are very specific periods in which you should use the root. Otherwise, you are likely going to be fine with just a normal account for most day-to-day functions. Of course, any time that you are attempting a task that requires you to a user the root, you should make sure that you switch over as necessary and back up your data before attempting anything. In particular, you will need to use the root privileges in order to move files or directories in or out of the system directories. Remember, the system directories are those that are directly responsible for the functioning of the operating system, and without them, you cannot run the OS. It is also necessary when you are attempting to copy any of the files into system directories, when altering the user privileges of other users, for some system repairs, and the occasional installation of a program will all require you to use the root account. Typically, if a file needs root permission to be installed, it is because the file itself will be directly interacting with the system directories.  If you are not doing any of the above, just avoid it and save yourself the hassle of potentially messing up. 
+Normal user
+The normal and system users have the same privileges, and both are typically created by the root or another user who has been granted some level of sudo privileges .The normal user, however, is normally a real person, while the system user is typically a user reserved for software to utilize if necessary.
+The normal user will have a real login shell and its own home directory, and each user will also be assigned a UID—a user identification. If this went unspecified during the creation of the new user with the useradd command, then the UID is typically automatically selected for you.
+Essentially, however, this user does not have any super special admin powers or superuser status. The normal user is able to access any files that have not been otherwise marked as unavailable, and the privileges of the normal fire can be changed regularly depending on what is necessary for the user at any given time.
+Most likely, if you are running Linux on your own device, you will have a root account, the administrative account that was used to set up the entire OS, to begin with, and then you will also set yourself up with a normal user account to ensure that you do not accidentally delete something critical or destroy something important. This is your sort of safeguard against an accident.
+The normal user's own permissions can be customized by the root user—you can grant yourself any permissions that you desire on the normal account from the root account, so long as you know the right way to code it. 
+System user
+The system user, as briefly touched upon, is granted the same initial privileges as the normal user. However, the system user is almost always some sort of software or program, such as a daemon, that will be running in the background and will likely not be particularly interactive. This user classification primarily exists just for organizational purposes. When you are able to dictate the account as a system account, you know at a glance that it is not going to involve any sort of people interacting with it. There may be a daemon running the user, but no person will ever belonged on.
+While in the real world, this may not necessarily matter technically, it is nice to be able to see at a glance how many human users you have as opposed to daemons running specific software. Usually, these system accounts are created by the operating system during installation, and the OS retains their control. They usually have very specific user ids that you can identify within the root account. 
+Because these service users will be running processes necessary for the OS, they should be left alone when you are altering, ending, or resetting any processes. You want to make sure you leave these service users alone as much as possible to protect yourself from damaging the software. If you were to damage one of these, it is quite possible that you would destroy the entire OS, which is unfortunately easy to do if you are not paying attention.
+Sudo
+Now, it is time to discuss sudo. If you are using sudo before a command, you essentially push it up. You tell the system that you are commanding this particular process with elevated privileges that should be respected. Usually, the elevated privileges are what the system checks to ensure that you are actually granted the privilege to make any alterations that you are actually making. 
+If you have been using Windows primarily, you already have interaction with a sort of example of this account. When you install software, have you noticed how certain installations will trigger a prompt to pop up and ask if you are certain that you wish to proceed and ask for you to give the software the permission it needs to proceed? That is what you are doing in Sudo. You are effectively giving that permission, but instead of with a click of the button, you are telling the system that you have elevated access to the system and should be respected. 
+If you have been primarily using macOS until now, you have a similar sort of safeguard when you trigger downloads that may be recognized as dangerous or will create major alterations to the OS. On a Mac, you will see a security box pop up, and you must then provide the system with your password to confirm that you do, in fact, want to perform that change on the system.
+Effectively, then, Sudo is your privilege pass. It is the magic passphrase that tells your system that you are in charge—so long as the privileges on your user account match.
+Using Sudo
+When you are ready to use Sudo, you do not have to try very hard. Effectively, all you have to do is add sudo before the command that you are trying to push forward. If you do this, your program should then ask you for the account password for the account that you are on. If you provide this password and your credentials check out, it will perform the function.
+For example, imagine that you want to reboot your system. As you may recall, the command to trigger your system to reboot is simply reboot.
+However, reboot requires sudo privileges. If you were to simply try commanding your system with just reboot, it would tell you that you must be a superuser in order to execute that particular command. 
+That is where you would then escalate your command. At that point, you can add to your command, creating an input of:
+$ sudo reboot
+Your system then asks for the account password, and upon entering the password, it reboots as requested.
+Su instead of sudo?
+This is perhaps one of the safest ways that you can use to elevate your privilege to trigger the system to obey. There are others, such as the switch user command, known as "su." However, when you use the switch user command, you are asked for the root password and then given the superuser prompt.
+You know that you are in the superuser prompt when you get a # as your input ready signal instead of the typical $ that you are likely used to seeing by now. The # should be your warning sign—if you see this waiting for you in the terminal, you know that you are on the root account, and you need to be careful.
+While the switch user command may have its uses in very specific situations, it also runs the risk of you destroying everything with a single typo or the act of someone accidentally bumping you while you are clacking away at your keyboard. When you use sudo, however, you are required to insert it for each and every command that requires extra privileges. This means that you have that extra safeguard. Of course, this could get annoying if you were in the process of doing something that would require you to constantly be validating your credentials, but it could be worthwhile if you think that the extra security is worth it. Of course, you could always just set up a backup of your system right before you begin the process of entering your su commands if you wanted to bypass the constant sudo usage, but that is ultimately a personal decision that you have to make, weighing the risk for yourself. Ultimately, the more you are in su, the more likely it is that you are going to have an accident. 
+The Sudoers File
+Underneath sudo is the sudoers file. This determines who gets to use the sudo command in the first place in order to actually make use of the authority it brings with it within the OS. Typically, you can access this file within the location of /etc/sudoers, and you will have to edit this if you want to mess with command values and permissions. Perhaps the best way that you can make user of the sudoers file and the safewst way to editing it is thorugh using the visudo editor.
+Visudo
+Visudo itself acts as a sort of stopgap—an extra layer of security for the sudoers file. It allows for safe edits while also locking the sudoers file from being edited at the same time by multiple users, which could become dangerous if two people tried to create contrasting edits at the same time. If you try to access the sudoers file with visudo when someone else is currently in it, you will be rejected with an error message and told to try again later. When you do make an edit, it will stop and check the edits for any errors that may be catastrophic in an attempt to at least try to make sure that you do not completely destroy something important.
+Upon finishing your edit of the sudoer file after accessing the visudo editing system, the edit will be scanned for any errors. If you do happen to make a syntax error, it will reject the save, printing the message that declares that there is an error and will tell you which lines that mistake is in. From there, you are prompted to either attempt to re-edit to fix the mistake, or you can quit saving the changes anyway. However, if you quit after visudo has found an error, it is highly likely that sudo will also find the error, and sudo will not be accessible until the error has been corrected.
+In order to access visudo, all you have to do is enter the prompt:
+$ visudo
+and you should be granted the access you are looking for, so long as the permissions are right. There are also several other options that you can pair with the visudo function in order to help you really make the most out of the program. These commands include:
+visudo -c: This triggers visudo to go into a check-only mode. It will check the current sudoers file for any syntax issues and will print the status of the file. If the check was clear, visudo would end with a final value of 0. However, if there is any sort of error detected, it will end with a value of 1. 
+visudo -f sudoers: This specifies an alternate location for sudoers, checking or editing the file of your choice instead of storing it in the default /etc/sudoers. 
+visudo -h: This is the help option, and when you do this, visuo will provide a short printed message.
+visudo -q: This tells visudo to enter quiet mode. When in this mode, no details of the syntax errors detected during a search will be printed or pointed out to you.
+visudo -s: This will enable the checking of the sudoers file. It will create an error if an alias that has not been defined is being used.
+visudo -v: This is the version option—it tells visudo to print out the version number before quitting. 
+The sudoers file
+With the visudo access created, you are then able to begin editing your sudoers file. This is what will provide the sudo access to any accounts. When you first access your sudoers file and scroll to the bottom, you will likely see a line that says something along the lines of:
+root ALL=(ALL) ALL
+Effectively, this means that the root user can execute from all terminals, like all users, and run all commands. Read all as any for a moment, and you can see how that can be scary. The root user can be basically anything it wants to order anything it wants and do anything it wants. 
+If you want to have any similar powers yourself on other accounts, you will need to set yourself up for an account that is designed as a sudo account.
+First, you must log into your server as the root user. 
+Then, using the command adduser you must create a new username.
+$ adduser usernamehere
+At this point, you will be asked to make a new password for the account. Do not forget your password, and make sure it is actually secure. From there, the command will create a home directory for you. Just press Enter to accept the default unless you feel like filling it in.
+Then, you must add the new user to the sudo group using the following command
+$ usermod -aG sudo usernamehere
+This should give you the sudo access, though you should still probably test it. Switch to the new user with the su command:
+$ su - usernamehere
+At this point, you need to test your access. Try using the whoami command to get all of your details:
+$ sudo whoami
+If done properly, the command will provide the output "root." If it is root, you know that you have access.
+From here, all you have to do is use the sudo command with space after it before any command you issue. The first time you attempt to use sudo when in a session, you will be asked to enter your password for security reasons.
+And just like that, your user account will have sudo access, allowing you to avoid any painful mistakes that could cripple your system or ruin your files in any given way. Since you will now have to enter sudo in order to do anything significant or dangerous, you should be pretty secure.
+
+
+
+
+
+
+
+uiz
+Congratulations! You have finished reading Control Privileged User. By now, you should have a general idea of how the system hierarchy of users works within Linux and how you can access the right level of security for yourself. At this point, you will be provided with five questions, as usual. Try to answer these questions to determine how well you have comprehended the material presented thus far. As always, the answer key will be provided on the page after this quiz.
+
+
+Which user type has the most privileges?
+
+
+Normal user
+
+
+Root user
+
+
+System user
+
+
+Random user
+
+
+
+
+
+
+What is the command necessary to override administrative blocks without having to log into the administrative account?
+
+
+sudore  
+
+
+visudo
+
+
+sudo
+
+
+su
+
+
+
+
+
+
+Which statement is true?
+
+
+You should avoid the root user account due to risk of deleting important information
+
+
+You should avoid the use of visudo editing due to the risk of deleting important information 
+
+
+You should avoid the use of sudo commands due to the risk of deleting important information 
+
+
+You should avoid using Linux due to the risk of deleting important information 
+
+
+All of the above
+
+
+
+
+
+
+True or false: Visudo will check for errors when you make edits.
+
+
+
+
+True or false: Visudo will publish a faulty edit to the sudore file without warning by default. 
+
+
+
+
+
+
+
+
+
+Conclusion
+May I take this opportunity to thank you for being able to make it to the end of this informative book, Kali Linux. I want to believe that it has been edifying, and through it, you are now able to hit the ground running in matters revolving around hacking. Also, I hope that you have gained the relevant expertise to enable you to begin your hacking career or better your skills if you are already one. I sincerely hope that you have enjoyed turning pages right from the first topic which was Introduction to Kali Linux, all through The Basics of Kali Linux, The Hacking Process, Wireless Network Hacking, Uses and Applications of Kali Linux, Introduction to Cybersecurity, Network Scanning and Management and Web Security. I trust that by studying this book, you have gotten to learn plenty of practical concepts that you need to become a hacking expert.  By now, you must have been able to get access to a vast body of theoretical knowledge regarding the various types of attacks that can be launched on your systems, the reason for launching them and how you are able to safeguard your infrastructure against such attacks. These are your first steps towards becoming a professional hacker. The book covers topical issues like wireless network attacks, cyber-attacks and penetration testing, among others. It, therefore, means that you are now in a good position to discern network attack mechanisms that occur in the real world and prescribe appropriate remedies.  I have also given you a few security measures you can implement to keep your networks safe. The formatting is such that the language is a user-friendly language that you can understand the importance of securing your networks. Going forward, the next step is to put the concepts you have acquired from this book into practice. They say practice makes perfect and it is by practicing that one can become an expert in the field of hacking, more so using Kali Linux. Let the knowledge you have acquired from the book work for you.
+
+
+
