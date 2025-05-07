@@ -1,0 +1,1570 @@
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Python Machine Learning
+ 
+A Step-by-Step Journey with Sickie-Learn and Tensor flow for Beginners
+ 
+Chloe Annable
+
+
+
+
+
+
+
+
+
+
+
+
+© ACopyright A2024 A- AAll Arights Areserved.
+The Acontent Acontained Awithin Athis Abook Amay Anot Abe Areproduced, Aduplicated Aor Atransmitted Awithout Adirect Awritten Apermission Afrom Athe Aauthor Aor Athe Apublisher.
+Under Ano Acircumstances Awill Aany Ablame Aor Alegal Aresponsibility Abe Aheld Aagainst Athe Apublisher, Aor Aauthor, Afor Aany Adamages, Areparation, Aor Amonetary Aloss Adue Ato Athe Ainformation Acontained Awithin Athis Abook, Aeither Adirectly Aor Aindirectly.
+Legal ANotice:
+This Abook Ais Acopyright Aprotected. AIt Ais Aonly Afor Apersonal Ause. AYou Acannot Aamend, Adistribute, Asell, Ause, Aquote Aor Aparaphrase Aany Apart, Aor Athe Acontent Awithin Athis Abook, Awithout Athe Aconsent Aof Athe Aauthor Aor Apublisher.
+Disclaimer ANotice:
+Please Anote Athe Ainformation Acontained Awithin Athis Adocument Ais Afor Aeducational Aand Aentertainment Apurposes Aonly. AAll Aeffort Ahas Abeen Aexecuted Ato Apresent Aaccurate, Aup Ato Adate, Areliable, Acomplete Ainformation. ANo Awarranties Aof Aany Akind Aare Adeclared Aor Aimplied. AReaders Aacknowledge Athat Athe Aauthor Ais Anot Aengaged Ain Athe Arendering Aof Alegal, Afinancial, Amedical Aor Aprofessional Aadvice. AThe Acontent Awithin Athis Abook Ahas Abeen Aderived Afrom Avarious Asources. APlease Aconsult Aa Alicensed Aprofessional Abefore Aattempting Aany Atechniques Aoutlined Ain Athis Abook.
+By Areading Athis Adocument, Athe Areader Aagrees Athat Aunder Ano Acircumstances Ais Athe Aauthor Aresponsible Afor Aany Alosses, Adirect Aor Aindirect, Athat Aare Aincurred Aas Aa Aresult Aof Athe Ause Aof Athe Ainformation Acontained Awithin Athis Adocument, Aincluding, Abut Anot Alimited Ato, Aerrors, Aomissions, Aor Ainaccuracies.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+TABLE AOF ACONTENTS
+ 
+
+ 
+INTRODUCTION
+UNSUPERVISED MACHINE LEARNING
+Principal Component Analysis
+k-means Clustering
+DEEP BELIEF NETWORKS
+Neural Networks
+The Restricted Boltzmann Machine
+Constructing Deep Belief Networks
+CONVOLUTIONAL NEURAL NETWORKS
+Understanding the Architecture
+Connecting the Pieces
+STACKED DENOISING AUTOENCODERS
+Autoencoders
+SEMI-SUPERVISED LEARNING
+Understanding the Techniques
+Self-learning
+Contrastive Pessimistic Likelihood Estimation
+TEXT FEATURE ENGINEERING
+Text Data Cleaning
+Building Features
+MORE FEATURE ENGINEERING
+Creating Feature Sets
+Real-world Feature Engineering
+ENSEMBLE METHODS
+Averaging Ensembles
+Stacking Ensembles
+CONCLUSION
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+INTRODUCTION
+ 
+This Abook Ais Aa Astep-by-step Aguide Athrough Aintermediate Amachine Alearning Aconcepts Aand Atechniques. AYou'll Aalso Alearn Aworking Awith Acomplex Adata, Aas Aany Amachine Alearning Atechnology Arequires Adata. AThe Abulk Aof Athe Awork Ain Athis Abook Awill Abe Acommunicated Awith Aclear Aexamples. AThis Ais Agreat Anews Aif Ayou Aare Athe Atype Athat Adoes Abetter Alearning Afrom Aexamples.
+Since Athis Ais Aan Aintermediate Aguide, Athere Ais Aa Alot Aof Aassumed Aknowledge Aon Aour Apart. AWe Aexpect Ayou Ato Aknow Amachine Alearning Abasics Aand APython. AThe Aact Aof Apublishing Aa Abook Alike Athis Ais Aalways Aabout Asimplifying Athings Aso Aanyone Acan Alearn. ASo, Aif Ayou Aaren't Asure Ayou Agot Athe Abasics Adown, Ayou Acan Astill Ahave Aa Alook Aand Ado Asome Aextra Aresearch Awhen Ayou Acome Aacross Aconcepts Athat Aare Anew Ato Ayou. AThe Ainformation Ashould Aotherwise Abe Aeasy Ato Adigest.
+Let's Anow Atalk Aabout Awhat Ayou Awill Alearn:
+We Awill Ause Aunsupervised Amachine Alearning Aalgorithms Aand Atools Afor Aanalyzing Acomplex Adatasets. AThat Ameans Ayou Awill Alearn Aabout Aprincipal Acomponent Aanalysis, Ak-means Aclustering Aand Amore. AIf Athis Asounds Astrange Aand Anew, Athat Ais Aokay; Ait's Awhy Awe Aare Ahere. AYou Adon't Ahave Ato Aknow Awhat Aany Aof Athis Ameans Aat Athis Apoint. AAgain, Aall Athis Awill Abe Aaccompanied Awith Apractical Aexamples.
+Then Awe Awill Alearn Aabout Arestricted ABoltzmann Amachine Aalgorithms Aand Adeep Abelief Anetworks. AThese Awill Abe Afollowed Aby Aconvolutional Aneural Anetworks, Aautoencoders, Afeature Aengineering Aand Aensemble Atechniques. AEach Achapter Awill Abegin Aby Aexplaining, Ain Ageneral Aterms, Athe Atheory Abehind Athese Atechniques.
+As Aa Ageneral Aoverarching Arule, Apractice Athe Aconcepts Ain Athis Abook. AThat Ais Ahow Ayou Awill Abenefit Athe Amost Afrom Athe Alessons Ain Athis Abook. AYou Amight Afind Asome Aparts Achallenging. ADon't Ajust Asteam Aahead. ATry Ato Afind Aextra Amaterial Athat Awill Ahelp Ayou Aunderstand Athe Aconcept, Aor Ago Aover Athe Amaterial Aagain.
+Only Abegin Athe Apracticals Awhen Ayou Aare Asomewhat Aconfident Ain Ayour Aunderstanding. AThis Ais Aimportant Abecause, Aif Ayou Adon't Ado Athe Awork, Ayou Awon't Aunderstand Athe Amore Aadvanced Aconcepts.
+Each Achapter Awill Abe Astructured Ato Ainclude Atheory, Atools Aand Aexamples Aof Areal-world Aapplications.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A1:
+ 
+UNSUPERVISED AMACHINE ALEARNING
+
+ 
+Unsupervised Amachine Alearning Ais Amade Aup Aof Aa Aset Aof Atechniques Aand Atools Acrucial Ato Aexploratory Aanalysis. AUnderstanding Athese Atools Aand Atechniques Ais Aimportant Ato Aextracting Avaluable Adata Afrom Acomplex Adatasets. AThese Atools Ahelp Areveal Apatterns Aand Astructures Ain Adata Awhich Aare Ahard Ato Adiscern Aotherwise.
+That Ais Awhat Awe Awill Ado Ain Athis Achapter. AWe Awill Abegin Awith Aa Asolid Adata Amanipulation Atechnique Acalled Aprincipal Acomponent Aanalysis. AThen Awe Awill Aquickly Alook Aat Ak-means Aclustering Aand Aself-organizing Amaps. AWe Awill Athen Alearn Ahow Ato Ause Athese Atechniques Ausing AUCI AHandwritten ADigits Adatasets. ALet's Aget Ato Ait.
+
+
+
+
+
+
+
+
+
+
+
+
+Principal AComponent AAnalysis
+PCA Ais Aarguably Athe Amost Apopular Alinear Adimensionality Areduction Amethod Aused Ain Abig Adata Aanalytics. AIts Aaim Ais Ato Areduce Athe Adimensionality Aof Adata Aso Ait Abecomes Aeasy Ato Amanage.
+PCA Ais Aa Adecomposition Amethod Athat Ais Agood Aat Asplitting Aa Amultivariate Adataset Ainto Aorthogonal Acomponents. AThose Aelements Awill Abecome Athe Asummary Aof Athe Adata Asets, Aallowing Afor Ainsights.
+It Adoes Athis Ain Aa Afew Asteps: ABy Aidentifying Athe Adataset's Acenter Apoint, Acalculating Athe Acovariance Amatrix Aand Athe Aeigenvectors Aof Athe Amatrix. AThen Ait Aortho-normalizes Athe Aeigenvectors Aand Acalculates Athe Aproportion Aof Avariance Ain Athe Aeigenvectors. ASince Ayou Ahave Alikely Anever Aheard Aany Aof Athese Aterms, Ait Ais Aworth Agoing Ain Aand Aexplaining Athem Afurther.
+
+Covariance A: AThis Ais Aa Avariance Abetween Atwo Aor Amore Avariables, Aapplying Ato Amultiple Adimensions. ASay Awe Ahave Aa Acovariance Abetween Atwo Avariables; Awe'd Ause Aa A2 Ax A2 Amatrix Ato Adescribe Ait. AIf Athere Aare A3 Avariables, Awe'll Aneed Aa A3 Ax A3 Amatrix, Aand Aon Ait Agoes. AThe Afirst Aphase Aof Aany APCA Acalculation Ais Athe Acovariance Amatrix.
+Eigenvector A: AThis Avector Adoesn't Achange Adirection Awhen Aa Alinear Atransformation Ais Arealized. ALet's Aillustrate Athis. AImagine Aholding Aan Aelastic Arubber Aband Abetween Ayour Ahands. AThen Ayou Astretch Athe Arubber Aband. AThe Aeigenvector Awould Abe Athe Apoint Ain Athe Aband Athat Adid Anot Amove Awhen Ayou Awere Astretching Ait. AIt Ais Athe Apoint Ain Athe Amiddle Athat Astays Aat Athe Asame Aplace Abefore Aand Aafter Ayou Astretch Athe Aband.
+Orthogonalization A: AThe Aterm Ameans Atwo Avectors Athat Aare Aat Aright Aangles Ato Aeach Aother. ASimply Areferred Ato Aas Aorthogonal.
+Eigenvalue A: AThe Aeigenvalue Acalculates Athe Aproportion Aof Avariance Arepresented Aby Athe Aeigenvectors. AThe Aeigenvalue Acorresponds, Amore Aor Aless, Ato Athe Alength Aof Athe Aeigenvector.
+
+Here's Aa Ashort Asummary: ACovariance Ais Aused Ato Acalculate Aeigenvectors, Aand Athen Aortho-normalization Atakes Aplace. AThis Aprocess Adescribes Ahow Aprincipal
+component Aanalysis Atransforms Acomplex Adata Asets Ainto Alow Adimensional Aones.
+ 
+Applying APCA
+ 
+Now Alet's Asee Ahow Athe Aalgorithm Aworks Ain Aaction. AAs Awe've Asaid, Awe Awill Ause Athe AUCI Ahandwritten Adigits Adataset. AYou Acan Aimport Ait Ausing AScikit-learn Abecause Ait Ais Aan Aopen-source Adataset. AThe Adataset Ahas Aabout A1800 Ainstances Aof Ahandwritten Adigits Afrom Aabout A50 Awriters. AThe Ainput Ais Acomprised Aof Apressure Aand Alocation Aand Aresampled Aon Aan A8 Ax A8 Agrid. AThis Ais Ato Ayield Amaps Athat Acan Abe Achanged Ato A64-feature Avectors. AThese Avectors Awill Abe Aused Afor Aanalysis. AWe Ause APCA Aon Athem Abecause Awe Aneed Ato Areduce Atheir Anumber, Amaking Athem Amore Amanageable. AHere Ais Ahow Athe Acode Alooks:
+import Anumpy Aas Anp
+from Asklearn.datasets Aimport Aload_digits Aimport Amatplotlib.pyplot Aas Aplt
+from Asklearn.decomposition Aimport APCA Afrom Asklearn.preprocessing Aimport Ascale Afrom Asklearn.lda Aimport ALDA
+import Amatplotlib.cm Aas Acm Adigits A= Aload_digits()
+data A= Adigits.data
+n_samples, An_features A= Adata.shape An_digits A= Alen(np.unique(digits.target)) Alabels A= Adigits.target
+Let's Atalk Aabout Awhat Athe Acode Adoes:
+
+The Afirst Athing Awe Ado Ais Aimport Athe Alibraries Awe Awill Aneed, Acomponents Aand Athe Adatasets.
+We Aretrieve Athe Adata Aand Athen Amake Aa Adata Avariable Athat Awill Astore Aa Anumber Aof Adigits. AThe Atarget Avector Ais Asaved Aas Aa Alabel.
+
+Now Awe Acan Abegin Aapplying Athe APCA Aalgorithm:
+pca A= APCA(n_components=10) Adata_r A= Apca.fit(data).transform(data)
+print('explained Avariance Aratio A(first Atwo Acomponents):
+%s' A% Astr(pca.explained_variance_ratio_))
+print('sum Aof Aexplained Avariance A(first Atwo Acomponents):
+%s' A% Astr(sum(pca.explained_variance_ratio_)))
+The Acode Awill Agive Aus Aa Avariance Awhich Awill Abe Aexplained Aby Aall Acomponents. AThey Awill Abe Aordered Aby Atheir Aexplanatory Apower.
+Our Aresult Ais Aa Avariance Aof A0.589. AWe've Acut Adown Afrom A64 Avariables Ato A10 Acomponents. AThat's Aa Abig Aimprovement. APCA Awill Aresult Ain Asome Ainformation Abeing Alost, Abut Awhen Ayou Aweigh Athe Adisadvantages Aagainst Aadvantages, Aadvantages Awin Aout. ALet's Aillustrate Awith Avisualizations. AWe Ahave Athe A"data_r" Aproject, Awhich Acontains Athe Aoutput. AWe Awill Aadd Athe A"color" Avector Aso Aall Acomponents Astand Aout Afrom Athe Ascatter Aplot. AUse Athe Afollowing Acode Ato Aget Ait:
+X A= Anp.arange(10)
+ys A= A[i+x+(i*x)**2 Afor Ai Ain Arange(10)] Aplt.figure()
+colors A= Acm.rainbow(np.linspace(0, A1, Alen(ys)))
+for Ac, Ai Atarget_name Ain Azip(colors, A[1,2,3,4,5,6,7,8,9,10], Alabels): Aplt.scatter(data_r[labels A== AI, A0], Adata_r[labels A== AI, A1],
+c=c, Aalpha A= A0.4) Aplt.legend()
+plt.title('Scatterplot Aof APoints) Aplt.show()
+What Aconclusion Acan Awe Adraw Afrom Athis? AAs Ayou Acan Asee Ain Athe Ascatterplot,
+you Aare Aable Ato Apinpoint Aa Aclass Aseparation Aof Athe Afirst A2 Acomponents. AThat Atells Aus Ait Awill Abe Adifficult Ato Amake Aaccurate Aclassifications Ausing Athe Adataset.
+Despite Athat, Ayou Acan Asee Athat Aclasses Aare Aclustered Ain Aa Away Athat Aallows Aus Ato Aget Asome Aaccurate Aresults Athrough Aclustering Aanalysis. APCA Ahas Agiven Aus Aa Ahint Aabout Athe Astructure Aof Athe Adataset, Aand Awe Acan Aprobe Ait Afurther Ausing Aother Amethods. ALet's Aperform Athat Aanalysis Athrough Ak-means Aclustering Aalgorithms.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+k-means AClustering
+We've Asaid Aunsupervised Amachine Alearning Aalgorithms Aare Agreat Afor Agleaning Ainformation Afrom Avery Acomplex Adatasets. AThese Aalgorithms Aare Aa Ahuge Atime- Asaver Afor Adata Aanalysts Awho Aare Atrying Ato Aextract Adata Afrom Aa Acomplicated Adataset. ANow, Alet's Atake Athat Aa Astep Afurther Aand Alook Aat Aclustering Aalgorithms.
+Clustering Ais Amaybe Athe Acore Aunsupervised Amachine Alearning Amethod Abecause Ait Afocuses Aon Aoptimization Aand Aefficient Aimplementation. AThis Aalgorithm Ais Aridiculously Afast. AThe Amost Apopular Aclustering Atechnique Ais A"k- Ameans." Ak-means Abuilds Aclusters Aby Aarbitrarily Ainitiating Athem Aas Ak-many Apoints. AEach Apoint Ain Athe Adata Afunctions Aas Aa Amean Aof Acluster. AThe Amean Ais Adetermined Abased Aon Athe Anearest Amean Ain Athe Acluster. AEach Acluster Awill Ahave Aa Acenter; Athat Acenter Abecomes Athe Anew Amean, Amaking Aall Aother Ameans Achange Atheir Aposition.
+After Aa Anumber Aof Aiterations, Athe Acluster's Acenter Awill Amove Ainto Aa Aposition Athat Aminimizes Athe Aperformance Ametric. AThe Aalgorithm Ahas Aa Asolution Awhen Athat Ahappens. AIt Aalso Ameans Aobservations Aare Ano Alonger Abeing Aassigned. ALet's Alook Aat Ak-means Ain Acode, Aand Alet's Acompare Ait Awith Athe Aprincipal Acomponent Aanalysis.
+from Atime Aimport Atime Aimport Anumpy Aas Anp
+import Amatplotlib.pyplot Aas Aplt Anp.random.seed()
+digits A= Aload_digits() Adata A= Ascale(digits.data)
+n_samples, An_features A= Adata.shape
+n_digits A= Alen(np.unique(digits.target)) Alabels A= Adigits.target
+sample_size A= A300
+print("n_digits: A%d, A\t An_samples A%d, A\t An_features A%d"
+% A(n_digits, An_samples, An_features)) Aprint(79 A* A'_')
+print('% A9s' A% A'init''      time      inertia      homo      compl      v-meas AARI      AMI Asilhouette')
+def Abench_k_means(estimator, Aname, Adata):
+t0 A= Atime() Aestimator.fit(data)
+print('% A9s A%.2fs A%i A%.3f A%.3f A%.3f A%.3f A%.3f A%.3f'
+% A(name, A(time() A- At0), Aestimator.inertia_, Ametrics.homogeneity_score(labels, Aestimator.labels_), Ametrics.completeness_score(labels, Aestimator.labels_), Ametrics.v_measure_score(labels, Aestimator.labels_), Ametrics.adjusted_rand_score(labels, Aestimator.labels_), Ametrics.silhouette_score(data, Aestimator.labels_,
+metric='euclidean', Asample_size=sample_size)))
+So, Ahow Adoes APCA Acode Aand Ak-means Acode Adiffer? AThe Amain Adifference Ais Athat Awe Astart Aby Ascaling Athe Avalues Awithin Athe Adataset. AWhy? ABecause Aif Awe Adon't, Awe Amight Ahave Avarious Adisproportionate Afeature Avalues Athat Acan Ahave Aunpredictable Aside-effects Aon Athe Aentire Adataset.
+Clustering Aalgorithms Alike Athese Aare Aonly Asuccessful Awhen Athey Acan Ainterpret Athe Aways Athe Adata Ais Agrouped. ALet's Alook Aat Athe Aperformance Ameasures Awe Ahave Ain Athe Acode Aso Awe Acan Abetter Aunderstand Aclustering:
+
+Homogeneity Ascore A: AA Acluster Acontaining Ameasurements Aof Aa Asingle Aclass. AIt Ahas Aa Abasic Ascore Aof Azero Ato Aone. AValues Acloser Ato Azero Atell Athat Athe Asample Ahas Alow Ahomogeneity, Awhile Athose Aat Athe Aother Aend Aof Athe Aspectrum Atell Athe Asample Ais Afrom Aa Asingle Aclass.
+Completeness Ascore A: AThis Ascore Asupports Athe Ahomogeneity Ascore Aby Agiving Aus Ainformation Aon Athe Aassignments Aof Ameasurements Aalong Athe Asame Aclass. APut Atogether Awith Aa Ahomogeneity Ascore, Awe Awill Abe Aable Ato Atell Aif Awe Ahave Aa Aperfect Aclustering Asolution.
+V A- Ameasure A: AThe Aharmonic Amean Aof Athe Ahomogeneity Ascore Aand Athe Acompleteness Ascore. AIt Ahas Aa Ascaled Ameasure Aof Azero Ato Aone, Awhich Aassesses Athe Ahomogeneity Aand Acompleteness Aof Athe Acluster.
+Adjusted ARand AIndex Ascore A: AMeasures Asimilarity Ain Athe Alabeling Aon Aa Azero Ato Aone Ascale. AApplied Ato Aclustering, Athis Ameasures Athe Aharmony Aof Athe Aassignment Asets.
+Silhouette Ascore A: AMeasures Athe Aperformance Aof Athe Aclustering Awithout Ausing Athe Aclustering Aof Alabeled Adata. AThe Ascore Ais Aon Aa Ascale Aof A-1 Ato A1. AIt Atells Aus Aif Athe Aclusters Aare Awell-defined. AIncorrect Aclustering Awill Aequal A-1, A1 Ais Ahighly Adefined, Aand Aif Athe Ascore Agravitates Atowards A0, Ait Atells Aus Athere Ais Asome Aoverlap Abetween Aclusters.
+
+In Athe Ak-means Aclustering Aexample, Aall Athese Ascores Agive Aus Athe Aclustering Ameasurements. ALet's Ause Athe A"bench_k_means" Afunction Ato Aanalyze Athe Aresults. AThe Afollowing Acode Ashould Ado Ait:
+bench_k_means(KMeans(init='k-means++', An_clusters=n_digits, An_ Ainit=10),
+name="k-means++", Adata=data) Aprint(79 A* A'_') AHere's Ahow Athe Aresults Ashould Alook:
+n_digits: A10, A A A A A A A A A An_samples A1797,      n_features A64
+ 
+
+
+init
+time
+inertia
+homo
+compl
+
+
+k-means++
+0.25s
+69517
+0.596
+0.643
+
+
+init
+v-meas
+ARI
+AMI
+silhouette
+
+
+k-means++
+0.619
+0.465
+0.592
+0.123
+
+
+Let's Adiscuss Athese Ascores Abriefly. AFirstly, AI Ashould Amention Athe Adataset Ahas Aa Alot Aof Anoise; Athe Alow Asilhouette Ascore Atells Aus Athis. ASecondly, Awe Acan Aconclude Athrough Athe Ahomogeneity Ascore Athat Athe Acluster Acenters Aaren't Awell Aresolved. AThe Av-measure Aand AARI Aare Aalso Anot Avery Aimpressive.
+We Acan Asay Athat Athese Aresults Aneed Ato Abe Aimproved. AWe Acan Aget Abetter Aresults Aby Aapplying APCA Aon Atop Aof Athe Ak-means Aclustering. AWhen Awe Areduce Athe Adataset's Adimensionality, Awe Ashould Aget Abetter Aresults. ALet's Aapply Athe APCA Aalgorithm Ato Asee Aif Ait Aworks:
+pca A= APCA(n_components=n_digits).fit(data) Abench_k_means(KMeans(init=pca.components_, An_clusters=10), Aname="PCA-based", Adata=data)
+We Aapplied APCA Ato Athe Adata Aset Aso Awe Acan Ahave Athe Asame Anumber Aof Aprincipal Acomponents Aas Aclasses. ASee Aif Athe Aresults Ahave Aimproved Abelow:
+ 
+
+
+n_digits: A10,init      time
+n_samples A1797,inertia      homo
+n_features A64compl
+
+
+k-means++ A0.2s
+71820
+0.673
+0.715
+
+
+init      v-meas
+ARI
+silhouette
+ 
+
+
+k-means++ A0.693
+0.567
+0.121
+ 
+
+
+These Aresults Aaren't Athat Agreat Aeither Abecause Athe Asilhouette Ascore Ais Astill Alow. ABut Aas Ayou Acan Asee, Athe Aother Ascores Ahave Agreatly Aimproved, Aespecially AV- Ameasure Aand AARI. AThis Ashows Ahow Aapplying APCA Acan Aimprove Aour Aanalysis.
+ 
+Fine-tuning
+ 
+What Awe Ahave Adone Aso Afar Ais Ause Ak-means Aclustering Ato Aunderstand Aclustering Aanalysis Aand Aperformance Ametrics. AOur Anext Astep Ais Afine-tuning Aour Aresults Aconfigurations Aso Awe Acan Aget Abetter Aresults. AIn Athe Areal Aworld, Ayou Awill Ado Athis Aa Alot. ALet's Asee Ahow Ait Ais Adone Aby Amodifying Athe Ak-value.
+You Awill Abe Atempted Ato Amodify Athe Ak-value Arandomly Aand Asee Awhich Aone Aprovides Athe Abest Aresults. AThat Awon't Atell Ayou Awhich Avalue Aworks Abest. AThe Aproblem Ais Athat, Awhen Ayou Aincrease Athe Avalue, Athere's Aa Apossibility Ayou Awill Aend Aup Alowering Athe Asilhouette Ascore Awithout Agetting Aany Aclusters. ASuppose Athe Ak-value Ais Aset Ato A0; Athe Azero Awill Abe Athe Avalue Aof Aobservation Awithin Athe
+sample. AEach Apoint Awill Ahave Aa Acluster, Aand Athe Asilhouette Ascore Awill Abe Alow. ASo, Ayou Awon't Again Aany Auseful Aresults.
+To Asolve Athis, Awe Acan Ause Athe A"elbow Amethod." AThe A"elbow Amethod" Ais Aa Asimple Abut Aeffective Atechnique. AThe Amethod Aselects Aoptimal Ak-clusters. AUsually, Awhen Athe Ak-value Ais Aincreased, Aimprovement Ain Adistortion Ais Adecreased. AThe Aelbow Amethod Aallows Aus Ato Afind Athe Aperfect Aarea, Aknown Aas Athe Aelbow Apoint, Awhere Aimprovement Ain Adistortion Ais Athe Aabsolute Alowest. AThis Ais Athe Apoint Awhere Awe Astop Adividing Aout Adata Ainto Amultiple Aclusters. AThe Aelbow Apoint Ais Acalled Aso Abecause Ait Aresembles Aa Abent Aarm, Awith Athe Aelbow Abeing Athe Amost Aoptimal Apoint.
+Below Ais Aan Aexample Aof Ahow Awe Acan Ause Ait. AIn Athe Aexample Abelow, Awe Ause Athe Aelbow Amethod Aafter Awe Ahave Aapplied APCA. AThe Aorder Ais Aimportant Abecause Aof APCA Adimensionality Areduction.
+import Anumpy Aas Anp
+from Asklearn.cluster Aimport AKMeans Afrom Asklearn.datasets Aimport Aload_digits Afrom Ascipy.spatial.distance Aimport Acdist Aimport Amatplotlib.pyplot Aas Aplt
+from Asklearn.decomposition Aimport APCA Afrom Asklearn.preprocessing Aimport Ascale Adigits A= Aload_digits()
+data A= Ascale(digits.data) An_samples, An_features A= Adata.shape
+n_digits A= Alen(np.unique(digits.target)) Alabels A= Adigits.target
+K A= Arange(1,20) Aexplainedvariance= A[] Afor Ak Ain AK:
+reduced_data A= APCA(n_components=2).fit_transform(data)
+kmeans A= AKMeans(init A= A'k-means++', An_clusters A= Ak, An_init A= Ak)
+kmeans.fit(reduced_data) Aexplainedvariance.append(sum(np.min(cdist(reduced_data,
+kmeans.cluster_centers_, A'euclidean'), Aaxis A= A1))/data.shape[0])
+plt.plot(K, Ameandistortions, A'bx-') Aplt.show()
+It's Aworth Apointing Aout Athat Aelbow Apoints Aaren't Aeasy Ato Aspot. AThe Adataset Awe Aare Ausing Awill Aproduce Aless Apronounced Aand Amore Agradual Aprogression, Awhich Ais Acaused Aby Athe Aoverlap Aof Aclasses.
+Visual Aplot Averification Ais Aeasy Ato Aperform Aand Ainterpret, Abut Ait Ahas Athe Adisadvantage Aof Abeing Aa Amanual Avalidation Atechnique. AWhat Awe Aneed Ais Asomething Aautomated Ainstead Aof Amanual. AIn Athat Aregard Awe Aare Ain Aluck Abecause Athere's Aa Acode-based Atechnique Acalled Across-validation, Aknown Aas Av- Afold, Awhich Acan Ahelp Aus.
+ 
+Cross-validation ATechnique
+ 
+Cross-validation Ainvolves Asplitting Athe Adataset Ainto Asegments. AWe Ahave Aput Athe Atest Aset Aaside Aand Afocused Aon Atraining Athe Amodel Aon Atraining Adata. ALet's Asee Awhat Ahappens Awhen Awe Ause Ait Awith Athe A"digits" Adataset.
+import Anumpy Aas Anp
+from Asklearn Aimport Across_validation Afrom Asklearn.cluster Aimport AKMeans Afrom Asklearn.datasets Aimport Aload_digits Afrom Asklearn.preprocessing Aimport Ascale Adigits A= Aload_digits()
+data A= Ascale(digits.data) An_samples, An_features A= Adata.shape
+n_digits A= Alen(np.unique(digits.target))
+labels A= Adigits.target
+kmeans A= AKMeans(init='k-means++', An_clusters=n_digits, An_init=n_ Adigits) Acv A= Across_validation.ShuffleSplit(n_samples, An_iter A= A10,
+test_size A= A0.4, Arandom_state A= A0)
+scores A= Across_validation.cross_val_score(kmeans, Adata, Alabels, Acv A= Acv, Ascoring A= A'adjusted_rand_score')
+print(scores) Aprint(sum(scores)/cv.n_iter)
+We Abegin Awith Aloading Athe Adata Aand Aadding Athe Ak-means Aalgorithm. ANext, Awe Adefine Across-validation Aparameters A(cv). AWe Aneed Ato Aspecify Athe Anumber Aof Aiterations Aneeded Aand Athe Aamount Aof Adata Athat Ashould Abe Aused. AIn Aour Aexample, Awe Aare Ausing A60% Aof Aour Adays Aas Atraining Adata, Aand Athe Aremaining Aportion Aof Athe Adata Ais Athe Atest Aset. AThen Awe Ause Athe Aprint Afunction Ato Alook Aat Aour Ascores. AHere's Ahow Athey Alook:
+ 
+
+
+[ A0.39276606
+0.49571292
+0.43933243
+ 
+
+
+0.53573558
+0.42459285
+0.55686854
+
+
+0.4573401
+0.49876358
+ 
+0.50281585
+
+
+0.4689295 A]
+ 
+ 
+ 
+
+
+0.4772857426
+ 
+ 
+ 
+
+
+ 
+This Ais Athe ARand Ascore Afor Athe Aclustering. AAs Ayou Acan Asee, Aall Athe Ascores Aare Abetween A0.4 Aand A0.76, Ajust Alike Ain Athe Aprevious Aexample. AThe Adifference Abetween Athat Aand Athis Ais Athat Athe Acode Awe Ahave Ahere Adoes Aeverything Afor Aus, Achecking Athe Aquality Aof Athe Aclustering Awithout Aus Ainserting Aourselves, Awhich Aworks Abetter Afor Aautomation. AThis Atechnique Ais Adependent Aon Ayou Aand Ayour Adata. ARemember Athat, Awhenever Aworking Awith Aunknown Adatasets, Ayou Awill Aalways Arun Ainto Asome Aproblems, Ano Amatter Awhat Atype Aof Asolution Ayou Aemploy. AThat Ais Awhy Ayou Aneed Ato Aunderstand Athe Adata Ato Asome Aextent Aso Ayour Aalgorithms Aproduce Athe Aright Aresults.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A2:
+ 
+DEEP ABELIEF ANETWORKS
+
+In Athis Achapter Awe Awill Afocus Aon Adeep Alearning. AWe Awill Astudy Aand Aapply Arestricted ABoltzmann Amachines Aand Adeep Abelief Anetworks. AThe Amethods Awe Awill Ause Aare Aused Aon Acomplex Aproblems Athat Adeal Awith Atext, Aimages Aand Aaudio. AThink Aspatial Arecognition, Asmart Aimage Asearching, Avoice Arecognition Aand Aso Aon.
+We Awill Afirst Alook Aat Adeep Abelief Anetworks' Afoundational Aalgorithm. AWe Awill Aunderstand Athe Atheory Aand Athen Amove Aon Ato Athe Atechnical Aapplication Aof Ait. AWe Awill Asee Ahow Adeep Abelief Anetworks Aare Aused Ain Athe Areal Aworld.
+
+
+
+
+
+
+
+
+
+
+
+
+Neural ANetworks
+The Arestricted ABoltzmann Amachine Ais Aa Atype Aof Aneural Anetwork. AThis Ameans, Abefore Awe Ado Aanything, Awe Aneed Ato Afirst Aunderstand Aneural Anetworks.
+If Ayou Ahave Aread Athe Afirst Abook Ain Athe Aseries, Ayou Ahave Aan Aidea Aof Awhat Aneural Anetworks Aare. ASo, Ain Athis Asection Awe Aare Agoing Ato Adelve Aa Alittle Adeeper, Abut Awe Awon't Aget Aany Adeeper Athan Anecessary Ato Amove Aon.
+In Acase Ayou Adon't Aremember, Aneural Anetworks Aare Amathematical Amodels Aused Ato Adevelop Aand Aoptimize Aa Afunction's Adefinition. ABelow Aare Aelements Aof Aa Aneural Anetwork:
+
+Learning Aprocess: AParameters Aare Aaltered Ain Athe Aweight Afunction Aof Athe Aneural Anetwork's Anode. AThe Aoutput, Athe Aperformance Ascore, Ais Afed Ain Athe Anetwork's Alearning Afunction. AThe Afunction Athen Aoutputs Aweight Aadjustments Aaimed Aat Aminimizing Athe Acost Afunction.
+Set Aof Aneurons: AEach Aneuron Aset Ahas Aan Aactivation Afunction. AThe Aactivation Afunction Ais Aknown Aas Athe Aweight Afunction. AIts Ajob Ais Ato Ahandle Ainput Adata. AThese Afunctions Awill Adepend Aon Athe Aneural Anetworks, Ameaning Athey Atend Ato Avary Awith Athe Anetwork.
+Connectivity: AConnectivity Afunctions Adirect Awhich Anode Asends Adata Ato Awhich. ADepending Aon Athe Aconnection Apattern, Aall Athis Ainput Adata Acan Abe Asent Awith Aor Awithout Arestrictions.
+
+These Athree Aaspects Areflect Athe Acore Aof Aneural Anetworks, Awhichever Atypes Athey Amight Acome Ain. AThis Aincludes Amulti-layer Aperception Aand Athe Arestricted ABoltzmann Amachine.
+ 
+Neural ANetwork ATopology
+ 
+Neural Anetwork Atopologies Aare Acommonly Areferred Ato Aas Aneural Astructure Aor Aarchitecture. AThey Atell Aus Ahow Athe Aneurons Acome Atogether Ato Aform Aa Anetwork. AThe Atype Aof Aarchitecture Aa Aneural Anetwork Ahas Awill Ahave Aan Ainfluence Aon Aits Aperformance Aand Afunctionality. AThere Aare Amany Aneural Anetwork Atopologies,
+but Aone Aof Athe Amost Apopular Ais Athe Athree-layer Afeedforward Anetwork, Awhich Ais Aoften Aused Awith Asupervised Amachine Alearning.
+The Athree-layer Afeedforward Anetwork Ais, Ayou've Aguessed Ait, Adivided Ainto Athree Alayers Athat Acommunicate Adata Ato Athe Alayer Anext Ato Ait. AThe Afirst Alayer Ais Athe Ainput Alayer. AIt Awill Asend Adata Ato Athe Anext Alayer, Areferred Ato Aas Athe Ahidden Alayer. AThe Ahidden Alayer Abuilds Aa Adata Apresentation, Aand Ait Ais Athen Ashipped Ato Athe Athird Alayer. AThe Athird Alayer Ais Athe Aoutput Alayer; Aits Afunction Ais Ato Asend Aresults.
+The Arestricted ABoltzmann Amachine Atopology Ais Aa Abit Adifferent Afrom Athat. AIt Ahas Aan Ainput Alayer Aand Aa Ahidden Alayer, Abut Athese Alayers Aare Aalso Aconnected Ato Aeach Aother. ASo, Ainstead Aof Adata Agoing Afrom Aone Alayer Ato Athe Anext Ain Aa Achain, Athe Alayers Aare Ainterconnected, Aand Ainformation Acan Atravel Aback Aand Aforth Ain Aa Acyclical Amanner. AThe Aarchitecture Agives Athe ABoltzmann Amachine Aa Astochastic Arecurrent Aneural Anetwork. AThis Amakes Ait Aa Agenerative Amodel; Athis Ameans Ait Amodels Aits Ainputs Ainstead Aof Ajust Ausing Aobserved Aones.
+Choosing Athe Aright Aneural Anetwork Atopology Ais Aall Aabout Amatching Ayour Aproblem Ato Athe Atypology Athat Awill Agive Ayou Athe Aresults Ayou Awant. AThere Aare Aalways Aadvantages Aor Adisadvantages Ato Aall Aarchitectures. AThat Ais Abecause, Awhile Asome Alearning Aprocesses Aare Acompatible Awith Aother Anetworks, Asome Awill Abe Amutually Aexclusive. AThinking Acarefully Aabout Awhat Aeach Aneural Anetwork Astructure Acan Ado Afor Ayou Ais Aimportant Awhen Adeciding Awhich Ato Ause.
+Learning Aprocesses Ashould Aiteratively Aimprove Afunctions Aacross Athe Amodel Ato Ayield Athe Amost Aprecise Aresults. AIntegral Ato Athis Aprocess Aare Aperformance Ameasures. AIn Asupervised Amachine Alearning, Aperformance Ameasures Acome Ain Athe Aform Aof Aclassification Aerror Ameasures. AFor Arestricted ABoltzmann Amachines Awe Ahave Aprobability Amaximization. AProbability-increasing Ameasures Aneed Aoptimization Amethods Ato Areduce Athem.
+The Amost Apopular Anetwork Aoptimization Amethod Ais Athe Agradient Adescent Amethod. AReduction Aof Aperformance Ameasures Acorrelates Ato Athe Aextent Aof Athe Agradient Adescent. AThe Aaim Ais Ato Areach Aa Apoint Awhere Athe Aerror Ameasure Ais Alowest. ARemember Athat Athe Alearning Arate Aof Athe Aalgorithm Ais Aclosely Alinked Ato Athe Avalue Aof Athe Aperformance Ameasure.
+Now Athat Ayou Aunderstand Anetwork Atopology, Alet's Amove Aahead Ato Athe Arestricted ABoltzmann Amachine.
+
+
+
+
+
+
+
+
+
+
+
+
+The ARestricted ABoltzmann AMachine
+As Awe Aalready Aestablished, Athe ABoltzmann Amachine Ais Aa Astochastic, Arecurrent Aneural Anetwork Awhere Aall Aneural Anodes Aare Ainterconnected, Aallowing Aoutputs Ato Aconstantly Achange. ABoltzmann Amachines Ause Amodels Abased Aon Aenergy. AThat Ameans, Ain Athe ABoltzmann Amachine, Athere Ais Aan Aenergy Afunction Athat Aattaches Aan Aenergy Avalue Ato Aevery Anetwork Aconfiguration. AEnergy Ais Athe ABoltzmann Amachine's Aperformance Ameasure; Ait Ais Aused Ato Aupdate Athe Anetwork's Astored Aparameters. AThe Aaim Ais Ato Areduce Athe Anetwork's Afree Aenergy.
+The ABoltzmann Amachine's Adisadvantage Acomes Awhen Adealing Awith Acomplex Amachine Alearning Aproblems. AThat Ais Abecause Ait Ahas Aa Ascaling Aissue; Athe Amore Anodes Ait Ahas, Athe Ahigher Athe Acomputing Atime. AIf Athat Agoes Aon, Awe'll Areach Aa Apoint Awhere Athe Anetwork's Afree Aenergy Acannot Abe Aprocessed. AThe Aonly Away Ato Astop Athis Afrom Ahappening Ais Aby Achanging Athe Anetwork's Aarchitecture Aand Atraining Aprocess.
+ 
+Topology
+ 
+The Anetwork's Aefficiency Acan Abe Aimproved Aby Arestricting Aconnections Abetween Aall Anodes Ain Athe Anetwork. AAlthough Athis Ais Aa Abig Aarchitectural Achange, Ait Asolves Aour Aproblems.
+You Abegin Aby Apreventing Aconnections Abetween Anodes Ain Athe Asame Alayer. AThen Aremove Acommunication Abetween Alayers Athat Aare Anot Anext Ato Aeach Aother. AIn Afact Athis Ais Awhat Ais Ameant Aby Athe Arestricted ABoltzmann Amachine. AWhen Arestricting Aconnectivity, Aindependence Ais Aobserved Abetween Avisible Aand Ahidden Alayers, Aminimizing Aweaknesses.
+ 
+Training
+ 
+As Awe Ahave Amentioned, Athe Amore Anodes Athat Aare Aadded Ato ABoltzmann Amachines, Athe Alonger Atraining Atime Awill Atake Abecause Aof Ascaling Aissues.
+The Amost Apopular Atraining Amethod Afor ABoltzmann Amachines Ais Athe Apermanent Acontrastive Adivergence A(PCD). APCD Aallows Aus Ato Adetermine Athe
+gradient Aof Athe Aenergy Afunction.
+The Aalgorithm Ahas Atwo Aphases: Apositive Aand Anegative. AThe Apositive Aphase Alowers Athe Aenergy Avalue Aby Aincreasing Athe Atraining Aset's Aprobability, Awhile Athe Anegative Aphase Adetermines Athe Anegative Aphase Agradient Aand Adecreases Aprobability Aby Asampling. AThe Anegative Aphase Auses Aa Atype Aof Asampling Aknown Aas AGibbs Asampling.
+Some Aof Ayou Amight Awonder Aif Awe Areally Aneed Aa APCD Aalgorithm. AYou Amight Aask Ayourself Awhy Awe Adon't Ause Agradient Adescent Ainstead, Ajust Alike Awe Adid Abefore. AIt's Aabout Athe Adisadvantage Aof Athe ABoltzmann Amachine. ADepending Aon Athe Anumber Aof Anodes, Acalculating Afree Aenergy Agobbles Aup Aa Alot Aof Acomputing Apower. AOur Agoal Ais Ato Areduce Aa Afunction Athat Ahas Aan Aunknowable Avalue. AThe APCD Aalgorithm Ahappens Ato Abe Agood Aat Athat. AIt Agives Aus Aa Amethod Afor Acalculating Athe Aenergy Agradient, Aallowing Aus Ato Amake Athe Abest Aestimation Aof Athe Afree Aenergy Avalue Athat Awill Abe Aviable Ato Acompute.
+ 
+Boltzmann AMachine AApplication
+ 
+Now Athat Ayou Ahave Athe Aunderstanding Aof Athe Abasics Aof Aor Athe Aprocess Abehind Athe ABoltzmann Amachine Aalgorithm, Awe Acan Awork Awith Asome Acode.
+We Awill Ause Athe AMNIST Ahandwritten Adigit Adataset. AThe Acode Awill Aprepare Athe Arestricted ABoltzmann Amachine Aalgorithm. AWe Awill Ado Athis Aby Acreating Aits Aclass, Asetting Aup Aparameters, Alayers, Abias Avectors Aand Aweight Amatrix. AThen Awe Awill Acreate Aa Aconnect Afunction Awhich Awill Acontrol Acommunication Abetween Alayers. AThen Awe Awill Aprepare Afunctions Athat Ahandle Aparameter Aupdates. ALastly, Awe Awill Aimplement Athe APCD Aalgorithm Ato Aoptimize Athe Aprocess Aand Areduce Atraining Atime. ALet's Anot Awaste Aany Atime Aand Ajump Astraight Ainto Ait:
+class ARBM(object): Adef Ainit A(
+self, Ainput=None, An_visible=784, An_hidden=500,
+w=None, Ahbias=None, Avbias=None, Anumpy_rng=None, Atheano_rng=None
+):
+We Abegin Aby Acreating Athe ARBM Aobject Aand Adefining Aits Aparameters. A"n_visible" Astands Afor Athe Anumber Aof Avisible Aneural Anetwork Anodes, Aand A"n_hidden" Astands Afor Ahidden Anodes. AThe Awe Aadded Aoptional Adeep Abelief Anetwork Aparameters Alike A"w," A"hbias," Aand A"vbias". AThey Awill Abe Aused Ain Atopologies Awhere Athe Aweight Amatrix Ais Ashared Awithin Athe Anetwork. AWith Athe ABoltzmann Amachine Aclass Adefined, Alet's Awork Aon Aparameters:
+self.n_visible A= An_visible Aself.n_hidden A= An_hidden Aif Anumpy_rng Ais ANone:
+numpy_rng A= Anumpy.random.RandomState(1234) Aif Atheano_rng Ais ANone:
+theano_rng A= ARandomStreams(numpy_rng.randint(2 A** A30))
+We've Amade Arandom Anumber Agenerators Aand Adefined Ahidden Aand Avisible Anodes. ALet's Acontinue:
+if AW Ais ANone:
+initial_W A= Anumpy.asarray(
+numpy_rng.uniform(
+low=-4 A* Anumpy.sqrt(6. A/ A(n_hidden A+ An_visible)), Ahigh=4 A* Anumpy.sqrt(6. A/ A(n_hidden A+ An_visible)), Asize=(n_visible, An_hidden)
+),
+dtype=theano.config.floatX
+)
+We Abegin Aby Achanging Athe Adata Atype Aof A"w" Aso Athe AGPU Acan Arun Ait. ANext A"theano.shared" Ais Adefined Aso Athe Avariable's Astorage Acan Abe Ashared Aamong Athe Afunctions Ait Ais Afeatured Ain. AIn Athis Ainstance Athe Aweight Avector Aand Abias Avariables Aare Athe Aones Athat Awill Abe Ashared. AThe Anext Abit Aof Acode Aenables Athe Asharing Abetween Asegments Aof Athe Anetwork:
+W A= Atheano.shared(value=initial_W, Aname='W', Aborrow=True) Aif Ahbias Ais ANone:
+hbias A= Atheano.shared(
+value=numpy.zeros(n_hidden,dtype=theano.config.floatX
+),
+name='hbias', Aborrow=True
+)
+if Avbias Ais ANone:
+vbias A= Atheano.shared(
+value=numpy.zeros(n_visible, Adtype=theano.config.floatX
+),
+name='vbias', Aborrow=True
+)
+The Anext Astep Ais Ato Acompute Athe Ainput Alayer: Aself.input A= Ainput
+if Anot Ainput:
+self.input A= AT.matrix('input') Aself.W A= AW
+self.hbias A= Ahbias Aself.vbias A= Avbias
+self.theano_rng A= Atheano_rng
+self.params A= A[self.W, Aself.hbias, Aself.vbias]
+Then Awe Acreate Aa Asymbolic Agraph. ATo Ado Athat Awe Adefine Athe Anecessary Afunctions Athat Awill Adeal Awith Ainterlayer Apropagation Aand Aactivation. ALet's Alook Aat Athem Ain Amore Adetail:
+def Apropup(self, Avis):
+pre_sigmoid_activation A= AT.dot(vis, Aself.W) A+ Aself.hbias
+return A[pre_sigmoid_activation, AT.nnet.sigmoid(pre_sigmoid_ Aactivation)] Adef Apropdown(self, Ahid):
+pre_sigmoid_activation A= AT.dot(hid, Aself.W.T) A+ Aself.vbias
+return A[pre_sigmoid_activation, AT.nnet.sigmoid(pre_sigmoid_ Aactivation)]
+As Ashown, Awe Ahave Adefined Athe Afirst Afunction Aso Awe Acan Apass Athe Aactivation Aof Athe Avisible Aunits Aupward Ato Athe Ahidden Aunits. AThat Aallows Athe Ahidden Aunits Ato Aprocess Atheir Aactivation Aon Aa Asample Abelonging Ato Aa Avisible Aunit. AThe Asecond Afunction Aperforms Athe Asame Atask Abut Adownwards Ainstead Aof Aupwards Abecause Awe Ahave Adata Aactivation Aon Athe Avisible Alayer Aand Asend Aunit Aactivations Afrom Athe Ahidden Alayer.
+def Asample_h_given_v(self, Av0_sample): Apre_sigmoid_h1, Ah1_mean A= Aself.propup(v0_sample)
+h1_sample A= Aself.theano_rng.binomial(size=h1_mean.shape, An=1, Ap=h1_mean, Adtype=theano.config.floatX)
+return A[pre_sigmoid_h1, Ah1_mean, Ah1_sample]
+We Ahave Asampled Afrom Athe Ahidden Alayer. ANow Alet's Ado Athe Asame Awith Athe Avisible Alayer:
+def Asample_v_given_h(self, Ah0_sample): Apre_sigmoid_v1, Av1_mean A= Aself.propdown(h0_sample)
+v1_sample A= Aself.theano_rng.binomial(size=v1_mean.shape, An=1, Ap=v1_mean, Adtype=theano.config.floatX)
+return A[pre_sigmoid_v1, Av1_mean, Av1_sample]
+Now Athat Athe Aconnection Afunctions Aare Aadded, Awe Acan Aimplement Athe AGibbs Asampling Awe Atalked Aabout:
+def Agibbs_hvh(self, Ah0_sample):
+pre_sigmoid_v1, Av1_mean, Av1_sample
+=self.sample_v_given_h(h0_sample)
+pre_sigmoid_h1, Ah1_mean, Ah1_sample
+=self.sample_h_given_v(v1_sample)
+return A[pre_sigmoid_v1, Av1_mean, Av1_sample Apre_sigmoid_h1, Ah1_mean, Ah1_sample]
+Gibbs Asampling Ashould Aalso Abe Aapplied Ato Athe Avisible Asample Afrom Ait: Adef Agibbs_vhv(self, Av0_sample):
+pre_sigmoid_h1, Ah1_mean, Ah1_sample A= Aself.sample_h_given_v(v0_sample)
+pre_sigmoid_v1, Av1_mean, Av1_sample A= Aself.sample_v_given_h(h1_sample)
+return A[pre_sigmoid_h1, Ah1_mean, Ah1_sample, Apre_sigmoid_v1, Av1_mean, Av1_sample]
+Let's Atake Aa Amoment Ato Ago Aover Awhat Awe Ahave Aso Afar Aand Atalk Aabout Awhat Awe Awill Ado Anext. AWe Ahave Aprepared Anodes, Alayers Aand Aput Ain Aplace Acommunication Abetween Athem. ALastly, Awe Aadded AGibbs Asampling. ABut Awe Aare Anot Adone.
+Next, Awe Aneed Ato Acompute Afree Aenergy. AThat Ameans Awe Ashould Ause Athe AGibbs Asampling Acode Ato Aimplement Athe APCD Aalgorithm Aand Aassign Aa Acounting Aparameter Ato Ait A(k A= A1) Aso Awe Acan Ameasure Athe Agradient Adescent. ALastly, Awe Aneed Aa Away Aof Atracking Athe Asuccess Aand Aprogress Arate Aof Athe ARBM. ABelow Awe Aimplement Aour Acode, Astarting Awith Athe Acalculation Aof Afree Aenergy:
+def Afree_energy(self, Av_sample):
+wx_b A= AT.dot(v_sample, Aself.W) A+ Aself.hbias Avbias_term A= AT.dot(v_sample, Aself.vbias)
+hidden_term A= AT.sum(T.log(1 A+ AT.exp(wx_b)), Aaxis=1)
+return A-hidden_term A- Avbias_term
+Now Awe Acan Aimplement Athe APCD Aalgorithm. AWe Awill Ahave Aa Alearning Arate Aparameter. AThe Alearning Arate Aparameter Ais Aan Aadjustable Alearning Aspeed Aparameter, Aand Athe Ak-parameter Adetermines Athe Anumber Aof Asteps Athe APCD Awill Aperform. AWe Asaid Athe APCD Aalgorithm Ahas Apositive Aand Anegative Aphases. ABelow Ais Athe Apositive Aphase:
+def Aget_cost_updates(self, Alr=0.1, Apersistent A= A, Ak=1):
+pre_sigmoid_ph, Aph_mean, Aph_sample A= Aself.sample_h_given_v(self.input) Achain_start A= Apersistent
+Below Ais Athe Anegative Aphase. AOnce Athe Avalue Ais Afinished, Awe Awill Alearn Aour Afree Aenergy Avalue.
+(
+[
+pre_sigmoid_nvs, Anv_means, Anv_samples, Apre_sigmoid_nhs, Anh_means, Anh_samples
+],
+updates
+) A=      theano.scan( Aself.gibbs_hvh,
+outputs_info=[None, ANone, ANone, ANone, ANone, Achain_start], An_steps=k
+)
+chain_end A= Anv_samples[-1]
+cost A= AT.mean(self.free_energy(self.input)) A- AT.mean(self.free_energy(chain_end))
+gparams A= AT.grad(cost, Aself.params, Aconsider_constant=[chain_end]) Afor Agparam, Aparam Ain Azip(gparams, Aself.params):
+updates[param] A= Aparam A- Agparam A* AT.cast(lr, Adtype=theano.config.floatX)
+updates A= Anh_samples[-1]
+monitoring_cost A= Aself.get_pseudo_likelihood_cost(updates) Areturn Amonitoring_cost, Aupdates
+To Aimplement Athe Anegative Aphase, Awe Amust Ascan Athe A"gibbs_hvh" Afunction Ak Atimes. AThat Ais Adone Awith ATheano's Ascanning Aoperation. AEvery Ascan Aperforms Aone AGibbs Asampling Astep.
+Now Athat Athe APCD Aalgorithm Aworks Aas Aplanned, Awe Acan Aupdate Athe Anetwork. AThis Ameans Awe Ashould Aimplement Aa Atraining Ainspection Amethod Athat Awill Aensure Aour Alearning Aprocess Ais Aaccurate. AWe Abriefly Atalked Aabout ARBM Atraining. ANow, Alet's Alook Aat Athe Acode Aand Adiscuss Afurther:
+def Aget_pseudo_likelihood_cost(self, Aupdates):
+bit_i_idx A= Atheano.shared(value=0, Aname='bit_i_idx')      xi A= AT.round(self.input)
+fe_xi A= Aself.free_energy(xi)
+xi_flip A= AT.set_subtensor(xi[:, Abit_i_idx], A1 A- Axi[:,      bit_i_idx]) Afe_xi_flip A= Aself.free_energy(xi_flip)
+cost A= AT.mean(self.n_visible A*      T.log(T.nnet.sigmoid(fe_xi_flip A- Afe_xi)))
+updates[bit_i_idx] A= A(bit_i_idx A+ A1) A% Aself.n_visible Areturn Acost
+Now, Awe Ahave Aall Athe Acomponents Awe Aneed Ato Areview Athe ARBM Aobject Awe Ainitiated. AIn Aour Acode Ayou Acan Asee Athe Aalgorithm Ain Aaction. AHopefully, Athat Ahelps Ayou Again Aa Abetter Aunderstanding Aof Ahow Ait Afunctions. AWhat's Aleft Ais Atraining Athe ARBM. AWe Acan Atrain Athe ARBM Ausing Athe Acode Abelow:
+train_rbm A= Atheano.function( A[index],
+cost, Aupdates=updates,
+givens={x: Atrain_set_x[index A* Abatch_size: A(index A+ A1) A*batch_size] A}, Aname='train_rbm'
+)
+plotting_time A= A0. Astart_time A= Atime.clock()
+That's Ait Afor Anow. AThis Asetup Acan Abe Aextended Aafter Aupdating Athe Atraining Aset Ato Arun Athrough Aepochs Awhere Awe Atrain Aover Athe Atraining Adata Aand Aplot Aweights Amatrix. AIt's Aalso Apossible Ato Acreate Aa Apersistent AGibbs Achain Afor Aderiving Asamples Aand Athen Aplot Athem. AWe Awill Astop Ahere, Asince Aour Aaim Aisn't Ato Aintroduce Ayou Ato Aadvanced Aconcepts.
+The ARBM Aalgorithm Ais Amost Aused Aas Apre-training Aof Aa Adeep Abelief Anetwork. AA Adeep Abelief Anetwork Ais Aa Atool Athat Aclassifies Aimage Adatasets. ALet's Alearn Amore Aabout Ait.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Constructing ADeep ABelief ANetworks
+Deep Abelief Anetworks Aare Acreated Aby Astacking ARBMs. AThe Aspecific Anumber Aof ARBMs Awill Adepend Aon Athe Apurpose Afor Athe Anetwork. AThe Ageneral Aaim Ais Ato Aachieve Aa Abalance Abetween Aperformance Aand Aaccuracy. AIf Ayou Aare Alooking Afor Amore Aaccuracy, Ayou Awill Aneed Amore Acomputational Apower. AThe Afirst ARBM Ais Ato Atrain Aa Alayer Aof Afeatures Abased Aon Athe Atraining Adata; Athe Aother Alayers Awork Aon Athe Afeatures Aof Ahidden Alayers. AEvery ARBM Aimproves Athe Alog Aprobability. AThis Ameans Adeep Abelief Anetworks Aare Aimproved Athe Amore Alayers Aare Aadded.
+The Asize Aof Athe Alayer Awill Ahave Aan Aimpact. AUsually, Ait Ais Arecommended Ato Akeep Athe Anumber Aof Anodes Ain Athe Ahidden Alayers Aof Aconsecutive ARMBs Alow. AYou Adon't Awant Aan ARBM Athat Ahas Aa Asimilar Anumber Aof Avisible Anodes Aas Athe Ahidden Anodes Aof Athe Aone Abefore. AWith Athat Ain Amind, Ayou Acan Amodel Aany Akind Aof Afunction Aeven Aif Athe Alayers Ahave Aan Aextremely Alow Anumber Aof Anodes. AIt Awill Aas Along Aas Awe Ahave Aenough Alayers Ato Acompensate.
+Training
+ 
+Deep Abelief Anetworks Ahappen Athrough A"greedy" Alearning; Athat Ameans Aevery ARBM Alayer Ais Atrained Alocally.
+The ARBM Alayer Ais Atrained Athe Asame Away Aas Awe Ahave Aseen Ain Athe ARBM Atraining Asection. AData Adistribution Aof Athe Afist Alayer Ais Aconverted Awith AGibbs Asampling Ato Aa Aposterior Adistribution. AThe Anext ARBM Alayer Ain Athe Astructure Awill Alearn Athe Asame Adistribution, Aand Aon Ait Agoes.
+We'll Aalso Aneed Aa Aperformance Ameasure Ato Afine-tune Aparameters. AWe Acan Aadd Aa Agradient Adescent, Aa Aclassifier A(like AMLP) Aand Aprediction Aaccuracy. AWhen Ait Acomes Ato Ahow Awe Aput Athem Atogether, Ait Awill Aall Adepend Aon Aour Asituation.
+Let's Ado Aa ADBN Awalkthrough. AWe'll Astart Aby Acreating Athe Aclass Aobject: Aclass ADBN(object):
+def Ainit A(self, Anumpy_rng, Atheano_rng=None, An_ins=784, Aself.sigmoid_layers A= A[]
+self.rbm_layers A= A[] Aself.params A= A[]
+self.n_layers A= Alen(hidden_layers_sizes) Aassert Aself.n_layers A> A0
+if Anot Atheano_rng:
+theano_rng A= ARandomStreams(numpy_rng.randint(2 A** A30)) Aself.x A= AT.matrix('x')
+self.y A= AT.ivector('y')
+The Aobject Ahas A"numpy_rng" Aand Athe A"theano_rng" Aparameters Arequired Ato Acalculate Athe Ainitial Aweights. AThis Ais Aa Asimilar Aprocess Ato Athe Aone Awe Asaw Awith Aa Asimple ARBM. AThen Awe Ahave Athe A"n_ins" Aparameter Aas Athe Apointer Ato Athe Adimensions Aof Athe ADBN's Ainput. AThen Awe Ahave Athe A"hidden_layers_sizes" Aparameter, Aunderstood Aas Aa Alist Aholding Athe Asizes Aof Athe Ahidden Alayer. AThe Avalues Ain Athe Alist Aare Aused Ato Acreate Aan ARBM Alayer Aof Athe Aright Asize. AWithout Athis Avalue Athe ADBN Acannot Aachieve Athis. AThen Athere's Athe A"self.sigmoid_layers" Awhich Awill Ahold Athe AMLP Aelement Aof Aour ADBN;
+the A"self.rbm_layers" Awill Ahold Athe ARBM Alayers Aneeded Ato Atrain Athe AMLP. AThis Ais Athe Afirst Astep Aof Abuilding Aa Adeep Abelief Anetwork Aarchitecture.
+In Athe Anext Astep, Awe Adefine A"n_layers" Asigmoid Alayers Aand Aconnect Athem Ato Amake Athe AMLP Aelement. AThen Acreate Aan ARBM Afor Aall Athe Asigmoid Alayers. AEach Awill Abe Aconstructed Awith Aa Ashared Aweight Amatrix Aand Aa Ahidden Abias Abetween Athe Alayers Aand Athe ARBN. ALet's Abegin Awith Athe Acode Abelow:
+for Ai Ain Axrange(self.n_layers): Aif Ai A== A0:
+ 
+input_size A= An_ins
+ 
+input_size A= Ahidden_layers_sizes[i A- A1] Aif Ai A== A0:
+layer_input A= Aself.x
+ 
+layer_input A= Aself.sigmoid_layers[-1].output Asigmoid_layer A= AHiddenLayer(rng=numpy_rng,
+input=layer_input, An_in=input_size, An_out=hidden_layers_sizes[i], Aactivation=T.nnet.sigmoid)
+self.sigmoid_layers.append(sigmoid_layer) Aself.params.extend(sigmoid_layer.params)
+We Ahave Anow Acreated Amultiple Alayers Awith Asigmoid Aactivations. AWe Ahave Ainput Alayers Aand Ahidden Alayers. AValues Ain Athe A"hidden_layers_sizes" Alist Acontrol Athe Asize Aof Athe Ahidden Alayers. ALet's Amove Aon:
+rbm_layer A= ARBM(numpy_rng=numpy_rng,
+theano_rng=theano_rng, Ainput=layer_input, An_visible=input_size, An_hidden=hidden_layers_sizes[i],
+W=sigmoid_layer.W, Ahbias=sigmoid_layer.b)
+self.rbm_layers.append(rbm_layer)
+We Ahave Abuilt Aan ARBM Athat Ashares Athe Aweights Awith Asigmoid Alayers. ANow Awe Ahave Ato Acreate Aan AMLP Awith Aa Alogistic Aregression Alayer:
+self.logLayer A= ALogisticRegression( Ainput=self.sigmoid_layers[-1].output, An_in=hidden_layers_sizes[-1], An_out=n_outs) Aself.params.extend(self.logLayer.params)
+self.finetune_cost A= Aself.logLayer.negative_log_ Alikelihood(self.y) Aself.errors A= Aself.logLayer.errors(self.y)
+In Aour Alast Astep, Awe Abuild Aa Adeep Abelief Anetwork. AWe Aare Ausing Athe AMNIST Aimage Adataset, Aso Awe Awill Acreate Aa Anetwork Awith A29 Ax A28 Ainputs, Athree Ahidden Alayers Aand Aten Aoutput Avalues. ARemember Awe Ahave A20 Ahandwritten Anumber Aobjects Ain Athe Adataset, Aso Awe Aneed Aan Aoutput Afor Aeach.
+numpy_rng A= Anumpy.random.RandomState(123) Aprint A'... Acreating Amodel'
+dbn A= ADBN(numpy_rng=numpy_rng, An_ins=28 A* A28, Ahidden_layers_sizes=[1000, A800, A720], An_outs=10)
+Lastly, Awe Awill Ado Apre-training. AEvery Alayer Awill Adepend Aon Athe Aone Abefore Ait
+to Atrain. AAll Athis Ais Adone Aby Aapplying APCD Ato Athe Alayer's ARBM. AHere's Ahow Ait Alooks Ain Acode:
+print A'... Afetching Apretraining Afunctions'
+pretraining_fns A= Adbn.pretraining_functions(train_set_x=train_set_x, Abatch_size=batch_size, Ak=k)
+print A'... Apre-training Amodel' Astart_time A= Atime.clock() Afor Ai Ain Axrange(dbn.n_layers):
+for Aepoch Ain Axrange(pretraining_epochs): Ac A= A[]
+for Abatch_index Ain Axrange(n_train_batches):
+c.append(pretraining_fns[i] A(index=batch_index,lr=pretrain_lr))
+print A'Pre-training Alayer A%i, Aepoch A%d, Acost A' A% A(i, Aepoch), Aprint Anumpy.mean(c)
+end_time A= Atime.clock()
+To Arun Athe Apre-trained ADBN, Awe'll Ause Athe Afollowing Acommand: A"python Acode A/DBN.py". ARemember Athat Athe Aprocess Awill Atake Aa Awhile Adepending Aon Ayour Ahardware, Aespecially Athe AGPU. AIt Awill Arun Afor Ahalf Aa Aday.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A3:
+ 
+CONVOLUTIONAL ANEURAL ANETWORKS
+
+Convolutional Aneural Anetworks Aare Aone Aof Athe Amost Apopular Aartificial Aneural Anetworks Abecause Aof Atheir Aability Ato Aprocess Aand Aclassify Aimages. AThese Aalgorithms Aare Aoften Aused Awhere Aphoto Asearch Aand Aimage Arecognition Aare Aneeded. AThey Aare Aalso Aused Ato Adigitize Atext, Afor Alanguage Aprocessing Aand Afor Agraphically Arepresenting Aaudio Adata. AThe Amain Apurpose Ais Aimage Arecognition. AThis Ais Awhat Abrought Aa Alot Aof Aattention Ato Adeep Alearning. AWe Asee ACNN Aalgorithms Abeing Aused Ain Adrones, AAI-driven Acars, Arobotics, Amedical Ascience Aand Amuch Amore. ACNNs Ahave Aadvanced Ascience Aand Atechnology.
+CNNs Aprocess Avisual Adata Aas Atensors. AA Atensor Ais Aa Amatrix Aof Anumbers Awith Aadditional Adimensions Aformed Aby Aan Aarray Anested Awithin Aan Aarray. ACNNs Awork Awith A4D Atensors. ATo Ahelp Aexplain Abetter, Aimagine Ayou Aare Alooking Aat Aa Apicture. AWe Acan Adeduce Athe Aheight Aand Awidth Aof Athe Apicture Awith Aease, Abut Awhat Aabout Athe Adepth? ADepth Ais Athe Aencoded Acolors: Ared, Agreen Aand Ablue
+color Achannels. AConvolution Ais Aused Ato Aproduce Afeature Amaps, Awhich Aare Amaps Aof Aimage Adetails. AThese Aexist Ain Aa Afourth Adimension. ASo, Aour Apicture Ais Anot Aa Atwo-dimensional Aobject Abut Aa Afour-dimensional Aobject.
+The Aquestion Anow Ais: AWhat Ais Aconvolution? AIn Amath, Aconvolution Ais Ameasuring Ahow Amuch Atwo Afunctions Aoverlap Awhen Athey Apass Aover Aeach Aother. ACNNs Aregister Adifferent Asignals Aevery Atime Athey Apass Aa Afilter Aover Aan Aimage. AFor Ainstance, Awhen Amapping Amargins Aof Aan Aimage, Awe Acan Apicture Athe Afollowing Afilters Apassing Aover Ait: Ahorizontal, Avertical Aand Adiagonal.
+Remember, Aconvolution Anetworks Adon't Aprocess Aand Aanalyze Aimages Ain Athe Amanner ARBMs Ado. ACNNs Alearn Aby Awhat Aare Aknown Aas Afeature Amaps; Ain Acontrast, ARBMs Aanalyze Athe Awhole Aimage.
+CNNs Aare Ainspired Aby Athe Abrain's Avisual Acortex, Awhich Agives Apeople Athe Aability Ato Aprocess Aand Aanalyze Avisual Aimagery. AThe Avisual Acortex Ahas Alight Adetecting Areceptors Athat Acapture Alight Adata Ain Aoverlapping Avisual Afield Alayers. AThis Ais Aone Aof Areasons Awhy Aimage Arecognition Aalgorithms Aare Apopular Ain Aartificial Aintelligence Aand Amachine Alearning.
+Facebook Auses Athis Atechnology. AIt Ahas Acreated ADeepFace, Aa Afacial Arecognition Asystem Athat Acan Aidentify Ahuman Afaces Awith Aincreasing Aaccuracy. ASome Aeven Areport Athat ADeepFace Ahas Aan Aaccuracy Aof A97%. AIn Acomparison, Athe AFBI's Afacial Arecognition Asystem Ais Aonly A85% Aaccurate. AAnother Aexciting Aapplication Aof ACNNs Ais ADeepDream, Acreated Aby Aa AGoogle Aengineer. ADeepDream Ais Aused Ato Agive Aimages Aa Ahallucinogenic Alook. AThese Aimages Aare Aprocessed Athrough Aalgorithmic Apareidolia. AOther Abig Atech Acompanies Alike AMicrosoft Aand AIBM Ahave Aalso Aused ACNNs Ato Adevelop Aintelligent Asoftware.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Understanding Athe AArchitecture
+The Atopology Aof ACNNs Ais Athe Asame Aas Athat Aof Aa Amulti-layer Aperceptron. AA Amulti-layer Aperceptron Aacyclic Agraph Ais Aconstructed Awith Alayers Amade Aup Aof Aa Afew Anodes Awhere Aeach Alayer Acommunicates Awith Athe Anext.
+It's Aworth Amentioning Athat Athis Atype Aof Aa Aneural Anet Ahas Aidentical Aneurons. AIt's Aan Aimportant Adifference, Abecause Ait Ameans Awe Ahave Aidentical Aparameters Aand Aweight Avalues. AThis Amakes ACNNs Asuper-efficient Abecause Afewer Avalues
+need Acomputing. AAnother Aimportant Adifference Ais Athat Athe Anodes Ahave Alimited Acommunication, Ameaning Athe Ainputs Aare Anot Alocally Aconnected Ato Aneighboring Anodes.
+ 
+Layers
+ 
+Like Awe've Amentioned, Aweights Ashould Abe Ashared Aon Athe Awhole Alayer Ato Aavoid Aunpredictable Anode Aparameters. AWe Athen Ahave Aa Afilter Amade Aup Aof Afour Aparameters Athat Ais Aapplied Ato Athe Alayer Ato Acreate Aa Afeature Amap. AThose Afour Afilter Aparameters Aare Aknown Aas Ahyper-parameters. AHyper-parameters Arepresent Asize, Adepth, Astride Aand Azero-padding.
+Size Ais Aarrived Aat Aby Acalculating Athe Afilter's Asurface Aarea. AThe Afilter's Asize Awill Ahave Aan Aimpact Aon Athe Aoutput, Amaking Ait Aimportant Ato Acontrol Athe Aoutput Aso Athat Awe Ahave Aan Aefficient Anetwork. AIt's Aworth Anoting Athat Asizable Afilters Aoften Aoverlap, Abut Ait Ais Anot Aas Abad Aas Ait Asounds, Asince Ait Acan Alead Ato Abetter Aaccuracy Arates.
+The Afilter Adepth Ais Aabout Athe Anodes Awe Ahave Ain Aa Alayer, Aand Ahow Amany Aconnect Ain Athe Asame Aarea Aaround Athe Ainput. AWe Amight Abe Atalking Aabout Aimages, Abut Awhen Awe Aare Adiscussing Adepth, Awe Aare Anot Areferring Ato Aany Aimage Acontent. AIf Ayou Ahave Aworked Awith Aany Aimage Aediting Asoftware, Ayou Aknow Awhat Acolor Achannels Aare. AColor Achannels Aare Aneeded Ato Adescribe Athe Acontent Aof Aan Aimage. AOur Aneural Anodes Aare Amapped Aso Athey Acan Asee Ared, Agreen Aand Ablue Acolor Achannels. AThat Ais Awhy Afilter Adepth Ais Aalmost Aalways Aset Ato A3. AIncreasing Ait Awill Agive Aus Amore Adata Aabout Athe Aimage Aand Aincluding Aproperties Athat Aare Adifficult Ato Alearn. AConversely, Asetting Aa Alower Adepth Awill Agive Aus Aweak Aresults.
+The Athird Afilter Aparameter Ais Athe Astride. AThe Astride Avalues Agive Aus Athe Aspace Abetween Aneurons. AIf Awe Aare Aworking Awith Aan Aimage Aand Aour Astride Ais Aequal Ato A1, Awe Awill Aset Aeach Apixel Aas Athe Acenter Aof Athe Afilter. AThis Awill Aresult Ain Aoutput Aincrease Aand Aan Aincrease Ain Alayer Aoverlap. AIn Athat Asituation Awe Acan Aincrease Athe Astride Avalue Ato Aminimize Aoverlap; Aif Awe Ado Athis, Athe Aoutputs Awill Aalso Abe Areduced Ain Asize. AFine Atuning Ais Aall Aabout Aaiming Afor Aa Abalance Abetween Aaccuracy Aand Asize, Abut Athat Awill Adepend Aon Ayour Aaims. AIn Amost Asituations, Alower Avalues Awill Abe Aideal.
+The Afourth Aand Afinal Afilter Aparameter Awill Areduce Aa Alayer's Aoutput Asize. AZero- Apadding Asets Athe Aborder Avalues Aof Athe Areceptive Afield Ato A0. AWhen Ait Acomes Ato ACNNs, Areceptive Afields Aare Athe Ainput Aspace Athat Ahave Aeffect Aover Aunits Athat Aare Apart Aof Athe Anetwork. AIt's Aimportant Ato Aensure Athat Aall Aareas Aare Acovered Aby Athe Afilter Abefore Ayou Aset Azero-padding. AOne Aof Athe Aadvantages Aof Aa Azero- Apadding Asetup Ais Abeing Aable Ato Aadjust Ainputs Aand Aoutputs Aso Athey Ahave Aan Aidentical Asize. AMaking Athe Ainput Aand Aoutput Ahave Aan Aequal Asize Ais Astandard Apractice Abecause Ait Aallows Aus Ato Aadjust Adepth Aand Astride Aparameters Aefficiently. AWithout Azero-padding, Aseeing Aup Aparameters Aproperly Aand Aimproving Anetwork Aperformance Awould Abe Aa Anightmare. AIn Asome Acases, Athe Aborders Aof Aa Afilter Amight Adegrade.
+The Aquestion Ais: AHow Ashould Awe Acalibrate Aall Athese Aparameters Awhen Asetting Aup Aa Anetwork? AWe Ahave Aan Aelegant Aformula Afor Athis. AHere's Ait Ais:
+O A= A
+The AO Astands Afor Athe Alayer's Aoutput, AW Ais Afor Athe Aimage Asize, AF Afor Athe Afilter Asize, AP Afor Athe Azero-padding Aand AS Afor Athe Astride. ARemember Athat Athe Alayer's Aoutput Amight Anot Aalways Abe Aa Apositive Ainteger, Aand Athat Acan Apotentially Alead Ato Aissues. AYou Acan Acompensate Afor Ait Aby Aadjusting Athe Astride.
+Now Awe Aknow Aa Abit Aabout ACNN Alayers Aand Atheir Aparameters, Alet's Alearn Aabout Awhat Aconvolutional Ais. AConvolutional Ais Aa Amathematical Aoperator Alike Amultiplication Aand Aaddition. AIt Ais Aoften Aused Ato Abreak Adown Acomplicated Aequations Ainto Asimpler Aforms. AIt Aproduces Aa Athird Afunction Aafter Aoperating Aon Atwo Aset Afunctions, Aresulting Ain Aa Anew Afunction Athat Ais Aa Aderivative Aof Athe Atwo Aoriginal Afunctions.
+In ACNNs, Awe Ahave Athe Ainput Aas Athe Afirst Aelement. AWhen Awe Aapply Athe Aprocess Ato Aan Aimage, Ait Ais Aassigned Ato Athe Aheight Aand Awidth Aof Athe Aimage. AWe'll Ahave A3-pixel Amatrices Afor Aeach Acolor Achannel. AThe Avalues Aof Athe Amatrix Awill Ago Afrom A0 Ato A255.
+The Asecond Acomponent, Awhich Aconsists Aof Aa Amatrix Amade Aup Aof Afloats, Ais Athe Aconvolutional Akernel. AThese Anumbers Agive Athe Ainput Amatrix Aa Afilter, Aand Athe Aoutput Ais Athe Afeature Amap. AThe Afilter Aassesses Athe Ainputs Aand Awrites Athe Afeature Amap. AThe Amain Aadvantage Aof Aa Aconvolution Aprocess Alike Athis Ais Athat Ait Aremoves Athe Aneed Afor Afeature Aengineering. AWe Awill Atalk Aabout Afeature
+engineering Ain Alater Achapters. AFor Anow, Ait's Aenough Ato Aknow Athat Athe Afeature Aengineering Aprocess Ais Aoften Achallenging Aand Ademanding.
+ 
+Training
+ 
+CNN Alearning Ais Avery Asimilar Ato Aprevious Aprocesses. AFor Aexample, AMLPs Aare Apre-trained Ausing Aconvolution Anets Aand Athe Ause Aof Abackpropagation Afor Aprocessing Athe Agradient.
+Let's Adiscuss Athe Asteps Aperformed Aduring Atraining. AFirstly, Awe Amust Acompute Aa Afeature Amap Aby Acomputing Aeach Aas Aa Asum Aof Athem Aall Aconvolved Awith Athe Acoinciding Aweight Akernel. AThat Astep Ais Acalled Athe Aforward Apass. ASecondly, Athe Agradients Aare Acalculated Aby Aconvolving Athe Aexchanged Aweight Akernels Awith Athe Agradients. AIt's Acalled Athe Abackward Apass. ADuring Athe Aprocess Awe Ashould Aalso Acalculate Athe Aloss Aof Akernels Aso Awe Acan Aadjust Atheir Aweights.
+Remember Athat Athe Atraining Aprocess Ais Aslow, Aso Ait Atakes Aa Awhile Aregardless Aof Athe Aquality Aof Ayour Ahardware.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Connecting Athe APieces
+Having Alooked Aat ACNNs Aand Aall Atheir Acomponents, Anow Alet's Aconnect Aall Athese Aelements Atogether Ain Athe Amost Aefficient Away. ATo Aillustrate Ahow Ato Aimplement ACNNs, Awe Awill Atake Aa Areal-world Aexample Aand Adelve Ainto Ait.
+A Apopular Aconvolutional Anet Ais A"LeNet." AIt Ahas Abeen Aaround Asince Athe A'80s. AIt's Abest Aknown Afor Ahow Awell Ait Aworks Awith Aimages Aand Ahandwritten Adigits. AThat Ajust Ahappens Ato Abe Awhat Awe Aare Ainterested Ain. AThe Anetwork Adepends Aon Aalternating Aconvolution, Apooling Alayers Aand Aan AMLP Ato Ado Aits Awork. AFor Athose Awho Adon't Aknow, Apooling Alayers Aare Aoften Aput Abetween Aconvolutional Alayers Ato Areduce Aparameters Aand Acomputation Ain Athe Anetwork.
+Those Alayers Aare Apartially Aconnected, Awhile Athe AMLP Ais Awholly Aconnected. AEach Alayer Ais Amade Aup Aof Achannels, Aallowing Aus Ato Abuild Apowerful Afilters. AThe Apool Alayers Aare Athere Ato Aadd Adimensionality Areduction Aso Aour Aoutput Ais Aequal Ato Athe Ainput. AThere's Aa Afully Aconnected Alayer Awhere Aall Acomputations Aare Acommunicated Atowards. AThe Adiagram Abelow Aillustrates Athe Aarchitecture:
+Fully AConnected ALayer
+2x2 AMax APooling A2x2 AMax APooling A2x2 AMax APooling A4x4 AConvolutions A4x4 AConvolutions A4x4 AConvolutions APrevious ALayer
+This Aimplementation Aworks Agreat Afor Acertain Aapplications Abut Aworks Anot Aso
+well Afor Aothers. AThis Aarchitecture Awill Aproduce Aabysmal Aresults Athe Amore Achallenging Aa Atask Ais. AThere's Aan Aalternative ALeNet Aarchitecture Acalled AGoogleLeNet.
+It Ais Aalso Aknown Aas AGoogle's AInception Anetwork. AIts Aarchitecture Awas Amade Afor Ahandling Achallenging Aimage Adata. AWhat Awe Amean Aby Achallenging Ais Aphotos Aand Avideos Ashot Awith Aa Aphone Ain Apoor Alighting Aconditions Athat Acontain Aa Alot Aof Anoise. ACNNs Aare Asupposed Ato Adeal Awith Athat. AAs Ayou've Aprobably Aguessed, Aa Alot Aof Adata Aon Athe Ainternet Ais Acluttered Aand Anoisy, Awhich Amakes Ait Achallenging.
+We Aare Anot Agoing Ato Adelve Aany Adeeper Athan Athis Aor Awe Awill Abe Astirred Aaway Afrom Athe Afocus Aof Athis Abook. AThe Abig Atakeaway Ais Athat ACNN Aarchitecture Ais Agood Aat Afinding Asolutions Ato Achallenging Atasks Abecause Athey Acan Abe Aadapted Ato Ain Atheir Aconfigurations.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A4:
+ 
+STACKED ADENOISING AAUTOENCODERS
+
+In Athis Achapter, Awe'll Alook Aat Aautoencoders, Awith Aa Aspecial Afocus Aon Astacked Adenoising Aautoencoders. AWe'll Amainly Alook Aat Athe Atheory Aand Atechnique Abehind Athem, Athen Alook Aat Aa Alittle Abit Aof Acode. AThis Atopic Ais Amore Aon Athe Aadvanced Aside Aof Athe Aspectrum. ALearning Aabout Athe Atheory Aand Aprinciples Abehind Aautoencoders Ais Aworthwhile Afor Aan Aintermediary Aguide Abecause Ayou Awill Aeventually Awork Awith Athem.
+Let's Abegin Awith Aa Ageneral Adiscussion Aof Aautoencoders.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Autoencoders
+Autoencoders Ahave Aa Anumber Aof Asimilarities Ato Arestricted ABoltzmann Amachines. AIn Asome Acases, ARBMs Aare Areplaced Aby Aautoencoders Aif Athey Aaren't Aperforming Awell. ABut Awhat Aare Aautoencoders?
+Autoencoders Aare Aneural Anetworks Awith Aa Athree-layer Astructure Awhere Aoutputs Aare Aconnected Ato Ainputs. AAutoencoders Aare Abuilt Ato Alearn Athe Aencoding/representation Afor Adimensionality Areduction. AThe Areduction Ais Aachieved Aby Aignoring Asignal Anoise. AHowever, Athat Ais Aonly Aa Apart Aof Ait; Athe Aother Athing Athey Ado Ais Areconstruct. AReconstruction Ais Awhere Areduced Arepresentation Ais Ataken, Aand Awe Abuild Aup Athe Aencoding Ato Abe Athe Asame Aas Athe Ainput Awe Astarted Awith. ASimply, Athe Aautoencoder Acompresses Adata Afrom Athe Ainput Alayer Aand Athen Auncompresses Ait Ato Amatch Athe Aoriginal Adata. AThis Ais Aso Adimensionality Areduction Ais Adone Aand Ato Aignore Adata Anoise.
+For Ainstance, Awe Acan Ause Aan Aautoencoder Ato Awork Aon Aimage Arecognition. AWe Aencode Abasic Aimage Adata Alike Acorners Aby Ataking Afrom Athe Aencoding Alayer. AThe Asecond Aencoding Alayer Awill Aprocess Athe Aoutput Afrom Athe Afirst Alayer Aand Aencode Aremaining Afeatures. AThose Afeatures Amight Abe Asomething Alike Athe Airis Aof Aan Aeye. AThe Athird Alayer Awill Aencode Athe Arest Aof Athe Aeye, Auntil Athe Aimage Acode Amatches Athe Aimage Arepresentation. AIn Athe Aend, Aall Athat Adata Awill Abe Adecoded, Aby Athe Alayers, Aback Ainto Athe Aoriginal Adata.
+We've Atalked Aabout Adimensionality Areduction Amethods Alike Athe APCA. AAutoencoders Aplay Athe Asame Arole Aas APCAs. AThe Aquestion Abecomes: AWhy Ause Aautoencoders Aif Awe Aalready Ahave Aa Amethod Athat Aworks Awell? AThe Aanswer Ais Asimple. AIt Awill Aall Adepend Aon Athe Adata Ayou Aare Aworking Awith. APCA Ais Anot Aeffective Awhen Aworking Awith Ahigh-dimensional Adata, Abut Aautoencoders Awork Awell Awith Ahigh-dimensional Adata. AAutoencoders Aare Amore Aadvanced Aways Aof Aapplying Anoise Areductions Aand Astacking Amethods. AThat Ais Awhy Athey Aare Agood Aat Aworking Awith Acomplex Adata Aat Alarge Ascales Awhile Abeing Aaccurate.
+Now Ayou Aknow Aa Abit Aabout Aautoencoders. ALet's Alook Aat Atheir Aarchitecture Aso Ayou Aunderstand Ahow Athey Aare Aimplemented.
+ 
+Structure Aand ALearning
+ 
+Autoencoders Ahave Aa Astraightforward Aarchitecture. AWe Ahave Athe Atypical Athree-layer Aneural Anet Atopology Awith Athe Ainput, Ahidden Aand Aoutput Alayer. AJust Alike Awith Aall Aother Atopologies, Athe Ainput Alayer's Adata Agoes Ato Athe Ahidden Alayer, Aand Afrom Athere Ait Agoes Ato Athe Aoutput Alayer. AWhat Amakes Aautoencoders Aunique Ais Athe Asmall Anumber Aof Anodes Ain Athe Ahidden Alayer Acompared Ato Athe Ainput Aand Aoutput Alayers.
+One Astriking Afeature Ais Athat Athe Aoutput Ais Aset Aas Athe Ainput. AThat Ais Abecause, Aafter Aencoding Ainput Ain Athe Ahidden Alayers, Ait Arelies Aon Athe Aaccuracy Ato Areconstruct Ait. ABelow Ais Aan Aexample Aof Athe Aencoding:
+y A= As(Wx A+ Ab)
+In Athe Aexample Aabove, Athe Aencoding Ais Aperformed Aby Amapping Athe A"x" Ainput Ato Aa Anew Aversion Aof Aitself. AThat Anew Aversion Ais A"y." AThe A"W" Astands Afor Athe Aweight Avalue Athat Ais Aattached Ato Athe A"x" Aand A"b" Aadjustable Avariable. AVariable Aadjustments Aare Avery Aimportant Abecause Athey Acan Ahelp Aus Alimit Aerrors Ain Areconstruction.
+Let's Ahave Aa Alook Aat Athe Alearning Aprocess. AWhen Aautoencoders Atrain, Athey Arely Aon Alow Areconstruction Aerror Ato Abe Aas Aefficient Aand Aaccurate Aas Apossible. AErrors Acan Abe Ameasured Ausing Athe Afollowing Aformula:
+E A= A1/2 A‖ Az- Ax A‖ A2
+ 
+Denoising AAutoencoders
+ 
+Some Aproblems Aare Acomplex Afor Aa Atypical Aautoencoder Ato Ahandle. AThat Ais Abecause, Asometimes, Awhen Ahandling Ahigh-dimensionality Adistributions, Athe Aencoding Aends Aup Aas Aa Aclone Aof Athe Ainput. AThis Ais Aknown Aas Athe Aovercomplete Aautoencoder. AExamples Athat Awill Afit Athis Aare Athings Alike Aspeech Adata. ASpeech Adata Ais Adifficult, Aand Aclassifying Ait Aneeds Aa Ahidden Alayer Awith Ahigh Adimensionality Aand Acomplex Aencoding.
+This Ais Aone Aof Athe Areasons Awhy Ain Amachine Alearning Ayou Aneed Ato Apay Aattention Ato Athe Adimensionality Aof Ahidden Alayers. AThis Aaspect Acan Ahave Aa Aserious Aimpact Aon Athe Alearning Aprocess, Aand Ayour Aresults Amight Anot Aend Aup Abeing Athe Aones Ayou Aexpect. AIf Awe Ahave Aa Ascenario Athat Ainvolves Aa Acomplex Ainput, Abut Athe Ahidden Alayer Adoesn't Ahave Aenough Anodes Ato Aprocess Aall Athat Adata, Awe Aend Aup Awith Aa Afailing Aneural Anet. ATraining Asometimes Arequires Amore Anodes Awhen Adealing Awith Adifficult Adistributions.
+Overcomplete Aautoencoders Acan Aachieve Aa Alow Aerror Arepresentation, Abut Aconfiguring Athem Aso Athat Athey Ado Ais Adifficult. AOptimizing Athat Amakes Athings Aeven Amore Adifficult. AGiven Athat, Ait's Abest Ato Ablock Athe Aovercomplete
+encoder's Aability Ato Alearn Athe Aidentify Afunction. AThere Aare Amultiple Aways Ato Ado Athis, Aand Aall Aof Athem Awon't Astop Aus Afrom Againing Auseful Adata.
+One Away Ais Aadding Anoise Ato Athe Ainput Adata. AIt Asounds Abad Abecause Ain Amost Acircumstances Awe Awant Ato Aavoid Anoise. ABut Aadding Anoisy Adata Ais Ahow Athe Aautoencoder Awill Ago Athrough Athe Atraining Aprocessing Aand Alearn Astatistical Aprecision Ainstead Aof Aidentity. ANoisy Adata Acan Abe Aadded Ausing Athe Adropout Amethod. AThe Adropout Amethod Ais Adone Aby Asetting Ahalf A A Athe Ainput Avalues Ato Azero Aat Arandom. ABelow Ais Ahow Athe Atechnique Ais Aapplied Athrough Aa Astochastic Acorruption Aoperation.
+def Aget_corrupted_input(self, Ainput, Acorruption_level):
+return Aself.theano_rng.binomial(size=input.shape, An=1, Ap=1 A- Acorruption_level, Adtype=theano.config.floatX) A* Ainput
+Statistical Afeatures Aare Alearned Aby Adifferentiating Acorrupted Avalues Afrom Auncorrupted Avalues. AThis Astep Awill Ahelp Awith Amodeling Ainput Adata Awith Abetter Aaccuracy. AIn Aother Awords, Athe Adenoising Aprocess Awill Acreate Amore Apowerful Amodels. ATherefore, Awhen Aworking Awith Anoisy Ainput Adata, Awhether Ait Abe Aimages Aor Aspeech, Athis Ais Aan Aimportant Astep Ato Atake.
+Earlier Awe Atalked Aabout Ahow Amany Amachine Alearning Aalgorithms Aneed Ato Apreprocess Ainput Adata Aso Athey Acan Areconstruct Aa Adenoised Ainput. ADenoised Aautoencoders Aonly Arequire Athe Abare Aminimum Aof Apreprocessing Ato Aachieve Aa Ahigh Alevel Aof Aaccuracy. AThat Ahappens Ato Abe Aof Agreat Ause Ato Adeep Alearning.
+If Awe Ahave Aan Aautoencoder Alearning Athe Aidentity Afunctions Afrom Athe Ainput Adata, Athere's Aa Ahigh Achance Aof Ait Abeing Aconfigured Awrongly. AIn Amost Acases, Athis Ais Abecause Athe Aautoencoder Ahas Amore Anodes Athan Ait Ashould. AIf Ayou Afind Ayourself Ain Athat Asituation, Ayour Abest Athing Ato Ado Ais Alower Athe Anumber Aof Anodes Ain Athe Ahidden Alayer.
+Now Ayou Aknow Awhat Adenoising Aautoencoders Aare Aand Aa Abit Aabout Ahow Athey Awork, Alet's Adiscuss Athe Apractical Aimplementation Aof Aone Ausing Athe ATheano Alibrary. AWe'll Aneed Ato Afirst Adefine Athe Adenoising Aencoder Aobject. AWe Aneed Ato Adeclare Avisible Aunits Aand Ahidden Aunits. AThen Awe Awill Awork Aon Aour Ainput Aconfiguration: Avariables, Aweights Avariables, Avisible Aand Ahidden Abias Avalues. AThese Avariables Awill Aallow Aour Aautoencoders Ato Areceive Aparameters Afrom Aany Aother Acomponent. AHere's Ahow Athe Acode Alooks:
+class AdA(object):
+def Ainit A(self, Anumpy_rng, Atheano_rng=None, Ainput=None, An_visible=784,
+n_hidden=500, AW=None, Abhid=None, Abvis=None): Aself.n_visible A= An_visible
+self.n_hidden A= An_hidden
+Next, Awe Ainitialize Athe Aweight Aand Abias Avalues. AThe Aweight Avector Awill Ahave Aan Ainitial Avalue Afrom Arandom Aand Auniform Asampling. AThen Awe Aassign Athe Avisible Aand Ahidden Abase Avariables Ato Aarrays Aof Azeros. AWe Awill Ado Athat Ausing Athe Anumpy.zeros Afunction. AHere's Ahow Athe Acode Alooks:
+if Anot Atheano_rng:
+theano_rng A= ARandomStreams(numpy_rng.randint(2 A** A30)) Aif Anot AW:
+initial_W A= Anumpy.asarray(
+numpy_rng.uniform(
+low=-4 A* Anumpy.sqrt(6. A/ A(n_hidden A+ An_visible)), Ahigh=4 A* Anumpy.sqrt(6. A/ A(n_hidden A+ An_visible)), Asize=(n_visible, An_hidden)
+),
+dtype=theano.config.floatX
+)
+W A= Atheano.shared(value=initial_W, Aname='W', Aborrow=True) Aif Anot Abvis:
+bvis A= Atheano.shared(
+value=numpy.zeros(
+n_visible, Adtype=theano.config.floatX
+),
+borrow=True
+)
+if Anot Abhid:
+bhid A= Atheano.shared(
+value=numpy.zeros(
+n_hidden, Adtype=theano.config.floatX
+),
+name='b', Aborrow=True
+)
+Earlier Awe Atalked Aabout Aautoencoder Amapping, Awhich Ainvolves Aencoding Aof Athe Ainput Alayers Ato Ahidden Alayers. AWe Adescribed Ait Ausing Athis Aformula: Ay A= As(Wx A+ Ab). ATo Amake Aencoding Awork, Awe Aneed Ato Adefine Athese Avalues. AHow Awe Adefine Athem Awill Abe Abased Aon Atheir Arelationship Awith Aparameters Ain Athe Aearlier Acode. AThe Acode Abelow Aillustrates Athis:
+self.W A= AW Aself.b A= Abhid
+self.b_prime A= Abvis Aself.W_prime A= Aself.W.T Aself.theano_rng A= Atheano_rng Aif Ainput Ais ANone:
+self.x A= AT.dmatrix(name='input') Aelse:
+self.x A= Ainput
+self.params A= A[self.W, Aself.b, Aself.b_prime]
+In Athe Ablock Aof Acode Aabove, Awe Adefined A"b_prime," A"bhid" Aand A"bvis." AWe Aset AW_prime, Awhich Ais Atied Ato Athe Aweights Aby Abeing Atransposed Aof AW. ATied Aweights Aare Aoften Aset Abecause Athey Aimprove Aresults. AAnother Abenefit Aof Atied Aweights Ais Amemory Aconsumption Aoptimization, Asince Athere Awon't Abe Aa Aneed
+to Astore Aa Ahigh Anumber Aof Aparameters. AThis Ais Awhere Awe Acome Aacross Athe Aregularization Aeffect. ATied Aweights Aonly Aneed Aone Aparameter Ato Abe Aoptimized. ASince Athere Awill Abe Afewer Athings Ato Akeep Atrack Aof, Ayou Aare Aalso Aless Alikely Ato Amake Amistakes.
+Now Athat Awe Ahave Aprepared Aautoencoder Aparameters, Awe Acan Adefine Alearning Afunctions. ASince Awe Asaid Athat Aautoencoders Aneed Aus Ato Aput Anoise Ain Athe Ainput Adata, Awe Awill Ado Athat. AThe Alearning Awill Abe Adone Athrough Aencoded Aimages Aof Ainput Adata, Awhich Awill Abe Areconstructed Ato Abe Aas Aclose Ato Athe Aoriginal Aform Aas Apossible. ALet's Aimplement Athis Afunctionality Aby Acorrupting Athe Ainput Adata:
+def Aget_corrupted_input(self, Ainput, Acorruption_level):
+return Aself.theano_rng.binomial(size=input.shape, An=1, Ap=1 A- Acorruption_level, Adtype=theano.config.floatX) A* Ainput
+def Aget_hidden_values(self, Ainput):
+return AT.nnet.sigmoid(T.dot(input, Aself.W) A+ Aself.b)
+In Athe Acode, Awe Ahave Athe Aparameter A"corruption_level," Awhich Aconfigures Athe Aintensity Aof Athe Acorruption. AIt's Adone Athrough Athe Adropout Atechnique. AWe Asaid Acorruption Ais Aapplied Arandomly Ain Athe Amaximum Ahalf Aof Athe Acases. AIn Athis Aexample, Athe Anumber Aof Acases Ais Aproportional Ato Athe Ainput. AThis Ameans Aour Acorruption Alevel Awill Abe Aequal Ato Athe Ainput. AWe'll Aget Aa Acorruption Avector Awith Avalues Aof A0 Aand A1n Aequivalent Ato Athe Alength Aof Athe Ainput. AIn Athe Alast Alines Aof Aour Acode, Awe Adefine Athe Acorrupted Avectors Aas Amultiples Aof Ainput Aand Acorruption Avectors.
+Next, Awe Adetermine Aour Ahidden Avalues. AWe Ado Athis Aby Acalculating Ay A= As(Wx
++b). AWe Aneed Ato Acompute Athe Aequation Ato Afind Athe Ahidden Avalue Aof Ay. AThen Awe'll Aneed Ato Adetermine Athe Aoutput, Awhich Ais Arepresented Aby Az Ain Athis Aequation: Az A= As(W'y A+ Ab'). AThat Ais Aachieved Aby Areconstructing Athe Ahidden Alayer Aand Ausing Athe Ab-prime Aand AW-prime Avariables Ato Amake Athe Acalculation. AHere's Ahow Athe Aproblem Ais Asolved, Ausing Acode:
+defget_reconstructed_input(self, Ahidden): AreturnT.nnet.sigmoid(T.dot(hidden, Aself.W_prime) A+ Aself.b_prime)
+We Aare Aalmost Athere! AThe Alast Athing Awe Aneed Ato Ado Ais Adetermine Aand Acalculate Athe Acost Afunction. AIt's Aresolved Awith Athe Asquared Aerror Ameasure Awe Adiscussed
+earlier:
+def Aget_cost_updates(self, Acorruption_level, Alearning_rate): Atilde_x A= Aself.get_corrupted_input(self.x, Acorruption_level) Ay A= Aself.get_hidden_values(tilde_x)
+z A= Aself.get_reconstructed_input(y)
+E A= A(0.5 A* A(T.z A- AT.self.x)) A^ A2 Acost A= AT.mean(E)
+gparams A= AT.grad(cost, Aself.params)
+updates A= A[(param, Aparam A- Alearning_rate A* Agparam) Afor Aparam, Agparam Ain Azip(self.params, Agparams)] Areturn A(cost, Aupdates)
+We Aare Adone! AWe Aknow Aenough Ato Aapply Aautoencoders Aand Adenoising Aautoencoders. ANow Alet's Atalk Aa Abit Aabout Astacked Adenoising Aautoencoders.
+ 
+Stacked ADenoising AAutoencoders
+ 
+Stacked Aautoencoders Awill Aboost Aaccuracy. AStacked Adenoising Aautoencoders Aare Apopular Atools Ain Adata Ascience Aand Amachine Alearning Awhen Ait Acomes Ato Aworking Awith Anatural Alanguage Aprocessing. AThey Acan Abe Aapplied Ato Aimages, Aaudio Aand Atext Adata. AThe Aaccuracy Ais Aobtained Aby Adirecting Athe Aencoded Arepresentation Afrom Aone Alayer Ato Athe Anext Aas Aan Ainput Aof Athe Aother Alayer.
+Stacked Adenoising Aautoencoders Aare Aused Asimilarly Ato ARBMs. AEvery Alayer Awill Abe Amade Aup Aof Aa Adenoising Aautoencoder Aand Aa Asigmoid Aelement. AThe Aautoencoder Awill Abe Aused Ain Athe Apretraining Aprocess Aof Athe Aentire Asigmoid Anet.
+When Ausing Astacked Adenoising Aautoencoders, Awe Ause Athe Atraining Aset Aerror Aas Aa Aperformance Ameasure. AThe Aprocess Ainvolves Alayer-to-layer Apretraining. AThat Ais Abecause Awe Arequired Anetwork Aparameters Ato Abe Aaligned Aprior Ato Athe Aoptimization Aprocess. AWhen Afine-tuning Abegins, Awe'll Aneed Atest Aand Avalidation Adata Ato Atrain Athe Anetwork. AThe Aprocess Ais Adone Aover Aa Asmall
+number Aof Aepochs Abecause Awe Ahave Abetter Aupdate Aphases. AWe Ado Aall Athis Aso Awe Acan Aobtain Aaccurate Adata.
+To Asummarize, Awe Ahave Atwo Amajor Aadvantages: Atraining Awithout Acomplex Afeature Aengineering Aand Alearning Afeature Arepresentations Afor Ahigh- Adimensional Adatasets. AWe Aalso Alearned, Aif Awe Aconstruct Aa Astacked Aautoencoder, Awe Acan Aget Athe Ahierarchic Aform Aof Aits Ainput Adata. AWe Asaw Aconsecutive Alayers Aof Astacked Aautoencoders Acan Aprogressively Alearn Ahigh- Alevel Afeatures. AThe Afirst Alayer Awould Alearn Aminimal Afeatures Afrom Athe Ainput Adata, Alike Acorners Aand Amargins. AThen Athe Asecond Alayer Alearns Afrom Aminimal Afeatures Alike Amargin Apatterns Aor Aconfigurations. AThere Aaren't Aany Alimits Adictating Athe Anumber Aor Asize Aof Alayers. AIt Aall Adepends Aon Athe Aproblem Awe Aare Atrying Ato Asolve. AThe Aonly Away Ato Amake Aheadway Ais Aby Aexploring Aand Aexperimenting Awith Aparameters.
+High Alayers Awill Ahave Athe Aability Ato Alearn Acomplex Astructures Aand Acompositions, Awhich Ameans Athey Awill Ahave Afacial Arecognition, Athe Aability Ato Asee Apatterns, Ahandwritten Acharacters Aand Aother Atypes Aof Aobjects. AStacked Adenoising Aautoencoders Aare Agreat Afor Acomplex Adata Aand Acan Abe Astacked Aas Amuch Aas Aneeded A(infinitely), Asince Astacking Athem Awill Akeep Aimproving Aperformance Aand Acapabilities Aof Athe Anetwork. AThe Aonly Adownside Awill Abe Athe Apower Aand Atime Ait Awill Atake Afor Athem Ato Acompute.
+The Aapplications Aof Astacked Adenoising Aautoencoders, Alike Asolving Anatural Alanguage Aprocessing Aproblems, Ais Abeyond Athe Ascope Aof Athis Abook. ABut Aknowing Ahow Athey Awork Aat Aa Abasic Alevel Ais Avaluable. ANow, Alet's Alearn Aabout Asemi-supervised Alearning.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A5:
+ 
+SEMI-SUPERVISED ALEARNING
+
+We Ahave Alearned Asome Acomplex Amachine Alearning Atechniques Aand Amethodologies. AIn Athose Aexamples Athe Adata Awe Aworked Awith Awas Aperfect. AIt Awas Aclean Aand Aready Afor Aus Ato Awork Awith. ABut Ain Areal Aworld Asituations, Athis Ais Aoften Anot Athe Acase. AAs Aall Adata Ascientists Awill Atell Ayou, Aany Adataset Arequires Aa Alot Aof Apreparation, Aand Amost Aof Athe Atime Awe Adon't Ahave Aclass Alabels. ASo, Aworking Awith Adata Asets Ain Athe Areal Aworld Acan Abe Achallenging; Awe Acan't Acreate Aaccurate Alabel-predicting Aclassifiers. ASo, Awhat Ado Awe Ado Awhen Afaced Awith Adata Alike Athis?
+You Amight Abe Atempted Ato Athink Awe Ashould Amanually Alabel Aall Athe Adata. AWhile Awe Acan Ado Athat, Ait Amight Atake Aa Awhile Ato Ado Athat, Aespecially Awhen Athe Adataset Ais Abig. ABut Aalso, Amanually Atagging Awill Aalso Alead Ato Asome Aerrors Abecause Ahumans Aoften Amake Amistakes. AThe Aalternative, Awhich Ais Aboth Aefficient Aand
+less Aerror Aprone, Ais Asemi-supervised Alearning. AIt Ainvolves Alabeling Auntagged Adata Aby Agetting Athe Astructure Aof Aunderlying Adistributions.
+Semi-supervised Alearning Ais Aperhaps Athe Amost Apopular Amethod Aused Afor Athis Aproblem Abecause Aof Aits Aefficiency Awhen Aannotating. AIt Ais Aespecially Auseful Awhen Adealing Awith Anatural Alanguage Aprocessing Aand Acomplex Aaudio Aanalysis. AManual Aannotation Ais Aoften Atime-consuming Aand Aineffective. AIt Aoften Arequires Aa Alot Aof Amanual Alabor Aand Aspecialized Aexpertise. AIn Athis Achapter Awe Awill Adiscuss Asemi-supervised Alearning Atechniques, Alike Aself-learning Aand Athe Acontrastive Apessimistic Alikelihood Aestimation. AYou Awill Alearn Ahow Ato Ause APython Alibraries Ato Alabel Acomplex Adatasets. AYou Awill Aalso Alearn Aabout Asome Aof Athe Adisadvantages Athat Acome Awith Ausing Asemi-supervised Alearning.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Understanding Athe ATechniques
+Datasets Ararely Acome Awith Aclass Atags. AThat Ameans Awe Aneed Aa Atrained Aclassification Atechnique Ato Aget Aa Aclass Alabel. AHowever, Athe Atraining Acannot Abe Aperformed Awithout Alabelling Athe Adata Ato Abegin Awith. AThis Ais Aclearly Aa Aproblem. AYou Acan Ado Athe Atagging Amanually, Abut Aas Awe Ahave Aalready Asaid, Ait Awill Atake Aa Asignificant Aamount Aof Atime, Aand Athere Ais Aa Ahigh Achance Aof Asome Aerrors Acreeping Ain. AImagine Ayou Ahad Ato Aorganize Aand Aprocess Amedical Adata. AHow Adifficult Awould Ait Abe Ato Ado Athat Awithout Ahuman Aerror? AIt Awould Abe Avery Ahard. AThis Ais Awhy Asemi-supervised Alearning Ais Aso Auseful.
+We Acome Aup Awith Asemi-supervised Alearning Acapabilities Aby Aworking Awith Alabeled Aand Aunlabeled Adata, Atogether Aor Aseparately. AThere Ais Aa Acategory Aof Alearning Amethods Athat Asit Abetween Asupervised Aand Aunsupervised Alearning. AThey Aare Acalled Asemi-supervised Alearning. AThere Aare Aa Abunch Aof Amethods Athat Abelong Ain Athis Acategory, Alike Aactive Alearning Atechniques Aand Atransductive Alearning Atechniques. AWhat Athese Amethods Ahave Ain Acommon Ais Athat Athey Asave Aa Aset Aof Atest Adata Afrom Athe Atraining Aphase, Ato Abe Aperformed Alater.
+In Atransductive Alearning, Awe Adon't Ahave Aa Atesting Aprocess Abecause Ait Acreates Alabels Awith Aunlabeled Adata. AIf Athere Aisn't Aany Alabeled Adata Ato Ause, Atransductive Atechniques Adon't Ahave Ato Aimplement Athe Atesting Aprocess.
+Not Athat Awe Ahave Aexplored Asemi-learning Atechniques Ain Ageneral. AWe Ashould Adiscuss Athem Ain Aa Abit Amore Adetail Awith Alinear-regression Aclassifiers, Asupport-
+vector Amachines Aand Amore. ALet's Astart Awith Athe Amost Abasic Alearning Atechnique: Aself-learning.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Self-learning
+The Asemi-learning, Asemi-supervised Amethod Ais Aconsidered Athe Amost Abasic Aand Asimplistic, Abut Ait Acan Astill Abe Aefficient Aand Afast. AThere Aare Amany Apractical Aapplications Afor Athis Amethod: Awe Afind Athem Ain Aareas Alike Anatural Alanguage Aprocessing, Acomputer Avision Aand Aothers.
+This Asemi-supervised Alearning Amethod Amight Abe Aconsidered Abasic Aand Asimplistic; Ahowever, Ait Ahas Athe Apotential Ato Abe Afast Aand Aefficient. AThere Aare Amany Apractical Aapplications Aof Aself-learning, Aand Awe Aencounter Athem Ain Asuch Aareas Aas Anatural Alanguage Aprocessing Aand Acomputer Avision.
+Computer Avision Ais Aabout Atraining Acomputers Ato Ahave Aa Ahigh Aunderstanding Aof Adigital Aimage Adata. AThe Aaim Ais Ato Agive Acomputers Athe Aability Ato Asee Ain Athe Avery Asame Away Athat Ahuman Abeings Acan Aby Amimicking Aa Ahuman Abeing's Avisual Asystem. ANatural Alanguage Aprocessing Ais Aabout Ateaching Acomputers Ato Aprocess Alanguage. AThis Ainvolves Ateaching Acomputers Ato Ahear Averbal Acommunication Aor Aread Aand Arespond Ato Atext. AVoice Aassistants Aare Aexamples Aof Anatural Alanguage Aprocessing. ASo Aare Achatbots Athat Ahave Abecome Apopular Aon Amost Aonline Astores.
+When Awe Ause Aself-learning, Awe Acan Aget Aa Alot Aof Avalue, Abut Athat Ais Anot Aalways Awithout Arisk. ASelf-learning Ais Aabout Aidentifying Aunlabeled Adata Aby Asorting Adata Afrom Aunlabeled Acases Awith Alabeled Acases Auntil Awe Ahave Aa Afully Alabeled Adataset.
+How Ais Aself-learning Aapplied? AUsually, Ait Ais Aset Aat Athe Awrapper Ato Athe Abase Amodel, Alike Athe Asupport-vector Amachine. ATo Aapply Athe Aalgorithm Acorrectly, Asimple Ainstructions Aare Afollowed:
+First, Awe Ause Alabeled Adata Ato Adetermine Athe Alabels Aof Athe Aunlabeled Adata Aand Acalculate Aconfidence Afor Athe Anewly Alabeled Acases. AThen Athe Anewly Alabeled Acases Aare Achosen Afor Aa Afollowing Aiteration. AThe Amodel Atrains Aitself Afrom Athe Atotal Anumber Aof Alabeled Acases, Aregardless Aof Athe Aiteration Aof Aorigin. AThis Aprocess Ais Arepeated Auntil Athe Amodel Aconverges Awith Asuccess. AWhen Atraining
+is Adone, Atesting Aand Avalidation Aprocesses Abegin; Athese Aare Anormally Aperformed Athrough Across-validation.
+I Ahave Asaid Athat Aself-learning, Adespite Aits Abenefits, Acan Abe Arisky Ato Aimplement. ATo Aminimize Arisk, Ayou Aneed Ato Aknow Ahow Athe Aalgorithm Aworks Aand Ahow Ato Aapply Ait.
+ 
+Implementation
+ 
+In Aour Adiscussion Aof Athe Aself-learning Aimplementation, Awe Aare Agoing Ato Ause Acode Ain Athe Asemisup-learn AGitHub Arepository. AThe Acode Ais Afree Ato Aclone Aor Adownload.
+The Afirst Athing Awe Aneed Ato Ado Ais Agenerate Alabels Afor Aunlabeled Acases. ATo Athis, Awe Adefine Aa A"SelfLearningModel" Aclass Awhich Awill Ahave Aa A"basemodel" Awith Aiterating Alimiting Aarguments. AIteration Alimits Aare Ausually Agiven Aas Aa Afunction Aof Aconvergence. AWe Awill Ahave Aa A"prob_threshhold" Aparameter Awhich Awill Aregulate Athe Aminimal Adesired Aquality Afor Athe Alabel Aacceptance. AThat Ameans, Aif Awe Ahave Aa Alabel Athat Aisn't Ahitting Athe Arequired Avalue Aas Adefined Aby Athe Aminimal-quality Aparameter, Ait Awill Abe Adismissed.
+Let's Adefine Aour A"SelfLearningModel" Aclass Awith Athe Acode Abelow:
+class ASelfLearningModel(BaseEstimator):
+def A A A A Ainit A(self, Abasemodel, Amax_iter A= A200, Aprob_threshold A= A0.8): Aself.model A= Abasemodel
+self.max_iter A= Amax_iter Aself.prob_threshold A= Aprob_threshold
+Next, Awe Adefine Athe Afitting Afunctions Awe Aneed:
+def Afit(self, AX, Ay): AunlabeledX A= AX[y==-1, A:] AlabeledX A= AX[y!=-1, A:] Alabeledy A= Ay[y!=-1]
+self.model.fit(labeledX, Alabeledy)
+unlabeledy A= Aself.predict(unlabeledX)
+unlabeledprob A= Aself.predict_proba(unlabeledX) Aunlabeledy_old A= A[]
+1 A= A0
+Let's Adiscuss Athe Acode Ain Adetail Aso Ayou Ahave Aa Abetter Aunderstanding Aof Athe Aimplementation Aof Aself-learning Aalgorithms.
+In Athe Acode Awe Ahave Aa Amatrix Aof Ainput Adata Adefined Aby Athe A"X" Aparameter. AThe Aparameter Ais Aimplemented Ato Abuild Aa Amatrix Aof Aa Asize Adefined Aby Athe A[n_samples, An_samples]. AThen Awe Ahave Athe A"y" Aparameter Adefined Aas Athe Alabel Aarray; Athe Aunlabeled Apoints Amarked Aas Apoint A"-1". ANext Awe Acreate Athe A"unlabeledX" Aand A"labeledX" Aparameters Aover Athe AX Aparameter Athat Apick Acomponents Awithin Athe AX Aparameter Awith Aa Aposition Amatching Athe A-1"y" Alabels. A A AThe A"labeledy" Aparameter Aperforms Athe Asame Aoperations Aover Athe A"y" Aparameter.
+We Acan Apredict Athe Alabel Ausing Aa AScikit-learn Aprediction Aoperation. AWe Ahave Athe A"unlabeledy" Aparameter Agenerated Athrough Athat Aoperation, Awhile Awe Aperform Aa Aprobability Acalculation Aon Aall Aprojected Alabels Ausing Athe A"predict_proba" Amethod. AThe Aresults Afrom Athe Aprobability Acalculation Aare Astored Ain Athe A"unlabeledprob."
+Scikit-learn's Apredication Aoperation Aand Athe A"predict_proba" Amethod Aare Athere Ato Apredict Aclass Alabels Aand Athe Aprobability Athey Awill Abe Aaccurate. ABoth Aof Athese Amethods Aare Aused Ain Aother Asemi-supervised Alearning Atechniques, Aso Ait Ais Aworth Alooking Aat Athem Aa Alittle Adeeper. AUsing Abinary Aclassifiers, Athe A"predict" Amethod Awill Agenerate Aclass Apredictions Afor Athe Ainput Adata. ABinary Aclassifiers Aare Aclassifiers Awith Athe Apurpose Aof Adiscerning Atwo Aclasses. AWe Acan Ause Athe Afollowing Aoperating Ato Adetermine Athat Aa Amodel Awith An Aclasses Ahas Abinary Aclassifiers:
+When Aall Aclassifiers Awith Aa Avalue Aabove A0 Avote Afor Aa Alabel Ato Abe Aapplied Ato Aa Acase, Athe Apredication Ais Aperformed. AThe Aclass Areceiving Athe Ahighest Anumber Aof Avotes Ais Athen Adetermined. AThe Amethod Ais Acalled Aa A"1-vs-1" Aapproach. AThe A"predict_proba" Amethod Acalls Aon Amethods Aof Atransforming Athe Aoutput Aof Aa Aclassification Ainto Aa Aprobability Adistribution Aof Aclasses. AThat Atechnique Ais Acalled APlat Acalibration; Ait Arequires Atraining Aof Aa Abase Amodel, Afollowed Aby Aa Aregression Amodel Aand Athen Afitting Ato Aa Aclassifier.
+Let's Acontinue Aby Aimplementing Athe A"while" Aloop Aso Awe Acan Aiterate. AIn Athe Anext Acode, Awe Awill Ause Aa Aloop Athat Awill Aiterate Auntil Athere Aare Ano Amore Acases Ain Athe A"unlabeledy_old" Aparameter. AThis Ais Athe Acopy Aof Athe A"unlabeledy." AWith Aevery Aiteration, Athere Awill Abe Aan Aattempt Ato Alabel Aevery Aunlabeled Acase, Aas Along Aat Athe Aprobability Ameets Aa Acertain Athreshold. AHere's Athe Acode Abelow:
+ 
+ 
+ 
+while A(len(unlabeledy_old) A== A0 Aor Anumpy.any(unlabeledy!=unlabeledy_old)) Aand Ai A< Aself.max_iter:
+unlabeledy_old A= Anumpy.copy(unlabeledy)
+uidx A= Anumpy.where((unlabeledprob[:, A0] A> Aself.prob_threshold)
+| A(unlabeledprob[:, A1] A> Aself.prob_threshold))[0]
+Next Ais Aa Amethod Athat Awill Afit Aa Amodel Ato Aunlabeled Adata. AThat Awill Abe Adone Awith Athe A"self.model.fit" Amethod. AHere's Athe Acode Abelow:
+self.model.fit(numpy.vstack((labeledX, AunlabeledX[uidx, A:])), Anumpy.hstack((labeledy, Aunlabeledy_old[uidx])))
+Above, Aunlabeled Adata Ais Adefined Ain Aa Amatrix Abuilt Aby Aappending Athe
+unlabeled Acases.
+The Alast Astep Ais Aprocessing Athe Alabel Apredictions Aand Atheir Aprobability Apredictions. AWe Ado Athat Awith Athe Afollowing Acode:
+unlabeledy A= Aself.predict(unlabeledX) Aunlabeledprob A= Aself.predict_proba(unlabeledX) Ai A+= A1
+Our Aself-training Ais Aready Ato Abe Aimplemented, Awe Ajust Aneed Ato Afind Aa Agood Adataset Ato Awork Awith. AWe Awill Ause Aa Asimple Adataset Awith Aa Alinear Aregression Aclassier Aand Aa Astochastic Agradient Adescent Ato Aserve Aas Athe A"basemodel." AWe Awill Ause Athe Astatlog Aheart Adataset, Awhich Acan Abe Adownloaded Afrom Awww.mldata.org Afree Aof Acharge.
+Before Awe Aimport Ait, Alet's Adiscuss Athe Adata Aa Abit. AThis Adataset Ahas Atwo Aclasses Awhich Adetermine Awhether Athere Ais Aheart Adisease Aor Anot. AThere Aare A13
+features, A270 Acases, Aand Anot Aany Aof Athem Amiss Aany Avalues. AIn Athe Adataset, Awe Aalso Ahave Aunlabeled Adata Aand Avariables Acaptured Awith Abad Atests, Aincreasing Acost Aof Aperformance. AArmed Awith Athis Ainformation, Alet's Aload Aour Adataset.
+heart A= Afetch_mldata("heart")
+X A= Aheart.data
+ytrue A= Anp.copy(heart.target) Aytrue[ytrue==-1]=0 Alabeled_N A= A2
+ys A= Anp.array([-1]*len(ytrue))
+random_labeled_points A= Arandom.sample(np.where(ytrue A== A0)[0], Alabeled_N/2)+\random.sample(np.where(ytrue A== A1)[0], Alabeled_N/2) Ays[random_labeled_points] A= Aytrue[random_labeled_points] Abasemodel A= ASGDClassifier(loss='log', Apenalty='l1')
+basemodel.fit(X[random_labeled_points, A:], Ays[random_labeled_points]) Aprint A"supervised Alog.reg. Ascore", Abasemodel.score(X, Aytrue)
+ssmodel A= ASelfLearningModel(basemodel)
+ssmodel.fit(X, Ays) Aprint A"self-learning Alog.reg. Ascore", Assmodel.score(X, Aytrue)
+Our Aresults Awon't Abe Aof Athe Abest Aquality, Aas Athe Afollowing Aline Aillustrates: Aself-learning Alog.reg. Ascore A0.470182
+It's Aworth Amentioning Athat, Aif Awe Aperform A100o Atests, Athe Aoutput Awill Avary Aeach Atime. AThe Aresults Aare Aacceptable, Abut Athey Acan Abe Aimproved. AWe Ashouldn't Abe Ahappy Awith Acertain Acases Abeing Awrongly Alabeled. ABefore Awe Acan Ado Athat, Awe Aneed Ato Alearn Awhat Athe Areal Aissue Ais Aand Athen Afix Ait.
+ 
+Fine-tuning Aand AOptimization
+ 
+We Ahave Aso Afar Atalked Aabout Athe Atheory Aof Athe Aself-learning Aalgorithm, Aand Awe Ahave Aapplied Ait Ato Aa Areal-world Adataset, Abut Aour Arests Aweren't Aas Agreat Aas Awe Awanted Athem Ato Abe, Abut Awe Acan Aimprove Athem. ARegardless, Awe Ahave Aseen Athe Arisky Aand Adelicate Anature Aof Aself-learning Aalgorithms Athat Awe Ahave
+alluded Ato Ain Athe Abeginning Apresent Aitself. AWe Asaw Asome Aproblems Awith Aaccuracy Aand Aa Avariance Ain Aresults. ASo, Awhat Awent Awrong?
+It Atakes Aone Aimproperly Aset Acomponent Ain Aan Aalgorithm, Aor Aambiguous Adata, Afor Athings Ato Ago Aawry. AIf Aone Aiteration Afails, Athey Awill Abuild Afrom Athe Afoundations Aof Athat Afeature, Aand Athe Aproblem Aincreases Aas Afaulty Alabeled Adata Ais Areintroduced Arepeatedly Ain Athe Alater Astages.
+There Aare Aa Anumber Aof Afactors Athat Acontribute Ato Athe Afaulty Aresult Aand Aerror. AIn Asome Acases, Alabeled Adata Awill Anot Ayield Aanything Arelevant Aor Auseful, Abut Athat Ausually Ahappens Ain Athe Afirst Aiterations. AThe Areason Afor Athis Ais Asimple. AThe Avery Aeasy Ato Atag Aunlabeled Acases Aare Aalso Alikely Ato Abe Anearly Aidentical Ato Aexisting Alabeled Acases. AThis Atells Aus Awe Aoften Aenter Alabels Athat Adon't Acontribute Aanything Ato Athe Aclassification. AThe Aother Aproblem Ais Aadding Amore Acases Ato Asimilar Apre-defined Acases Aleads Ato Aan Aincreased Achange Ain Amisclassification.
+Knowing Awhere Atheir Aissues Aoriginate Acan Abe Achallenging, Abut Athe Aaddition Aof Aa Afew Aplots Acan Ahelp Aus Areveal Awhat Awent Awrong Ain Athe Atraining Amodel. AAs Awe Ahave Asaid, Athis Aissue Ais Aoften Aencountered Ain Athe Afirst Aseveral Aiterations Aand Athen Aescalates. ATo Ahelp, Awe Acan Ahave A A Aa Acomponent Ain Athe Aprediction Aloop Athat Awill Arecord Athe Aclassification Aaccuracy. AThis Awill Aallow Aus Ato Afind Aout Ahow Athe Aaccuracy Avaries Aduring Aiterations. AWe Awill Aknow Awhat Ais Awrong. AThen Awe Acan Astart Acoming Aup Awith Asolutions Ato Afix Athe Aerror. AIf Awe Athink Awe Ahave Aenough Alabeled Adata, Awe Acan Ahave Aa Adiversified Aset Aof Alabeled Adata. AYou Amight Aconsider Ausing Aall Alabeled Adata, Abut Awhen Ayou Ado Athis, Ayou Arisk Aoverfitting A(which Awe Awill Adiscuss Ain Aanother Achapter). AThe Abest Aoption Ais Aapplying Aa Amultitude Aof Asubsets Aof Athe Adatasets Aand Atraining Amultiple Aself- Alearning Amodel Ainstances Aon Ait. AThis Awill Ahelp Ayou Aascertain Athe Aimpact Aof Athe Ainput Adata Aon Athe Aself-learning Aalgorithm.
+There Aare Aother Aoptions, Asince Arelying Aon Aa Asolution Athat Auses Aquantity Ato Afight Athe Aproblem Aisn't Aalways Athe Abest. AThe Aissues Acan Aalso Abe Atackled Awith Aquality Aimprovements. AWe Acan Abuild Aa Adiverse Asubset Aof Aour Alabeled Adata Aby Aselection. AWe Awon't Ahave Aa Alimit Arepresenting Athe Aminimum Aamount Aneeded Afor Athe Aself-learning Aimplementation Ato Abegin Aon Aa Anumber Aof Acases. ARemember, Ain Atheory, Ayou Acan Aalways Awork Awith Ajust Aone Alabeled Acase Afor Aa
+class; Ait's Ajust Athat Ait Ais Abetter Aif Athe Atraining Aprocess Ainvolves Aa Alot Aof Alabeled Adata.
+The Asecond Apopular Atype Aof Aerror Athat Ais Aoften Aencountered Awhen Aworking Awith Aself-learning Aalgorithms Acomprises Abiased Aselection. AIt Ais Aeasy Ato Aassume Athat Awe Aare Adealing Awith Aslight Abias Aand Athat Ait Acan Abe Aignored. ABut Abias Amatters, Asince Ait Acan Acause Athe Adata-selection Aprocess Ato Apick Acertain Aclasses Aover Aothers, Aleading Ato Aerroneous Aresults. AOne Aof Athe Amost Aencountered Atypes Aof Abias Ais Adisproportionate Asampling. AIf Athe Adataset Ais Abiased Atowards Aa Aparticular Aclass, Awe Arun Athe Arisk Aof Aoverfitting Athe Aself- Alearning Aclassifier. AThe Aproblems Acontinue Ato Aget Aworse Abecause Athe Anext Aiteration Awill Aalso Alack Athe Adiversity Aneeded Ato Acompensate. AThe Aself- Alearning Aalgorithm Awill Aset Aup Aa Afaulty Adecision Alimit Athat Awill Abe Aoverfitted Ato Aa Adata Asubset. AWe Ahave Aa Anumber Aof Amethods Ato Aregister Aoverfitting Aand Adiagnose Athe Aproblems Afor Athis Areason.
+Overfitting-spotting Atechniques Aare Aextremely Auseful Ain Adealing Awith Aerrors Aand Arisk Afactors. AThey Aare Acommonly Aknown Aas Avalidation Amethods. AThe Abasis Aof Athese Amethods Ainvolves Atwo Adistinct Asets Aof Adata. AOne Aset Acreates Athe Amodel, Aand Athe Aother Atests Ait. AA Agood Aexample Aof Athe Avalidation Atechnique Ais Aindependent Avalidation. AIt's Athe Asimplest Aone Abecause Ait Ainvolves Ajust Awaiting Ato Alearn Aabout Athe Aaccuracy Aof Aour Aprediction. AHowever, Athis Amethod Aisn't Aalways Apossible.
+Since Aindependent Avalidation Ais Anot Aalways Apossible, Awe Acan Asave Aa Adata Asubset Afrom Athe Asample. AThis Atechnique Ais Aknown Aas Asample Asplitting. ASample Asplitting Ais Aused Ain Amany Avalidation Amethods. ASince Athe Amajority Aof Amachine Alearning Aalready Ainvolves Atraining, Atesting Aand Avalidation Adatasets, Awhat Ais Adiscussed Anow Ais Aa Amultilayered Avalidation.
+If Atwo Avalidation Atechniques Ado Anot Awork, Athere's Aa Athird Athat Afocuses Aon Aresampling. AThe Amethod Ainvolves Asubsets Aof Adata Arepeatedly Aused Afor Adata Avalidation.
+It's Aworth Amentioning Awe Ashould Apay Aattention Ato Athe Asample Asize Aneeded Afor Aproper Adata Amodeling. ALike Amost Athings, Athere Ais Ano Aset Arule Abut Aa Aguiding Aprinciple Ayou Acan Afollow. AFor Ainstance, Aif Ayou Ahave Aan A"n" Anumber Aof Apoints Ato Acalculate Aaccuracy Ain Aa Aunivariate Aregression Aline, Ain Amost Acircumstances Ait Ameans Awe Awill Aneed Aan A"mn" Aof Aobservation Ato Aevaluate Athe Amodel.
+Now Athat Ayou Aknow Aa Abit Aabout Asampling, Asplitting, Aresampling Aand Avalidation Atechniques, Ayou Ashould Abe Aaware Aof Asome Aof Athe Aoverfitting Aand Athe Aconflict Abetween Athem. AThat Ais Abecause Aoverfitting Aneeds Aa Alimited Ause Aof Atraining Adata Asubsets. AThere's Alittle Achance Awe Awill Aencounter Aproblems Awhen Awe Ause Aa Alot Aof Atraining Adata. AThe Asolution Ais Abalancing Aall Ameasures Ataken Abecause Aof Athe Acomplexity Aof Athe Adata. AWe Aneed Ato Afocus Aon Ahints Apointing Ato Aany Asign Aof Aa Aproblem Aand Atake Aactions Ato Alimit Athem.
+Still, Aour Aproblems Aaren't Aover Ayet. AThere's Aanother Arisk Athat Awe Aencounter Awhen Aworking Awith Aself-learning Aalgorithms: Athe Aintroduction Anoise. AWhen Aworking Awith Adatasets Athat Ainclude Aunlabeled Aclasses Awith Aa Alot Aof Anoise, Awe Amay Aface Adegrading Aclassification Aaccuracy. AIn Athis Ascenario Awe Aneed Ato Aadd Anoise Aestimators Ato Aknow Awhat Athe Alevel Aof Anoise Ais.
+Noise Ameasures Aare Aeasy Ato Ado, Aand Athey Acan Aseparate Ainto Adifferent Atypes. ASome Ameasure Athe Avalue Aoverlap Aand Adefine Athe Alevel Aof Aambiguity Ain Arelation Awith Aother Aclasses. AThis Anoise Aestimator Ais Acalled AFisher's Adiscriminant Aratios. AThe Aother Anoise Aestimator Arelies Aon Athe Aerror Afunction Aof Alinear Aclassifiers Ato Afind Aout Aat Awhat Alevel Aa Adataset's Aclasses Aare Aseparable Afrom Aone Aanother. ATraining Aa Abasic Alinear Aclassifier Awill Abe Aenough Ato Aanalyze Ahow Aseparable Athe Aclasses Aare Aand Athe Atraining Aerror. AWe Awon't Aexplore Athis Aany Afurther, Abut Aif Ayou Aare Acurious, Ayou Ashould Aknow Athere Aare Aother Ameasures Athat Ameasure Athe Ageometry Aor Adensity Aof Aa Adataset. AFor Aexample, Ayou Acan Aanalyze Athe Afraction Aof Amaximum Acovering Aspheres.
+ 
+Enhancing Athe ASelection AProcess
+ 
+Confidence Acalculation Ais Aone Afor Athe Amost Abasic Aways Aof Aassuring Aa Aself- Alearning Aalgorithm Ais Aworking Acorrectly. AEarlier Awhen Awe Aillustrated Aa Aworking Aexample Aof Aself-learning, Awe Aused Aa Acalculation Arelated Ato Athe Aconfidence Acalculation. ADuring Athe Aselection Aof Alabeled Acases, Awe Aset Aa Aconfidence Alevel Ato Ause Aas Aa Amethod Aof Acomparison Aagainst Apredicted Aprobabilities. AWe Ahad Athe Aopportunity Aof Aadding Aestimated Alabels Ato Athe Alabeled Adata Aset, Athen Ause Athe Aconfidence Athreshold Ato Achoose Athe Amost Aconfident Aones. AIn Aaddition, Awe Acould've Aadded Athe Apredicted Alabels Ato Athe Adataset Aand Aweighted Athem Aby Aconfidence.
+Because Awe Ahave Aseen Aall Athe Aproblems Athat Aplague Aself-learning Aalgorithms, Awe Ashould Abegin Adiscussing Aa Anew Akind Aof Aself-learning Aalgorithm Awhich Aproduces Adifferent Aresults.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Contrastive APessimistic ALikelihood AEstimation
+To Afix Amany Aof Athe Aproblems Awe Aencountered Awith Aa Abasic Aself-learning Aalgorithm, Awe Ause Asubsetting Aand Atracking Aperformance Aof Adatasets, Abut Athis Ais Anot Aan Aoption Ain Asome Acircumstances. AThis Ais Aeven Athough Aself-learning Aworks Agreat Awhen Adealing Awith Acomplex Adatasets. AThe Amethods Awe Ahave Aused Ato Adeal Awith Aour Aproblems Aare Aalso Avery Adifficult Ato Awork Awith, Aespecially Awhen Ait Acomes Ato Acertain Atypes Aof Adata Alike Amedical Aand Ascientific Adatasets.
+In Asome Acases, Aself-learning Aclassifiers Acan Abe Aexceeded Aby Atheir Asupervised Alearning Acounterparts. AWhat's Aworse Ais Athat Asupervised Alearning Atechniques Aare Amore Aaccurate Awhen Afaced Awith Amore Adata. AIn Acontrast, Athe Aself-learning Aalgorithms Awe Aare Ausing Alose Atheir Aaccuracy Aand Aperform Apoorly Athe Amore Adata Ais Aadded. AThat Ais Aexactly Awhy Awe Aneed Anew Aways Aof Adoing Athings. ASo, Ato Aget Athe Abenefits Aof Aself-learning Aalgorithms Awhile Aalso Againing Athe Abenefits Athat Acome Afrom Asupervised Alearning, Awe Ause Asemi-supervised Alearning. AThat Awill Ahelp Aus Abuild Aa Amore Aefficient Aand Aaccurate Asystem.
+The Anew Aapproach Ato Aself-learning Awe Awill Adiscuss Ais Acalled Acontrastive Apessimistic Alikelihood Aestimation, Aor ACPLE Afor Ashort. ALabel Apredictions Acreated Athrough ACPLE Aare Asuperior Ato Athose Aproduced Athrough Asupervised Aand Asemi-supervised Aclassifiers. ANow Alet's Atalk Aabout Awhy ACPLE Aworks.
+CPLE Auses Athe Amaximized Alog-likelihood Ameasure Awhen Aoptimizing Aparameters. AThis Ais Aone Aof Athe Amain Areasons Abehind ACPLE's Aefficiency. ATo Abuild Aa Asemi-supervised Atrainer Ato Abeat Asupervised Aversions, ACPLE Ais Aused Ato Aregister Athe Asupervised Aestimate. AThe Aloss Athat Ais Afound Abetween Athe Atwo Alearning Amodels Ais Aused Aas Aa Atraining Aperformance Ameasure.
+In Aother Awords, Athe Aclassifier Aperforms Aa Acalculation Aof Athe Aimprovement Aof Aa Asemi-supervised Alearning Aestimation Aover Athe Asupervised Aestimation. AIf Athe Asupervised Amethod Aprevails Aand Aperforms Abetter Athan Aits Asemi-supervised Acounterpart, Athen Athe Afunction Awill Ashow Aus Athis Aresult, Aand Athe Amodel Awill Abe
+trained Ato Amake Acorrections Ato Athe Asemi-supervised Amodel Aand Adiminish Alosses. AHowever, Aif Athe Asemi-supervised Amethod Aproves Ato Abe Asuperior Ato Aits Asupervised Acounterpart, Athen Athe Amodel Awill Aadjust Athe Amodel Aparameters Aand Alearn Afrom Athe Asemi-supervised Aclassifier.
+Like Aany Amethod, ACPLE Aalso Ahas Aits Aown Adrawbacks. AFirstly, ACPLE Awill Anot Ahave Aaccess Ato Aposterior Adistribution, Awhich Ais Aneeded Ato Acalculate Aloss, Abecause Athere Aare Ano Adata Alevels Ain Asemi-supervised Asolutions. ACPLE Ais Aa Apessimistic Aalgorithm Athat Atakes ACartesian Aout Aof Athe Apredication Acombinations Aand Aselects Athe Aposterior Adistribution Athat Awill Asecure Aa Aminimized Again Ain Alikelihood. AThe Aresults Aare Aexactly Awhat Awe Awant. AWe Aget Athe Aaccuracy Aof Asupervised Alearning Awith Athe Aefficiency Aof Asemi-supervised Alearning. AWe Awill Aexperience Agood Aperformance Awhile Atesting. AAs Aan Aadded Abenefit, Awe Ahave Aan Aadvantage Aover Ahighly Acomplex Aand Achallenging Aunsupervised Asolutions Awhere Alabeled Adata Ais Aa Aweak Arepresentation Aof Aunlabeled Adata.
+We Awon't Ago Ainto Athe Apractical Aapplication Aof ACPLE. AFor Anow, Athe Atheory Awill Ado. AYou Astill Aneed Atime Ato Aabsorb Aall Athe Aknowledge Ayou Ahave Aencountered Ahere Abefore Adelving Adeep Ainto Athe Atopic. ASince Aour Afocus Ais Aon Aintermediary Amachine Alearning Apractices, Awe Arisk Aoverwhelming Ayou Aif Awe Ago Atoo Adeep Ainto Athis. AHowever, Aif Ayou Aare Acurious, Athere Ais Aplenty Aof Amaterial Aout Athere Athat Acan Ahelp Ayou Aexplore ACPLE Afurther. AAs Aalways, Awe Aencourage Aexploration Aand Aexperimentation.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A6:
+ 
+TEXT AFEATURE AENGINEERING
+
+We Ahave Adiscussed Atechniques Athat Aallow Aus Ato Adeal Awith Acomplex Adatasets. ABut Ain Athe Areal Aworld, Adata Ais Aa Alot Amore Acomplex Athan Ain Athe Aexamples Awe Ahave Aused. AThat Ameans A A Awe Aoften Afind Aourselves Ain Aa Asituation Awhere Awe Ahave Ato Aapply Amultiple Atechniques Ainstead Aof Aone. ANo Amatter Athe Asituation, Ayou Awill Aalways Ahave Ato Afind Athe Abest Asolution Aand Aget Athe Amost Aaccurate Aresults. AAs Ayou Ahave Aseen, Adifferent Asituations Awill Arequire Adifferent Alevels Aof Aperceptions, Acomputing, Aprocessing, Askill Aand Aknowledge.
+As Ayou Amight Ahave Anoticed, Ain Acertain Asituations Ayou Amay Aneed Atechniques Athat Awork Awith Aone Aspecific Atype Aof Adata. ALuckily Athere Ais Aa Aprocess Athat Aallows Aus Ato Adevelop Afeatures Athat Acan Amake Aany Amachine Alearning Aalgorithm Awork Awith Aa Adataset Ainstead Aof Ajust Aone Atechnique.
+Every Atechnique Awe Aworked Awith Auntil Anow Adidn't Ainvolve Aany Afeature Aengineering, Aat Aleast Anot Aat Aan Aadvanced Alevel. ABut Afeature Aengineering Ais Aan Aimportant Askill Afor Aany Amachine Alearning Apractitioner Ato Ahave.
+Feature Aengineering Ais Aso Apowerful Athat, Aeven Aif Ait Ais Aapplied Ain Asmall Adoses, Ait Acan Ahave Aa Amassive Aimpact Aon Aclassifiers. AAnd Amany Asituations Ausing Afeature Aengineering Aare Aunavoidable, Abecause Ait Ahelps Aus Aproduce Athe Abest Apossible Aresults. AWhy Asettle Afor Aokay Awhen Ayou Acan Aget Athe Abest? AEfficiency Aand Aperformance Aare Aalways Aon Atop Aof Aour Amost Aimportant Agoals.
+In Athis Achapter Awe Awill Afocus Aon Athe Atechniques Aused Acommonly Afor Atextual Adata, Aand Athen Abuild Aan Aunderstanding Aof Ahow Aeverything Aworks. ASo Afar, Awe Ahave Adealt Awith Ageneral Atechniques Athat Acan't Abe Aused Aeffectively Awith Ano- Anumerical Adata. AWhenever Awe Adeal Awith Atextual Adata, Awe Aneed Ato Adevelop Amethods Athat Awill Adeal Awith Athat Aspecific Aproblem; Athis Ais Awhere Afeature Aengineering Acomes Ain. AWe Aconcentrate Aon Afeature Apreparation Aand Acleaning Amethods.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Text AData ACleaning
+Text Adata Ais Anever Aclean. AWhat Adoes Athat Amean? AIt Ameans Atext Adata Ais Aalways Afilled Awith Aspelling Aerrors, Aemoticons Aand Aother Athings Athat Aaren't Aregular Adictionary Aconstructs. AIn Asome Acases, Ayou Awill Aeven Afind AHTML Atags Ain Atext. AThat Ameans, Awhenever Awe Aencounter Atext Adata, Awe Aneed Ato Aclean Ait. ATo Ademonstrate, Awe Awill Ause Athe AImpermium Adataset. AIt Awas Adeveloped Afor Aan Ainsult-recognizing Acontest. AThe Adataset Ais Afreely Aavailable.
+Before Awe Ago Aanywhere, Awe Aneed Ato Alook Aat Ainput Adata. AWe Ado Athis Amanually Aso Awe Acan Asee Awhat Ais Aexactly Awrong Aabout Athe Atext. ABelow Ais Aan Aexample Aof Aan Ainsult Awe Aneed Ato Afind Ain Athe Adataset:
+ID      Date      Comment
+142      20120422021928Z      """\yu0AFlipEmote Awhy Aaren't Ayou Aded Aalready"""
+We Ahave Aan Aid Aand Aa Adata Acolumn. AThey Aare Afine Aand Awe Acan't Aperform Aanything Aon Athem. ABut Athat Acomment Ais Anot Aright. AWhen Awe Alook Aat Ait, Awe Acan Asee Asome AHTML Atags Aand Amisspellings. ARemember Athat Athis Ais Ajust Aa Ataste; Athere Aare Aprobably Anastier Aexamples Ain Athe Adatasets. AText Alike Athis Aalso Auses Aother Atext Aelements Ato Aforce Athe Afilter Ato Aignore Aswear Awords. AIf Ayou
+have Abeen Aon Aa Agame Awhere Aswear Awords Aare Afiltered Ayou Aknow Athat Ausers Aoften Afind Aways Aof Agetting Aaround Athe Asystems Athat Afilter Aswear Awords Athrough Amisspelling Ahomonyms, Aaddition Aof Aextra Avowels, Apeculiar Acharacters Aand Aso Aon.
+So, Ahow Ado Awe Aclean Aall Athis Adata? AFirstly, Awe Aneed Aregular Aexpressions Athat Awill Aclean Aup Aquality-related Aproblems. ANote Athat Ausing Aregex Aisn't Athe Abest Aapproach Awhen Adealing Awith Adifferent Atypes Aof Aissues. AThere Ais Aalways Aa Apossibility Athat Ayou Awill Amiss Asome Acases Aand Ayou'll Afail Ato Aestimate Athe Aright Aamount Aof Apreparation Aneeded. AIn Athat Acase Atwo Athings Acan Ahappen: A(1) Ayou Acan Ahave Aa Acleaning Aprocess Awhich Ais Atoo Aaggressive, Aor A(2) Aa Avery Aweak Acleaning Aprocess. AWe Awill Arun Athe Arisk Aof Aremoving Athe Acontent Awe Aare Atrying Ato Arecover, Aor Anot Aclearing Ait Aadequately. AThe Abest Athing Ato Ado Ais Ato Afind Aa Asolution Athat Awill Ahandle Aall Adata-quality Aproblems Aand Adeal Awith Aother Aissues Alater.
+We Awill Ause Aa Atool Acalled ABeautifulSoup Ato Aachieve Athis. ABeautifulSoup Ais Aa Alibrary Athat Awill Ahelp Aus Aclean AHTML Acharacters Ain Acomments. AHere's Ahow Ayou Aadd ABeautiful:
+insults A= A[]
+with Aopen('insults.csv', A'rt') Aas Af:
+reader A= Acsv.DictReader(f) Afor Aline Ain Areader:
+insults.append(BeautifulSoup(str(line["Comment"]), A"html. Aparser"))
+print(insults[0])
+eg A= ABeautifulSoup(str(insults), A"html.parser") Aprint(eg.get_text())
+Our Aresults Awill Alook Alike Athis:
+ID      Date      Comment
+142      20120422021928Z      A AFlipEmote Awhy Aaren't Ayou Aded Aalready
+You Acan Asee Athat Awe Ahaven't Asolved Aevery Aissue Awith Athe Acomment. AThe Atext Alooks Aclean Abecause Awe Acleaned AHTML Amarkup. ANext Ais Athe Atokenization Aof Adata Apunctuation Amanagement.
+ 
+Punctuation Aand ATokenization
+ 
+Tokenization Ais Aa Amethod Aof Abuilding Asets Aof Atokens Afrom Aa Achain Aof Atext. AMost Atokens Awill Abe Awords, Aand Asome Awill Abe Aemoticons Aand Aor Apunctuation Amarks.
+We Aare Agoing Ato Ause Athe A"re" Amodule Afor Athis Aprocess. AThe Amodule Aallows Aus Ato Arun Aoperations Aon Aregular Aexpressions. AAn Aexample Aof Aan Aoperation Ais Athe Asubstring Areplacement. AIt Acomprises Amultiple Aoperations Aperformed Aon Athe Ainput Atext. AIt Awill Atry Areplacing A"dirty" Atext Awith Atokens. AIn Athe Aexample Abelow Awe Aconvert Athe A'A' Asymbol Ainto Aa Atoken.
+text A= Are.sub(r'[\w\-][\w\-\.]+A[\w\-][\w\-\.]+[a-zA-Z]{1,4}', A'_EM', Atext)
+This Amethod Acan Aalso Abe Aused Ato Aremove Aweb Aaddresses. AHere' As Ahow Ayou Awould Ado Ait:
+text A= Are.sub(r'\w+:\/\/\S+', Ar'_U', Atext)
+We Ahave Areplaced Athe A"A" Ausing Athe A"_EMO" Atoken. AWe Aalso Aremoved AURLs Ausing Athe A"_U" Atoken. AWe Acan Aalso Aremove Aextra Aspaces Aand Aany Apunctuation Amarks Awe Adon't Awant. AWe Awill Asolve Athe Aissue Aof Amultiple Acharacters. APunctuation Ais Aencoded Ain A"_BQ" Aand A"BX." AThe Atags Aare Alonger Abecause Awe Awant Ato Adifferentiate Athem Afrom Atheir Asimplified Aversions A"_Q" Aand A"_X." AThe A_Q Arepresents Aa Aquestion Amark Awhile Athe A-X Astands Afor Athe Aexclamation Amark. ANext, Awe Aapply Aregular Aexpressions Ato Areduce Athe Anumber Aof Aletters. AFor Aexample, Awe Acan Adefine Aa Astring Ato Ahold Aa Amaximum Aof Atwo Acharacters, Alimiting Athe Anumber Aof Acombinations, Aand Atokenize Ait Ausing A_EL Atoken. AThat Ameans Awe Awill Ahave Ato Amanage Aa Asmaller Agamut Aof Acombinations. AHere's Ahow Awe'd Ahandle Awhitespaces:
+text A= Atext.replace('"', A' A')
+text A= Atext.replace('\'', A' A')
+text A= Atext.replace('_', A' A')
+text A= Atext.replace('-', A' A')
+text A= Atext.replace('\n', A' A') Atext A= Atext.replace('\\n', A' A') Atext A= Atext.replace('\'', A' A')
+text A= Are.sub(' A+',' A', Atext)
+text A= Atext.replace('\'', A' A')
+Here's Ahow Awe'd Ahandle Apunctuation Aproblems:
+text A= Are.sub(r'([^!\?])(\?{2,})(\Z|[^!\?])', Ar'\1 A_BQ\n\3', Atext)
+text A= Are.sub(r'([^\.])(\.{2,})', Ar'\1 A_SS\n', Atext)
+text A= Are.sub(r'([^!\?])(\?|!){2,}(\Z|[^!\?])', Ar'\1 A_BX\n\3', Atext)
+text A= Are.sub(r'([^!\?])\?(\Z|[^!\?])', Ar'\1 A_Q\n\2', Atext)
+text A= Are.sub(r'([^!\?])!(\Z|[^!\?])', Ar'\1 A_X\n\2', Atext)
+text A= Are.sub(r'([a-zA-Z])\1\1+(\w*)', Ar'\1\1\2 A_EL', Atext)
+text A= Are.sub(r'([a-zA-Z])\1\1+(\w*)', Ar'\1\1\2 A_EL', Atext)
+text A= Are.sub(r'(\w+)\.(\w+)', Ar'\1\2', Atext)
+text A= Are.sub(r'[^a-zA-Z]','', Atext)
+New Atokens Ashould Abe Adefined. AFor Ainstance, Athe A"_SW" Astands Afor Aswearing. AWe Awill Ause Aregular Aexpressions Ato Atokenize Aemoticons, Aespecially Asmiley Afaces. AWe Awill Ado Athat Aby Adeclaring Afour Acategories Afor Athem: Athere Awill Abe Abig Asmiley Afaces A(_BS); Asmall Asmiley Afaces A(_S); Abig Asad Afaces A(_BF); Aand Asmall Asad Afaces(_F). AHere's Ashow Ait Alooks Ain Acode:
+text A= Are.sub(r'([#%&\*\$]{2,})(\w*)', Ar'\1\2 A_SW', Atext)
+text A= Are.sub(r' A[8x;:=]-?(?:\)|\}|\]|>){2,}', Ar' A_BS', Atext)
+text A= Are.sub(r' A(?:[;:=]-?[\)\}\]d>])|(?:<3)', Ar' A_S', Atext)
+text A= Are.sub(r' A[x:=]-?(?:\(|\[|\||\\|/|\{|<){2,}', Ar' A_BF', Atext)
+text A= Are.sub(r' A[x:=]-?[\(\[\|\\/\{<]', Ar' A_F', Atext)
+Let's Atake Aa Abreather Aand Adiscuss Aan Aimportant Aaspect Aof Asmileys. ASmileys Acan Acause Acomplex Aissues, Asince Athey Achange Aoften. AOur Aexample Ais Aa Abit Aincomplete Abecause Athere Aaren't Aeven Aany Anon-ascii Aemotions Abeing Aconsidered. AAlso, Acharacter-driven Aimages Athat Aform Apart Aof Aa Atext Aare Adifficult Ato Aremove Abecause Athey Amight Aend Aup Aremoving Asome Acases Ain Athe Adatasets, Awhich Amight Alead Ato Amisleading Aresults.
+In Athe Anext Astep, Awe Aperform Atext Adivision Ausing Athe A"str.split" Afunction. AThis Ais Adone Aso Aour Ainput Ais Anot Aevaluated Aas Aa Astring Abut Aas Awords Ainstead.
+phrases A= Are.split(r'[;:\.()\n]', Atext)
+phrases A= A[re.findall(r'[\w%\*&#]+', Aph) Afor Aph Ain Aphrases] Aphrases A= A[ph Afor Aph Ain Aphrases Aif Aph]
+words A= A[]
+for Aph Ain Aphrases:
+words.extend(ph)
+Here's Ahow Aour Aresult Ashould Alook Anow:
+ 
+
+
+ID
+Date
+Comment
+
+
+142
+20120422021928Z
+[['FlipEmote', A'why', A'aren't', A'you', A'ded',
+
+
+'already']]
+We Awill Alook Aat Aa Asequence Aof Asingle Acharacters. AThat Ais Abecause, Aon Asocial Amedia Aand Aother Aonline Aforums, Apeople Asometimes Aspace Aout Aletters Awhen Athey Ause Aan Aoffensive Aword Awithout Atriggering Aautomatic Alanguage Afilters.
+tmp A= Awords Awords A= A[] Anew_word A= A'' Afor Aword Ain Atmp:
+if Alen(word) A== A1:
+new_word A= Anew_word A+ Aword
+else:
+if Anew_word:
+words.append(new_word) Anew_word A= A''
+words.append(word)
+It Awill Alook Asomething Alike Athis:
+142      20120422021928Z      ['_F', A'why', A'aren't', A'you',
+'ded', A'already']
+Compared Ato Ahow Awe Abegan, Awe Ahave Amanaged Ato Ado Asome Acleaning. ABut, Aas Ayou Acan Asee, Athere Aare Asome Aproblems Awe Ahave Ato Atake Acare Aof. AAt Aleast Awe Ahave Amanaged Ato Arepresent Athe A"FlipEmote" Awith Athe A_F Atag. ANext, Awe Aneed Ato Aremove Athe Amisspelled Aword.
+Remember Athat Aour Aexample Ais Athe Asimplest. AWe Aare, Aafter Aall, Ajust Adealing Awith Aa Afew Awords Aand Asymbols. AAs Aa Aresult Ayou Awill Anot Asee Aeverything Awe Aare Aimplementing Ato Afix Athese Atext Aissues. ANote Athat, Awhen Aworking Awith Ashort Asentences, Awe Amight Aend Aup Awith Aa Acouple Aof Awords Athat Ahave Asome Ameaning. AIt's Asomething Ayou Ashould Athink Aabout Awhen Adealing Awith Asituations Alike Athe Aone Aabove.
+ 
+Word ACategorizing Aand ATagging
+ 
+You Aknow Athe AEnglish Alanguage Aparts Aof Aspeech Alike Averbs, Anouns, Aadjectives Aand Aso Aon. AWe Acan Amake Aan Aalgorithm Athat Aprioritizes Adifferent Awords Aover Aothers. AWe Acan Adifferentiate Abetween Averbs Aand Aarticles. AWe Acan Aachieve Athis Aby Amarking Aand Aencoding Acategories Aof Awords Aas Acategorical Avariables. AWith Athat Awe Acan Afix Aour Aquality Aissues Ain Aour Adata Aby Afocusing Aonly Aon Ainformative Apieces Aof Athe Adata. AIn Athis Asection Awe Awill Afocus Aon A"backoff" Atagger Aand An-gram Atagging. AThese Amethods Aare Amostly Aused Ato Abuild Arecursive Atagging Aalgorithms. AThere Aare Aother Amethods, Abut Awe Awon't Adiscuss Athat, Aas Athere Aare Amany. AThese Atwo Awill Aserve Aour Apurpose Ajust Afine.
+In Athis Astage, Awe Awill Ause Athe APython Alibrary Aknown Aas Athe ANatural ALanguage AToolkit A(NLTK). AWe Awill Athen Aremove Afewer Avaluable Aparts Aof Aspeech Aand Atag Aeverything. AWe Awill Aremove Aall Astop Awords Alike Athe, Aa, Ain, Aand Aso Aon. ASearch Aengines Alike AGoogle Aare Agood Aat Awhat Athey Ado Abecause Athey Aalso Aignore Asuch Awords. AWe Aremove Athese Awords Abecause Athey Adon't Agive Aus Auseful Ainformation; Athese Awords Acreate Anoise. AWhen Awe Aremove Athem, Awe Asave Atime. ALet's Abegin Aby Aimporting Aa Anatural Alanguages Atoolkit, Ado Aa Aword Ascan Aand Aremove Astop Awords:
+import Anltk Anltk.download()
+from Anltk.corpus Aimport Astopwords
+words A= A[w Afor Aw Ain Awords Aif Anot Aw Ain Astopwords.words("english")]
+Let's Ago Aahead Awith Athe Atagging Aprocess. AIt's Avery Aeasy Ato Aapply Athe Atagging Aapplication Ausing Aa Adictionary. ARemember, Awe Ause Atagging Ato Acategorize Aparts Aof Aspeech.
+tagged A= Antlk.word_tokenize(words)
+This Ais Aan Aeasy Amethod Ato Aapply, Abut Ait Amight Anot Abe Athe Abest Aidea Ato Aapply Ait. AThat Ais Abecause Alanguages Aare Acomplex, Aand Athis Amethod Ais Anot Acomplex Aenough Ato Aperform Awell. AFor Ainstance, Athere Aare Awords Athat Abelong Ato Amore Athan Aone Acategory Adepending Aon Athe Aconnection. ABasic Aimplementation Aof Aa Adictionary Awill Ahave Aproblems Awith Athose Akinds Aof Awords. AFortunately, Awe Ahave Atechniques Athat Acan Ahelp Aus Ain Athat Aregard.
+ 
+Sequential ATagging
+ 
+Sequential Atagging Ais Aan Aalgorithm Athat Agoes Athrough Aa Adataset Afrom Aleft Ato Aright, Aa Atoken Aat Aa Atime, Aand Atags Athem Aas Athey Aappear Ain Athe Asequence. AThat Ais Awhere Athe Aname Acomes Afrom. AThe Adecision Aof Awhich Atokens Aneed Ato Abe Aassigned Ais Adependent Aon Athe Atoken Aand Atokens Apreceding Ait.
+We Aare Agoing Ato Ause An-gram Atagger Awith Asequential Atagging Abecause Ait Ais Apretrained Ato Aidentify Athe Aright Atag. An-gram Arefers Ato Athe Aneighboring Asequence Aof An Anumber Aof Acomponents Afrom Aa Aset. AThe Asequences Acan Abe Amade Aup Aof Aletters, Awords, Anumerical Acodes Aand Aother Aelements. An-grams Aare Amostly Aused Ato Acatch Athe Acollective Acontent Aof Asets Aof Acomponents Athat Aare Aan An Anumber Aof Aelements.
+Let's Abegin Aby Adiscussing Aa Abasic An-gram Atagger Aknown Aas Athe Aunigram Atagger A(n A= A1). AUnigram Atagger Amanages Aa Aconditional Afrequency Adistribution Afor Aevery Atoken. AThat Adistribution Ais Amade Aby Atraining Aa Acollection Aof Aworks Ausing Athe ANgramTagger Aclass, Awhich Abelongs Ato Athe Aimported ANLTK Atool. AThis Aassumes Athe Amost Afrequently Aoccurring Atag Afor Aa Atoken Ain Aa Asequence Ais Alikely Ato Abe Athe Aright Atag. ATo Aillustrate, Aimagine Athe Aword A"object" Aappears A3 Atimes Aas Aa Anoun Aand Aonce Aas Aa Averb. AThe Aunigram Atagger Awill Aassign Athe Anoun Atag Ato Atokens Ain Athe Aobject Acategory.
+The Aunigram Atagger Amight Awork Ainitially, Abut Awe Acan't Ahave Aone Atag Afor Ahomonyms. AWe Aneed Aa Atrigram Atagger Aif Awe Aare Agoing Ato Abe Athorough. AA Atrigram Atagger Ais Aan An-gram Awith Aan An Avalue Aof A3. AThat Awill Aallow Aus Ato
+differentiate Abetween Athe Aword Aobject Aused Ain Adifferent Acontexts Awith Adifferent Ameanings, Alike A"I Aobject Ato Athis Aruling" Aand A"I Adon't Alike Astrange Aobjects Ain Amy Abedroom." AThe Aproblem Athat Aarises Ais Athat Awe Aare Atrading Atagging Aaccuracy Afor Athe Aability Ato Atag. AThe Ahigher Aour An Avalue, Athe Ahigher Athe Arisk Awe Awill Anot Alocate Atags Afor Aa Atoken Aat Aall. ABut Areality Ademands Awe Ause Aa Amore Apowerful, Aaccurate Atagger Afirst Aif Awe Aare Agoing Ato Atag Athe Adataset Aappropriately. AIf Ait Adoesn't Awork, Athe Atagger Ais Aat Aleast Areliable.
+ 
+Backoff ATagging
+ 
+In Asome Acases, Athe Atagger Awon't Abe Areliable. AThis Ahappens Awhen Awe Aare Aworking Awith Alimited Atrained Adata. AThe Aonly Asolution Awe Ahave Ais Ato Amake Aa Astructure Athat Aallows Amultiple Ataggers Ato Awork Aat Athe Asame Atime. ATo Ado Athis Awe Ahave Ato Adifferentiate Abetween Aa Asubtagger Aand Abackoff Atagger. AA Asubtagger Ais Avery Amuch Alike Aa Asequential Atagger. AHowever, Ain Acases Awhere Athe Asubtagger Acannot Agive Aa Aspecific Atoken Aa Atag, Athe Abackoff Atagger Awill Atake Aover. AThe Abackoff Atagger Awill Acombine Aresults Afound Aby Athe Arest Aof Athe Asubtaggeres Ain Athe Astructure. AThis Aapplies Aas Along Aas Awe Aare Aworking Awith Aa Abasic Aimplementation. AThe Asubtaggers Awill Abe Apolled Ain Aorder, Aaccepting Athe Afirst Atag Athat Adoesn't Areturn Aa Anull Avalue. AIn Acases Awhere Aall Asubtaggers Areturn Anull Avalues Afor Aa Agiven Atoken, Athe Atoken Awill Abe Aclassified Aas A"none" Aby Athe Abackoff Atagger.
+Backoff Ataggers Aare Aoften Aused Awith Asubtaggers Abelonging Ato Adifferent Acategories. AThat Aallows Aus Ato Atake Afull Aadvantage Aof Aall Athe Adifferent Atagger Atypes. AIn Asome Acases, Awe Acan Aeven Ahave Abackoff Ataggers Athat Arefer Ato Aother Abackoff Ataggers Aof Aa Amuch Amore Acomplex Astructure. ALet's Awork Awith Aa Atrigram Atagger Athat Awill Ause Abigram Atagger Aas Aa Abackoff Atagger. AWe Awill Aalso Aadd Aa Aunigram Atagger Ain Acase Aothers Adon't Awork. ABelow Ais Ahow Athe Acode Awould Alook:
+brown_a A= Anltk.corpus.brown.tagged_sents(categories= A'a') Atagger A= ANone
+for An Ain Arange(1,4):
+tagger A= ANgramTagger(n, Abrown_a, Abackoff A= Atagger) Awords A= Atagger.tag(words)
+Just Alike Athat Awe Ahave Acleaned Aour Atext. ALet's Amove Aon Ato Aall Athe Aother Awork Awe Ahave Ato Ado Ato Aimprove Aour Atext.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Building AFeatures
+To Amake Aour Atext Auseful, Awe Ahave Ato Acreate Acertain Afeatures. ALet's Aexplore Athis Aby Alooking Aat Anatural Alanguage Aprocessing Atechniques Alike Astemming Aand Alemmatizing.
+ 
+Stemming Aand ALemmatizing
+ 
+The Abiggest Aproblem Awith Atext-based Adatasets Ais Athat Athere Aare Amany Aword Aarrangements Afor Aa Aword Astem. ATo Aunderstand Athis, Athink Aof Aa Asimple Awork Alike Atravel. AThe Aword Atravel Ais Athe Aroot Aword Athat Aother Awords Alike A"travelling" Aand A"traveler" Astem Afrom. AIn Athat Away A"travel" Ais Athe Astem. AWhat Awe Aneed Ato Ado Ais Ato Areduce Aword Ashapes Ainto Astems. ATo Ado Athis Awe Ahave Aadded Astemmers. AThe Aidea Ais Ato Aparse Awords Aas Astrings Aof Avowels Aand Aconsonants Afollowing Aseveral Arules. AWhen Athat Ais Adone, Awe Aapply Alemmatization. AWe Awill Aalso Adescribe Athe Aprocess Aof Aworking Awith Aa A"porter Astemmer."
+Porter Astemmers Asimplify Asuffixes, Awhich Ameans Awe Awill Areduce Asuffixes. AFor Ainstance, Awe Acan Adecide Ato Aeliminate Aplural Asuffixes, Athen Apast Aparticiples Asuffixes Aand Aso Aon. AWhat Ahappens Ain Asome Asituations Awhen Awe Ado Athis Ais Athat Awe Aend Aup Awith Aa Aword Athat Ais Aincomplete. AFor Ainstance, Awe Amay Aend Aup Awith A"ceas" Ainstead Aof A"cease." AThat Ais Aeasily Acorrected Aby Aadding Aan A"e." ALet's Aimplement Aa Aporter Astemmer Aso Ayou Asee Ahow Ait Aworks:
+ 
+from Anltk.stem Aimport APorterStemmer Astemmer A= APorterStemmer() Astemmer.stem(words)
+The Aoutput Awill Abe Athe Abase/root Aof Athe Aword, Aalthough Ain Asome Acases Ayou Awill Afind Ayourself Awith Awords Athat Adon't Aexist Alike A"glanci" Ainstead Aof A"glance." AThat Aneeds Ato Abe Acorrected. ATo Acorrect Ait Awe Aneed Ato Ause Athe
+lemmatization Atechnique. ALemmatization Adetermines Aword Astems Aand Aroots Athrough Aa Anormalization Aprocess. ARemember, Athe Astem Adoesn't Ahave Ato Abe Aa Areal Aword Aeither.
+The Aresult Aof Alemmatization Ais Acalled Alemma; Ait Amust Aproduce Areal Awords. ALemmatization Acan Aeven Acut Aa Asynonym Ato Aits Abase Aform. AFor Aexample, Aporter Astemming Acan Agive Aus A"brochure" Afrom A"brochures," Abut Ait Awill Abe Aclueless Awhen Ait Acomes Ato Aa Asynonym Alike A"booklet." ALemmatization, Aon Athe Aother Ahand, Acan Atake Aboth Aexamples, A"brochures" Aand A"booklets," Aand Areduce Athem Ato A"brochures." ALet's Asee Ahow Athis Amethod Aworks Awhen Awe Aassign Aour Apart Aof Aspeech A(POS) Atagger, Acalled Athe Agrammatical Atagger, Ato Aall Atokens.
+from Anltk.stem Aimport APorterStemmer, AWordNetLemmatizer Alemmatizer A= AWordNetLemmatizer()
+words A= Alemmatizer.lemmatize(words, Apos A= A'pos') AHere's Ahow Athe Aresult Ashould Alook:
+Text Abefore Alemmatization A- AThe Acries Aof Alaughter Athat Ayou Aheard Awere Acaused Aby Aa Asurprising Amemory.
+Text Aafter Alemmatization A- A['The', A'cry', A'laugh', A'hear', A'cause', A'memory', A'surprise']
+Compared Ato Aour Adictionary Amethod, Athis Ais Aa Ahuge Aimprovement. AOur Atext Ais Aclean Aand Aprocessed. AThere Aare Ano Astop Awords Aor AHTML Atags. ANoisy Acomponents Awere Atokenized, Aand Anow Awe Aare Acloser Ato Awhere Awe Awant Ato Abe. AThis Ais Awhere Awe Astart Agenerating Afeatures Awith Abagging Aand Arandom Aforests; Ayou'll Alearn Awhat Athese Aare Anext.
+ 
+Bagging
+ 
+Bagging Ais Aa Atechnique Abelonging Ato Acategories Awith Avarious Asimilar Amethods. AFor Aexample, Awhen Ausing Athis Amethod Awith Arandom Asubsets Aof Adata, Ait Ais Acalled Apasting. AIn Athis Asection Awe Awill Afocus Aon Abagging. ABagging Adoesn't Adraw Afrom Asample Acases; Ait Aworks Awith Afeature Asubsets Ainstead Ain Awhat Ais Aknown Aas Aattribute Abagging. AHowever, Athe Arandom Apatches Atechnique Acan Adraw Afrom Afeature Asets Aand Acases. ABoth Aare Aextremely Apopular Amethods Awhen Aworking Ahigh-dimensional Adata Alike Amedical Adata.
+The Abagging Amethod Ais Awidely Aused Ain Anatural Alanguage Aprocessing. AThe Aidea Aof Abagging Ais Avery Aintuitive Adespite Athe Astrange Aname. AWhen Awe Aare Aworking Awith Alinguistic Adata, Awe Ahave Aon Aour Ahands Aa A"bag Aof Awords," Aso Ato Aspeak. ABagging Arefers Ato Apreparing Atextual Adata Aby Alocating Awords Aand Acounting Ahow Aoften Athey Aappear Ain Athe Asample. ALet's Aillustrate Athis Abelow:
+['_F', A'why', A'aren't', A'you', A'ded', A'already']
+We Acan Asee Athat Awe Ahave Asix Aterms Ain Athe Adataset. ANext, Awe Abuild Aa Avector Afor Apreceding Asentences. AValues Awill Abe Adefined Aby Atraversing Athe Alist Aand Acounting Athe Atimes Aeach Aword Aappears Ain Athe Adatasets. AIf Awe Ago Afrom Athis, Awe Awill Aend Aup Awith Aa Abag Aof Awords Athat Alooks Alike Athis:
+Comment      Bag Aof AWords
+_F Awhy Aaren't Ayou Aded Aalready      [1, A1, A1, A1, A1, A1, A0, A0, A0, A0, A0, A0, A0]
+That Ais Aan Aexample Aof Aa Abasic Abag Aof Awords Aapplication. AAs Ayou Acan Asee, Awe Ahave Anumerical Avectors Aas Aopposed Ato Atextual Adata. AThat Ais Abecause Athe Atext Ais Aclassified Ausing Aother Atechniques, Alike Aweighted Aterms. AThe Amethod Ainvolves Amodifying Avector Avalues, Aso Athey Aare Auseful Afor Aclassification Apurposes. AWeighing Ausually Aconsists Aof Aa Abinary Amask Athat Aworks Aby Aestablishing Aa Apresence Aor Aabsence. ARemember, Ain Acases Awhere Acertain Awords Aappear Amore Athan Aothers, Abinary Amasks Aare Avery Auseful.
+In Acases Awhere Athe Acircumstances Aare Adifferent, Athere's Aone Amore Aweighing Aapproach Acalled Aterm Afrequency Ainverse Adocument Afrequency A(TFIDF). AIn Athis Acase, Awe Acompare Athe Afrequency Aof Ause Ain Aa Asentence Aand Athe Adataset. AThen Awe Aget Avalues Athat Aincrease Aif Aa Aword Aappears Amore Aoften Ain Aa Asingle Acase Athan Athe Awhole Adataset. AThis Ais Aa Amethod Athat Ais Aoften Aused Aby Asearch Aengines. AWe Acan Aimplement Ait Ausing A"TfidfVectoriser" Afrom Athe AScikit-learn Alibrary.
+We Ahave Amostly Atalked Aabout Athe Atheory Abehind Abags Aof Awords Aand Athe Abenefits Aof Avectors. AWe Anow Aneed Ato Alook Aat Ahow Awe Acan Aimplement Athis Aconcept. AWe Acan Ause Abags Aof Awords Aas Awrappers Athrough Aa Abase Amodel Alike Alinear Aregression Aor Athe Asupport Amachine Avector. AHowever, Awe Aoften Ause Arandom Aforests Awith Abags Aof Awords. AThis Acombination Adoes Athe Apreparation Aand Alearning Aphase Ain Aone Ascript. AAt Athis Amoment, Alet's Afocus Aon Athe Aimplementation Aof Abad Awords Aalone. AIt's Aworth Aknowing Athat Arandom Aforests Aare Aa Aset Aof Adecision Atrees Aused Ain Abenchmarking Aalgorithms.
+Now, Alet's Ago Athrough Athe Abag Aof Awords Aprocess. AFirst, Awe Aload Athe Abagging Atool, Awhich Ais Athe Avectorizer. AFor Aour Aexample, Awe Awill Alimit Athe Asize Aof Athe Afeature Avector Aif Awe Adon't Ahave Ato Aspend Aa Alot Aof Atime Acomparing Aevery Aobject Aon Aour Afeature Alist. AHere's Ahow Athe Aimplementation Acode Alooks:
+from Asklearn.feature_extraction.text Aimport ATfidfVectorizer Avectorizer A= ATfidfVectorizer(analyzer A= A"word",      \
+tokenizer A= ANone,      \
+preprocessor A= ANone,      \
+stop_words A= ANone,      \ Amax_features A= A5000)
+Then Awe Aadd Athe Avectorize Ato Athe Adataset Aby Aconverting Athe Adata Ainto Afeature Avectors Ausing Athe A"fit_transform" Amethod.
+train_data_features A= Avectorizer.fit_transform(words) Atrain_data_features A= Atrain_data_features.toarray()
+And Ajust Alike Athat, Awe Aare Adone. AOur Adata Ais Aprocessed Athrough Atext Amining Amethods. AWe Alooked Aat Athe Atheory Aand Atechniques Aand Alooked Aat Ahow Ato Aimplement Athem Ausing APython Ascripts. AThat Ameans Awe Aare Aready Afor Aeven Amore Acomplex Afeature Aengineering, Acreating Afeature Asets Aand Adealing Awith Amore Achallenging Aproblems.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A7:
+ 
+MORE AFEATURE AENGINEERING
+We Ahave Aseen Ain Athe Alast Achapter Ahow Acrucial Afeature Aengineering Ais. AWe Asaw Ahow Awe Acan Aconvert Adata Ainto Afeatures Athat Aare Aprocessed Ausing Amachine Alearning Atechniques. AWe Aalso Asaw Ahow Awell-prepared Adata Ais Aexpected Aby Aimage Arecognition Aand Anatural Alanguage Aprocessing Aalgorithms.
+In Athis Achapter Awe Awill Awork Awith Aanother Akind Aof Adata: Acategorical Adata Aassembled Afrom Areal Aapplications. AData Alike Athis Ais Acommon. AYou Ahave Alikely Adealt Awith Aan Aapplication Athat Abenefited Afrom Ait. AFor Ainstance, Adata Acapturing Afrom Aa Asensor Aneeds Athis Adata Atype Ato Afunction. ACategorical Adata Ais Aalso Aused Aby Acomplex Ageological Asurveys; Ayou Awill Afind Aa Alot Aof Asophisticated Adata. ARegardless Aof Athe Aapplication, Athe Asame Aset Aof Atechniques Aare Aused. AIn Athis Achapter Ayou Awill Alearn Ato Ainspect Adata Aand Aremove Aquality Aproblems Aor Aminimize Atheir Aimpact.
+Let's Ahave Aa Abrief Alook Aat Asome Aof Athe Aideas Awe Awill Abe Adealing Awith.
+
+There Aare Aseveral Amethods Afor Acreating Afeature Asets. AAlso, Aunderstanding Athe Alimits Aof Afeature Aengineering Ais Aimportant.
+We Awill Alearn Aways Ato Adeal Awith Amany Atechniques Ato Aimprove Athe Aquality Aof Athe Ainitial Adataset.
+Domain Aknowledge Ato Aenhance Athe Aaccuracy Aof Adata. AWithout Awasting Aany Atime, Alet's Ajump Ain.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Creating AFeature ASets
+The Amost Adeterminant Afactor Awhen Ait Acomes Ato Amachine Alearning Aalgorithms' Asuccess Ais Athe Aquality Aof Athe Adata. AIt Adoesn't Amatter Ahow Awell Aprepared Athe Adata Ais Aif Athe Adata Ais Ainaccurate. AHowever, Awhen Ayou Ahave Athe Aright Askills Aand Aknowledge Aof Athe Adata, Ait's Apossible Ato Acreate Apowerful Afeature Asets. AThe
+necessity Aof Aknowing Ahow Ato Abuild Afeatures Abecomes Aapparent Abecause Ayou Awill Aneed Ato Aperform Aaudits Ato Aassess Athe Adatasets. AWithout Athe Aaudit, Ayou Amight Amiss Acertain Adetails Aand Acreate Aa Afeature Athat Alacks Aaccuracy Aand Aperformance.
+We Awill Astart Aby Alooking Aat Atechniques Afor Ainterpreting Aalready Aexisting Afeatures Athat Awill Aenable Aus Ato Aimplement Anew Aparameters Ato Aimprove Aour Amodel.
+ 
+Rescaling ATechniques
+ 
+One Aof Athe Amost Ainfamous Aproblems Ain Amachine Alearning Ais Athat Aintroducing Aunprepared Adata Aoften Aresults Ain Athe Aalgorithm Abecoming Aunstable Ain Arelation Ato Athe Avariables. AFor Ainstance, Ayou Amight Acome Aacross Aa Adataset Athat Ahas Adiffering Aparameters. AIn Athat Acase, Aour Aalgorithm Amay Adeal Awith Avariables Awith Aa Alarger Avariance, Alike Athere's Aan Aindication Athere's Aa Amore Apowerful Achange. ASimultaneously, Aalgorithms Awith Asmaller Avariance Aand Avalues Aare Atreated Awith Aless Aimportance.
+To Afix Athat Awe Amust Aimplement Aa Aprocess Acalled Arescaling. AIn Arescaling, Awe Ahave Aparameter Avalues Awhose Asizes Aare Acorrected Abased Aon Amaintaining Athe Ainitial Aorder Ain Aevery Aparameter; Athis Ais Aknown Aas Amonotonic Atranslation. ARemember Athat Agradient Adescent Aalgorithms Aare Amore Apowerful Aif Awe Ascale Athe Ainput Adata Abefore Athe Atraining Aprocess. AIn Acases Awhere Aall Aparameters Aare Aa Adifferent Ascale, Awe Awill Ahave Aa Acomplex Aparameter Aspace Athat Acan Abecome Adistorted Aunder Athe Atraining Astage. AThe Adifficulty Aof Atraining Athe Amodel Ais Adetermined Aby Ahow Acomplex Athe Aspace Ais. ALet's Aillustrate Athis Ametaphorically.
+Imagine Agradient Adescent Amodels Aare Alike Aballs Arolling Adown Aa Aramp. AThe Aballs Amight Acome Aacross Aobstacles Aor Aget Astuck Abecause Aof Aa Adeformity Ain Athe Aramp. AWhen Awe Awork Awith Ascaled Adata, Awe Aare Ataking Acare Aof Adeformities Ain Athe Aramp Aand Aremoving Aobstacles. AWhen Athe Atraining Asurface Ais Aeven, Athe Atraining Awill Abe Amore Aeffective.
+Linear Arescaling Ais Athe Amost Abasic Aexample Aof Arescaling; Ait Ais Abetween Azero Aand Aone. AThat Ameans Athe Amost Asizable Aparameter Awill Ahave Aa Arescaled Avalue Aof Aone; Athe Asmallest Awill Ahave Aa Arescaled Avalue Aof Azero. AThere Awill Abe Avalues
+that Afall Abetween Azero Aand Aone. ATake Aa Avector Afor Aexample. AWhen Ayou Aperform Aa Atransformation Aon A[0, A10, A25, A20, A18], Ayou Aget A[0, A0.4, A1, A0.8, A0.72]. AThe Araw Adata Ais Avery Adiverse, Abut Awhen Arescaled, Awe Aend Aup Awith Amore Aeven Arange. AThis Ais Agood Abecause Aour Atraining Aalgorithms Aperform Abetter Awith Athis Aset Aof Adata.
+There Aare Aother Aalternatives Ato Arescaling. AIn Acertain Asituations, Awe Acan Ause Anonlinear Ascaling Amethods Ainstead. AOr Awe Acould Alook Aat Aothers Alike Asquare Ascaling, Alog Ascaling Aand Asquare Aroot Ascaling. AYou'll Afind Alog Ascaling Aused Ain Aphysics Aand Aother Adatasets Awith Aexponential Agrowth. ALog Ascaling Afocuses Aon Aadjusting Athe Aspace Abetween Acases, Amaking Ait Athe Abest Aoption Afor Aworking Awith Aoutlying Acases.
+ 
+Creating ADerived AVariables
+ 
+Rescaling Ais Aused Ain Athe Apreprocessing Aphase Aof Amost Amachine Alearning. AOn Atop Aof Athis Astep, Awe Ahave Aother Adata-preparation Amethods Afor Aboosting Amodel Aperformance Awith Atactical Aparameter Areductions. AAn Aexample Ais Athe Aderived Ameasure; Ait Auses Aexisting Adata Apoints Aand Arepresents Athem Ain Aa Asingle Ameasure.
+Derived Ameasures Alike Athis Aare Acommon. AThat Ais Abecause Aall Aderived Ascores Aare Acombination Ascores Ataken Afrom Aseveral Aelements. AThink Aof Athe Abody Amass Aindex Aas Aan Aexample; Ait Ais Acalculated Aby Aconsidering Athree Apoints: Aheight, Aweight Aand Aage.
+Remember, Aif Awe Ahave Adatasets Acontaining Afamiliar Ainformation, Athese Ameasures/scores Awill Abe Aknown. AFinding Anew Atransformations Aby Aimplementing Adomain Aknowledge Awith Aexisting Ainformation Acan Ahave Aa Apositive Aimpact Aon Aperformance. ABelow Aare Athe Aconcepts Ayou Ashould Abe Afamiliar Awith Awhen Ait Acomes Ato Aderived Ameasures:
+
+Creating Acombinations Aof Atwo Avariables: AThis Auses Adivision, Amultiplication Aor Anormalization Aof Aan An Aparameter Aas Athe Afunction Aof Aan Am Aparameter.
+Change Aover Atime: AAn Aexample Aof Athis Ais Aacceleration. AInstead Aof Aworking Awith Acurrent Aand Apast Avalues, Awe Awork Awith Aa Aslope Aof Aa Atime Aseries Afunction.
+Baseline Asubtraction: AIt Ainvolves Ausing Athe Abase Aexpectation Ato Amodify Aparameters Ain Arelation Ato Athe Abaseline. AIt Acan Abe Aa Abetter Away Aof Aobserving Athe Asame Avariable, Asince Ait Ais Amore Ainformative. AFor Ainstance, Aimagine Awe Ahave Aa Abaseline Achurn Arate A(measure Aof Aobjects Amoving Aout Aof Aa Agroup Aover Aa Acertain Aamount Aof Atime). AWe Acan Acreate Aa Aparameter Athat Adescribes Athe Achurn Aby Athe Adeviation Afrom Aexpectation. AAnother Aexample Aof Athis Ais Astock Atrading; Awe Acan Alook Aat Athe Aclosing Aprice Aand Athe Aopening Aprice.
+Normalization: AIt Ais Aa Aparameter Avalue Anormalization Abased Aon Aanother Aparameter's Avalue. AAn Aexample Ais Aa Afailed-transaction Arate.
+
+All Athese Aallow Aus Ato Aproduce Aimproved Aresults. AThey Acan Abe Acombined Ato Amaximize Aeffectiveness. AFor Ainstance, Aimagine Athere Ais Aa Aparameter Aindicating Athat Aslope Aof Acustomer Aengagement Ashould Abe Atrained Ato Aexpress Awhether Aa Acustomer Ais Aengaged Aor Anot. AThis Ais Abecause Acontext Avariety Aand Asmall Adeclines Ain Aengagements Acan Asuggest Aa Anumber Aof Afactors Adepending Aon Athe Asituation. AIt's Athe Adata Ascientist's Ajob Ato Athink Aof Awhat Athose Asituations Amay Abe Awhen Acreating Athe Afeature, Aas Aeach Adomain Ahas Aits Aown Asubtleties. ASo Afar, Awe Ahave Aonly Afocused Aon Anumerical Adata. AHowever, Ain Amost Acases Athere Aare Acategorical Aparameters Alike Athe Acode Ainvolved, Aand Athose Arequire Athe Aright Atechniques Ato Awork Awith.
+Next, Awe Awill Alook Aat Athe Ainterpretation Aof Anon-numeric Afeatures Aand Alearn Atechniques Afor Aturning Athem Ainto Auseful Aparameters.
+ 
+Non-numeric AFeatures
+ 
+In Ayour Ajob, Ayou Awill Aoften Aneed Ato Ainterpret Anon-numeric Afeatures. AIt Ais Ahard, Asince Avaluable Adata Acan Abe Aencoded Ain Anon-numerical Avalues. AFor Ainstance, Awhen Alooking Aat Astock Atrading Adata, Aknowing Athe Aidentity Aof Atraders Ais Aalso Aa Avaluable Apiece Aof Ainformation. AImagine Ayou Ahave Aa Astock Abuyer Awho Atrades Ain Aa Aparticular Amanner Awith Aa Aspecific Aseller; Athe Ainformation Ais Aeven Amore Avaluable. AIt Acan Abe Achallenging Ato Awork Awith Asuch Acases, Abut Awe Acan Aimplement Aa Aseries Aof Aaggregations Ato Acount Ahow Amany Atimes Ait Ahappens Aand Athe Achance Aof Aextended Ameasures.
+Remember, Aif Awe Acreate Asmart Astatistics Aand Alower Athe Anumber Aof Adataset Arows, Athere's Aa Apossibility Athat Athe Aquality Aof Athe Ainformation Athe Amodel Ahas Ato Aaccess Awill Abe Areduced. AThat Awill Aalso Aincrease Athe Arisk Aof Aoverfitting. AReducing Ainput Adata Aand Aintroducing Aextensive Aaggregations Aisn't Aalways Athe Abest Awhen Aworking Awith Athe Akinds Aof Amachine Alearning Aalgorithms Adiscussed Ain Athis Abook.
+Luckily, Athere Ais Aan Aalternative Ato Aaggregation. AEncoding Acan Abe Aused Ato Atranslate Astring Avalues Ato Anumerical Adata. AThe Acommon Away Aof Adoing Athis Ais Athrough A"one-hot Aencoding." AThe Aprocess Ais Aconstituted Aof Atransforming Agroups Aof Acategorical Aanswers, Alike Aage Agroups, Ainto Asets Aof Abinary Avalues. AThis Ais Aadvantageous. AIt Alets Aus Again Aaccess Ato Atag Adata Awithin Adatasets Awhere Aaggregation Arisks Alosing Ainformation. AAnd Aone-hot Aencoding Aenables Aus Ato Abreak Aapart Aparticular Aresponse Acodes Aand Asplit Athem Ainto Aindependent Afeatures Auseful Afor Aidentifying Arelevant Aand Ameaningful Acodes Afor Aspecific Avariables. AThis Aallows Aus Ato Asave Avalues Athat Amatter Ato Aour Agoals.
+Another Aalternative Ais Aused Aon Atext Acodes. AIt Ais Aoften Areferred Ato Aas Athe A"hash Atrick." AIt's Aa Afunction Athat Awe Ause Ato Atranslate Atextual Adata Ainto Aits Anumeric Acounterpart. AIn Ageneral, Ahashes Aare Atypically Aused Ato Aconstruct Aa Asummary Aof Aextensive Adata Aor Ato Aencode Aa Awide Arange Aof Aparameters Aconsidered Adelicate. ALet's Alook Aat Ahow Ahashes Aare Aused Aso Ayou Acan Aunderstand Aand Aget Athe Amost Aout Aof Athem.
+After Atransforming Atext Ainto Anumeric Avalues, Awe Acan Ause Athose Avalues Aas Aidentifiers Afor Aa Aspecific Aphrase. AThere Aare Avarious Atypes Aof Ahash Aalgorithms, Abut Afor Aour Apurposes, Athe Amost Abasic Awill Ado Athe Ajob. ATo Aget Aan Aidea, Aa Asimple Ahash Acan Atransform Aevery Aletter Ain Athe Aalphabet Ainto Aa Acorrecting Anumber. A"A" Awould Abecome A1, Aand A"B" Awould Abecome A2 Aand Aso Aon. AHashes Acan Aalso Acreate Awords Aand Asentences Aby Aputting Athose Anumbers Atogether. ALook Aat Athe Astring Aexample Abelow Awhere Awe Ahave Athe Awords A"dog" Aand A"pics":
+Dog: A4 A+ A15 A+ A7
+Pics: A16 A+ A9 A+ A3 A+ A19
+Total: A73
+With Athat Aexample, Ait Awill Abe Aeasy Ato Aunderstand Athis Asection. AThe Asolution Aabove Ais Abadly Aimplemented. AThat Ais Abecause Athere Aisn't Aa Alimit Ato Athe
+number Aof Aoutputs Ait Acan Apresent. AWhen Ausing Ahashes Awe Again Afrom Adimensionality Areduction. ASo, Awe Ashould Adeclare Aa Alimit Ato Athe Aoutputs. AUsually, Awe Awant Ato Alimit Athem Abased Aon Aa Arange Aof Anumbers Athat Athey Aoutput. ASo, Awe Aneed Ato Achoose Aa Ahash Abased Aon Athe Anumber Aof Afeatures Awe Awant Aour Amodel Ato Ahave. AA Agood Aoption, Aand Aalso Athe Amost Apopular, Ais Athe Apower Aof A2 Ahash Aranges.
+Our Ahash Aexample Ais Aawful Afor Aanother Areason. AIf Aone Aof Athe Aletters A(therefore, Aword) Ais Achanged, Ait Awon't Amake Aa Alarge Aimpact. AIf Athe Awork A"dog" Abecame A"cog," Athere Awouldn't Abe Aa Abig Adifference Ain Athe Aoutput. AThe Avalue Awould Achange Afrom A73 Ato A72. AA Agood Ahash Ashould Areflect Aa Asmall Ainput Ahash Achange Awith Aa Abig Achange Ain Athe Aoutput. AThat Ais Abecause Alanguages Aoften Ahave Avery Aspecific, Ameaningful Astructures. AFor Ainstance, Awords Athat Adiffer Aslightly, Alike A"dog" Aand A"cog," Ahave Avery Adifferent Ameanings.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Real-world AFeature AEngineering
+This Asection Adepends Aon Athe Atechniques Ayou Aare Ausing. ADeep Alearning Aalgorithms Awork Abetter Awhen Aworking Awith Aless-engineered Adata, Aand Athey Awill Arequire Aless Awork Ain Ageneral. ANote Athat Ayou Aneed Ato Alearn Awhat Ayou Aneed Athrough Aan Aiteration Aprocess.
+The Afirst Athing Ayou Awill Aneed Ato Ado Ais Afocus Aon Athe Aaccuracy Aof Aour Amodel Aand Alearn Athe Aminimum Aamount Aof Aprocessing Aneeded. AThen Aperform Abased Aon Athe Aminimum Avalue, Alearn Aall Athe Ainformation Ayou Acan Afrom Athe Adata, Aanalyze Aresults Aand Awork Aon Athe Anext Aiteration.
+Let's Aturn Ato Areal-world Aexamples Aof Afeature Aengineering. AYou Anotice Ahow Abig Acities Ahave Aserious Atransportation Aand Ainfrastructure Aproblems. AThis Acreates Aa Aproblem Afor Aus Abecause Ait Ameans Ait Ais Adifficult Ato Aestimate Athe Atime Aneeded Ato Acommute. AThe Atransportation Amethod Adoesn't Amatter; Awhether Ait's Aa Abus, Acar Aor Arail Asystem, Ait Astill Amakes Ait Ahard Ato Apredict Aarrival Aand Adeparture Atimes. ANow, Ahow Acan Ayou Afix Athat Aand Aimprove Ayour Atravelling Aexperience? ABelow Aare Asome Aof Athe Athings Ayou Acan Ado:
+
+You Awrite Acode Athat Aharvests Adata Afrom Amultiple AAPIs, Alike Atext Aand Aclimate Adata.
+Using Afeature-learning Aalgorithms Alearned Ain Athis Abook, Ayou Acan Aget Avariables Afrom Athe Aextracted Ainformation.
+Then Ayou Acan Atest Ayour Afeature Asets Aby Ataking Arisk Aof Acommute- Adelay Ascores.
+
+In Athis Asituation Ayou Adon't Aneed Ato Afocus Aon Aa Amodel Athat Awill Agive Ayou Ahigh Aperformance Aand Aefficiency. AAll Awe Aneed Ato Ado Ais Ato Abuild Aan Aautomated Asolution Athat Awill Atake Aadjustments Abased Aon Awhere Ayou Aare. AHowever, Athere Aare Aother Areasons Awhy Ayou Amight Awant Ato Afocus Aon Athis.
+We Awill Asee Adata Afrom ATwitter. ATwitter Arequires Aus Ato Aduplicate Adatasets Ataken Afrom Athem Awhenever Ayou Amake Aany Amodifications Ato Athe Adatasets. ASpecifically, Athose Adatasets Awere Ashared Aopenly Awith Athe Apublic. AAn Aexample Aof Amodification Ais Aa Adeletion Aof Aa Atweet. AThat Ameans Ait Ais Adifficult Ato Agive Aresults Athat Acan Abe Areproduced Afrom Aa Amodel Athat Ais Abased Aon Astreamed Adata. AThat Ais Abecause Aa Auser Awould Ahave Acreated Atheir Astream Aand Agathered Adata. AWe Aalso Aneed Ato Athink Aabout Acontext Avariations Athat Amay Aimpact Athe Amodel's Aperformance.
+We Adiscussed Aa Asolution Abased Aon Athe Aarea Aaround Ayou, Abut Apotential Ausers Aof Athe Amodel Adon't Alive Anext Ato Ayou, Aso Athat Asolution Amight Anot Awork Afor Athem. AA Asolution Athat Ais Aadaptable Ais Athe Abest Asolution.
+ 
+Acquiring AData
+ 
+To Aachieve Awhat Awe Adiscussed Aearlier, Awe Aneed Ato Aget Asome Adata. AHow Ado Awe Ado Athat? AFor Abetter Amodel Atraining, Awe Aneed Ato Ause Astamped Adata Athat Ais Arecorded Aon Aa Aregular Abasis. ATwitter's AAPI Ais Aperfect. AWe Acan Ause Ait Ato Aget Atweet Adata.
+You Amight Awonder Awhy Awe Achose ATwitter Aof Aall Aplaces. AThat Ais Abecause Aof Aofficial Atransit Aauthorities Aregistered Aon ATwitter. AYou Acan Aget Atheir Atweets Afor Ainformation Aabout Abus Aand Atrain Acompanies. AThese Acompanies Awill Aoften Aupdate Acustomers Aabout Adelays Aand Aservice Ainterruptions. AWe Acan Aalso Aget Adata Afrom Acommuters Atoo. AWe Acan Ado Athat Ausing Aa Adictionary Athat Alooks Afor Aterms Arelated Ato Adisruptions Aand Adelays.
+We Awill Aalso Aextract Adata Afrom Aother AAPIs, Alike Athe ABing ATraffic AAPI. AIt Awill Aprovide Adata Aon Atraffic Acongestions Aand Aother Aincidents.
+Issues Awith Acommuting Aaren't Aalways Arelated Ato Atransportation Acompanies Aand Atraffic Acongestion. AWeather Ais Aan Aimportant Afactor Aas Awell. ADriving Aon Aa Atypical Asummer Aday Awill Ahave Aa Adifferent Aimpact Athan Adriving Aon Aa Asnowy Awinter Aday. ASo, Awe Ashould Aget Ainformation Aabout Athe Aweather Atoo. AWeather AAPIs Acan Ahelp Ain Athat Aregard. AThey Awill Agive Aus Adetails Aabout Aprecipitation, Ahumidity, Aatmospheric Apressure Aand Avisibility. AWe Awill Aget Athis Adata Ain Atextual Adescriptions Ainstead Aof Ajust Aforecasts.
+These Athree Asources Aof Adata Awill Abe Aable Ato Ado Athe Ajob. AOf Acourse, Aif Ayou Awanted, Ayou Acould Afind Aother Atypes Aof Adata Ato Aadd Ato Aour Amodel.
+ 
+Model APerformance ATesting
+ 
+We Aare Atrying Ato Acreate Ameaningful Aassessments Aof Aour Acommute-disruption Aprediction. AWe Aneed Ato Abegin Aby Acoming Aup Awith Acriteria Afor Atesting Aand Athe Aright Aperformance Ameasure.
+We Aneed Ato Adetermine Athe Arisk Aof Adisruption Ain Aadvance Aso Ausers Aaren't Abadly Aaffected.
+To Ado Athis Awe Awill Aneed Athree Arequirements:
+
+Understanding Athe Aoutput Awe Awill Aget Afrom Aour Amodel.
+Use Acertain Ameasures Ato Aget Athe Amodel's Aperformance.
+Target Adata Aused Ato Ascore Athe Amodel's Aperformance Abased Aon Ameasures.
+
+This Ais Adebatable, Abut Awe Acan Amake Aan Aargument Athat Athe Arisk Ais Auseful Awhen Ait Aprovides Ainformation Awe Anever Ahad.
+We Acould Amake Aour Amodel Aoutput Aa Ascore Abetween A0 Ato A1 Afor Athe Adaily Acommute. AThere Aare Avarious Aways Awe Acan Apresent Athe Ascore. AThe Amost Aobvious Ain Alog Arescaling. AThe Aadvantage Ais Athat Awe Acan Amake Athe Adistribution Aof Acommute Adelay Atime Afollow Aa Apower Alaw. AAt Athis Atime, Awe Awill Achange Athe Aoutput Ascore. AWe Awill Ado Athat Aat Aa Alater Astage. AFor Anow, Aour Afocus Ashould Abe Adelivering Athe Ascore. AA Azero Ato Aone Asystem Adoes Anot Alook Avery Apractical, Aso Awe Ashould Aaim Afor Aa Athree-level Asystem: Alow Arisk, Amid Arisk, Aand Ahigh-risk Astatus Awithin Athe A0 Ato A1 Arange. AThis Ameans Awe Awill Achange Aour Aapproach Aby Atreating Ait Aas Aa Amulticlass Aclassification Awith Alabels. ADoing Athings Athis Away
+may Aimprove Athe Amodel's Aperformance, Abecause Awe Acan Aexpand Athe Afree Aerror Amargin. AHowever, Ayou Amay Anot Awant Ato Aapply Athis Ain Athe Afirst Aiteration. AThat Ais Abecause, Awithout Alooking Aat Athe Adistribution Aof Aour Acommute Adelays, Awe Acan't Aknow Awhere Athe Aborders Ashould Abe Afor Adifferent Aclasses.
+Next, Awe Ashould Adecide Ahow Ato Ameasure Athe Aperformance Aof Aour Amodel. AMeasure Ais Adecided Abased Aon Athe Aproblems Aposed Aby Aspecific Afeatures. AWe Awill Abegin Awith Athe Amost Acommon Aperformance Ascoring Amethod Awhich Ahappens Ato Abe Aperfect Afor Aour Acase. AIt Ais Acalled Athe Aconfusion Amatrix. AA Aconfusion Amatrix Ais Aa Atable Aused Ato Adescribe Aperformance Aof Aa Aclassifier Aon Aa Atest Aset. AThink Aof Ait Aas Aa Aprobability Atable Athat Adescribes Athe Alabel Aprediction Aagainst Athe Areal Alabel. AThe Atechnique Ais Avery Auseful Awhen Ait Acomes Ato Amulticlass Aproblems Abecause Awe Acan Alearn Aa Alot Afrom Aclassification Avalues Abased Aon Athe Aclass Aand Athe Atype Aof Afailure Awe Aget. ABelow Ais Aa Asimple Amatrix Athat Aassesses Aif Athere's Aprobability Awe Aaren't Ainterested Ain:
+TRUE      FALSE
+Prediction ATRUE A A A A A A A ATrue APositive      False APositive AFALSE A A A A A A AFalse ANegative            True ANegative
+In Aour Aspecific Ascenarios, Awe Aare Ainterested Ain Aall Athese Avalues. ALet's Adescribe Athem. AIn Athe Aexample Aabove, Athe Afalse Apositives Aindicate Astarting Aa Acommute Aearly, Awhile Afalse Anegatives Aare Aabout Aunexpected Adelays. AThis Ameans Awe Aneed Aa Ameasure Athat Atakes Ahigh Asensitivity Aand Ahigh Aspecificity, Ameaning Athe Abest Aperformance Ameasure Ais AAUC A(area Aunder Athe Acurve).
+Secondly, Awe Aneed Aa Amethod Aof Ameasuring Athe Ascore; Awe Aneed Aa Atarget Ato Amake Aa Aprediction Aagainst. ATo Ado Athis Awe Aneed Ato Atravel Aourselves, Aby Apicking Aa Atime Aand Athen Arecording Athe Atime. AFor Ait Ato Awork, Awe Awill Aneed Ato Abe Aconsistent Awith Athe Adeparture Atime Aand Athe Aroute Awe Atake.
+This Aapproach Ais Alimited Abecause Aof Aits Areliance Aon Apersonal Ahabits. AMaybe Ayou Alive Ain Aan Aarea Awhere Ayour Aroute Abenefits Afrom Asome Aadvantage Athat Aothers Adon't Aget. AIt Acould Aeven Abe Athat Ayou Aare Amuch Amore Aactive Aabout Ayour Acommute Awhen Aothers Aaren't. AThat Ameans Awe Acan't Arely Aon Adata Aonly Aprovided Aby Ayou. AData Amust Abe Agathered Afrom Amany Apeople Ausing Adifferent Aroutes. AFor Ayour Aown Apurposes, Ausing Ayour Aown Atarget Adata Amight Abe Aenough.
+This Ameasuring Amethod Amight Awork Afor Aus, Asince Awe Aare Atrying Ato Aclassify Adisruptions Ain Athe Acommute. AWe Aalso Adon't Awant Anatural Atime Avariance Amisinterpreted Ain Athe Alearning Aphase Aagainst Atargets Aset Aby Aother Acommuters Aincluding Atheir Aroutes. ADeciding Athe Abest Apath Afor Aour Amodel Awill Abe Adifficult. AIt Acan Abe Ahard Ato Ajudge Awhether Aour Amodel Ais Aperforming Aat Aits Abest. AThe Aissues Acome Aup Abecause Awe Adon't Ahave Aa Away Aof Aguaranteeing Athe Aaccuracy Aof Aour Aprediction Aif Awe Aare Aonly Arelying Aon Adata Afrom Aone Aperson. AThe Amethod Ais Acompletely Asubjective, Aso Ait Ais Aright Ato Ause Ait Afor Aa Atraining Amodel.
+With Athat Asaid, Alet's Atry Aoutperforming Aa Amodel Athat Atells Aus Aevery Aday Ais Aperfect, Awithout Adelays Aand Adisruptions. AWhile Ait Ais Aunrealistic, Ait Acan Agive Aus Arepresentation Aof Areal-world Aactions. AWe Aare Aspeaking Aabout Aour Aown Abehaviors. AThings Alike Awaking Aup, Agetting Abreakfast Aand Aworrying Aabout Acommuting. AGiven Athat, Awe Aget A14 Aout Aof A85 Acases Athat Ahave Acommute Adelays. AWe Acan Aconclude Athat Athe Atarget Awe Ashould Aaim Ato Abeat Ais A0.5.
+ 
+Acquiring ATwitter AData
+ 
+Now Athat Awe Ahave Athe Atheory, Awe Acan Abegin Aby Aextracting Adata Afrom Aa Asource. AWe Adecided Athat Ait Awould Abe ATwitter. AWe Awill Afind Atransit Aauthorities Aand Aharvest Adata Afrom Atheir Aservice Aannouncements Afor Adifferent Aplaces. AWe Aare Aspeaking Aabout Aaccounts Abelonging Ato ANew AYork's AMetropolitan ATransportation AAuthority Aand AVancouver's ATransLink Aand Aother Asimilar Aauthorities.
+For Aour Apurposes Ahere, Alet's Ause ATransLink. ATwitter's Adata Ais Aperfect Afor Aanalysis Aand Atext Amining. ASo, Awe Ashould Astart Awith Asome Acleaning Atechniques Afrom Aearlier Aand Amake Auseful Afeatures.
+We Awill Ause Athe ATwitter AAPI Ato Aget ATransLinks Atweets. AThe AAPI Ais Aeasy Ato Ause, Aespecially Awhen Aworking Awith APython. ASo, Adon't Abe Aintimidated Aif Ait's Ayour Afirst Atime Aworking Awith Aan AAPI. AThere Aare Aeasy Ato Afind Aonline Aguides Afor ATwitter's AAPI. AWhat Awe Awill Aextract Aare Athe Atext Aitself Aand Athe Adate Aand Atime. AText Ais Athe Amost Aimportant Apart, Aas Ait Ahas Athe Acontent Awe Aare Alooking Afor, Alike Ainformation Aof Adelays, Aservice Ainterruptions, Awhich Astation Aand Aareas Aare Aaffected Aand Aso Aon.
+If Ayou Adecide Ato Ause ATransLink Adata, Ayou Aencounter Adifficulties Abecause Ait Aoften Aincludes Ainformation Aof Atrain Alines Aand Abus Alines. ABut Ayou Awill Afind Athat Atheir ATwitter Ais Awell Aput Atogether Aand Athey Agive Aall Athe Ainformation Awe Aneed Aon Adelays Aand Ainterruptions Ain Auniform Aterms: Agiving Athe Atype Aof Aservice Aproblem Aand Aa Asubject. AThey Ause Ahashtags Alike A#TLAlert, A#TL300 Aand Aothers. AAll Athese Ahashtags Aare Astraightforward, Ameaning Ayou Awill Abe Aable Ato Atell Awhat Athey Aare Afor. AOn Atop Aof Athat, Ayou Acan Aincorporate Akeywords Athat Aare Alikely Ato Abe Aused Aby Aa Atransport Aauthority Ain Ayour Amodel. ASome Aof Athose Acommon Aterms Aare Athings Alike Adelay, Adetour Aand Adiversion. AThat Awill Ahelp Ayou Acatch Atweets Athat Aare Amost Auseful Ato Ayour Apurposes Aand Areduce Athe Adata Ayou Ahave Ato Adeal Awith.
+Let's Aassume Ayou Ahave Agone Aahead Aand Agotten Athe Adata Ayou Aneed. AWe Awill Astart Awith Acleaning Ausing ABeautifulSoup Aand ANLTK. AAssuming Awe Aare Ausing ATransLink, Athis Ais Ahow Ait Awill Alook:
+from Abs4 Aimport ABeautifulSoup
+tweets A= ABeautifulSoup(train["TweetsFromTranslink.text"]) Atweettext A= Atweets.get_text()
+brown_a A= Anltk.corpus.brown.tagged_sents(categories= A'a')
+tagger A= ANone Afor An Ain Arange(1,4): Atagger A= ANgramTagger(n, Abrown_a, Abackoff A= Atagger) Ataggedtweettext A= Atagger.tag(tweettext)
+Because Aof Athe Anature Aof Athe Adata, Ayou Adon't Ahave Ato Aperform Aa Avery
+thorough Acleaning Aprocess. AThat Ais Abecause Aorganizational Atweets Afrom Agovernments Aand Acompanies Aoften Afollow Athe Asame Apattern Aor Aformula Aand Ado Anot Aoften Ainclude Amisspellings, Ainsults, Aemojis Aand Anon-ascii Acharacters. AThis Amakes Aour Ajob Avery Aeasy, Abecause Aa Alot Aof Asteps Awe Awould Ausually Atake Aare Aunnecessary. AWe Ahave Arelatively Aclean Adatasets Athat Aare Aregularized Aand Adictionary Averified.
+So, Awe Ashould Abegin Athinking Aabout Athe Afeatures Awe Awant Ato Abuild Afrom Athe Adata. AThe Amost Aobvious Away Aof Adetecting Adelays Ais Aby Afiltering Afor Athe Aword A"delay." AWe Aalso Aknow Athat Ainformation Aon Adelays Awill Ainclude Ainformation Aabout Atime Aand Aplace Aand Aa Areason. AWe Acan Afind Aall Aof Athat Ain Aa Atweet, Aexcept Athe Aamount Aof Atime Athe Adelay Awill Atake.
+We Acan Aeasily Aget Athe Alocation Awhen Athey Arefer Ato Aa Astreet Aor Aa Astation, Aand Athe Aarea Athat Ais Aaffected. AIt Awill Aalso Atell Aus Athe Astart Aand Aend Apoint Aof Athe Aroute Athat Ais Aaffected. ASo, Awe Adon't Aneed Ato Ause Aa Amethod Athat Aperforms Athese Atasks Abecause Awe Aalready Ahave Athat Ainformation.
+Time Aestimations Aare Anot Aperfect, Abecause Awe Awon't Aknow Athe Atime Athe Aproblem Astarted. AWe Aonly Ahave Aa Atweet, Awith Aa Atimestamp, Aproviding Aus Awith Aservice Ainformation Aand Aother Atweets Athat Aupdate Aus Aabout Athe Aproblem. ATo Amake Athings Asimpler Afor Aus, Awe Awill Ajust Aassume Athat Athe Atweet's Atimestamp Ais Aaccurate Aenough. AWe Astill Ahave Aother Aissues Awith Aa Atime Ameasurement Alike Athis. AThe Aproblem Ais Athat Awe Adepend Aon Athe Atransport Aauthority's Ainterpretation Aof Athe Asituation. AWe Amight Ahave Aservice Adelays Athat Aare Anot Aimportant Aenough Afor Athe Atransport Aauthority Ato Atell Athe Apublic Aabout, Aso Athey Adon't. AThose Asmall Ainterruptions Acan Aaccumulate Ainto Abigger Aones, Aand Aonly Athen Awe Ahave Atweets Athat Ainform Aus Aabout Athe Asituation. AWe Aalso Aneed Ato Afactor Ain Ahuman Abehavior. AWe Adon't Ahave Ato Aknow Ahow Awell Athe Aengineers Awork Atogether. AThere Acould Aalso Abe Acommunication Adelays Aif Athe Aplatform Adoesn't Acheck Awith Athe Aservice Ateam Aregularly, Awhich Acan Aevolve Ainto Adelays Ain Acommunication.
+We Acan't Aknow Aabout Aall Aof Athis, Aso Awe Ajust Ahave Ato Atrust Athat Athere Ais Areal- Atime Aservice Atracking. AOn Aour Aend Awe Ajust Ahave Ato Afocus Aon Areasons Afor Athe Adelays: Atrain, Arail, Acontrol, Aintrusion, Amedical, Apower, Apolice Aor Aothers. AGood Athing Afor Aus Ais Athat Aeach Areason Awill Ahave Aa Akeyword. AWe Ashould Aalso Aremember Athat Asome Aof Athese Areasons, Alike Apolice, Awon't Asay Amuch Aabout Aconditions Aof Athe Aroad, Arail Aor Astations. AWhile Aother Acategories Acan Abe Amore Areliably Aused Ato Apredict Aa Apotential Aservice Ainterruption, Alike Aswitch Afailure. AWe Acan Ause Athose Afor Aclassification. AThere Aare Asimilar Acategories Afor Abus Adelays, Alike Aconstruction, Afire, Atraffic Aand Aaccident.
+Our Adelay Arisk Afactor Awill Adepend Aon Awhat Ahappened, Aso Ait Ais Aimportant Afor Aus Ato Aknow Awhat Ahappened. ASome Aissues Awill Ahave Aa Abigger Aimpact Athan Aothers, Aand Aothers Awill Abe Aless Aimportant. AThat Ais Awhy Awe Ashould Aencode Athese Acategories Ato Ause Athem Aas Aparameters Awe Acan Ause Ato Amake Aour Amodel Amore Aaccurate.
+We Awill Ado Athat Aby Ausing Aone-hot Aencoding, Awhich Awe Adiscussed Aearlier. AThe Amethod Awill Acreate Aa Aconditional Avariable Afor Aeach Aof Athe Acategories Aand Aset
+their Avalues Ato A0. AIt Awill Aalso Acheck Atweets Afor Aspecific Akeywords Aassigned Ato Athose Acategories. AWhen Aone Aof Athe Aterms Ais Afound, Athe Avalue Awill Abe Aset Ato A1.
+We Acan Aimprove Aour Aaccuracy Aby Alooking Aat Ahow Aoften Acertain Aservice Adisruptions Aoccur. AIf Awe Aknow Athe Afrequency Aof Aa Atype Aof Adelay, Awe Acan Amake Abetter Apredictions. AFor Aexample, Aif Aa Adelay Ahappens Athree Atimes Aat Aa Aspecific Astation Aeach Aweek, Ahow Alikely Ais Ait Agoing Ato Ahappen Aagain Anext Aweek? AThose Aare Athe Atypes Aour Amodel Amust Aget Agood Aat.
+ 
+Acquiring AData Afrom AConsumers
+ 
+Everyone Ais Aon Asocial Amedia Atoday. AThat Ameans Awe Acan Ause Ait Ato Aglean Aself- Areported Adata. AWe Ajust Aneed Ato Aharvest Athis Ainformation Aand Ause Ait Ain Aour Amodel Ato Aimprove Ait.
+Whenever Athere Ais Aservice Ainterruption Ain Aany Atransport, Aconsumers Awill Aexpress Athemselves Aon Asocial Amedia. AWe Acan Aharvest Athat Ainformation Afor Aa Afuller Apicture Aof Awhat Ais Agoing Aon. AWe Acan Acreate Aa Adictionary Athat Aholds Acommon Akeywords. ATwitter Acan Ahelp Aus. AWe Aare Anot Alooking Afor Atweets Athat Aare Atraffic Arelated, Abecause Aa Alot Aof Athat Adata Ais Anot Auseful. AWe Ajust Aneed Acontent Athat Arefers Ato Aspecific Adelays Aand Atraffic Ajams.
+Using Adata Afrom Athe Apublic Awill Abe Aa Alot Adifferent Athan Ausing Aone Afrom Aan Aorganization. APeople Aare Anot Aconsistent, Ameaning Aour Acleaning Aprocess Awill Ahave Ato Abe Aa Alot Amore Athorough. AWe Aneed Ato Apreprocess Aand Aclean Ait Aso Awe Acan Ause Ait.
+We Aalso Aneed Ato Ause Aa Adictionary Ato Ascale Aour Asearch Aarea Adown. AWe Acan Ado Athis Aby Aimplementing Aa Abounding Abox Acoordinates AAPI. AThis Awill Alet Aus Aperform Asearches Athat Agive Aresults Afrom Aa Abound Aarea Aonly. AIn Aour Afirst Aiteration, Awe Ashould Acount Athe Anumber Aof Atweets Ain Aa Aperiod. AThe Anext Aiteration Awe Awill Awork Awith Awell-defined Acategories, Alike ATransLink's Adata. AWe Acan Ause Adictionaries Awith Aspecialized Aterms Arelated Ato Adelays. AFor Aexample, Awe Acan Apredict Aencountering Aconstruction Arelated Atraffic Adisruption, Aso Athat Ameans Awe Ashould Ahave Aa Adictionary Acontaining Akeywords Arelated Ato Aconstruction.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+CHAPTER A8:
+ 
+ENSEMBLE AMETHODS
+
+In Athis Achapter, Awe Awill Afocus Aon Acurrent Atechniques Aand Ahow Ato Aenhance Athem Ausing Aensemble Amethods. AEnsemble Amethods Aare Aexactly Alike Ahow Athey Asound. AThese Amethods Aare Atechniques Afor Acombining Adifferent Amodels. AEnsemble Amethods Aare Aoften Aused Aby Adata Ascientists Aand Amachine Alearning Aenthusiasts. AThey Aare Aplaying Aa Akey Arole Ain Afinding Asolutions Ato Avarious Aproblems. AThey Ahelp Aboost Aperformance Aand Amuch Amore. AWe Alook Aat Aa Afew Aensemble Atechniques Aand Alook Aat Ahow Athey Aare Aused Ain Athe Areal-world.
+Let's Alook Aat Aensembles Ain Amachine Alearning. AThere Aare Atwo Acomponents Ainvolved Ain Athem. AThe Afirst Apart Ais Aa Agroup Aof Amodels. AThe Asecond Ais Aa Aset Aof Arules Athat Atell Aus Ahow Athe Aresults Awill Abe Agathered Afrom Amodels Aand Aunited Ainto Aone Aoutput. AEnsembles Aallow Aus Ato Abuild Amore Athan Aone Asolution Ato Aa Aproblem Aand Athen Aput Atogether Athe Aresults. AIt Atakes Athe Abest Afrom Aevery
+component. AThat Ameans Athe Asolution Awe Acome Ato Ais Amore Anoise Aresistant, Aallowing Afor Abetter Atraining Aprocesses. AThis Atranslates Ato Afewer Aoverfitting Aproblems Aand Atraining Aerrors.
+Ensembles Ahave Ahad Aa Abig Aimpact Aon Amachine Alearning Atechniques Aand Aprovided Aus Awith Amore Aflexibility Athan Awe Ahave Aever Ahad. ABecause Aof Athese Achanges, Awe Acan Anow Atest Afragments Aof Aa Asolution Aor Asolve Alocalized Aissues Awithout Aoverhauling Athe Aentire Amodel. ABelow Aare Atypes Aof Aensemble Amethods:
+
+Stacking Aensemble As:      Weighted Aoutput Aof Aseveral Aclassifiers Abecomes Ainput Afor Athe Anext Amodel.
+Averaging Aensembles: AModels Aare Abuilt Anext Ato Aeach Aother, Aand Aaveraging Amethods Aare Aused Ato Aget Athe Aunited Aestimator.
+Boosting Aensembles A: AModels Aare Abuilt Ain Asequence, Aand Aeach Anew Aaddition Aworks Aon Aimproving Athe Ascore Aof Athe Aunited Aestimator.
+
+Let's Adiscuss Aeach Ain Aa Alittle Amore Adetail.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Averaging AEnsembles
+Averaging Aensembles Aare Aused Ain Aa Awide Aarray Aof Aapplications Alike Aaudio Aprocessing Aand Astatistical Amodeling. AThey Aare Aalmost Aalways Ainterpreted Athe Asame Away Aas Areproduced Acases Aof Acertain Asystems. AThe Aidea Ais Athat Athe Aaverage Avalues Awithin Aa Agiven Asystem, Aand Avariances Abetween Acases, Aare Avalues Aof Athe Amost Aimportance Ato Athe Aentire Asystem.
+In Amachine Alearning, Aan Aaveraging Aensemble Ais Aa Amodel Acollection Atraining Afrom Athe Asame Adataset. AResults Aare Athen Aaggregated. AThere Aare Aa Afew Aadvantages Ato Athis. AFirst, Athe Aensemble Areduces Ahow Amuch Athe Amodel Aperformances Avary. AA Apopular Aset Aof Aaveraging Aensembles Ais Acalled Arandom Aforests.
+Let's Alook Aat Ait Aa Alittle.
+ 
+Working Awith ARandom AForests
+The Arandom Aforest Aalgorithm Ais Aloved Aby Adata Ascientists Abecause Ait Agives Agreat Aresults Amore Aoften Athan Anot, Aand Ait Ais Avery Asimple. AIt's Aused Ato Amake Aside-by-side Adecision Atree Aclassifiers. AThat Ameans Ait Acan Abe Aused Afor Aclassification Aoperations Aand Aregression.
+It Acreates Aa Arandom A"forest" Amade Aup Aof Aan Aensemble Aof Adecision Atrees. ADecision Atrees Aare Avisual Arepresentations Aof Adecisions Aor Adecision Amaking, Aoften Aused Ain Amachine Alearning Aand Adata Amining
+The Aforest Ahas Adiverse Adecision Astress, Abecause Athere Aare, Aat Athe Avery Aleast, A2 Asources Aof Arandomness Aadded Ato Athe Adevelopment Aof Aa Aclassifier. AEvery Atree Ais Amade Afrom Adata Asampled Avia Areplacement Afrom Athe Atraining Adataset. AThe Abuilding Aprocess Aof Aa Adecision Atree Aselects Athe Abest Asplit Afrom Afeatures, Anot Afrom Athe Afeatures Asubset. ALet's Ause AScikit-learn's ARandomForestClassifier, Alike Abelow:
+import Anumpy Aas Anp
+from Asklearn.ensemble Aimport ARandomForestClassifier Afrom Asklearn.datasets Aimport Aload_digits
+from Asklearn.preprocessing Aimport Ascale Adigits A= Aload_digits()
+data A= Ascale(digits.data) An_samples, An_features A= Adata.shape
+n_digits A= Alen(np.unique(digits.target)) Alabels A= Adigits.target
+clf A= ARandomForestClassifier(n_estimators=10) Aclf A= Aclf.fit(data, Alabels)
+scores A= Aclf.score(data,labels)
+print(scores)
+The Aoutput Awill Abe A0.999. AYou Acan't Aimprove Aa Ascore Alike Athat. AIf Ayou Alook Aback Aat Athe Amodels Awe Ause Ain Athis Abook, Ayou Awill Asee Athat Anone Ahas Aachieved Asuch Aa Ahigh Ascore. ARemember, Aeven Aif Ayou Amake Aa Abad Arandom Aforest, Ayou Awill Astill Aget Aresults Athat Aare Abetter Athan Amost Amethods.
+Let's Alook Aat Aa Arandom Aforest Awhich Ais Aslightly Adifferent. AIt's Acalled Arandomized Atrees. AIt Aworks Asimilarly Ato Aa Arandom Aforest Abut Aalso Arandomizes Athe Adiscrimination Athreshold. AIn Aother Awords, Awhere Athe Adecision Atree Asplits, Aclasses Aare Arandomized Aat Arandom Avalues.
+Note Athat Atraining Adecision Atrees Ais Aa Ahighly Aefficient Aprocess. AAny Arandom Aforest Aalgorithm Awill Abe Aable Ato Adeal Awith Aa Alarger Anumber Aof Atrees; Awith Athat Aincrease Awe Aget Amore Anodes Aand Aget Aan Aeven Amore Aeffective Aclassifier. AThe Arandomness Aaspect Ahelps Aus Alimit Anoise.
+Let's Atake Aa Alook Aat Aan Aexample. ABelow Awe Aare Ausing AScikit-learn's AExtraTreesClassifier:
+from Asklearn.cross_validation Aimport Across_val_score Afrom Asklearn.ensemble Aimport ARandomForestClassifier Afrom Asklearn.ensemble Aimport AExtraTreesClassifier Afrom Asklearn.tree Aimport ADecisionTreeClassifier
+from Asklearn.datasets Aimport Aload_digits Afrom Asklearn.preprocessing Aimport Ascale Adigits A= Aload_digits()
+data A= Ascale(digits.data)
+X A= Adata
+y A= Adigits.target
+clf A= ADecisionTreeClassifier(max_depth=None,min_samples_split=1, Arandom_state=0)
+scores A= Across_val_score(clf, AX, Ay) Aprint(scores)
+clf A= ARandomForestClassifier(n_estimators=10, Amax_depth=None, Amin_samples_split=1, Arandom_state=0)
+scores A= Across_val_score(clf, AX, Ay) Aprint(scores)
+clf A= AExtraTreesClassifier(n_estimators=10, Amax_depth=None, Amin_samples_split=1, Arandom_state=0)
+scores A= Across_val_score(clf, AX, Ay) Aprint(scores)
+The Ascores Awe Aobtain Alook Asomething Alike Athis:
+ 
+
+
+[ A0.74262381
+0.82035783 A0.75488341]
+
+
+[ A0.88352197
+0.9015025      0.8918286 A]
+
+
+[ A0.91798342
+0.93388139 A0.91789423]
+
+
+The Ascore Arepresents Athe Aproportion Aof Acases Alabeled Acorrectly. AWe Acan Aconclude Athat Arandom Aforests Aand Arandomized Atrees Awill Agive Aus Avery Astrong Aresults. AIn Aboth Acases, Awe Afind Ascores Aabove A0.9.
+There Ais Aa Adisadvantage. AWhen Aworking Awith Arandom Aforests, Ait Ais Adifficult Ato Asee Athe Aeffectiveness Aof Aan Aimplementation. AThe Adifficulty Aincreases Awith Athe Asize Aof Athe Aforest. ASmall Aforests Aand Aindividual Aforests Aare Asimpler Ato Adeal Awith.
+Another Adisadvantage Ais Athat Athe Aalgorithm Amight Aneed Aan Aextended Acomputing Atime Ato Aprocess Areal-time Apredictions. ARandom Aforests Aare Aquick Awhen Atraining, Abut Athey Aare Aslow Awhen Aproducing Apredictions Aonce Athe Atraining Aphase Ais Aover. ATo Amake Athings Aworse, Athe Amore Aaccuracy Awe Awant, Athe Amore Atrees Awe Awill Ahave Ato Aadd. AGenerally Arandom Aforests Aare Afast Aenough Afor Amost Areal-world Asituations, Abut Ain Asome Asituations Aruntime Adelays Aare Anot Adesired. ABut Athey Aare Aefficient Aenough, Aeven Awhen Ayou Adon't Aproperly Aoptimize Athem.
+Random Aforests Aare Aoften Aused Afor Aprediction Amodeling, Aso Ayou Acan't Ause Athem Aas Aa Adescriptive Atool. AIf Ayou Awant Adata Arelationship Adescriptions, Ayou Awill Aneed Aanother Atechnique, Alike Athe Aones Awe Atalked Aabout Aearlier.
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Stacking AEnsembles
+Classic Aensembles Aare Asimilar Ain Aone Away. AWe Ahave Amultiple Aclassifiers Awhich Aare Atrained Ato Afit Aa Aset Aof Atarget Alabels. AThe Amodels Aare Athen Aapplied Ato
+produce Aa AMeta Afunction Athat Aincludes Aother Aensemble Amethods Alike Aaveraging Aand Aboosting. AAn Aalternative Ato Athis Ais Astacking, Asometimes Areferred Ato Aas Ablending. AWe Awill Atalk Aabout Athat Ainstead.
+As Awe Adiscussed, Astacking Ais Aconfiguring Alayers Aof Amodels Aso Athat Athe Aoutput Aof Aone Ais Athe Atraining Adata Afor Athe Anext. AWe Acan Ado Athis Afor Ahundreds Aof Alayers Awithout Afailure. AWe Acan Ago Aeven Afurther; Awe Acan Ahave Astacks Aof Astacks. AThen Aharvest Athe Amost Asuccessful Aparameters Afrom Aone Astacking Aensemble Aand Athen Aapply Athem Aas AMeta Afeatures Awithin Aother Astacks. AIt's Anot Adizzying Aif Ayou Atake Asome Atime Ato Aimagine Ait.
+Stacking Aensembles Ais Amuch Amore Aefficient Aand Apowerful. AImagine Aa Ascenario Awhere Athere Aare Ahundreds Aof Afeatures. AThen Awe Ause Astacking Aensembles Ato Aimprove Athe Aquality Aof Aour Apredictions. AThere Aare Afew Athings Awe Awill Ahave Ato Ado:
+
+We Acan Abegin Aby Aleaving Aout Asome Adata Awhile Awe Atrain Aand Aoptimize Athe Aensemble. ABefore Awe Aapply Athe Amodel Ato Athe Atest Aset, Awe Acan Aretrain Aand Aoptimize Ait. AThis Acan Agive Aus Agreat Aresults.
+Then Awe Ause Athe Aroot Amean Asquare Aerror Aand Agradient Adescent Aas Aa Aperformance Afunction. AIt's Abest Ato Ause Athe Aroot Amean Asquare Aof Athe Aensemble, Anot Athe Amodel.
+We Acan Ablend Amodels Athat Aimprove Athe Aresiduals Aof Aother Amodels Aalone. AFor Ainstance, Awe Acan Ause Aa Aneighborhood Aapproach Ato Aimprove Aon Aresiduals Aof Aan ARBM. AKnowing Astrengths Aand Aweaknesses Aof Amachine Alearning Atechniques Acan Ahelp Ayou Abuild Asuperior Aconfigurations.
+Lastly, Awe Acan Amake Ak-fold Across-validation Atechniques Ato Aget Aresiduals Aof Aour Acombinations.
+
+We Acan Anow Asee Athe Abasics Aof Astacking Aensembles Aand Ahow Athey Acan Abe Aused Awith Aother Atechniques. ALet's Alook Aat Aproblem Asolving, Aby Aworking Awith Acode Aused Aby Amachine Alearning Aenthusiasts Awho Awon Acompetitions Aapplying Athe Asame Atechniques Ato Asolve Areal Aproblems. AFor Ainstance, Apredicting Aa Abiological Aresponse Afrom Amolecules' Achemical Aproperties Ais Aa Adata Ascience Aproblem. ALet's Alook Aat Aan Aentry Ain Aa Acompetition Athat Awas Alooking Aat Athe Asame Aproblem Ato Abetter Aunderstand Ahow Astacking Aensembles Aare Aapplied.
+The Adataset Awe Aare Ausing Acontains Arows Awhere Aeach Arepresents Aa Amolecule, Aand Athere Aare A1,776 Afeatures Adepicting Athe Aattributes Aof Aeach Amolecule. AWe Aneed Ato Apredict Aa Abinary Aresponse Afrom Aa Amolecule Abased Aon Athose Aattributes. AWe Awill Ause Acode Athat Ablends Afive Aclassifiers Atogether: Atwo Arandom Aforest Aclassifiers, Aa Agradient-boosting Aclassifier Aand Aextra Atree Aclassifiers; Aeach Awill Afind Aslightly Avarying Apredictions Arelative Ato Aothers. AHere's Ahow Athe Acode Alooks:
+if      name      == A'      main      ': Anp.random.seed(0)
+n_folds A= A10
+verbose A= ATrue Ashuffle A= AFalse
+X, Ay, AX_submission A= Aload_data.load() Aif Ashuffle:
+idx A= Anp.random.permutation(y.size) AX A= AX[idx]
+y A= Ay[idx]
+skf A= Alist(StratifiedKFold(y, An_folds))
+clfs A= A[RandomForestClassifier(n_estimators=100, An_jobs=-1, Acriterion='gini'),
+RandomForestClassifier(n_estimators=100,n_jobs=1,criterion='e Antropy'),
+ExtraTreesClassifier(n_estimators=100, An_jobs=-1, Acriterion='gini'),
+ExtraTreesClassifier(n_estimators=100, An_jobs=-1, Acriterion='entropy'),
+GradientBoostingClassifier(learning_rate=0.05, Asubsample=0.5, Amax_depth=6, An_estimators=50)]
+print A"Creating Atrain Aand Atest Asets Afor Ablending."
+dataset_blend_train A= Anp.zeros((X.shape[0], Alen(clfs))) Adataset_blend_test A= Anp.zeros((X_submission.shape[0], Alen(clfs))) Afor Aj, Aclf Ain Aenumerate(clfs):
+print Aj, Aclf
+dataset_blend_test_j A= Anp.zeros((X_submission.shape[0], Alen(skf)))
+for Ai, A(train, Atest) Ain Aenumerate(skf):
+print A"Fold", Ai AX_train A= AX[train] Ay_train A= Ay[train] AX_test A= AX[test] Ay_test A= Ay[test]
+clf.fit(X_train, Ay_train)
+y_submission A= Aclf.predict_proba(X_test) A[:,1]
+dataset_blend_train[test, Aj] A= Ay_submission
+dataset_blend_test_j[:, Ai] A= Aclf.predict_proba(X_submission)[:,1]
+dataset_blend_test[:,j] A= Adataset_blend_test_j.mean(1)
+print
+print A"Blending."
+clf A= ALogisticRegression() Aclf.fit(dataset_blend_train, Ay)
+y_submission A= Aclf.predict_proba(dataset_blend_test)[:,1]
+print A"Linear Astretch Aof Apredictions Ato A[0,1]"      y_submission A= A(y_submission A-
+y_submission.min()) A/ A(y_submission.max() A- Ay_submission.min())
+print A"Saving AResults."
+np.savetxt(fname='test.csv', AX=y_submission, Afmt='%0.9f')
+In Athe Aexample Aabove, Awe Ahave Aa Aduplicated Aclassifier, Abut Aeach Aworks Awith Aa Adifferent Asplit Acriterion. AAs Ayou Acan Asee, Athe A"gini" Aclassifier Auses Athe AGini AImpurity Ameasure. AThe AGini AImpurity Alooks Aat Athe Atimes Aa Arandom Arecord Awould Abe Alabeled Awrongly Aif Ait Awere Arandomly Alabeled Abased Aon Athe Alabel Adistribution Afrom Aa Aspecific Alayer. AOur Asecond Aclassier, Anamed A"entropy," Ameasures Athe Ainformation Acontent Ausing Ainformation Again Ameasures. AThe Acontent Aof Aa Abranch Ais Ameasured Aby Athe Anumber Aof Abits Aneeded Afor Aits Aencoding Aprocess. AResults Awe Aget Afrom Athe Aentropy Acriteria Awill Abe Adifferent Afrom Athe Aones Awe Aget Awith Athe Agini Acriteria.
+It's Aworth Amentioning Athat Aif Ayou Adon't Acompletely Aunderstand Ahow Astacking Aensembles Aare Aapplied Ain Athe Acode Aabove, Adon't Aworry Aabout Ait. AThe Aapplication Aabove Ais Amore Aadvanced Aand Ascored Ahighly Ain Athe Acompetition. AFor Aour Apurposes Awe Aonly Aneed Ait Ato Aget Aan Aidea Aof Ahow Astacking Amethods Aare Aapplied.
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+CONCLUSION
+ 
+That Aconcludes Aour Ajourney. AHopefully, Athis Abook Ahas Agiven Ayou Athe Aknowledge Ayou Aneed Ato Amove Aon Ato Amore Aadvanced Atopics. AJust Alike Awe Adid Ahere, Ayou Aneed Ato Aput Ain Aa Alot Aof Apractice, Aeven Awhen Ayou Adon't Afully Aunderstand Asomething. AJust Ado Aa Alittle Amore Aresearch Aand Agive Ait Aa Ago.
+Machine Alearning Ais Aan Aarea Athat Ais Aunder Aconstant Adevelopment, Amuch Alike Aany Aother Afield Ain Athe Atechnology Asector. ANew Amethods Aand Atechniques Aare Aconstantly Adeveloped, Aand Ait Acan Abe Ahard Ato Akeep Aup Asometimes. AThis Aisn't Aa Abad Athing. ANobody Aexpects Ayou Ato Aknow Aeverything, Abut Athey Aexpect Ayou Ato Abe Acompetent. AAnd Aall Athese Achanges Amean Athe Afield Anever Agets Astale, Ameaning Athere Ais Aalways Asomething Afun Aand Ainteresting Ato Alearn. AThat Ais Aencouragement Aenough Ato Akeep Alearning Aand Aimproving. AYou Adon't Ahave Ato Ado Ait Aalone, Aas Athere Aare Amany Aonline Acommunities Athat Aare Adedicated Ato Alearning, Acollaboration Aand Adiscussion Aof Athe Abest Amethods Awhen Adealing Awith Aspecific Aproblems. ATake Aadvantage Aof Ait.
+So, Awhat Ahave Awe Alearned?
+In Athe Afirst Achapter, Awe Alooked Aat Aunsupervised Amachine Alearning Atechniques Aand Aother Atools Aneeded Afor Aan Aexploratory Aanalysis. AWhen Aworking Awith Acomplicated Adatasets, Ait's Aimportant Ato Aknow Athe Astuff. AYou Alearned Ahow Ato Aidentify Apatterns Aand Astructures Aneeded Afor Adata Aanalysis. AThen Ayou Alearned Aabout Aprincipal Acomponent Aanalysis, Ak-means Aclustering Aand Aself-organizing Amaps. AWe Aalso Alearned Ahow Ato Aapply Athem Ausing Athe AUCI AHandwritten ADigits Adataset.
+In Athe Asecond Achapter, Awe Alooked Aat Arestricted ABoltzmann Amachines Aand Adeep Abelief Anetworks. AWe Alearned Ato Aapply Aboth. AThe Atwo Atechniques Aare Acommon Asolutions Ato Amany Acomplex Aproblems Athat Ainvolve Aimage Aor Asound Arecognition.
+In Athe Athird Achapter, Awe Aworked Awith Aconvolutional Aneural Anetworks. AThey Aare Aoften Aused Ain Aartificial Aneural Anetwork Aimplementations. AWe Alearned Ahow
+to Ause Athem Afor Aphoto Asearch Aand Aimage Arecognition. AToday ACNN Aalgorithms Aare Aoften Aused Ain Adrones, Arobotics, Aand Aself-driven Acars.
+In Athe Afourth Achapter, Awe Alooked Aat Aautoencoders Aand Atheir Avariations, Alike Adenoising Aautoencoders. AWe Amostly Atalked Aabout Athem Aand Aexplored Asome Aof Athe Abest Atechniques Abelonging Ato Athem. AWe Alooked Aat Aone Apractical Aimplication. AThe Aaim Awas Aso Ayou Acan Ago Aon Ayour Aown Aand Alearn Amore Aabout Athem. AResearch Askills Aare Aimportant Ain Amachine Alearning. AWe Athen Alooked Aat Asemi-supervised Alearning. AWe Alearned Aabout Amachine Alearning Atechniques Alike Aself-learning Aand Acontrastive Apessimistic Alikelihood Aestimation. AWe Aalso Alearned Ahow Ato Alabel Adata Ausing APython Alibraries.
+In Athe Asixth Aand Aseventh Achapter, Awe Alooked Aat Afeature Aengineering Atechniques Aand Aother Arelated Atopics. AWe Alooked Aat Ahow Athey Aare Aused Awith Atext-based Adata. AWe Alearned Ahow Ato Aclean Atext-based Adata Aand Aprepare Ait Afor Aanalysis. AWe Alearned Aabout Athe Aimportance Aof Acleaning Atext Adata Abecause Ait Ais Aoften Afilled Awith Amisspellings, AHTML Atags, Aemojis Aand Aother Acharacters. ASo, Atext Ashould Abe Acleaned Auntil Awe Ahave Athe Amost Avaluable Adata. AIn Aboth Achapters Awe Aworked Aon Areal-world Aapplications, Awhere Awe Aworked Aover Aeach Astage Astep-by-step.
+In Athe Alast Achapter, Awe Alooked Aat Aensemble Atechniques. AWe Alooked Aat Aaveraging Aand Astacking Amethods. AWe Alearned Aabout Athese Aconcepts, Aand Awe Alooked Aat Aa Afew Areal-world Aexamples Aof Ahow Athey Awere Aused Ato Asolve Aproblems. AEnsemble Amethods Aare Aimportant Ato Awork Aon Aand Aimprove, Aeven Aif Athey Afeel Auncomfortable Ato Awork Awith.
+Machine Alearning Ais Aa Acomplex Asubject Athat Ademands Awe Atake Atime Adoing Aresearch, Aanalyzing, Alearning Aand Apracticing. AYou Ahave Alearned Athe Atools Ayou Aneed Ato Acontinue Ayour Alearning Ajourney. AAll Athe Abest!
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

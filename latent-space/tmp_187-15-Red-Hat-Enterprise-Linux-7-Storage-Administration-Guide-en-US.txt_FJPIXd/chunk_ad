@@ -1,0 +1,1000 @@
+this feature, specify the no_acl option when exporting the file system.
+Each default for every exported file system must be explicitly overridden. For example, if the rw option is
+not specified, then the exported file system is shared as read-only. The following is a sample line from 
+/etc/exports which overrides two default options:
+/another/exported/directory 192.168.0.3(rw,async)
+In this example 192.168.0.3 can mount /another/exported/directory/ read and write and all
+writes to disk are asynchronous. For more information on exporting options, see man exportfs.
+Other options are available where no default value is specified. These include the ability to disable sub-
+tree checking, allow access from insecure ports, and allow insecure file locks (necessary for certain early
+NFS client implementations). For more information on these less-used options, see man exports.
+IMPORTANT
+The format of the /etc/exports file is very precise, particularly in regards to use of the
+space character. Remember to always separate exported file systems from hosts and
+hosts from one another with a space character. However, there should be no other space
+characters in the file except on comment lines.
+For example, the following two lines do not mean the same thing:
+/home bob.example.com(rw)
+/home bob.example.com (rw)
+The first line allows only users from bob.example.com read and write access to the 
+/home directory. The second line allows users from bob.example.com to mount the
+directory as read-only (the default), while the rest of the world can mount it read/write.
+8.7.2. The exportfs Command
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+77
+
+Every file system being exported to remote users with NFS, as well as the access level for those file
+systems, are listed in the /etc/exports file. When the nfs service starts, the /usr/sbin/exportfs
+command launches and reads this file, passes control to rpc.mountd (if NFSv3) for the actual mounting
+process, then to rpc.nfsd where the file systems are then available to remote users.
+When issued manually, the /usr/sbin/exportfs command allows the root user to selectively export
+or unexport directories without restarting the NFS service. When given the proper options, the 
+/usr/sbin/exportfs command writes the exported file systems to /var/lib/nfs/xtab. Since 
+rpc.mountd refers to the xtab file when deciding access privileges to a file system, changes to the list
+of exported file systems take effect immediately.
+The following is a list of commonly-used options available for /usr/sbin/exportfs:
+-r
+Causes all directories listed in /etc/exports to be exported by constructing a new export list in 
+/etc/lib/nfs/xtab. This option effectively refreshes the export list with any changes made to 
+/etc/exports.
+-a
+Causes all directories to be exported or unexported, depending on what other options are passed to 
+/usr/sbin/exportfs. If no other options are specified, /usr/sbin/exportfs exports all file
+systems specified in /etc/exports.
+-o file-systems
+Specifies directories to be exported that are not listed in /etc/exports. Replace file-systems with
+additional file systems to be exported. These file systems must be formatted in the same way they
+are specified in /etc/exports. This option is often used to test an exported file system before
+adding it permanently to the list of file systems to be exported. For more information on 
+/etc/exports syntax, see Section 8.7.1, "The /etc/exports Configuration File".
+-i
+Ignores /etc/exports; only options given from the command line are used to define exported file
+systems.
+-u
+Unexports all shared directories. The command /usr/sbin/exportfs -ua suspends NFS file
+sharing while keeping all NFS daemons up. To re-enable NFS sharing, use exportfs -r.
+-v
+Verbose operation, where the file systems being exported or unexported are displayed in greater
+detail when the exportfs command is executed.
+If no options are passed to the exportfs command, it displays a list of currently exported file systems.
+For more information about the exportfs command, see man exportfs.
+8.7.2.1. Using exportfs with NFSv4
+In Red Hat Enterprise Linux 7, no extra steps are required to configure NFSv4 exports as any filesystems
+mentioned are automatically available to NFSv3 and NFSv4 clients using the same path. This was not
+the case in previous versions.
+Storage Administration Guide
+78
+
+To prevent clients from using NFSv4, turn it off by setting RPCNFSDARGS= -N 4 in 
+/etc/sysconfig/nfs.
+8.7.3. Running NFS Behind a Firewall
+NFS requires rpcbind, which dynamically assigns ports for RPC services and can cause issues for
+configuring firewall rules. To allow clients to access NFS shares behind a firewall, edit the 
+/etc/sysconfig/nfs file to set which ports the RPC services run on.
+The /etc/sysconfig/nfs file does not exist by default on all systems. If /etc/sysconfig/nfs
+does not exist, create it and specify the following:
+RPCMOUNTDOPTS="-p port"
+This adds "-p port" to the rpc.mount command line: rpc.mount -p port.
+To specify the ports to be used by the nlockmgr service, set the port number for the nlm_tcpport and
+nlm_udpport options in the /etc/modprobe.d/lockd.conf file.
+If NFS fails to start, check /var/log/messages. Commonly, NFS fails to start if you specify a port
+number that is already in use. After editing /etc/sysconfig/nfs, you need to restart the nfs-
+config service for the new values to take effect in Red Hat Enterprise Linux 7.2 and prior by running:
+#  systemctl restart nfs-config
+Then, restart the NFS server:
+#  systemctl restart nfs-server
+Run rpcinfo -p to confirm the changes have taken effect.
+NOTE
+To allow NFSv4.0 callbacks to pass through firewalls set 
+/proc/sys/fs/nfs/nfs_callback_tcpport and allow the server to connect to that
+port on the client.
+This process is not needed for NFSv4.1 or higher, and the other ports for mountd, 
+statd, and lockd are not required in a pure NFSv4 environment.
+8.7.3.1. Discovering NFS exports
+There are two ways to discover which file systems an NFS server exports.
+On any server that supports NFSv3, use the showmount command:
+$ showmount -e myserver
+Export list for mysever
+/exports/foo
+/exports/bar
+On any server that supports NFSv4, mount the root directory and look around.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+79
+
+# mount myserver:/ /mnt/
+# cd /mnt/
+exports
+# ls exports
+foo
+bar
+On servers that support both NFSv4 and NFSv3, both methods work and give the same results.
+NOTE
+Before Red Hat Enterprise Linux 6 on older NFS servers, depending on how they are
+configured, it is possible to export filesystems to NFSv4 clients at different paths. Because
+these servers do not enable NFSv4 by default, this should not be a problem.
+8.7.4. Accessing RPC Quota through a Firewall
+If you export a file system that uses disk quotas, you can use the quota Remote Procedure Call (RPC)
+service to provide disk quota data to NFS clients.
+Procedure 8.1. Making RPC Quota Accessible Behind a Firewall
+1. To enable the rpc-rquotad service, use the following command:
+# systemctl enable rpc-rquotad 
+2. To start the rpc-rquotad service, use the following command:
+# systemctl start rpc-rquotad 
+Note that rpc-rquotad is, if enabled, started automatically after starting the nfs-server
+service.
+3. To make the quota RPC service accessible behind a firewall, UDP or TCP port 875 need to be
+open. The default port number is defined in the /etc/services file.
+You can override the default port number by appending -p port-number to the 
+RPCRQUOTADOPTS variable in the /etc/sysconfig/rpc-rquotad file.
+4. Restart rpc-rquotad for changes in the /etc/sysconfig/rpc-rquotad file to take effect:
+# systemctl restart rpc-rquotad
+Setting Quotas from Remote Hosts
+By default, quotas can only be read by remote hosts. To allow setting quotas, append the -S option to
+the RPCRQUOTADOPTS variable in the /etc/sysconfig/rpc-rquotad file.
+Restart rpc-rquotad for changes in the /etc/sysconfig/rpc-rquotad file to take effect:
+# systemctl restart rpc-rquotad
+8.7.5. Hostname Formats
+Storage Administration Guide
+80
+
+The host(s) can be in the following forms:
+Single machine
+A fully-qualified domain name (that can be resolved by the server), hostname (that can be resolved
+by the server), or an IP address.
+Series of machines specified with wildcards
+Use the * or ? character to specify a string match. Wildcards are not to be used with IP addresses;
+however, they may accidentally work if reverse DNS lookups fail. When specifying wildcards in fully
+qualified domain names, dots (.) are not included in the wildcard. For example, *.example.com
+includes one.example.com but does not include one.two.example.com.
+IP networks
+Use a.b.c.d/z, where a.b.c.d is the network and z is the number of bits in the netmask (for example
+192.168.0.0/24). Another acceptable format is a.b.c.d/netmask, where a.b.c.d is the network and
+netmask is the netmask (for example, 192.168.100.8/255.255.255.0).
+Netgroups
+Use the format @group-name, where group-name is the NIS netgroup name.
+8.7.6. Enabling NFS over RDMA (NFSoRDMA)
+The remote direct memory access (RDMA) service works automatically in Red Hat Enterprise Linux 7 if
+there is RDMA-capable hardware present.
+To enable NFS over RDMA:
+1. Install the rdma and rdma-core packages.
+The /etc/rdma/rdma.conf file contains a line that sets XPRTRDMA_LOAD=yes by default,
+which requests the rdma service to load the NFSoRDMA client module.
+2. To enable automatic loading of NFSoRDMA server modules, add SVCRDMA_LOAD=yes on a
+new line in /etc/rdma/rdma.conf.
+RPCNFSDARGS="--rdma=20049" in the /etc/sysconfig/nfs file specifies the port number
+on which the NFSoRDMA service listens for clients. RFC 5667 specifies that servers must listen
+on port 20049 when providing NFSv4 services over RDMA.
+3. Restart the nfs service after editing the /etc/rdma/rdma.conf file:
+# systemctl restart nfs
+Note that with earlier kernel versions, a system reboot is needed after editing 
+/etc/rdma/rdma.conf for the changes to take effect.
+8.7.7. Configuring an NFSv4-only Server
+By default, the NFS server supports NFSv2, NFSv3, and NFSv4 connections in Red Hat Enterprise
+Linux 7. However, you can also configure NFS to support only NFS version 4.0 and later. This minimizes
+the number of open ports and running services on the system, because NFSv4 does not require the 
+rpcbind service to listen on the network.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+81
+
+When your NFS server is configured as NFSv4-only, clients attempting to mount shares using NFSv2 or
+NFSv3 fail with an error like the following:
+Requested NFS version or transport protocol is not supported.
+Procedure 8.2. Configuring an NFSv4-only Server
+To configure your NFS server to support only NFS version 4.0 and later:
+1. Disable NFSv2, NFSv3, and UDP by adding the following line to the /etc/sysconfig/nfs
+configuration file:
+RPCNFSDARGS="-N 2 -N 3 -U"
+2. Optionally, disable listening for the RPCBIND, MOUNT, and NSM protocol calls, which are not
+necessary in the NFSv4-only case.
+The effects of disabling these options are:
+Clients that attempt to mount shares from your server using NFSv2 or NFSv3 become
+unresponsive.
+The NFS server itself is unable to mount NFSv2 and NFSv3 file systems.
+To disable these options:
+Add the following to the /etc/sysconfig/nfs file:
+RPCMOUNTDOPTS="-N 2 -N 3"
+Disable related services:
+# systemctl mask --now rpc-statd.service rpcbind.service 
+rpcbind.socket
+3. Restart the NFS server:
+# systemctl restart nfs
+The changes take effect as soon as you start or restart the NFS server.
+Verifying the NFSv4-only Configuration
+You can verify that your NFS server is configured in the NFSv4-only mode by using the netstat utility.
+The following is an example netstat output on an NFSv4-only server; listening for RPCBIND, 
+MOUNT, and NSM is also disabled. Here, nfs is the only listening NFS service:
+# netstat -ltu
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         
+State      
+Storage Administration Guide
+82
+
+tcp        0      0 0.0.0.0:nfs             0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               
+LISTEN     
+tcp        0      0 localhost:smtp          0.0.0.0:*               
+LISTEN     
+tcp6       0      0 [::]:nfs                [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:12432              [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:12434              [::]:*                  
+LISTEN     
+tcp6       0      0 localhost:7092          [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:ssh                [::]:*                  
+LISTEN     
+udp        0      0 localhost:323           0.0.0.0:*                  
+udp        0      0 0.0.0.0:bootpc          0.0.0.0:*                  
+udp6       0      0 localhost:323           [::]:*
+In comparison, the netstat output before configuring an NFSv4-only server includes the 
+sunrpc and mountd services:
+# netstat -ltu
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         
+State      
+tcp        0      0 0.0.0.0:nfs             0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:36069           0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:52364           0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:sunrpc          0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:mountd          0.0.0.0:*               
+LISTEN     
+tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               
+LISTEN     
+tcp        0      0 localhost:smtp          0.0.0.0:*               
+LISTEN     
+tcp6       0      0 [::]:34941              [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:nfs                [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:sunrpc             [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:mountd             [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:12432              [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:56881              [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:12434              [::]:*                  
+LISTEN     
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+83
+
+tcp6       0      0 localhost:7092          [::]:*                  
+LISTEN     
+tcp6       0      0 [::]:ssh                [::]:*                  
+LISTEN     
+udp        0      0 localhost:323           0.0.0.0:*                  
+udp        0      0 0.0.0.0:37190           0.0.0.0:*                  
+udp        0      0 0.0.0.0:876             0.0.0.0:*                  
+udp        0      0 localhost:877           0.0.0.0:*                  
+udp        0      0 0.0.0.0:mountd          0.0.0.0:*                  
+udp        0      0 0.0.0.0:38588           0.0.0.0:*                  
+udp        0      0 0.0.0.0:nfs             0.0.0.0:*                  
+udp        0      0 0.0.0.0:bootpc          0.0.0.0:*                  
+udp        0      0 0.0.0.0:sunrpc          0.0.0.0:*                  
+udp6       0      0 localhost:323           [::]:*                     
+udp6       0      0 [::]:57683              [::]:*                     
+udp6       0      0 [::]:876                [::]:*                     
+udp6       0      0 [::]:mountd             [::]:*                     
+udp6       0      0 [::]:40874              [::]:*                     
+udp6       0      0 [::]:nfs                [::]:*                     
+udp6       0      0 [::]:sunrpc             [::]:*
+8.8. SECURING NFS
+NFS is suitable for transparent sharing of entire file systems with a large number of known hosts.
+However, with ease-of-use comes a variety of potential security problems. To minimize NFS security
+risks and protect data on the server, consider the following sections when exporting NFS file systems on
+a server or mounting them on a client.
+8.8.1. NFS Security with AUTH_SYS and Export Controls
+Traditionally, NFS has given two options in order to control access to exported files.
+First, the server restricts which hosts are allowed to mount which file systems either by IP address or by
+host name.
+Second, the server enforces file system permissions for users on NFS clients in the same way it does
+local users. Traditionally it does this using AUTH_SYS (also called AUTH_UNIX) which relies on the client
+to state the UID and GID's of the user. Be aware that this means a malicious or misconfigured client can
+easily get this wrong and allow a user access to files that it should not.
+To limit the potential risks, administrators often allow read-only access or squash user permissions to a
+common user and group ID. Unfortunately, these solutions prevent the NFS share from being used in the
+way it was originally intended.
+Additionally, if an attacker gains control of the DNS server used by the system exporting the NFS file
+system, the system associated with a particular hostname or fully qualified domain name can be pointed
+to an unauthorized machine. At this point, the unauthorized machine is the system permitted to mount
+the NFS share, since no username or password information is exchanged to provide additional security
+for the NFS mount.
+Wildcards should be used sparingly when exporting directories through NFS, as it is possible for the
+scope of the wildcard to encompass more systems than intended.
+It is also possible to restrict access to the rpcbind[1] service with TCP wrappers. Creating rules with 
+iptables can also limit access to ports used by rpcbind, rpc.mountd, and rpc.nfsd.
+Storage Administration Guide
+84
+
+For more information on securing NFS and rpcbind, refer to man iptables.
+8.8.2. NFS Security with AUTH_GSS
+NFSv4 revolutionized NFS security by mandating the implementation of RPCSEC_GSS and the
+Kerberos version 5 GSS-API mechanism. However, RPCSEC_GSS and the Kerberos mechanism are
+also available for all versions of NFS. In FIPS mode, only FIPS-approved algorithms can be used.
+Unlike AUTH_SYS, with the RPCSEC_GSS Kerberos mechanism, the server does not depend on the
+client to correctly represent which user is accessing the file. Instead, cryptography is used to
+authenticate users to the server, which prevents a malicious client from impersonating a user without
+having that user's Kerberos credentials. Using the RPCSEC_GSS Kerberos mechanism is the most
+straightforward way to secure mounts because after configuring Kerberos, no additional setup is
+needed.
+Configuring Kerberos
+Before configuring an NFSv4 Kerberos-aware server, you need to install and configure a Kerberos Key
+Distribution Centre (KDC). Kerberos is a network authentication system that allows clients and servers to
+authenticate to each other by using symmetric encryption and a trusted third party, the KDC. Red Hat
+recommends using Identity Management (IdM) for setting up Kerberos.
+Procedure 8.3. Configuring an NFS Server and Client for IdM to Use RPCSEC_GSS
+1. 
+Create the nfs/hostname.domain@REALM principal on the NFS server side.
+Create the host/hostname.domain@REALM principal on both the server and the client
+side.
+Add the corresponding keys to keytabs for the client and server.
+For instructions, see the Adding and Editing Service Entries and Keytabs and Setting up a
+Kerberos-aware NFS Server sections in the Red Hat Enterprise Linux 7 Linux Domain Identity,
+Authentication, and Policy Guide.
+2. On the server side, use the sec= option to enable the wanted security flavors. To enable all
+security flavors as well as non-cryptographic mounts:
+/export *(sec=sys:krb5:krb5i:krb5p)
+Valid security flavors to use with the sec= option are:
+sys: no cryptographic protection, the default
+krb5: authentication only
+krb5i: integrity protection
+krb5p: privacy protection
+3. On the client side, add sec=krb5 (or sec=krb5i, or sec=krb5p, depending on the setup) to
+the mount options:
+# mount -o sec=krb5 server:/export /mnt
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+85
+
+For information on how to configure a NFS client, see the Setting up a Kerberos-aware NFS
+Client section in the Red Hat Enterprise Linux 7 Linux Domain Identity, Authentication, and
+Policy Guide.
+Although Red Hat recommends using IdM, Active Directory (AD) Kerberos servers are also supported.
+For details, see the following Red Hat Knowledgebase article: How to set up NFS using Kerberos
+authentication on RHEL 7 using SSSD and Active Directory.
+For more information, see the exports(5) and nfs(5) manual pages, and Section 8.5, "Common NFS
+Mount Options".
+For further information on the RPCSEC_GSS framework, including how gssproxy and rpc.gssd inter-
+operate, see the GSSD flow description.
+8.8.2.1. NFS Security with NFSv4
+NFSv4 includes ACL support based on the Microsoft Windows NT model, not the POSIX model,
+because of the Microsoft Windows NT model's features and wide deployment.
+Another important security feature of NFSv4 is the removal of the use of the MOUNT protocol for mounting
+file systems. The MOUNT protocol presented a security risk because of the way the protocol processed
+file handles.
+8.8.3. File Permissions
+Once the NFS file system is mounted as either read or read and write by a remote host, the only
+protection each shared file has is its permissions. If two users that share the same user ID value mount
+the same NFS file system, they can modify each others' files. Additionally, anyone logged in as root on
+the client system can use the su - command to access any files with the NFS share.
+By default, access control lists (ACLs) are supported by NFS under Red Hat Enterprise Linux. Red Hat
+recommends that this feature is kept enabled.
+By default, NFS uses root squashing when exporting a file system. This sets the user ID of anyone
+accessing the NFS share as the root user on their local machine to nobody. Root squashing is
+controlled by the default option root_squash; for more information about this option, refer to
+Section 8.7.1, "The /etc/exports Configuration File". If possible, never disable root squashing.
+When exporting an NFS share as read-only, consider using the all_squash option. This option makes
+every user accessing the exported file system take the user ID of the nfsnobody user.
+8.9. NFS AND RPCBIND
+NOTE
+The following section only applies to NFSv3 implementations that require the rpcbind
+service for backward compatibility.
+For information on how to configure an NFSv4-only server, which does not need 
+rpcbind, see Section 8.7.7, "Configuring an NFSv4-only Server".
+The rpcbind[1] utility maps RPC services to the ports on which they listen. RPC processes notify 
+rpcbind when they start, registering the ports they are listening on and the RPC program numbers they
+Storage Administration Guide
+86
+
+expect to serve. The client system then contacts rpcbind on the server with a particular RPC program
+number. The rpcbind service redirects the client to the proper port number so it can communicate with
+the requested service.
+Because RPC-based services rely on rpcbind to make all connections with incoming client requests, 
+rpcbind must be available before any of these services start.
+The rpcbind service uses TCP wrappers for access control, and access control rules for rpcbind
+affect all RPC-based services. Alternatively, it is possible to specify access control rules for each of the
+NFS RPC daemons. The man pages for rpc.mountd and rpc.statd contain information regarding the
+precise syntax for these rules.
+8.9.1. Troubleshooting NFS and rpcbind
+Because rpcbind[1] provides coordination between RPC services and the port numbers used to
+communicate with them, it is useful to view the status of current RPC services using rpcbind when
+troubleshooting. The rpcinfo command shows each RPC-based service with port numbers, an RPC
+program number, a version number, and an IP protocol type (TCP or UDP).
+To make sure the proper NFS RPC-based services are enabled for rpcbind, use the following
+command:
+# rpcinfo -p
+Example 8.7. rpcinfo -p command output
+The following is sample output from this command:
+program vers proto  port service
+      100021    1   udp  32774  nlockmgr
+      100021    3   udp  32774  nlockmgr
+      100021    4   udp  32774  nlockmgr
+      100021    1   tcp  34437  nlockmgr
+      100021    3   tcp  34437  nlockmgr
+      100021    4   tcp  34437  nlockmgr
+      100011    1   udp    819  rquotad
+      100011    2   udp    819  rquotad
+      100011    1   tcp    822  rquotad
+      100011    2   tcp    822  rquotad
+      100003    2   udp   2049  nfs
+      100003    3   udp   2049  nfs
+      100003    2   tcp   2049  nfs
+      100003    3   tcp   2049  nfs
+      100005    1   udp    836  mountd
+      100005    1   tcp    839  mountd
+      100005    2   udp    836  mountd
+      100005    2   tcp    839  mountd
+      100005    3   udp    836  mountd
+      100005    3   tcp    839  mountd
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+87
+
+If one of the NFS services does not start up correctly, rpcbind will be unable to map RPC requests from
+clients for that service to the correct port. In many cases, if NFS is not present in rpcinfo output,
+restarting NFS causes the service to correctly register with rpcbind and begin working.
+For more information and a list of options on rpcinfo, see its man page.
+8.10. NFS REFERENCES
+Administering an NFS server can be a challenge. Many options, including quite a few not mentioned in
+this chapter, are available for exporting or mounting NFS shares. For more information, see the following
+sources:
+Installed Documentation
+man mount — Contains a comprehensive look at mount options for both NFS server and client
+configurations.
+man fstab — Provides detail for the format of the /etc/fstab file used to mount file systems
+at boot-time.
+man nfs — Provides details on NFS-specific file system export and mount options.
+man exports — Shows common options used in the /etc/exports file when exporting NFS
+file systems.
+Useful Websites
+http://linux-nfs.org — The current site for developers where project status updates can be
+viewed.
+http://nfs.sourceforge.net/ — The old home for developers which still contains a lot of useful
+information.
+http://www.citi.umich.edu/projects/nfsv4/linux/ — An NFSv4 for Linux 2.6 kernel resource.
+http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.111.4086 — An excellent whitepaper on
+the features and enhancements of the NFS Version 4 protocol.
+Related Books
+Managing NFS and NIS by Hal Stern, Mike Eisler, and Ricardo Labiaga; O'Reilly & Associates
+— Makes an excellent reference guide for the many different NFS export and mount options
+available.
+NFS Illustrated by Brent Callaghan; Addison-Wesley Publishing Company — Provides
+comparisons of NFS to other network file systems and shows, in detail, how NFS communication
+occurs.
+[1] The rpcbind service replaces portmap, which was used in previous versions of Red Hat Enterprise Linux to
+map RPC program numbers to IP address port number combinations. For more information, refer to Section 8.1.1,
+"Required Services".
+Storage Administration Guide
+88
+
+CHAPTER 9. SERVER MESSAGE BLOCK (SMB)
+The Server Message Block (SMB) protocol implements an application-layer network protocol used to
+access resources on a server, such as file shares and shared printers. On Microsoft Windows, SMB is
+implemented by default. If you run Red Hat Enterprise Linux, use Samba to provide SMB shares and the 
+cifs-utils utility to mount SMB shares from a remote server.
+NOTE
+In the context of SMB, you sometimes read about the Common Internet File System
+(CIFS) protocol, which is a dialect of SMB. Both the SMB and CIFS protocol are
+supported and the kernel module and utilities involved in mounting SMB and CIFS shares
+both use the name cifs.
+9.1. PROVIDING SMB SHARES
+See the Samba section in the Red Hat System Administrator's Guide.
+9.2. MOUNTING AN SMB SHARE
+On Red Hat Enterprise Linux, the cifs.ko file system module of the kernel provides support for the
+SMB protocol. However, to mount and work with SMB shares, you must also install the cifs-utils
+package:
+# yum install cifs-utils
+The cifs-utils package provides utilities to:
+Mount SMB and CIFS shares
+Manage NT Lan Manager (NTLM) credentials in the kernel's keyring
+Set and display Access Control Lists (ACL) in a security descriptor on SMB and CIFS shares
+9.2.1. Supported SMB Protocol Versions
+The cifs.ko kernel module supports the following SMB protocol versions:
+SMB 1
+SMB 2.0
+SMB 2.1
+SMB 3.0
+NOTE
+Depending on the protocol version, not all SMB features are implemented.
+9.2.1.1. UNIX Extensions Support
+CHAPTER 9. SERVER MESSAGE BLOCK (SMB)
+89
+
+Samba uses the CAP_UNIX capability bit in the SMB protocol to provide the UNIX extensions feature.
+These extensions are also supported by the cifs.ko kernel module. However, both Samba and the
+kernel module support UNIX extensions only in the SMB 1 protocol.
+To use UNIX extensions:
+1. Set the server min protocol option in the [global] section in the 
+/etc/samba/smb.conf file to NT1. This is the default on Samba servers.
+2. Mount the share using the SMB 1 protocol by providing the -o vers=1.0 option to the mount
+command. For example:
+mount -t cifs -o vers=1.0,username=user_name 
+//server_name/share_name /mnt/
+By default, the kernel module uses SMB 2 or the highest later protocol version supported by the
+server. Passing the -o vers=1.0 option to the mount command forces that the kernel module
+uses the SMB 1 protocol that is required for using UNIX extensions.
+To verify if UNIX extensions are enabled, display the options of the mounted share:
+# mount
+...
+//server/share on /mnt type cifs (...,unix,...)
+If the unix entry is displayed in the list of mount options, UNIX extensions are enabled.
+9.2.2. Manually Mounting an SMB Share
+To manually mount an SMB share, use the mount utility with the -t cifs parameter:
+# mount -t cifs -o username=user_name //server_name/share_name /mnt/
+Password for user_name@//server_name/share_name:  ********
+In the -o options parameter, you can specify options that will be used to mount the share. For details,
+see Section 9.2.6, "Frequently Used Mount Options" and the OPTIONS section in the mount.cifs(8) man
+page.
+Example 9.1. Mounting a Share Using an Encrypted SMB 3.0 Connection
+To mount the \\server\example\ share as the DOMAIN\Administrator user over an
+encrypted SMB 3.0 connection into the /mnt/ directory:
+# mount -t cifs -o username=DOMAIN\Administrator,seal,vers=3.0 
+//server/example /mnt/
+Password for user_name@//server_name/share_name:  ********
+9.2.3. Mounting an SMB Share Automatically When the System Boots
+To mount an SMB share automatically when the system boots, add an entry for the share to the 
+/etc/fstab file. For example:
+Storage Administration Guide
+90
+
+//server_name/share_name  /mnt  cifs  credentials=/root/smb.cred  0 0
+IMPORTANT
+To enable the system to mount a share automatically, you must store the user name,
+password, and domain name in a credentials file. For details, see Section 9.2.4,
+"Authenticating To an SMB Share Using a Credentials File".
+In the fourth field of the /etc/fstab file, specify mount options, such as the path to the credentials file.
+For details, see Section 9.2.6, "Frequently Used Mount Options" and the OPTIONS section in the
+mount.cifs(8) man page.
+To verify that the share mounts successfully, enter:
+# mount /mnt/
+9.2.4. Authenticating To an SMB Share Using a Credentials File
+In certain situations, administrators want to mount a share without entering the user name and password.
+To implement this, create a credentials file. For example:
+Procedure 9.1. Creating a Credentials File
+1. Create a file, such as ~/smb.cred, and specify the user name, password, and domain name
+that file:
+username=user_name
+password=password
+domain=domain_name
+2. Set the permissions to only allow the owner to access the file:
+# chown user_name ~/smb.cred
+# chmod 600 ~/smb.cred
+You can now pass the credentials=file_name mount option to the mount utility or use it in the 
+/etc/fstab file to mount the share without being prompted for the user name and password.
+9.2.5. Performing a Multi-user SMB Mount
+The credentials you provide to mount a share determine the access permissions on the mount point by
+default. For example, if you use the DOMAIN\example user when you mount a share, all operations on
+the share will be executed as this user, regardless which local user performs the operation.
+However, in certain situations, the administrator wants to mount a share automatically when the system
+boots, but users should perform actions on the share's content using their own credentials. The 
+multiuser mount options lets you configure this scenario.
+CHAPTER 9. SERVER MESSAGE BLOCK (SMB)
+91
+
+IMPORTANT
+To use multiuser, you must additionally set the sec=security_type mount option to
+a security type which supports providing credentials in a non-interactive way, such as 
+krb5 or the ntlmssp option with a credentials file. See the section called "Accessing a
+Share as a User".
+The root user mounts the share using the multiuser option and an account that has minimal access
+to the contents of the share. Regular users can then provide their user name and password to the current
+session's kernel keyring using the cifscreds utility. If the user accesses the content of the mounted
+share, the kernel uses the credentials from the kernel keyring instead of the one initially used to mount
+the share.
+Mounting a Share with the multiuser Option
+To mount a share automatically with the multiuser option when the system boots:
+Procedure 9.2. Creating an /etc/fstab File Entry with the multiuser Option
+1. Create the entry for the share in the /etc/fstab file. For example:
+//server_name/share_name  /mnt  cifs  
+multiuser,sec=ntlmssp,credentials=/root/smb.cred  0 0
+2. Mount the share:
+# mount /mnt/
+If you do not want to mount the share automatically when the system boots, mount it manually by
+passing -o multiuser,sec=security_type to the mount command. For details about mounting an
+SMB share manually, see Section 9.2.2, "Manually Mounting an SMB Share".
+Verifying if an SMB Share is Mounted with the multiuser Option
+To verify if a share is mounted with the multiuser option:
+# mount
+...
+//server_name/share_name on /mnt type cifs (sec=ntlmssp,multiuser,...)
+Accessing a Share as a User
+If an SMB share is mounted with the multiuser option, users can provide their credentials for the
+server to the kernel's keyring:
+# cifscreds add -u SMB_user_name server_name
+Password: ********
+Now, when the user performs operations in the directory that contains the mounted SMB share, the
+server applies the file system permissions for this user, instead of the one initially used when the share
+was mounted.
+Storage Administration Guide
+92
+
+NOTE
+Multiple users can perform operations using their own credentials on the mounted share
+at the same time.
+9.2.6. Frequently Used Mount Options
+When you mount an SMB share, the mount options determine:
+How the connection will be established with the server. For example, which SMB protocol
+version is used when connecting to the server.
+How the share will be mounted into the local file system. For example, if the system overrides
+the remote file and directory permissions to enable multiple local users to access the content on
+the server.
+To set multiple options in the fourth field of the /etc/fstab file or in the -o parameter of a mount
+command, separate them with commas. For example, see Procedure 9.2, "Creating an /etc/fstab
+File Entry with the multiuser Option".
+The following list gives an overview of frequently used mount options:
+Table 9.1. Frequently Used Mount Options
+Option
+Description
+credentials=file_name
+Sets the path to the credentials file. See Section 9.2.4, "Authenticating To an
+SMB Share Using a Credentials File".
+dir_mode=mode
+Sets the directory mode if the server does not support CIFS UNIX
+extensions.
+file_mode=mode
+Sets the file mode if the server does not support CIFS UNIX extensions.
+password=password
+Sets the password used to authenticate to the SMB server. Alternatively,
+specify a credentials file using the credentials option.
+seal
+Enables encryption support for connections using SMB 3.0 or a later
+protocol version. Therefore, use seal together with the vers mount option
+set to 3.0 or later. See Example 9.1, "Mounting a Share Using an
+Encrypted SMB 3.0 Connection".
+sec=security_mode
+Sets the security mode, such as ntlmsspi, to enable NTLMv2 password
+hashing and enabled packet signing. For a list of supported values, see the
+option's description in the mount.cifs(8) man page.
+If the server does not support the ntlmv2 security mode, use 
+sec=ntlmssp, which is the default. For security reasons, do not use the
+insecure ntlm security mode.
+username=user_name
+Sets the user name used to authenticate to the SMB server. Alternatively,
+specify a credentials file using the credentials option.
+CHAPTER 9. SERVER MESSAGE BLOCK (SMB)
+93
+
+vers=SMB_protocol_version
+Sets the SMB protocol version used for the communication with the server.
+Option
+Description
+For a complete list, see the OPTIONS section in the mount.cifs(8) man page.
+Storage Administration Guide
+94
+
+CHAPTER 10. FS-CACHE
+FS-Cache is a persistent local cache that can be used by file systems to take data retrieved from over
+the network and cache it on local disk. This helps minimize network traffic for users accessing data from
+a file system mounted over the network (for example, NFS).
+The following diagram is a high-level illustration of how FS-Cache works:
+Figure 10.1. FS-Cache Overview
+FS-Cache is designed to be as transparent as possible to the users and administrators of a system.
+Unlike cachefs on Solaris, FS-Cache allows a file system on a server to interact directly with a client's
+local cache without creating an overmounted file system. With NFS, a mount option instructs the client to
+mount the NFS share with FS-cache enabled.
+FS-Cache does not alter the basic operation of a file system that works over the network - it merely
+provides that file system with a persistent place in which it can cache data. For instance, a client can still
+mount an NFS share whether or not FS-Cache is enabled. In addition, cached NFS can handle files that
+won't fit into the cache (whether individually or collectively) as files can be partially cached and do not
+have to be read completely up front. FS-Cache also hides all I/O errors that occur in the cache from the
+client file system driver.
+CHAPTER 10. FS-CACHE
+95
+
+To provide caching services, FS-Cache needs a cache back end. A cache back end is a storage driver
+configured to provide caching services (i.e. cachefiles). In this case, FS-Cache requires a mounted
+block-based file system that supports bmap and extended attributes (e.g. ext3) as its cache back end.
+FS-Cache cannot arbitrarily cache any file system, whether through the network or otherwise: the shared
+file system's driver must be altered to allow interaction with FS-Cache, data storage/retrieval, and
+metadata setup and validation. FS-Cache needs indexing keys and coherency data from the cached file
+system to support persistence: indexing keys to match file system objects to cache objects, and
+coherency data to determine whether the cache objects are still valid.
+NOTE
+In Red Hat Enterprise Linux 7, the cachefilesd package is not installed by default and
+needs to be installed manually.
+10.1. PERFORMANCE GUARANTEE
+FS-Cache does not guarantee increased performance, however it ensures consistent performance by
+avoiding network congestion. Using a cache back end incurs a performance penalty: for example,
+cached NFS shares add disk accesses to cross-network lookups. While FS-Cache tries to be as
+asynchronous as possible, there are synchronous paths (e.g. reads) where this isn't possible.
+For example, using FS-Cache to cache an NFS share between two computers over an otherwise
+unladen GigE network will not demonstrate any performance improvements on file access. Rather, NFS
+requests would be satisfied faster from server memory rather than from local disk.
+The use of FS-Cache, therefore, is a compromise between various factors. If FS-Cache is being used to
+cache NFS traffic, for instance, it may slow the client down a little, but massively reduce the network and
+server loading by satisfying read requests locally without consuming network bandwidth.
+10.2. SETTING UP A CACHE
+Currently, Red Hat Enterprise Linux 7 only provides the cachefiles caching back end. The 
+cachefilesd daemon initiates and manages cachefiles. The /etc/cachefilesd.conf file
+controls how cachefiles provides caching services.
+The first setting to configure in a cache back end is which directory to use as a cache. To configure this,
+use the following parameter:
+$ dir /path/to/cache
+Typically, the cache back end directory is set in /etc/cachefilesd.conf as 
+/var/cache/fscache, as in:
+$ dir /var/cache/fscache
+If you want to change the cache back end directory, the selinux context must be same as 
+/var/cache/fscache:
+# semanage fcontext -a -e /var/cache/fscache /path/to/cache
+# restorecon -Rv /path/to/cache
+Replace /path/to/cache with the directory name while setting up cache.
+Storage Administration Guide
+96
+
+NOTE
+If the given commands for setting selinux context did not work, use the following
+commands:
+# semanage permissive -a cachefilesd_t
+# semanage permissive -a cachefiles_kernel_t
+FS-Cache will store the cache in the file system that hosts /path/to/cache. On a laptop, it is
+advisable to use the root file system (/) as the host file system, but for a desktop machine it would be
+more prudent to mount a disk partition specifically for the cache.
+File systems that support functionalities required by FS-Cache cache back end include the Red Hat
+Enterprise Linux 7 implementations of the following file systems:
+ext3 (with extended attributes enabled)
+ext4
+Btrfs
+XFS
+The host file system must support user-defined extended attributes; FS-Cache uses these attributes to
+store coherency maintenance information. To enable user-defined extended attributes for ext3 file
+systems (i.e. device), use:
+# tune2fs -o user_xattr /dev/device
+Alternatively, extended attributes for a file system can be enabled at mount time, as in:
+# mount /dev/device /path/to/cache -o user_xattr
+The cache back end works by maintaining a certain amount of free space on the partition hosting the
+cache. It grows and shrinks the cache in response to other elements of the system using up free space,
+making it safe to use on the root file system (for example, on a laptop). FS-Cache sets defaults on this
+behavior, which can be configured via cache cull limits. For more information about configuring cache
+cull limits, refer to Section 10.4, "Setting Cache Cull Limits".
+Once the configuration file is in place, start up the cachefilesd service:
+# systemctl start cachefilesd
+To configure cachefilesd to start at boot time, execute the following command as root:
+# systemctl enable cachefilesd
+10.3. USING THE CACHE WITH NFS
+NFS will not use the cache unless explicitly instructed. To configure an NFS mount to use FS-Cache,
+include the -o fsc option to the mount command:
+CHAPTER 10. FS-CACHE
+97
+
+# mount nfs-share:/ /mount/point -o fsc
+All access to files under /mount/point will go through the cache, unless the file is opened for direct I/O
+or writing. For more information, see Section 10.3.2, "Cache Limitations with NFS". NFS indexes cache
+contents using NFS file handle, not the file name, which means hard-linked files share the cache
+correctly.
+Caching is supported in version 2, 3, and 4 of NFS. However, each version uses different branches for
+caching.
+10.3.1. Cache Sharing
+There are several potential issues to do with NFS cache sharing. Because the cache is persistent, blocks
+of data in the cache are indexed on a sequence of four keys:
+Level 1: Server details
+Level 2: Some mount options; security type; FSID; uniquifier
+Level 3: File Handle
+Level 4: Page number in file
+To avoid coherency management problems between superblocks, all NFS superblocks that wish to
+cache data have unique Level 2 keys. Normally, two NFS mounts with same source volume and options
+share a superblock, and thus share the caching, even if they mount different directories within that
+volume.
+Example 10.1. Cache Sharing
+Take the following two mount commands:
+mount home0:/disk0/fred /home/fred -o fsc
+mount home0:/disk0/jim /home/jim -o fsc
+Here, /home/fred and /home/jim likely share the superblock as they have the same options,
+especially if they come from the same volume/partition on the NFS server (home0). Now, consider
+the next two subsequent mount commands:
+mount home0:/disk0/fred /home/fred -o fsc,rsize=230
+mount home0:/disk0/jim /home/jim -o fsc,rsize=231
+In this case, /home/fred and /home/jim will not share the superblock as they have different
+network access parameters, which are part of the Level 2 key. The same goes for the following mount
+sequence:
+mount home0:/disk0/fred /home/fred1 -o fsc,rsize=230
+mount home0:/disk0/fred /home/fred2 -o fsc,rsize=231
+Here, the contents of the two subtrees (/home/fred1 and /home/fred2) will be cached twice.
+Storage Administration Guide
+98
+
+Another way to avoid superblock sharing is to suppress it explicitly with the nosharecache
+parameter. Using the same example:
+mount home0:/disk0/fred /home/fred -o nosharecache,fsc
+mount home0:/disk0/jim /home/jim -o nosharecache,fsc
+However, in this case only one of the superblocks is permitted to use cache since there is nothing to
+distinguish the Level 2 keys of home0:/disk0/fred and home0:/disk0/jim. To address this,
+add a unique identifier on at least one of the mounts, i.e. fsc=unique-identifier. For example:
+mount home0:/disk0/fred /home/fred -o nosharecache,fsc
+mount home0:/disk0/jim /home/jim -o nosharecache,fsc=jim
+Here, the unique identifier jim is added to the Level 2 key used in the cache for /home/jim.
+10.3.2. Cache Limitations with NFS
+Opening a file from a shared file system for direct I/O automatically bypasses the cache. This is
+because this type of access must be direct to the server.
+Opening a file from a shared file system for writing will not work on NFS version 2 and 3. The
+protocols of these versions do not provide sufficient coherency management information for the
+client to detect a concurrent write to the same file from another client.
+Opening a file from a shared file system for either direct I/O or writing flushes the cached copy of
+the file. FS-Cache will not cache the file again until it is no longer opened for direct I/O or writing.
+Furthermore, this release of FS-Cache only caches regular NFS files. FS-Cache will not cache
+directories, symlinks, device files, FIFOs and sockets.
+10.4. SETTING CACHE CULL LIMITS
+The cachefilesd daemon works by caching remote data from shared file systems to free space on the
+disk. This could potentially consume all available free space, which could be bad if the disk also housed
+the root partition. To control this, cachefilesd tries to maintain a certain amount of free space by
+discarding old objects (i.e. accessed less recently) from the cache. This behavior is known as cache
+culling.
+Cache culling is done on the basis of the percentage of blocks and the percentage of files available in the
+underlying file system. There are six limits controlled by settings in /etc/cachefilesd.conf:
+brun N% (percentage of blocks) , frun N% (percentage of files)
+If the amount of free space and the number of available files in the cache rises above both these
+limits, then culling is turned off.
+bcull N% (percentage of blocks), fcull N% (percentage of files)
+If the amount of available space or the number of files in the cache falls below either of these limits,
+then culling is started.
+bstop N% (percentage of blocks), fstop N% (percentage of files)
+CHAPTER 10. FS-CACHE
+99
+
+If the amount of available space or the number of available files in the cache falls below either of
+these limits, then no further allocation of disk space or files is permitted until culling has raised things
+above these limits again.
+The default value of N for each setting is as follows:
+brun/frun - 10%
+bcull/fcull - 7%
+bstop/fstop - 3%
+When configuring these settings, the following must hold true:
+0 ≤ bstop < bcull < brun < 100
+0 ≤ fstop < fcull < frun < 100
+These are the percentages of available space and available files and do not appear as 100 minus the
+percentage displayed by the df program.
+IMPORTANT
+Culling depends on both bxxx and fxxx pairs simultaneously; they can not be treated
+separately.
+10.5. STATISTICAL INFORMATION
+FS-Cache also keeps track of general statistical information. To view this information, use:
+# cat /proc/fs/fscache/stats
+FS-Cache statistics includes information on decision points and object counters. For more information,
+see the following kernel document:
+/usr/share/doc/kernel-
+doc-version/Documentation/filesystems/caching/fscache.txt
+10.6. FS-CACHE REFERENCES
+For more information on cachefilesd and how to configure it, see man cachefilesd and man 
+cachefilesd.conf. The following kernel documents also provide additional information:
+/usr/share/doc/cachefilesd-version-number/README
+/usr/share/man/man5/cachefilesd.conf.5.gz
+/usr/share/man/man8/cachefilesd.8.gz
+For general information about FS-Cache, including details on its design constraints, available statistics,
+and capabilities, see the following kernel document: /usr/share/doc/kernel-
+doc-version/Documentation/filesystems/caching/fscache.txt
+Storage Administration Guide
+100
+
+PART II. STORAGE ADMINISTRATION
+The Storage Administration section starts with storage considerations for Red Hat Enterprise Linux 7.
+Instructions regarding partitions, logical volume management, and swap partitions follow this. Disk
+Quotas, RAID systems are next, followed by the functions of mount command, volume_key, and acls.
+SSD tuning, write barriers, I/O limits and diskless systems follow this. The large chapter of Online
+Storage is next, and finally device mapper multipathing and virtual storage to finish.
+PART II. STORAGE ADMINISTRATION
+101
+
+CHAPTER 11. STORAGE CONSIDERATIONS DURING
+INSTALLATION
+Many storage device and file system settings can only be configured at install time. Other settings, such
+as file system type, can only be modified up to a certain point without requiring a reformat. As such, it is
+prudent that you plan your storage configuration accordingly before installing Red Hat
+Enterprise Linux 7.
+This chapter discusses several considerations when planning a storage configuration for your system.
+For installation instructions (including storage configuration during installation), see the Installation Guide
+provided by Red Hat.
+For information on what Red Hat officially supports with regards to size and storage limits, see the article
+http://www.redhat.com/resourcelibrary/articles/articles-red-hat-enterprise-linux-6-technology-capabilities-
+and-limits.
+11.1. SPECIAL CONSIDERATIONS
+This section enumerates several issues and factors to consider for specific storage configurations.
+Separate Partitions for /home, /opt, /usr/local
+If it is likely that you will upgrade your system in the future, place /home, /opt, and /usr/local on a
+separate device. This allows you to reformat the devices or file systems containing the operating system
+while preserving your user and application data.
+DASD and zFCP Devices on IBM System Z
+On the IBM System Z platform, DASD and zFCP devices are configured via the Channel Command
+Word (CCW) mechanism. CCW paths must be explicitly added to the system and then brought online.
+For DASD devices, this means listing the device numbers (or device number ranges) as the DASD=
+parameter at the boot command line or in a CMS configuration file.
+For zFCP devices, you must list the device number, logical unit number (LUN), and world wide port name
+(WWPN). Once the zFCP device is initialized, it is mapped to a CCW path. The FCP_x= lines on the boot
+command line (or in a CMS configuration file) allow you to specify this information for the installer.
+Encrypting Block Devices Using LUKS
+Formatting a block device for encryption using LUKS/dm-crypt destroys any existing formatting on that
+device. As such, you should decide which devices to encrypt (if any) before the new system's storage
+configuration is activated as part of the installation process.
+Stale BIOS RAID Metadata
+Moving a disk from a system configured for firmware RAID without removing the RAID metadata from the
+disk can prevent Anaconda from correctly detecting the disk.
+Storage Administration Guide
+102
+
+WARNING
+Removing/deleting RAID metadata from disk could potentially destroy any stored
+data. Red Hat recommends that you back up your data before proceeding.
+To delete RAID metadata from the disk, use the following command:
+dmraid -r -E /device/
+For more information about managing RAID devices, see man dmraid and Chapter 18, Redundant
+Array of Independent Disks (RAID).
+iSCSI Detection and Configuration
+For plug and play detection of iSCSI drives, configure them in the firmware of an iBFT boot-capable
+network interface card (NIC). CHAP authentication of iSCSI targets is supported during installation.
+However, iSNS discovery is not supported during installation.
+FCoE Detection and Configuration
+For plug and play detection of Fibre Channel over Ethernet (FCoE) drives, configure them in the firmware
+of an EDD boot-capable NIC.
+DASD
+Direct-access storage devices (DASD) cannot be added or configured during installation. Such devices
+are specified in the CMS configuration file.
+Block Devices with DIF/DIX Enabled
+DIF/DIX is a hardware checksum feature provided by certain SCSI host bus adapters and block devices.
+When DIF/DIX is enabled, error occurs if the block device is used as a general-purpose block device.
+Buffered I/O or mmap(2)-based I/O will not work reliably, as there are no interlocks in the buffered write
+path to prevent buffered data from being overwritten after the DIF/DIX checksum has been calculated.
+This causes the I/O to later fail with a checksum error. This problem is common to all block device (or file
+system-based) buffered I/O or mmap(2) I/O, so it is not possible to work around these errors caused by
+overwrites.
+As such, block devices with DIF/DIX enabled should only be used with applications that use O_DIRECT.
+Such applications should use the raw block device. Alternatively, it is also safe to use the XFS file
+system on a DIF/DIX enabled block device, as long as only O_DIRECT I/O is issued through the file
+system. XFS is the only file system that does not fall back to buffered I/O when doing certain allocation
+operations.
+The responsibility for ensuring that the I/O data does not change after the DIF/DIX checksum has been
+computed always lies with the application, so only applications designed for use with O_DIRECT I/O and
+DIF/DIX hardware should use DIF/DIX.
+
+CHAPTER 11. STORAGE CONSIDERATIONS DURING INSTALLATION
+103
+
+CHAPTER 12. FILE SYSTEM CHECK
+File systems may be checked for consistency, and optionally repaired, with file system-specific
+userspace tools. These tools are often referred to as fsck tools, where fsck is a shortened version of
+file system check.
+NOTE
+These file system checkers only guarantee metadata consistency across the file system;
+they have no awareness of the actual data contained within the file system and are not
+data recovery tools.
+File system inconsistencies can occur for various reasons, including but not limited to hardware errors,
+storage administration errors, and software bugs.
+Before modern metadata-journaling file systems became common, a file system check was required any
+time a system crashed or lost power. This was because a file system update could have been
+interrupted, leading to an inconsistent state. As a result, a file system check is traditionally run on each
+file system listed in /etc/fstab at boot-time. For journaling file systems, this is usually a very short
+operation, because the file system's metadata journaling ensures consistency even after a crash.
+However, there are times when a file system inconsistency or corruption may occur, even for journaling
+file systems. When this happens, the file system checker must be used to repair the file system. The
+following provides best practices and other useful information when performing this procedure.
+IMPORTANT
+Red Hat does not recommended this unless the machine does not boot, the file system is
+extremely large, or the file system is on remote storage. It is possible to disable file
+system check at boot by setting the sixth field in /etc/fstab to 0.
+12.1. BEST PRACTICES FOR FSCK
+Generally, running the file system check and repair tool can be expected to automatically repair at least
+some of the inconsistencies it finds. In some cases, severely damaged inodes or directories may be
+discarded if they cannot be repaired. Significant changes to the file system may occur. To ensure that
+unexpected or undesirable changes are not permanently made, perform the following precautionary
+steps:
+Dry run
+Most file system checkers have a mode of operation which checks but does not repair the file system.
+In this mode, the checker prints any errors that it finds and actions that it would have taken, without
+actually modifying the file system.
+NOTE
+Later phases of consistency checking may print extra errors as it discovers
+inconsistencies which would have been fixed in early phases if it were running in
+repair mode.
+Operate first on a file system image
+Most file systems support the creation of a metadata image, a sparse copy of the file system which
+Storage Administration Guide
+104
+
+contains only metadata. Because file system checkers operate only on metadata, such an image can
+be used to perform a dry run of an actual file system repair, to evaluate what changes would actually
+be made. If the changes are acceptable, the repair can then be performed on the file system itself.
+NOTE
+Severely damaged file systems may cause problems with metadata image creation.

@@ -1,0 +1,1000 @@
+
+
+
+
+
+
+
+
+
+
+
+Illustrations
+Termite Castle and La Sagrada Famiglia (See p. 235 for discussion.)
+
+
+
+
+
+
+
+
+
+
+
+Appendix: Solutions to Register Machine Problems
+EXERCISE 1
+PROGRAM 1:
+
+a. How many steps will it take the register machine to add 2 + 5 and get 7, running Program 1 (counting End as a step)?
+Answer: Six steps: three decrements, two increments, one End (the last decrement is a branch on zero).
+b. How many steps will it take to add 5 + 2?
+Answer: Twelve steps: six decrements, five increments, and one End.
+(What conclusion do you draw from this?)
+Answer: The order of the contents can make a big difference, so you might think it would be good to have a rule of always putting the smaller number in register 1—but if you first had to test the two numbers to see which is smaller, you'd use up more steps than you'd spend doing the addition!
+EXERCISE 2
+a. Write the RAP program for this flow graph. (Note that since the program branches, you can number the steps in several different ways. It doesn't matter which way you choose as long as the "go to" commands point to the right steps.)
+
+
+
+
+STEP
+INSTRUCTION
+REGISTER
+GO TO STEP
+[BRANCH TO STEP]
+
+
+1.
+Deb
+4
+1
+2
+
+
+2.
+Deb
+3
+2
+3
+
+
+3.
+Deb
+2
+4
+7
+
+
+4.
+Deb
+1
+3
+5
+
+
+5.
+Inc
+2
+6
+ 
+
+
+6.
+Inc
+3
+10
+ 
+
+
+7.
+Deb
+1
+8
+9
+
+
+8.
+Inc
+4
+7
+ 
+
+
+9.
+End
+ 
+ 
+ 
+
+
+10.
+Deb
+1
+11
+9
+
+
+11.
+Inc
+4
+10
+ 
+
+
+
+
+b. What happens when the program tries to subtract 3 from 3 or 4 from 4?
+The program halts with 0 in register 4.
+
+c. What possible error is prevented by zeroing out register 3 before trying the subtraction at step 3 instead of after step 4?
+If there was a zero at the start in both registers 1 and 2, the answer when the program ended could be nonsensical (either -0, or some number other than 0 or 1 in the sign register).
+EXERCISE 3
+a. Draw a flow graph (and write the RAP program) for multiplying the content of register 1 by the content of register 3, putting the answer in register 5.
+
+
+
+
+STEP
+INSTRUCTION
+REGISTER
+GO TO STEP
+[BRANCH TO STEP]
+
+
+1.
+Deb
+5
+1
+2
+[zeroes out buffers]
+
+
+2.
+Deb
+2
+2
+3
+ 
+
+
+3.
+Deb
+3
+4
+9
+[starts the countdown]
+
+
+4.
+Deb
+1
+5
+7
+[adds the contents of register 1 to itself]
+
+
+5.
+Inc
+5
+6
+ 
+ 
+
+
+6.
+Inc
+2
+4
+ 
+ 
+
+
+7.
+Deb
+2
+8
+ 
+ 
+
+
+8.
+Inc
+1
+7
+ 
+ 
+
+
+9.
+End
+ 
+ 
+ 
+ 
+
+
+
+
+b. (Optional) Using Copy and Move, improve the multiplier you created in problem a: when it stops, the original contents of register 1 and register 3 are restored, so that you can easily check the inputs and output for correctness after a run.
+
+
+
+
+STEP
+INSTRUCTION
+REGISTER
+GO TO STEP
+[BRANCH TO STEP]
+
+
+1.
+Deb
+2
+1
+2
+[zeroes out 3 buffers]
+
+
+2.
+Deb
+4
+2
+3
+ 
+
+
+3.
+Deb
+5
+3
+4
+ 
+
+
+4.
+Deb
+1
+5
+7
+[makes a copy of contents of 1]
+
+
+5.
+Inc
+2
+6
+ 
+ 
+
+
+6.
+Inc
+4
+4
+ 
+ 
+
+
+7.
+Deb
+4
+8
+9
+ 
+
+
+8.
+Inc
+1
+7
+ 
+ 
+
+
+9.
+Deb
+3
+10
+12
+[makes a copy of contents of 3]
+
+
+10.
+Inc
+4
+11
+ 
+ 
+
+
+11.
+Inc
+5
+9
+ 
+ 
+
+
+12.
+Deb
+5
+13
+14
+ 
+
+
+13.
+Inc
+3
+12
+ 
+ 
+
+
+14.
+Deb
+3
+15
+20
+[this is just the code in exercise 3a with different line numbers]
+
+
+15.
+Deb
+1
+16
+18
+ 
+
+
+16.
+Inc
+5
+17
+ 
+ 
+
+
+17.
+Inc
+2
+15
+ 
+ 
+
+
+18.
+Deb
+2
+19
+14
+ 
+
+
+19.
+Inc
+1
+18
+ 
+ 
+
+
+20.
+Deb
+2
+21
+22
+[restores the original values to registers 1 and 3]
+
+
+21.
+Inc
+1
+20
+ 
+ 
+
+
+22.
+Deb
+4
+23
+24
+ 
+
+
+23.
+Inc
+3
+22
+ 
+ 
+
+
+24.
+End
+ 
+ 
+ 
+ 
+
+
+
+
+c. (Optional) Draw a flow graph and write a RAP program that examines the contents of register 1 and register 3 (without destroying them!) and writes the address (1 or 3) of the smaller content in register 2, and puts 2 in register 2 if the contents of registers 1 and 3 are equal. (After this program has executed, the contents of register 1 and register 3 should be unchanged, and register 2 should say if their contents are equal, and if not, which of those two registers has the smaller content.)
+
+
+
+STEP
+INSTRUCTION
+REGISTER
+GO TO STEP
+[BRANCH TO STEP]
+
+
+1.
+Deb
+2
+1
+2
+[zeroes out answer register]
+
+
+2.
+Deb
+4
+2
+3
+[zeroes out buffers]
+
+
+3.
+Deb
+5
+3
+4
+ 
+
+
+4.
+Deb
+6
+4
+5
+ 
+
+
+5.
+Deb
+1
+6
+8
+[copies contents of register 1 to register 4]
+
+
+6.
+Inc
+4
+7
+ 
+ 
+
+
+7.
+Inc
+5
+5
+ 
+ 
+
+
+8.
+Deb
+5
+9
+10
+ 
+
+
+9.
+Inc
+1
+8
+ 
+ 
+
+
+10.
+Deb
+3
+11
+13
+[copies contents of register 3 to register 5]
+
+
+11.
+Inc
+5
+12
+ 
+ 
+
+
+12.
+Inc
+6
+10
+ 
+ 
+
+
+13.
+Deb
+6
+14
+15
+ 
+
+
+14.
+Inc
+3
+13
+ 
+ 
+
+
+15.
+Deb
+4
+16
+17
+[subtracts register 4 from register 5]
+
+
+16.
+Deb
+5
+15
+22
+ 
+
+
+17.
+Deb
+5
+20
+18
+[checks to see if contents of 4 = contents of 5]
+
+
+18.
+Inc
+2
+19
+ 
+[contents are equal; puts 2 in register 2]
+
+
+19.
+Inc
+2
+21
+ 
+ 
+
+
+20.
+Inc
+2
+21
+ 
+[contents of 4 less than 5; puts 1 in register 2]
+
+
+21.
+End
+ 
+ 
+ 
+ 
+
+
+22.
+Inc
+2
+23
+ 
+[contents of 5 less than 4; puts 3 in register 2]
+
+
+23.
+Inc
+2
+24
+ 
+ 
+
+
+24.
+Inc
+2
+21
+ 
+ 
+
+
+
+EXERCISE 4 (OPTIONAL)
+Draw a flow graph, and write a RAP program that turns a register machine into a simple pocket calculator, as follows:
+a. Use register 2 for the operation:
+0 = add
+1 = subtract
+2 = multiply
+3 = divide
+b. Put the values to be acted on in registers 1 and 3.
+(Thus 3 0 6 would mean 3 + 6, and 5 1 3 would mean 5 - 3, and 4 2 5 would mean 4 × 5, and 9 3 3 would mean 9 ÷ 3). Then put the results of the operation in registers 4 through 7, using register 4 for the sign (using 0 for + and 1 for -) and register 5 for the numerical answer, register 6 for any remainder in a case of division, and register 7 as an alarm, signaling a divide-by-zero mistake.
+
+
+
+STEP
+INSTRUCTION
+REGISTER
+GO TO STEP
+[BRANCH TO STEP]
+
+
+1.
+Deb
+4
+1
+2
+[zeroes out answer registers]
+
+
+2.
+Deb
+5
+2
+3
+ 
+
+
+3.
+Deb
+6
+3
+4
+ 
+
+
+4.
+Deb
+7
+4
+5
+ 
+
+
+5.
+Deb
+2
+6
+11
+[branches to addition]
+
+
+6.
+Deb
+2
+7
+15
+[branches to subtraction]
+
+
+7.
+Deb
+2
+8
+23
+[branches to multiplication]
+
+
+8.
+Deb
+2
+9
+28
+[branches to division]
+
+
+9.
+Inc
+7
+10
+ 
+[flags improper operation code entered in register 2 and stops]
+
+
+10.
+End
+ 
+ 
+ 
+ 
+
+
+11.
+Deb
+1
+12
+13
+[begins addition]
+
+
+12.
+Inc
+5
+11
+ 
+ 
+
+
+13.
+Deb
+3
+14
+10
+ 
+
+
+14.
+Inc
+5
+13
+ 
+ 
+
+
+15.
+Deb
+3
+18
+16
+ 
+
+
+16.
+Deb
+1
+17
+10
+[begins and ends subtraction]
+
+
+17.
+Inc
+5
+16
+ 
+ 
+
+
+18.
+Deb
+1
+15
+19
+ 
+
+
+19.
+Inc
+3
+20
+ 
+[restores register 3]
+
+
+20.
+Inc
+4
+21
+ 
+[puts minus sign in register 4]
+
+
+21.
+Deb
+3
+22
+10
+ 
+
+
+22.
+Inc
+5
+21
+ 
+ 
+
+
+23.
+Deb
+1
+24
+10
+[begins and ends multiplication]
+
+
+24.
+Deb
+3
+24
+27
+ 
+
+
+25.
+Inc
+5
+26
+ 
+ 
+
+
+26.
+Inc
+6
+24
+ 
+ 
+
+
+27.
+Deb
+6
+28
+23
+ 
+
+
+28.
+Inc
+3
+27
+ 
+ 
+
+
+29.
+Deb
+3
+31
+30
+[begins division, checks for divide-by-zero]
+
+
+30.
+Inc
+7
+10
+ 
+[flags divide-by-zero error and stops]
+
+
+31.
+Inc
+3
+32
+ 
+[restores register 3]
+
+
+32.
+Deb
+3
+33
+35
+ 
+
+
+33.
+Deb
+1
+34
+10
+[ends division]
+
+
+34.
+Inc
+6
+32
+ 
+ 
+
+
+35.
+Inc
+5
+36
+ 
+ 
+
+
+36.
+Deb
+6
+37
+32
+ 
+
+
+37.
+Inc
+3
+36
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bibliography
+ABBOTT, EDWIN A., (1884) 1983, Flatland: A Romance in Many Dimensions (reprint of 1963 fifth edition with foreword by Isaac Asimov). New York: HarperCollins.
+ALAIN, CHARTIER, (1908) 1956, Propos d'un Normand 1906-1914. Paris: Gallimard. Quoted in Deborah S. Rogers and Paul R. Ehrlich, 2008, "Natural Selection and Cultural Rates of Change." Proceedings of the National Academy of Sciences, vol. 105, pp. 3416-3420.
+AUSTIN, J. L., 1961, Philosophical Papers. Oxford: Oxford University Press.
+AXELROD, ROBERT, 1984, The Evolution of Cooperation. New York: Basic Books.
+AXELROD, ROBERT, and WILLIAM HAMILTON, 1981, "The Evolution of Cooperation." Science, vol. 211, pp. 1390-1396.
+BARRETT, JUSTIN, 2000, "Exploring the Natural Foundations of Religion." Trends in Cognitive Science, vol. 4, pp. 29-34.
+BATESON, WILLIAM, 1916, Review of the Mechanisms of Mendelian Heredity by T. H. Morgan (1914).
+BEHE, MICHAEL J., 1996, Darwin's Black Box: The Biochemical Challenge to Evolution. New York: Free Press.
+BENNETT, MAX, DANIEL DENNETT, P. M. S. HACKER, and JOHN SEARLE, 2009, Neuroscience and Philosophy: Brain, Mind, and Language. New York: Columbia University Press.
+BENNETT, MAX, and P. M. S. HACKER, 2003, Philosophical Foundations of Neuroscience. Malden, Mass.: Wiley-Blackwell.
+BLOCK, NED, 1978, "Troubles with Functionalism." In W. Savage, ed., Perception and Cognition: Issues in the Foundations of Psychology. Minnesota Studies in the Philosophy of Science, vol. 9. Minneapolis: University of Minnesota Press, pp. 261-326.
+———, 1994, "What Is Dennett's Theory a Theory of?" Philosophical Topics, vol. 22 (special issue on the philosophy of Daniel Dennett), pp. 23-40.
+BOBROW, DANIEL, 1985, Qualitative Reasoning about Physical Systems. Cambridge, Mass.: MIT Press.
+BORGES, J. L., 1962, Labyrinths: Selected Stories and Other Writings. New York: New Directions.
+BRAY, DENNIS, 2009, Wetware. New Haven, Conn.: Yale University Press.
+BROCKMAN, J., ed., 2009, What Have You Changed Your Mind About. New York: HarperCollins.
+———, 2012, This Will Make You Smarter. New York: Harper Torchbook.
+BROOKS, R. A., 1987, Planning Is Just a Way of Avoiding Figuring Out What to Do Next. Technical report, MIT Artificial Intelligence Laboratory, Cambridge, Mass. Available at http://people.csail.mit.edu/brooks/papers/Planning%20is%20Just.pdf.
+BROOKS, RODNEY, 1991, "Intelligence without Representation." Artificial Intelligence, vol. 47, pp. 139-159.
+CANN, REBECCA L., MARK STONEKING, and ALLAN C. WILSON, 1987, "Mitochondrial DNA and Human Evolution." Nature, vol. 325, pp. 31-36.
+CHALMERS, DAVID, 1995, "Facing Up to the Problem of Consciousness." Journal of Consciousness Studies, vol. 2, no. 3, pp. 200-219.
+CLARK, A., 2013, "Whatever Next? Predictive Brains, Situated Agents, and the Future of Cognitive Science." Behavioral and Brain Sciences.
+CLEGG, LIAM, 2012, Protean Free Will. California Institute of Technology, Pasadena. Available at http://authors.library.caltech.edu/29887/.
+COPE, DAVID, 2000, The Algorithmic Composer. Middleton, Wisc.: A-R Editions.
+———, 2001, Virtual Music: Computer Synthesis of Musical Style. Cambridge, Mass.: MIT Press.
+CRONIN, HELENA, 1991, The Ant and the Peacock. Cambridge: Cambridge University Press.
+DAMIAAN, DENYS, MARISKA MANTIONE, MARTIJN FIGEE, PEPIJN VAN DEN MUNCKHOF, FRANK KOERSELMAN, HERMAN WESTENBERG, ANDRIES BOSCH, and RICK SCHUURMAN, 2010, "Deep Brain Stimulation of the Nucleus Accumbens for Treatment-Refractory Obsessive-Compulsive Disorder." Archives of General Psychiatry, vol. 67, no. 10, pp. 1061-1068.
+DAVIDSON, DONALD, 1987, "Knowing One's Own Mind." Proceedings and Addresses of the American Philosophical Association, vol. 60, pp. 441-458. Reprinted in Davidson, Donald, 2001, Subjective, Intersubjective, Objective. New York: Oxford University Press, pp. 15-38.
+DAWKINS, RICHARD, 1976, The Selfish Gene. Oxford: Oxford University Press. Rev. ed. 1989.
+———, 1982, The Extended Phenotype: The Gene as the Unit of Selection. Oxford: Oxford University Press.
+———, 1986, The Blind Watchmaker. London: Longmans.
+———, 1996, Climbing Mount Improbable. London: Viking Penguin.
+———, 2004, The Ancestor's Tale: A Pilgrimage to the Dawn of Time. London: Weidenfeld & Nicolson.
+DE VRIES, PETER, 1953, The Vale of Laughter. Boston: Little, Brown.
+DEHAENE, S., and J. F. MARQUES, 2002, "Cognitive Euroscience: Scalar Variability in Price Estimation and the Cognitive Consequences of Switching to the Euro." Quarterly Journal of Experimental Psychology, vol. 55, pp. 705-731.
+DENNETT, DANIEL C., 1968, "Features of Intentional Action." Philosophy and Phenomenological Research, vol. 29 (December), pp. 232-244.
+———, 1969, Content and Consciousness. London: Routledge & Kegan Paul.
+———, 1971, "Intentional Systems." Journal of Philosophy, vol. 68, pp. 87-106.
+———, 1975, "Brain Writing and Mind Reading." In K. Gunderson, ed., Language, Mind and Knowledge. Minnesota Studies in the Philosophy of Science, vol. 7. Minneapolis: University of Minnesota Press, pp. 403-416. Reprinted in Dennett 1978a.
+———, 1978a, Brainstorms. Cambridge, Mass.: MIT Press/A Bradford Book.
+———, 1978b, "Current Issues in the Philosophy of Mind." American Philosophical Quarterly, vol. 15, pp. 249-261.
+———, 1978c, "Why You Can't Make a Computer That Feels Pain." Synthese, vol. 38 (August), pp. 415-456.
+———, 1980, "The Milk of Human Intentionality" (commentary on Searle). Behavioral and Brain Sciences, vol. 3, pp. 428-430.
+———, 1981, "Three Kinds of Intentional Psychology." In R. Healey, ed., Reduction, Time and Reality. Cambridge: Cambridge University Press, pp. 37-61.
+———, 1982a, "Beyond Belief." In A. Woodfield, ed., Thought and Object: Essays on Intentionality. Oxford: Oxford University Press. Reprinted in Dennett, 1987.

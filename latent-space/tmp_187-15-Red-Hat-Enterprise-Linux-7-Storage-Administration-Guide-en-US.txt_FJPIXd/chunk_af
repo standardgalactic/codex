@@ -1,0 +1,1000 @@
+$ free -h
+15.2.3. Removing a Swap File
+To remove a swap file:
+Procedure 15.5. Remove a Swap File
+1. At a shell prompt, execute the following command to disable the swap file (where /swapfile is
+the swap file):
+# swapoff -v /swapfile
+Storage Administration Guide
+134
+
+2. Remove its entry from the /etc/fstab file.
+3. Regenerate mount units so that your system registers the new configuration:
+# systemctl daemon-reload
+4. Remove the actual file:
+# rm /swapfile
+15.3. MOVING SWAP SPACE
+To move swap space from one location to another:
+1. Removing swap space Section 15.2, "Removing Swap Space".
+2. Adding swap space Section 15.1, "Adding Swap Space".
+CHAPTER 15. SWAP SPACE
+135
+
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+System Storage Manager (SSM) provides a command line interface to manage storage in various
+technologies. Storage systems are becoming increasingly complicated through the use of Device
+Mappers (DM), Logical Volume Managers (LVM), and Multiple Devices (MD). This creates a system that
+is not user friendly and makes it easier for errors and problems to arise. SSM alleviates this by creating a
+unified user interface. This interface allows users to run complicated systems in a simple manner. For
+example, to create and mount a new file system without SSM, there are five commands that must be
+used. With SSM only one is needed.
+This chapter explains how SSM interacts with various back ends and some common use cases.
+16.1. SSM BACK ENDS
+SSM uses a core abstraction layer in ssmlib/main.py which complies with the device, pool, and
+volume abstraction, ignoring the specifics of the underlying technology. Back ends can be registered in 
+ssmlib/main.py to handle specific storage technology methods, such as create, snapshot, or to 
+remove volumes and pools.
+There are already several back ends registered in SSM. The following sections provide basic information
+on them as well as definitions on how they handle pools, volumes, snapshots, and devices.
+16.1.1. Btrfs Back End
+NOTE
+Btrfs is available as a Technology Preview feature in Red Hat Enterprise Linux 7 but has
+been deprecated since the Red Hat Enterprise Linux 7.4 release. It will be removed in a
+future major release of Red Hat Enterprise Linux.
+For more information, see Deprecated Functionality in the Red Hat Enterprise Linux 7.4
+Release Notes.
+Btrfs, a file system with many advanced features, is used as a volume management back end in SSM.
+Pools, volumes, and snapshots can be created with the Btrfs back end.
+16.1.1.1. Btrfs Pool
+The Btrfs file system itself is the pool. It can be extended by adding more devices or shrunk by removing
+devices. SSM creates a Btrfs file system when a Btrfs pool is created. This means that every new Btrfs
+pool has one volume of the same name as the pool which cannot be removed without removing the
+entire pool. The default Btrfs pool name is btrfs_pool.
+The name of the pool is used as the file system label. If there is already an existing Btrfs file system in
+the system without a label, the Btrfs pool will generate a name for internal use in the format of 
+btrfs_device_base_name.
+16.1.1.2. Btrfs Volume
+Volumes created after the first volume in a pool are the same as sub-volumes. SSM temporarily mounts
+the Btrfs file system if it is unmounted in order to create a sub-volume.
+Storage Administration Guide
+136
+
+The name of a volume is used as the subvolume path in the Btrfs file system. For example, a subvolume
+displays as /dev/lvm_pool/lvol001. Every object in this path must exist in order for the volume to
+be created. Volumes can also be referenced with its mount point.
+16.1.1.3. Btrfs Snapshot
+Snapshots can be taken of any Btrfs volume in the system with SSM. Be aware that Btrfs does not
+distinguish between subvolumes and snapshots. While this means that SSM cannot recognize the Btrfs
+snapshot destination, it will try to recognize special name formats. If the name specified when creating
+the snapshot does the specific pattern, the snapshot is not be recognized and instead be listed as a
+regular Btrfs volume.
+16.1.1.4. Btrfs Device
+Btrfs does not require any special device to be created on.
+16.1.2. LVM Back End
+Pools, volumes, and snapshots can be created with LVM. The following definitions are from an LVM
+point of view.
+16.1.2.1. LVM Pool
+LVM pool is the same as an LVM volume group. This means that grouping devices and new logical
+volumes can be created out of the LVM pool. The default LVM pool name is lvm_pool.
+16.1.2.2. LVM Volume
+An LVM volume is the same as an ordinary logical volume.
+16.1.2.3. LVM Snapshot
+When a snapshot is created from the LVM volume a new snapshot volume is created which can then
+be handled just like any other LVM volume. Unlike Btrfs, LVM is able to distinguish snapshots from
+regular volumes so there is no need for a snapshot name to match a particular pattern.
+16.1.2.4. LVM Device
+SSM makes the need for an LVM back end to be created on a physical device transparent for the user.
+16.1.3. Crypt Back End
+The crypt back end in SSM uses cryptsetup and dm-crypt target to manage encrypted volumes.
+Crypt back ends can be used as a regular back end for creating encrypted volumes on top of regular
+block devices (or on other volumes such as LVM or MD volumes), or to create encrypted LVM volumes
+in a single steps.
+Only volumes can be created with a crypt back end; pooling is not supported and it does not require
+special devices.
+The following sections define volumes and snapshots from the crypt point of view.
+16.1.3.1. Crypt Volume
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+137
+
+Crypt volumes are created by dm-crypt and represent the data on the original encrypted device in an
+unencrypted form. It does not support RAID or any device concatenation.
+Two modes, or extensions, are supported: luks and plain. Luks is used by default. For more information
+on the extensions, see man cryptsetup.
+16.1.3.2. Crypt Snapshot
+While the crypt back end does not support snapshotting, if the encrypted volume is created on top of an
+LVM volume, the volume itself can be snapshotted. The snapshot can then be opened by using 
+cryptsetup.
+16.1.4. Multiple Devices (MD) Back End
+MD back end is currently limited to only gathering the information about MD volumes in the system.
+16.2. COMMON SSM TASKS
+The following sections describe common SSM tasks.
+16.2.1. Installing SSM
+To install SSM use the following command:
+# yum install system-storage-manager
+There are several back ends that are enabled only if the supporting packages are installed:
+The LVM back end requires the lvm2 package.
+The Btrfs back end requires the btrfs-progs package.
+The Crypt back end requires the device-mapper and cryptsetup packages.
+16.2.2. Displaying Information about All Detected Devices
+Displaying information about all detected devices, pools, volumes, and snapshots is done with the list
+command. The ssm list command with no options display the following output:
+# ssm list
+----------------------------------------------------------
+Device        Free      Used      Total  Pool  Mount point
+----------------------------------------------------------
+/dev/sda                        2.00 GB        PARTITIONED
+/dev/sda1                      47.83 MB        /test
+/dev/vda                       15.00 GB        PARTITIONED
+/dev/vda1                     500.00 MB        /boot
+/dev/vda2  0.00 KB  14.51 GB   14.51 GB  rhel
+----------------------------------------------------------
+------------------------------------------------
+Pool  Type  Devices     Free      Used     Total
+------------------------------------------------
+rhel  lvm   1        0.00 KB  14.51 GB  14.51 GB
+Storage Administration Guide
+138
+
+------------------------------------------------
+----------------------------------------------------------------------
+-----------
+Volume          Pool  Volume size  FS     FS size       Free  Type    
+Mount point
+----------------------------------------------------------------------
+-----------
+/dev/rhel/root  rhel     13.53 GB  xfs   13.52 GB    9.64 GB  linear  /
+/dev/rhel/swap  rhel   1000.00 MB                             linear
+/dev/sda1                47.83 MB  xfs   44.50 MB   44.41 MB  part    
+/test
+/dev/vda1               500.00 MB  xfs  496.67 MB  403.56 MB  part    
+/boot
+----------------------------------------------------------------------
+-----------
+This display can be further narrowed down by using arguments to specify what should be displayed. The
+list of available options can be found with the ssm list --help command.
+NOTE
+Depending on the argument given, SSM may not display everything.
+Running the devices or dev argument omits some devices. CDRoms and
+DM/MD devices, for example, are intentionally hidden as they are listed as
+volumes.
+Some back ends do not support snapshots and cannot distinguish between a
+snapshot and a regular volume. Running the snapshot argument on one of
+these back ends cause SSM to attempt to recognize the volume name in order to
+identify a snapshot. If the SSM regular expression does not match the snapshot
+pattern then the snapshot is not be recognized.
+With the exception of the main Btrfs volume (the file system itself), any
+unmounted Btrfs volumes are not shown.
+16.2.3. Creating a New Pool, Logical Volume, and File System
+In this section, a new pool is be created with a default name which have the devices /dev/vdb and 
+/dev/vdc, a logical volume of 1G, and an XFS file system.
+The command to create this scenario is ssm create --fs xfs -s 1G /dev/vdb /dev/vdc. The
+following options are used:
+The --fs option specifies the required file system type. Current supported file system types are:
+ext3
+ext4
+xfs
+btrfs
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+139
+
+The -s specifies the size of the logical volume. The following suffixes are supported to define
+units:
+K or k for kilobytes
+M or m for megabytes
+G or g for gigabytes
+T or t for terabytes
+P or p for petabytes
+E or e for exabytes
+The two listed devices, /dev/vdb and /dev/vdc, are the two devices you wish to create.
+# ssm create --fs xfs -s 1G /dev/vdb /dev/vdc
+  Physical volume "/dev/vdb" successfully created
+  Physical volume "/dev/vdc" successfully created
+  Volume group "lvm_pool" successfully created
+  Logical volume "lvol001" created
+There are two other options for the ssm command that may be useful. The first is the -p pool
+command. This specifies the pool the volume is to be created on. If it does not yet exist, then SSM
+creates it. This was omitted in the given example which caused SSM to use the default name 
+lvm_pool. However, to use a specific name to fit in with any existing naming conventions, the -p
+option should be used.
+The second useful option is the -n name command. This names the newly created logical volume. As
+with the -p, this is needed in order to use a specific name to fit in with any existing naming conventions.
+An example of these two options being used follows:
+# ssm create --fs xfs -p new_pool -n XFS_Volume /dev/vdd
+  Volume group "new_pool" successfully created
+  Logical volume "XFS_Volume" created
+SSM has now created two physical volumes, a pool, and a logical volume with the ease of only one
+command.
+16.2.4. Checking a File System's Consistency
+The ssm check command checks the file system consistency on the volume. It is possible to specify
+multiple volumes to check. If there is no file system on the volume, then the volume is skipped.
+To check all devices in the volume lvol001, run the command ssm check 
+/dev/lvm_pool/lvol001.
+# ssm check /dev/lvm_pool/lvol001
+Checking xfs file system on '/dev/mapper/lvm_pool-lvol001'.
+Phase 1 - find and verify superblock...
+Phase 2 - using internal log
+        - scan filesystem freespace and inode maps...
+Storage Administration Guide
+140
+
+        - found root inode chunk
+Phase 3 - for each AG...
+        - scan (but don't clear) agi unlinked lists...
+        - process known inodes and perform inode discovery...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - agno = 4
+        - agno = 5
+        - agno = 6
+        - process newly discovered inodes...
+Phase 4 - check for duplicate blocks...
+        - setting up duplicate extent list...
+        - check for inodes claiming duplicate blocks...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - agno = 4
+        - agno = 5
+        - agno = 6
+No modify flag set, skipping phase 5
+Phase 6 - check inode connectivity...
+        - traversing filesystem ...
+        - traversal finished ...
+        - moving disconnected inodes to lost+found ...
+Phase 7 - verify link counts...
+No modify flag set, skipping filesystem flush and exiting.
+16.2.5. Increasing a Volume's Size
+The ssm resize command changes the size of the specified volume and file system. If there is no file
+system then only the volume itself will be resized.
+For this example, we currently have one logical volume on /dev/vdb that is 900MB called lvol001.
+# ssm list
+-----------------------------------------------------------------
+Device          Free       Used      Total  Pool      Mount point
+-----------------------------------------------------------------
+/dev/vda                          15.00 GB            PARTITIONED
+/dev/vda1                        500.00 MB            /boot
+/dev/vda2    0.00 KB   14.51 GB   14.51 GB  rhel
+/dev/vdb   120.00 MB  900.00 MB    1.00 GB  lvm_pool
+/dev/vdc                           1.00 GB
+-----------------------------------------------------------------
+---------------------------------------------------------
+Pool      Type  Devices       Free       Used       Total
+---------------------------------------------------------
+lvm_pool  lvm   1        120.00 MB  900.00 MB  1020.00 MB
+rhel      lvm   1          0.00 KB   14.51 GB    14.51 GB
+---------------------------------------------------------
+----------------------------------------------------------------------
+----------------------
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+141
+
+Volume                 Pool      Volume size  FS     FS size       Free  
+Type    Mount point
+----------------------------------------------------------------------
+----------------------
+/dev/rhel/root         rhel         13.53 GB  xfs   13.52 GB    9.64 GB  
+linear  /
+/dev/rhel/swap         rhel       1000.00 MB                             
+linear
+/dev/lvm_pool/lvol001  lvm_pool    900.00 MB  xfs  896.67 MB  896.54 MB  
+linear
+/dev/vda1                          500.00 MB  xfs  496.67 MB  403.56 MB  
+part    /boot
+----------------------------------------------------------------------
+----------------------
+The logical volume needs to be increased by another 500MB. To do so we will need to add an extra
+device to the pool:
+~]# ssm resize -s +500M /dev/lvm_pool/lvol001 /dev/vdc
+  Physical volume "/dev/vdc" successfully created
+  Volume group "lvm_pool" successfully extended
+Phase 1 - find and verify superblock...
+Phase 2 - using internal log
+        - scan filesystem freespace and inode maps...
+        - found root inode chunk
+Phase 3 - for each AG...
+        - scan (but don't clear) agi unlinked lists...
+        - process known inodes and perform inode discovery...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+        - process newly discovered inodes...
+Phase 4 - check for duplicate blocks...
+        - setting up duplicate extent list...
+        - check for inodes claiming duplicate blocks...
+        - agno = 0
+        - agno = 1
+        - agno = 2
+        - agno = 3
+No modify flag set, skipping phase 5
+Phase 6 - check inode connectivity...
+        - traversing filesystem ...
+        - traversal finished ...
+        - moving disconnected inodes to lost+found ...
+Phase 7 - verify link counts...
+No modify flag set, skipping filesystem flush and exiting.
+  Extending logical volume lvol001 to 1.37 GiB
+  Logical volume lvol001 successfully resized
+meta-data=/dev/mapper/lvm_pool-lvol001 isize=256    agcount=4, 
+agsize=57600 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=0
+data     =                       bsize=4096   blocks=230400, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+Storage Administration Guide
+142
+
+log      =internal               bsize=4096   blocks=853, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+data blocks changed from 230400 to 358400
+SSM runs a check on the device and then extends the volume by the specified amount. This can be
+verified with the ssm list command.
+# ssm list
+------------------------------------------------------------------
+Device          Free        Used      Total  Pool      Mount point
+------------------------------------------------------------------
+/dev/vda                           15.00 GB            PARTITIONED
+/dev/vda1                         500.00 MB            /boot
+/dev/vda2    0.00 KB    14.51 GB   14.51 GB  rhel
+/dev/vdb     0.00 KB  1020.00 MB    1.00 GB  lvm_pool
+/dev/vdc   640.00 MB   380.00 MB    1.00 GB  lvm_pool
+------------------------------------------------------------------
+------------------------------------------------------
+Pool      Type  Devices       Free      Used     Total
+------------------------------------------------------
+lvm_pool  lvm   2        640.00 MB   1.37 GB   1.99 GB
+rhel      lvm   1          0.00 KB  14.51 GB  14.51 GB
+------------------------------------------------------
+----------------------------------------------------------------------
+------------------------
+Volume                 Pool      Volume size  FS      FS size        
+Free  Type    Mount point
+----------------------------------------------------------------------
+------------------------
+/dev/rhel/root         rhel         13.53 GB  xfs    13.52 GB     9.64 GB  
+linear  /
+/dev/rhel/swap         rhel       1000.00 MB                               
+linear
+/dev/lvm_pool/lvol001  lvm_pool      1.37 GB  xfs     1.36 GB     1.36 GB  
+linear
+/dev/vda1                          500.00 MB  xfs   496.67 MB   403.56 MB  
+part    /boot
+----------------------------------------------------------------------
+------------------------
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+143
+
+NOTE
+It is only possible to decrease an LVM volume's size; it is not supported with other volume
+types. This is done by using a - instead of a +. For example, to decrease the size of an
+LVM volume by 50M the command would be:
+# ssm resize -s-50M /dev/lvm_pool/lvol002
+  Rounding size to boundary between physical extents: 972.00 MiB
+  WARNING: Reducing active logical volume to 972.00 MiB
+  THIS MAY DESTROY YOUR DATA (filesystem etc.)
+Do you really want to reduce lvol002? [y/n]: y
+  Reducing logical volume lvol002 to 972.00 MiB
+  Logical volume lvol002 successfully resized
+Without either the + or -, the value is taken as absolute.
+16.2.6. Snapshot
+To take a snapshot of an existing volume, use the ssm snapshot command.
+NOTE
+This operation fails if the back end that the volume belongs to does not support
+snapshotting.
+To create a snapshot of the lvol001, use the following command:
+# ssm snapshot /dev/lvm_pool/lvol001
+  Logical volume "snap20150519T130900" created
+To verify this, use the ssm list, and note the extra snapshot section.
+# ssm list
+----------------------------------------------------------------
+Device        Free        Used      Total  Pool      Mount point
+----------------------------------------------------------------
+/dev/vda                         15.00 GB            PARTITIONED
+/dev/vda1                       500.00 MB            /boot
+/dev/vda2  0.00 KB    14.51 GB   14.51 GB  rhel
+/dev/vdb   0.00 KB  1020.00 MB    1.00 GB  lvm_pool
+/dev/vdc                          1.00 GB
+----------------------------------------------------------------
+--------------------------------------------------------
+Pool      Type  Devices     Free        Used       Total
+--------------------------------------------------------
+lvm_pool  lvm   1        0.00 KB  1020.00 MB  1020.00 MB
+rhel      lvm   1        0.00 KB    14.51 GB    14.51 GB
+--------------------------------------------------------
+----------------------------------------------------------------------
+------------------------
+Volume                 Pool      Volume size  FS      FS size        
+Free  Type    Mount point
+----------------------------------------------------------------------
+Storage Administration Guide
+144
+
+------------------------
+/dev/rhel/root         rhel         13.53 GB  xfs    13.52 GB     9.64 GB  
+linear  /
+/dev/rhel/swap         rhel       1000.00 MB                               
+linear
+/dev/lvm_pool/lvol001  lvm_pool    900.00 MB  xfs   896.67 MB   896.54 MB  
+linear
+/dev/vda1                          500.00 MB  xfs   496.67 MB   403.56 MB  
+part    /boot
+----------------------------------------------------------------------
+------------------------
+----------------------------------------------------------------------
+------------
+Snapshot                           Origin   Pool      Volume size     
+Size  Type
+----------------------------------------------------------------------
+------------
+/dev/lvm_pool/snap20150519T130900  lvol001  lvm_pool    120.00 MB  0.00 KB  
+linear
+----------------------------------------------------------------------
+------------
+16.2.7. Removing an Item
+The ssm remove is used to remove an item, either a device, pool, or volume.
+NOTE
+If a device is being used by a pool when removed, it will fail. This can be forced using the 
+-f argument.
+If the volume is mounted when removed, it will fail. Unlike the device, it cannot be forced
+with the -f argument.
+To remove the lvm_pool and everything within it use the following command:
+# ssm remove lvm_pool
+Do you really want to remove volume group "lvm_pool" containing 2 logical 
+volumes? [y/n]: y
+Do you really want to remove active logical volume snap20150519T130900? 
+[y/n]: y
+  Logical volume "snap20150519T130900" successfully removed
+Do you really want to remove active logical volume lvol001? [y/n]: y
+  Logical volume "lvol001" successfully removed
+  Volume group "lvm_pool" successfully removed
+16.3. SSM RESOURCES
+For more information on SSM, see the following resources:
+The man ssm page provides good descriptions and examples, as well as details on all of the
+commands and options too specific to be documented here.
+CHAPTER 16. SYSTEM STORAGE MANAGER (SSM)
+145
+
+Local documentation for SSM is stored in the doc/ directory.
+The SSM wiki can be accessed at http://storagemanager.sourceforge.net/index.html.
+The mailing list can be subscribed from https://lists.sourceforge.net/lists/listinfo/storagemanager-
+devel and mailing list archives from http://sourceforge.net/mailarchive/forum.php?
+forum_name=storagemanager-devel. The mailing list is where developers communicate. There
+is currently no user mailing list so feel free to post questions there as well.
+Storage Administration Guide
+146
+
+CHAPTER 17. DISK QUOTAS
+Disk space can be restricted by implementing disk quotas which alert a system administrator before a
+user consumes too much disk space or a partition becomes full.
+Disk quotas can be configured for individual users as well as user groups. This makes it possible to
+manage the space allocated for user-specific files (such as email) separately from the space allocated to
+the projects a user works on (assuming the projects are given their own groups).
+In addition, quotas can be set not just to control the number of disk blocks consumed but to control the
+number of inodes (data structures that contain information about files in UNIX file systems). Because
+inodes are used to contain file-related information, this allows control over the number of files that can be
+created.
+The quota RPM must be installed to implement disk quotas.
+NOTE
+This chapter is for all file systems, however some file systems have their own quota
+management tools. See the corresponding description for the applicable file systems.
+For XFS file systems, see Section 3.3, "XFS Quota Management".
+Btrfs does not have disk quotas so is not covered.
+17.1. CONFIGURING DISK QUOTAS
+To implement disk quotas, use the following steps:
+1. Enable quotas per file system by modifying the /etc/fstab file.
+2. Remount the file system(s).
+3. Create the quota database files and generate the disk usage table.
+4. Assign quota policies.
+Each of these steps is discussed in detail in the following sections.
+17.1.1. Enabling Quotas
+Procedure 17.1. Enabling Quotas
+1. Log in as root.
+2. Edit the /etc/fstab file.
+3. Add either the usrquota or grpquota or both options to the file systems that require quotas.
+Example 17.1. Edit /etc/fstab
+For example, to use the text editor vim type the following:
+# vim /etc/fstab
+CHAPTER 17. DISK QUOTAS
+147
+
+Example 17.2. Add Quotas
+/dev/VolGroup00/LogVol00 /         ext3    defaults        1 1
+LABEL=/boot              /boot     ext3    defaults        1 2
+none                     /dev/pts  devpts  gid=5,mode=620  0 0
+none                     /dev/shm  tmpfs   defaults        0 0
+none                     /proc     proc    defaults        0 0
+none                     /sys      sysfs   defaults        0 0
+/dev/VolGroup00/LogVol02 /home     ext3    defaults,usrquota,grpquota  
+1 2
+/dev/VolGroup00/LogVol01 swap      swap    defaults        0 0 . . .
+In this example, the /home file system has both user and group quotas enabled.
+NOTE
+The following examples assume that a separate /home partition was created during the
+installation of Red Hat Enterprise Linux. The root (/) partition can be used for setting
+quota policies in the /etc/fstab file.
+17.1.2. Remounting the File Systems
+After adding either the usrquota or grpquota or both options, remount each file system whose fstab
+entry has been modified. If the file system is not in use by any process, use one of the following
+methods:
+Run the umount command followed by the mount command to remount the file system. See the
+man page for both umount and mount for the specific syntax for mounting and unmounting
+various file system types.
+Run the mount -o remount file-system command (where file-system is the name of
+the file system) to remount the file system. For example, to remount the /home file system, run
+the mount -o remount /home command.
+If the file system is currently in use, the easiest method for remounting the file system is to reboot the
+system.
+17.1.3. Creating the Quota Database Files
+After each quota-enabled file system is remounted run the quotacheck command.
+The quotacheck command examines quota-enabled file systems and builds a table of the current disk
+usage per file system. The table is then used to update the operating system's copy of disk usage. In
+addition, the file system's disk quota files are updated.
+NOTE
+The quotacheck command has no effect on XFS as the table of disk usage is completed
+automatically at mount time. See the man page xfs_quota(8) for more information.
+Storage Administration Guide
+148
+
+Procedure 17.2. Creating the Quota Database Files
+1. Create the quota files on the file system using the following command:
+# quotacheck -cug /file system
+2. Generate the table of current disk usage per file system using the following command:
+# quotacheck -avug
+Following are the options used to create quota files:
+c
+Specifies that the quota files should be created for each file system with quotas enable.
+u
+Checks for user quotas.
+g
+Checks for group quotas. If only -g is specified, only the group quota file is created.
+If neither the -u or -g options are specified, only the user quota file is created.
+The following options are used to generate the table of current disk usage:
+a
+Check all quota-enabled, locally-mounted file systems
+v
+Display verbose status information as the quota check proceeds
+u
+Check user disk quota information
+g
+Check group disk quota information
+After quotacheck has finished running, the quota files corresponding to the enabled quotas (either user
+or group or both) are populated with data for each quota-enabled locally-mounted file system such as 
+/home.
+17.1.4. Assigning Quotas per User
+The last step is assigning the disk quotas with the edquota command.
+Prerequisite
+User must exist prior to setting the user quota.
+Proced re 17 3 Assigning Q otas per User
+CHAPTER 17. DISK QUOTAS
+149
+
+Procedure 17.3. Assigning Quotas per User
+1. To assign the quota for a user, use the following command:
+# edquota username
+Replace username with the user to which you want to assign the quotas.
+2. To verify that the quota for the user has been set, use the following command:
+# quota username
+Example 17.3. Assigning Quotas to a user
+For example, if a quota is enabled in /etc/fstab for the /home partition
+(/dev/VolGroup00/LogVol02 in the following example) and the command edquota testuser
+is executed, the following is shown in the editor configured as the default for the system:
+Disk quotas for user testuser (uid 501):
+  Filesystem                blocks     soft     hard    inodes   soft   
+hard
+  /dev/VolGroup00/LogVol02  440436        0        0     37418      0      
+0
+NOTE
+The text editor defined by the EDITOR environment variable is used by edquota. To
+change the editor, set the EDITOR environment variable in your ~/.bash_profile file
+to the full path of the editor of your choice.
+The first column is the name of the file system that has a quota enabled for it. The second column shows
+how many blocks the user is currently using. The next two columns are used to set soft and hard block
+limits for the user on the file system. The inodes column shows how many inodes the user is currently
+using. The last two columns are used to set the soft and hard inode limits for the user on the file system.
+The hard block limit is the absolute maximum amount of disk space that a user or group can use. Once
+this limit is reached, no further disk space can be used.
+The soft block limit defines the maximum amount of disk space that can be used. However, unlike the
+hard limit, the soft limit can be exceeded for a certain amount of time. That time is known as the grace
+period. The grace period can be expressed in seconds, minutes, hours, days, weeks, or months.
+If any of the values are set to 0, that limit is not set. In the text editor, change the desired limits.
+Example 17.4. Change Desired Limits
+For example:
+Disk quotas for user testuser (uid 501):
+Filesystem                blocks     soft     hard   inodes   soft   
+hard
+Storage Administration Guide
+150
+
+/dev/VolGroup00/LogVol02  440436   500000   550000    37418      0      
+0
+To verify that the quota for the user has been set, use the command:
+# quota testuser
+Disk quotas for user username (uid 501):
+   Filesystem  blocks   quota   limit   grace   files   quota   limit   
+grace
+     /dev/sdb    1000*   1000    1000               0       0       0
+17.1.5. Assigning Quotas per Group
+Quotas can also be assigned on a per-group basis.
+Prerequisite
+Group must exist prior to setting the group quota.
+Procedure 17.4. Assigning Quotas per Group
+1. To set a group quota, use the following command:
+# edquota -g groupname
+2. To verify that the group quota is set, use the following command:
+# quota -g groupname
+Example 17.5. Assigning quotas to group
+For example, to set a group quota for the devel group, use the command:
+# edquota -g devel
+This command displays the existing quota for the group in the text editor:
+Disk quotas for group devel (gid 505):
+Filesystem                blocks    soft     hard    inodes    soft    
+hard
+/dev/VolGroup00/LogVol02  440400       0        0     37418       0       
+0
+Modify the limits, then save the file.
+To verify that the group quota has been set, use the command:
+# quota -g devel
+CHAPTER 17. DISK QUOTAS
+151
+
+17.1.6. Setting the Grace Period for Soft Limits
+If a given quota has soft limits, you can edit the grace period (i.e. the amount of time a soft limit can be
+exceeded) with the following command:
+# edquota -t
+This command works on quotas for inodes or blocks, for either users or groups.
+IMPORTANT
+While other edquota commands operate on quotas for a particular user or group, the -t
+option operates on every file system with quotas enabled.
+17.2. MANAGING DISK QUOTAS
+If quotas are implemented, they need some maintenance mostly in the form of watching to see if the
+quotas are exceeded and making sure the quotas are accurate.
+If users repeatedly exceed their quotas or consistently reach their soft limits, a system administrator has
+a few choices to make depending on what type of users they are and how much disk space impacts their
+work. The administrator can either help the user determine how to use less disk space or increase the
+user's disk quota.
+17.2.1. Enabling and Disabling
+It is possible to disable quotas without setting them to 0. To turn all user and group quotas off, use the
+following command:
+# quotaoff -vaug
+If neither the -u or -g options are specified, only the user quotas are disabled. If only -g is specified,
+only group quotas are disabled. The -v switch causes verbose status information to display as the
+command executes.
+To enable user and group quotas again, use the following command:
+# quotaon
+To enable user and group quotas for all file systems, use the following command:
+# quotaon -vaug
+If neither the -u or -g options are specified, only the user quotas are enabled. If only -g is specified,
+only group quotas are enabled.
+To enable quotas for a specific file system, such as /home, use the following command:
+# quotaon -vug /home
+Storage Administration Guide
+152
+
+NOTE
+The quotaon command is not always needed for XFS because it is performed
+automatically at mount time. Refer to the man page quotaon(8) for more information.
+17.2.2. Reporting on Disk Quotas
+Creating a disk usage report entails running the repquota utility.
+Example 17.6. Output of the repquota Command
+For example, the command repquota /home produces this output:
+*** Report for user quotas on device /dev/mapper/VolGroup00-LogVol02
+Block grace time: 7days; Inode grace time: 7days
+   Block limits   File limits
+User  used soft hard grace used soft hard grace
+--------------------------------------------------------------------
+--
+root      --      36       0       0              4     0     0
+kristin   --     540       0       0            125     0     0
+testuser  --  440400  500000  550000          37418     0     0
+To view the disk usage report for all (option -a) quota-enabled file systems, use the command:
+# repquota -a
+While the report is easy to read, a few points should be explained. The -- displayed after each user is a
+quick way to determine whether the block or inode limits have been exceeded. If either soft limit is
+exceeded, a + appears in place of the corresponding -; the first - represents the block limit, and the
+second represents the inode limit.
+The grace columns are normally blank. If a soft limit has been exceeded, the column contains a time
+specification equal to the amount of time remaining on the grace period. If the grace period has expired, 
+none appears in its place.
+17.2.3. Keeping Quotas Accurate
+When a file system fails to unmount cleanly, for example due to a system crash, it is necessary to run
+the following command:
+# quotacheck
+However, quotacheck can be run on a regular basis, even if the system has not crashed. Safe
+methods for periodically running quotacheck include:
+Ensuring quotacheck runs on next reboot
+NOTE
+This method works best for (busy) multiuser systems which are periodically rebooted.
+CHAPTER 17. DISK QUOTAS
+153
+
+Save a shell script into the /etc/cron.daily/ or /etc/cron.weekly/ directory or schedule one
+using the following command:
+# crontab -e
+The crontab -e command contains the touch /forcequotacheck command. This creates an
+empty forcequotacheck file in the root directory, which the system init script looks for at boot time.
+If it is found, the init script runs quotacheck. Afterward, the init script removes the 
+/forcequotacheck file; thus, scheduling this file to be created periodically with cron ensures that 
+quotacheck is run during the next reboot.
+For more information about cron, see man cron.
+Running quotacheck in single user mode
+An alternative way to safely run quotacheck is to boot the system into single-user mode to prevent
+the possibility of data corruption in quota files and run the following commands:
+# quotaoff -vug /file_system
+# quotacheck -vug /file_system
+# quotaon -vug /file_system
+Running quotacheck on a running system
+If necessary, it is possible to run quotacheck on a machine during a time when no users are logged
+in, and thus have no open files on the file system being checked. Run the command quotacheck -
+vug file_system; this command will fail if quotacheck cannot remount the given file_system as
+read-only. Note that, following the check, the file system will be remounted read-write.
+WARNING
+Running quotacheck on a live file system mounted read-write is not
+recommended due to the possibility of quota file corruption.
+See man cron for more information about configuring cron.
+17.3. DISK QUOTA REFERENCES
+For more information on disk quotas, refer to the man pages of the following commands:
+quotacheck
+edquota
+repquota
+
+Storage Administration Guide
+154
+
+quota
+quotaon
+quotaoff
+CHAPTER 17. DISK QUOTAS
+155
+
+CHAPTER 18. REDUNDANT ARRAY OF INDEPENDENT DISKS
+(RAID)
+The basic idea behind RAID is to combine multiple small, inexpensive disk drives into an array to
+accomplish performance or redundancy goals not attainable with one large and expensive drive. This
+array of drives appears to the computer as a single logical storage unit or drive.
+RAID allows information to be spread across several disks. RAID uses techniques such as disk striping
+(RAID Level 0), disk mirroring (RAID Level 1), and disk striping with parity (RAID Level 5) to achieve
+redundancy, lower latency, increased bandwidth, and maximized ability to recover from hard disk
+crashes.
+RAID distributes data across each drive in the array by breaking it down into consistently-sized chunks
+(commonly 256K or 512k, although other values are acceptable). Each chunk is then written to a hard
+drive in the RAID array according to the RAID level employed. When the data is read, the process is
+reversed, giving the illusion that the multiple drives in the array are actually one large drive.
+System Administrators and others who manage large amounts of data would benefit from using RAID
+technology. Primary reasons to deploy RAID include:
+Enhances speed
+Increases storage capacity using a single virtual disk
+Minimizes data loss from disk failure
+18.1. RAID TYPES
+There are three possible RAID approaches: Firmware RAID, Hardware RAID, and Software RAID.
+Firmware RAID
+Firmware RAID, also known as ATARAID, is a type of software RAID where the RAID sets can be
+configured using a firmware-based menu. The firmware used by this type of RAID also hooks into the
+BIOS, allowing you to boot from its RAID sets. Different vendors use different on-disk metadata formats
+to mark the RAID set members. The Intel Matrix RAID is a good example of a firmware RAID system.
+Hardware RAID
+The hardware-based array manages the RAID subsystem independently from the host. It presents a
+single disk per RAID array to the host.
+A Hardware RAID device may be internal or external to the system, with internal devices commonly
+consisting of a specialized controller card that handles the RAID tasks transparently to the operating
+system and with external devices commonly connecting to the system via SCSI, Fibre Channel, iSCSI,
+InfiniBand, or other high speed network interconnect and presenting logical volumes to the system.
+RAID controller cards function like a SCSI controller to the operating system, and handle all the actual
+drive communications. The user plugs the drives into the RAID controller (just like a normal SCSI
+controller) and then adds them to the RAID controllers configuration. The operating system will not be
+able to tell the difference.
+Software RAID
+Storage Administration Guide
+156
+
+Software RAID implements the various RAID levels in the kernel disk (block device) code. It offers the
+cheapest possible solution, as expensive disk controller cards or hot-swap chassis [2] are not required.
+Software RAID also works with cheaper IDE disks as well as SCSI disks. With today's faster CPUs,
+Software RAID also generally outperforms Hardware RAID.
+The Linux kernel contains a multi-disk (MD) driver that allows the RAID solution to be completely
+hardware independent. The performance of a software-based array depends on the server CPU
+performance and load.
+Key features of the Linux software RAID stack:
+Multithreaded design
+Portability of arrays between Linux machines without reconstruction
+Backgrounded array reconstruction using idle system resources
+Hot-swappable drive support
+Automatic CPU detection to take advantage of certain CPU features such as streaming SIMD
+support
+Automatic correction of bad sectors on disks in an array
+Regular consistency checks of RAID data to ensure the health of the array
+Proactive monitoring of arrays with email alerts sent to a designated email address on important
+events
+Write-intent bitmaps which drastically increase the speed of resync events by allowing the kernel
+to know precisely which portions of a disk need to be resynced instead of having to resync the
+entire array
+Resync checkpointing so that if you reboot your computer during a resync, at startup the resync
+will pick up where it left off and not start all over again
+The ability to change parameters of the array after installation. For example, you can grow a 4-
+disk RAID5 array to a 5-disk RAID5 array when you have a new disk to add. This grow operation
+is done live and does not require you to reinstall on the new array.
+18.2. RAID LEVELS AND LINEAR SUPPORT
+RAID supports various configurations, including levels 0, 1, 4, 5, 6, 10, and linear. These RAID types are
+defined as follows:
+Level 0
+RAID level 0, often called "striping," is a performance-oriented striped data mapping technique. This
+means the data being written to the array is broken down into strips and written across the member
+disks of the array, allowing high I/O performance at low inherent cost but provides no redundancy.
+Many RAID level 0 implementations will only stripe the data across the member devices up to the size
+of the smallest device in the array. This means that if you have multiple devices with slightly different
+sizes, each device will get treated as though it is the same size as the smallest drive. Therefore, the
+common storage capacity of a level 0 array is equal to the capacity of the smallest member disk in a
+Hardware RAID or the capacity of smallest member partition in a Software RAID multiplied by the
+number of disks or partitions in the array.
+CHAPTER 18. REDUNDANT ARRAY OF INDEPENDENT DISKS (RAID)
+157
+
+Level 1
+RAID level 1, or "mirroring," has been used longer than any other form of RAID. Level 1 provides
+redundancy by writing identical data to each member disk of the array, leaving a "mirrored" copy on
+each disk. Mirroring remains popular due to its simplicity and high level of data availability. Level 1
+operates with two or more disks, and provides very good data reliability and improves performance
+for read-intensive applications but at a relatively high cost. [3]
+The storage capacity of the level 1 array is equal to the capacity of the smallest mirrored hard disk in
+a Hardware RAID or the smallest mirrored partition in a Software RAID. Level 1 redundancy is the
+highest possible among all RAID types, with the array being able to operate with only a single disk
+present.
+Level 4
+Level 4 uses parity [4] concentrated on a single disk drive to protect data. Because the dedicated
+parity disk represents an inherent bottleneck on all write transactions to the RAID array, level 4 is
+seldom used without accompanying technologies such as write-back caching, or in specific
+circumstances where the system administrator is intentionally designing the software RAID device
+with this bottleneck in mind (such as an array that will have little to no write transactions once the
+array is populated with data). RAID level 4 is so rarely used that it is not available as an option in
+Anaconda. However, it could be created manually by the user if truly needed.
+The storage capacity of Hardware RAID level 4 is equal to the capacity of the smallest member
+partition multiplied by the number of partitions minus one. Performance of a RAID level 4 array will
+always be asymmetrical, meaning reads will outperform writes. This is because writes consume extra
+CPU and main memory bandwidth when generating parity, and then also consume extra bus
+bandwidth when writing the actual data to disks because you are writing not only the data, but also the
+parity. Reads need only read the data and not the parity unless the array is in a degraded state. As a
+result, reads generate less traffic to the drives and across the busses of the computer for the same
+amount of data transfer under normal operating conditions.
+Level 5
+This is the most common type of RAID. By distributing parity across all of an array's member disk
+drives, RAID level 5 eliminates the write bottleneck inherent in level 4. The only performance
+bottleneck is the parity calculation process itself. With modern CPUs and Software RAID, that is
+usually not a bottleneck at all since modern CPUs can generate parity very fast. However, if you have
+a sufficiently large number of member devices in a software RAID5 array such that the combined
+aggregate data transfer speed across all devices is high enough, then this bottleneck can start to
+come into play.
+As with level 4, level 5 has asymmetrical performance, with reads substantially outperforming writes.
+The storage capacity of RAID level 5 is calculated the same way as with level 4.
+Level 6
+This is a common level of RAID when data redundancy and preservation, and not performance, are
+the paramount concerns, but where the space inefficiency of level 1 is not acceptable. Level 6 uses a
+complex parity scheme to be able to recover from the loss of any two drives in the array. This
+complex parity scheme creates a significantly higher CPU burden on software RAID devices and also
+imposes an increased burden during write transactions. As such, level 6 is considerably more
+asymmetrical in performance than levels 4 and 5.
+The total capacity of a RAID level 6 array is calculated similarly to RAID level 5 and 4, except that you
+must subtract 2 devices (instead of 1) from the device count for the extra parity storage space.
+Storage Administration Guide
+158
+
+Level 10
+This RAID level attempts to combine the performance advantages of level 0 with the redundancy of
+level 1. It also helps to alleviate some of the space wasted in level 1 arrays with more than 2 devices.
+With level 10, it is possible to create a 3-drive array configured to store only 2 copies of each piece of
+data, which then allows the overall array size to be 1.5 times the size of the smallest devices instead
+of only equal to the smallest device (like it would be with a 3-device, level 1 array).
+The number of options available when creating level 10 arrays as well as the complexity of selecting
+the right options for a specific use case make it impractical to create during installation. It is possible
+to create one manually using the command line mdadm tool. For more information on the options and
+their respective performance trade-offs, see man md.
+Linear RAID
+Linear RAID is a grouping of drives to create a larger virtual drive. In linear RAID, the chunks are
+allocated sequentially from one member drive, going to the next drive only when the first is completely
+filled. This grouping provides no performance benefit, as it is unlikely that any I/O operations split
+between member drives. Linear RAID also offers no redundancy and decreases reliability; if any one
+member drive fails, the entire array cannot be used. The capacity is the total of all member disks.
+18.3. LINUX RAID SUBSYSTEMS
+RAID in Linux is composed of the following subsystems:
+Linux Hardware RAID Controller Drivers
+Hardware RAID controllers have no specific RAID subsystem in Linux. Because they use special RAID
+chipsets, hardware RAID controllers come with their own drivers; these drivers allow the system to detect
+the RAID sets as regular disks.
+mdraid
+The mdraid subsystem was designed as a software RAID solution for Linux; it is also the preferred
+solution for software RAID under Linux. This subsystem uses its own metadata format, generally
+referred to as native mdraid metadata.
+mdraid also supports other metadata formats, known as external metadata. Red Hat Enterprise Linux 7
+uses mdraid with external metadata to access ISW / IMSM (Intel firmware RAID) sets. mdraid sets are
+configured and controlled through the mdadm utility.
+dmraid
+Device-mapper RAID or dmraid refers to device-mapper kernel code that offers the mechanism to piece
+disks together into a RAID set. This same kernel code does not provide any RAID configuration
+mechanism.
+dmraid is configured entirely in user-space, making it easy to support various on-disk metadata formats.
+As such, dmraid is used on a wide variety of firmware RAID implementations. dmraid also supports
+Intel firmware RAID, although Red Hat Enterprise Linux 7 uses mdraid to access Intel firmware RAID
+sets.
+18.4. RAID SUPPORT IN THE ANACONDA INSTALLER
+CHAPTER 18. REDUNDANT ARRAY OF INDEPENDENT DISKS (RAID)
+159
+
+The Anaconda installer automatically detects any hardware and firmware RAID sets on a system,
+making them available for installation. Anaconda also supports software RAID using mdraid, and can
+recognize existing mdraid sets.
+Anaconda provides utilities for creating RAID sets during installation; however, these utilities only allow
+partitions (as opposed to entire disks) to be members of new sets. To use an entire disk for a set, create
+a partition on it spanning the entire disk, and use that partition as the RAID set member.
+When the root file system uses a RAID set, Anaconda adds special kernel command-line options to the
+bootloader configuration telling the initrd which RAID set(s) to activate before searching for the root
+file system.
+For instructions on configuring RAID during installation, see the Red Hat Enterprise Linux 7 Installation
+Guide.
+18.5. CONVERTING ROOT DISK TO RAID1 AFTER INSTALLATION
+If you need to convert a non-raided root disk to a RAID1 mirror after installing Red Hat
+Enterprise Linux 7, see the instructions in the following Red Hat Knowledgebase article: How do I
+convert my root disk to RAID1 after installation of Red Hat Enterprise Linux 7?
+On the PowerPC (PPC) architecture, take the following additional steps:
+1. Copy the contents of the PowerPC Reference Platform (PReP) boot partition from /dev/sda1
+to /dev/sdb1:
+# dd if=/dev/sda1 of=/dev/sdb1 
+2. Update the Prep and boot flag on the first partition on both disks:
+$ parted /dev/sda set 1 prep on
+$ parted /dev/sda set 1 boot on
+$ parted /dev/sdb set 1 prep on
+$ parted /dev/sdb set 1 boot on 
+NOTE
+Running the grub2-install /dev/sda command does not work on a PowerPC
+machine and returns an error, but the system boots as expected.
+18.6. CONFIGURING RAID SETS
+Most RAID sets are configured during creation, typically through the firmware menu or from the installer.
+In some cases, you may need to create or modify RAID sets after installing the system, preferably
+without having to reboot the machine and enter the firmware menu to do so.
+Some hardware RAID controllers allow you to configure RAID sets on-the-fly or even define completely
+new sets after adding extra disks. This requires the use of driver-specific utilities, as there is no standard
+API for this. For more information, see your hardware RAID controller's driver documentation for
+information on this.
+mdadm
+Storage Administration Guide
+160
+
+The mdadm command-line tool is used to manage software RAID in Linux, i.e. mdraid. For information
+on the different mdadm modes and options, see man mdadm. The man page also contains useful
+examples for common operations like creating, monitoring, and assembling software RAID arrays.
+dmraid
+As the name suggests, dmraid is used to manage device-mapper RAID sets. The dmraid tool finds
+ATARAID devices using multiple metadata format handlers, each supporting various formats. For a
+complete list of supported formats, run dmraid -l.
+As mentioned earlier in Section 18.3, "Linux RAID Subsystems", the dmraid tool cannot configure RAID
+sets after creation. For more information about using dmraid, see man dmraid.
+18.7. CREATING ADVANCED RAID DEVICES
+In some cases, you may wish to install the operating system on an array that can't be created after the
+installation completes. Usually, this means setting up the /boot or root file system arrays on a complex
+RAID device; in such cases, you may need to use array options that are not supported by Anaconda. To
+work around this, perform the following procedure:
+Procedure 18.1. Creating Advanced RAID Devices
+1. Insert the install disk.
+2. During the initial boot up, select Rescue Mode instead of Install or Upgrade. When the system
+fully boots into Rescue mode, the user will be presented with a command line terminal.
+3. From this terminal, use parted to create RAID partitions on the target hard drives. Then, use 
+mdadm to manually create raid arrays from those partitions using any and all settings and options
+available. For more information on how to do these, see Chapter 13, Partitions, man parted,
+and man mdadm.
+4. Once the arrays are created, you can optionally create file systems on the arrays as well.
+5. Reboot the computer and this time select Install or Upgrade to install as normal. As Anaconda
+searches the disks in the system, it will find the pre-existing RAID devices.
+6. When asked about how to use the disks in the system, select Custom Layout and click Next. In
+the device listing, the pre-existing MD RAID devices will be listed.
+7. Select a RAID device, click Edit and configure its mount point and (optionally) the type of file
+system it should use (if you did not create one earlier) then click Done. Anaconda will perform
+the install to this pre-existing RAID device, preserving the custom options you selected when you
+created it in Rescue Mode.
+NOTE
+The limited Rescue Mode of the installer does not include man pages. Both the man 
+mdadm and man md contain useful information for creating custom RAID arrays, and may
+be needed throughout the workaround. As such, it can be helpful to either have access to
+a machine with these man pages present, or to print them out prior to booting into Rescue
+Mode and creating your custom arrays.

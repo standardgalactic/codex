@@ -1,0 +1,1000 @@
+25.7.3.2. Modifying Persistent Naming Attributes
+Although udev naming attributes are persistent, in that they do not change on their own across system
+reboots, some are also configurable. You can set custom values for the following persistent naming
+attributes:
+UUID: file system UUID
+LABEL: file system label
+Because the UUID and LABEL attributes are related to the file system, the tool you need to use depends
+on the file system on that partition.
+To change the UUID or LABEL attributes of an XFS file system, unmount the file system and then
+use the xfs_admin utility to change the attribute:
+# umount /dev/device
+# xfs_admin [-U new_uuid] [-L new_label] /dev/device
+# udevadm settle
+To change the UUID or LABEL attributes of an ext4, ext3, or ext2 file system, use the tune2fs
+utility:
+# tune2fs [-U new_uuid] [-L new_label] /dev/device
+# udevadm settle
+Replace new_uuid with the UUID you want to set; for example, 1cdfbc07-1c90-4984-b5ec-
+f61943f5ea50. Replace new_label with a label; for example, backup_data.
+NOTE
+Changing udev attributes happens in the background and might take a long time. The 
+udevadm settle command waits until the change is fully registered, which ensures that
+your next command will be able to utilize the new attribute correctly.
+You should also use the command after creating new devices; for example, after using the
+parted tool to create a partition with a custom PARTUUID or PARTLABEL attribute, or after
+creating a new file system.
+25.8. REMOVING A STORAGE DEVICE
+Before removing access to the storage device itself, it is advisable to back up data from the device first.
+Afterwards, flush I/O and remove all operating system references to the device (as described below). If
+the device uses multipathing, then do this for the multipath "pseudo device" (Section 25.7.2, "World Wide
+Storage Administration Guide
+216
+
+Identifier (WWID)") and each of the identifiers that represent a path to the device. If you are only
+removing a path to a multipath device, and other paths will remain, then the procedure is simpler, as
+described in Section 25.10, "Adding a Storage Device or Path".
+Removal of a storage device is not recommended when the system is under memory pressure, since the
+I/O flush will add to the load. To determine the level of memory pressure, run the command vmstat 1 
+100; device removal is not recommended if:
+Free memory is less than 5% of the total memory in more than 10 samples per 100 (the
+command free can also be used to display the total memory).
+Swapping is active (non-zero si and so columns in the vmstat output).
+The general procedure for removing all access to a device is as follows:
+Procedure 25.9. Ensuring a Clean Device Removal
+1. Close all users of the device and backup device data as needed.
+2. Use umount to unmount any file systems that mounted the device.
+3. Remove the device from any md and LVM volume using it. If the device is a member of an LVM
+Volume group, then it may be necessary to move data off the device using the pvmove
+command, then use the vgreduce command to remove the physical volume, and (optionally) 
+pvremove to remove the LVM metadata from the disk.
+4. If the device uses multipathing, run multipath -l and note all the paths to the device.
+Afterwards, remove the multipathed device using multipath -f device.
+5. Run blockdev --flushbufs device to flush any outstanding I/O to all paths to the device.
+This is particularly important for raw devices, where there is no umount or vgreduce operation
+to cause an I/O flush.
+6. Remove any reference to the device's path-based name, like /dev/sd, /dev/disk/by-path
+or the major:minor number, in applications, scripts, or utilities on the system. This is important
+in ensuring that different devices added in the future will not be mistaken for the current device.
+7. Finally, remove each path to the device from the SCSI subsystem. To do so, use the command 
+echo 1 > /sys/block/device-name/device/delete where device-name may be sde,
+for example.
+Another variation of this operation is echo 1 > 
+/sys/class/scsi_device/h:c:t:l/device/delete, where h is the HBA number, c is
+the channel on the HBA, t is the SCSI target ID, and l is the LUN.
+NOTE
+The older form of these commands, echo "scsi remove-single-device 0 
+0 0 0" > /proc/scsi/scsi, is deprecated.
+You can determine the device-name, HBA number, HBA channel, SCSI target ID and LUN for a device
+from various commands, such as lsscsi, scsi_id, multipath -l, and ls -l /dev/disk/by-*.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+217
+
+After performing Procedure 25.9, "Ensuring a Clean Device Removal", a device can be physically
+removed safely from a running system. It is not necessary to stop I/O to other devices while doing so.
+Other procedures, such as the physical removal of the device, followed by a rescan of the SCSI bus (as
+described in Section 25.11, "Scanning Storage Interconnects") to cause the operating system state to be
+updated to reflect the change, are not recommended. This will cause delays due to I/O timeouts, and
+devices may be removed unexpectedly. If it is necessary to perform a rescan of an interconnect, it must
+be done while I/O is paused, as described in Section 25.11, "Scanning Storage Interconnects".
+25.9. REMOVING A PATH TO A STORAGE DEVICE
+If you are removing a path to a device that uses multipathing (without affecting other paths to the device),
+then the general procedure is as follows:
+Procedure 25.10. Removing a Path to a Storage Device
+1. Remove any reference to the device's path-based name, like /dev/sd or /dev/disk/by-
+path or the major:minor number, in applications, scripts, or utilities on the system. This is
+important in ensuring that different devices added in the future will not be mistaken for the
+current device.
+2. Take the path offline using echo offline > /sys/block/sda/device/state.
+This will cause any subsequent I/O sent to the device on this path to be failed immediately.
+Device-mapper-multipath will continue to use the remaining paths to the device.
+3. Remove the path from the SCSI subsystem. To do so, use the command echo 1 > 
+/sys/block/device-name/device/delete where device-name may be sde, for
+example (as described in Procedure 25.9, "Ensuring a Clean Device Removal").
+After performing Procedure 25.10, "Removing a Path to a Storage Device", the path can be safely
+removed from the running system. It is not necessary to stop I/O while this is done, as device-mapper-
+multipath will re-route I/O to remaining paths according to the configured path grouping and failover
+policies.
+Other procedures, such as the physical removal of the cable, followed by a rescan of the SCSI bus to
+cause the operating system state to be updated to reflect the change, are not recommended. This will
+cause delays due to I/O timeouts, and devices may be removed unexpectedly. If it is necessary to
+perform a rescan of an interconnect, it must be done while I/O is paused, as described in Section 25.11,
+"Scanning Storage Interconnects".
+25.10. ADDING A STORAGE DEVICE OR PATH
+When adding a device, be aware that the path-based device name (/dev/sd name, major:minor
+number, and /dev/disk/by-path name, for example) the system assigns to the new device may have
+been previously in use by a device that has since been removed. As such, ensure that all old references
+to the path-based device name have been removed. Otherwise, the new device may be mistaken for the
+old device.
+Procedure 25.11. Add a Storage Device or Path
+1. The first step in adding a storage device or path is to physically enable access to the new
+storage device, or a new path to an existing device. This is done using vendor-specific
+commands at the Fibre Channel or iSCSI storage server. When doing so, note the LUN value for
+the new storage that will be presented to your host. If the storage server is Fibre Channel, also
+Storage Administration Guide
+218
+
+take note of the World Wide Node Name (WWNN) of the storage server, and determine whether
+there is a single WWNN for all ports on the storage server. If this is not the case, note the World
+Wide Port Name (WWPN) for each port that will be used to access the new LUN.
+2. Next, make the operating system aware of the new storage device, or path to an existing device.
+The recommended command to use is:
+$ echo "c t l" >  /sys/class/scsi_host/hosth/scan
+In the previous command, h is the HBA number, c is the channel on the HBA, t is the SCSI
+target ID, and l is the LUN.
+NOTE
+The older form of this command, echo "scsi add-single-device 0 0 0 
+0" > /proc/scsi/scsi, is deprecated.
+a. In some Fibre Channel hardware, a newly created LUN on the RAID array may not be visible
+to the operating system until a Loop Initialization Protocol (LIP) operation is performed. Refer
+to Section 25.11, "Scanning Storage Interconnects" for instructions on how to do this.
+IMPORTANT
+It will be necessary to stop I/O while this operation is executed if an LIP is
+required.
+b. If a new LUN has been added on the RAID array but is still not being configured by the
+operating system, confirm the list of LUNs being exported by the array using the sg_luns
+command, part of the sg3_utils package. This will issue the SCSI REPORT LUNS command
+to the RAID array and return a list of LUNs that are present.
+For Fibre Channel storage servers that implement a single WWNN for all ports, you can
+determine the correct h,c,and t values (i.e. HBA number, HBA channel, and SCSI target ID) by
+searching for the WWNN in sysfs.
+Example 25.5. Determine Correct h, c, and t Values
+For example, if the WWNN of the storage server is 0x5006016090203181, use:
+$ grep 5006016090203181 /sys/class/fc_transport/*/node_name
+This should display output similar to the following:
+/sys/class/fc_transport/target5:0:2/node_name:0x5006016090203181 
+/sys/class/fc_transport/target5:0:3/node_name:0x5006016090203181 
+/sys/class/fc_transport/target6:0:2/node_name:0x5006016090203181 
+/sys/class/fc_transport/target6:0:3/node_name:0x5006016090203181
+This indicates there are four Fibre Channel routes to this target (two single-channel HBAs,
+each leading to two storage ports). Assuming a LUN value is 56, then the following command
+will configure the first path:
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+219
+
+$ echo "0 2 56" >  /sys/class/scsi_host/host5/scan
+This must be done for each path to the new device.
+For Fibre Channel storage servers that do not implement a single WWNN for all ports, you can
+determine the correct HBA number, HBA channel, and SCSI target ID by searching for each of
+the WWPNs in sysfs.
+Another way to determine the HBA number, HBA channel, and SCSI target ID is to refer to
+another device that is already configured on the same path as the new device. This can be done
+with various commands, such as lsscsi, scsi_id, multipath -l, and ls -l 
+/dev/disk/by-*. This information, plus the LUN number of the new device, can be used as
+shown above to probe and configure that path to the new device.
+3. After adding all the SCSI paths to the device, execute the multipath command, and check to
+see that the device has been properly configured. At this point, the device can be added to md,
+LVM, mkfs, or mount, for example.
+If the steps above are followed, then a device can safely be added to a running system. It is not
+necessary to stop I/O to other devices while this is done. Other procedures involving a rescan (or a
+reset) of the SCSI bus, which cause the operating system to update its state to reflect the current device
+connectivity, are not recommended while storage I/O is in progress.
+25.11. SCANNING STORAGE INTERCONNECTS
+Certain commands allow you to reset, scan, or both reset and scan one or more interconnects, which
+potentially adds and removes multiple devices in one operation. This type of scan can be disruptive, as it
+can cause delays while I/O operations time out, and remove devices unexpectedly. Red Hat
+recommends using interconnect scanning only when necessary. Observe the following restrictions when
+scanning storage interconnects:
+All I/O on the effected interconnects must be paused and flushed before executing the
+procedure, and the results of the scan checked before I/O is resumed.
+As with removing a device, interconnect scanning is not recommended when the system is
+under memory pressure. To determine the level of memory pressure, run the vmstat 1 100
+command. Interconnect scanning is not recommended if free memory is less than 5% of the total
+memory in more than 10 samples per 100. Also, interconnect scanning is not recommended if
+swapping is active (non-zero si and so columns in the vmstat output). The free command
+can also display the total memory.
+The following commands can be used to scan storage interconnects:
+echo "1" > /sys/class/fc_host/host/issue_lip
+This operation performs a Loop Initialization Protocol (LIP), scans the interconnect, and causes the
+SCSI layer to be updated to reflect the devices currently on the bus. Essentially, an LIP is a bus
+reset, and causes device addition and removal. This procedure is necessary to configure a new SCSI
+target on a Fibre Channel interconnect.
+Note that issue_lip is an asynchronous operation. The command can complete before the entire
+scan has completed. You must monitor /var/log/messages to determine when issue_lip
+finishes.
+Storage Administration Guide
+220
+
+The lpfc, qla2xxx, and bnx2fc drivers support issue_lip. For more information about the API
+capabilities supported by each driver in Red Hat Enterprise Linux, see Table 25.1, "Fibre Channel
+API Capabilities".
+/usr/bin/rescan-scsi-bus.sh
+The /usr/bin/rescan-scsi-bus.sh script was introduced in Red Hat Enterprise Linux 5.4. By
+default, this script scans all the SCSI buses on the system, and updates the SCSI layer to reflect new
+devices on the bus. The script provides additional options to allow device removal, and the issuing of
+LIPs. For more information about this script, including known issues, see Section 25.17,
+"Adding/Removing a Logical Unit Through rescan-scsi-bus.sh".
+echo "- - -" > /sys/class/scsi_host/hosth/scan
+This is the same command as described in Section 25.10, "Adding a Storage Device or Path" to add
+a storage device or path. In this case, however, the channel number, SCSI target ID, and LUN values
+are replaced by wildcards. Any combination of identifiers and wildcards is allowed, so you can make
+the command as specific or broad as needed. This procedure adds LUNs, but does not remove
+them.
+modprobe --remove driver-name, modprobe driver-name
+Running the modprobe --remove driver-name command followed by the modprobe driver-
+name command completely re-initializes the state of all interconnects controlled by the driver. Despite
+being rather extreme, using the described commands can be appropriate in certain situations. The
+commands can be used, for example, to restart the driver with a different module parameter value.
+25.12. ISCSI DISCOVERY CONFIGURATION
+The default iSCSI configuration file is /etc/iscsi/iscsid.conf. This file contains iSCSI settings
+used by iscsid and iscsiadm.
+During target discovery, the iscsiadm tool uses the settings in /etc/iscsi/iscsid.conf to create
+two types of records:
+Node records in /var/lib/iscsi/nodes
+When logging into a target, iscsiadm uses the settings in this file.
+Discovery records in /var/lib/iscsi/discovery_type
+When performing discovery to the same destination, iscsiadm uses the settings in this file.
+Before using different settings for discovery, delete the current discovery records (i.e. 
+/var/lib/iscsi/discovery_type) first. To do this, use the following command: [5]
+# iscsiadm -m discovery -t discovery_type -p target_IP:port -o delete
+Here, discovery_type can be either sendtargets, isns, or fw.
+For details on different types of discovery, refer to the DISCOVERY TYPES section of the iscsiadm(8)
+man page.
+There are two ways to reconfigure discovery record settings:
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+221
+
+Edit the /etc/iscsi/iscsid.conf file directly prior to performing a discovery. Discovery
+settings use the prefix discovery; to view them, run:
+# iscsiadm -m discovery -t discovery_type -p target_IP:port
+Alternatively, iscsiadm can also be used to directly change discovery record settings, as in:
+# iscsiadm -m discovery -t discovery_type -p target_IP:port -o 
+update -n setting -v %value
+Refer to the iscsiadm(8) man page for more information on available setting options and valid
+value options for each.
+After configuring discovery settings, any subsequent attempts to discover new targets will use the new
+settings. Refer to Section 25.14, "Scanning iSCSI Interconnects" for details on how to scan for new
+iSCSI targets.
+For more information on configuring iSCSI target discovery, refer to the man pages of iscsiadm and 
+iscsid. The /etc/iscsi/iscsid.conf file also contains examples on proper configuration syntax.
+25.13. CONFIGURING ISCSI OFFLOAD AND INTERFACE BINDING
+This chapter describes how to set up iSCSI interfaces in order to bind a session to a NIC port when
+using software iSCSI. It also describes how to set up interfaces for use with network devices that support
+offloading.
+The network subsystem can be configured to determine the path/NIC that iSCSI interfaces should use
+for binding. For example, if portals and NICs are set up on different subnets, then it is not necessary to
+manually configure iSCSI interfaces for binding.
+Before attempting to configure an iSCSI interface for binding, run the following command first:
+$ ping -I ethX target_IP
+If ping fails, then you will not be able to bind a session to a NIC. If this is the case, check the network
+settings first.
+25.13.1. Viewing Available iface Configurations
+iSCSI offload and interface binding is supported for the following iSCSI initiator implementations:
+Software iSCSI
+This stack allocates an iSCSI host instance (that is, scsi_host) per session, with a single
+connection per session. As a result, /sys/class_scsi_host and /proc/scsi will report a 
+scsi_host for each connection/session you are logged into.
+Offload iSCSI
+This stack allocates a scsi_host for each PCI device. As such, each port on a host bus adapter will
+show up as a different PCI device, with a different scsi_host per HBA port.
+Storage Administration Guide
+222
+
+To manage both types of initiator implementations, iscsiadm uses the iface structure. With this
+structure, an iface configuration must be entered in /var/lib/iscsi/ifaces for each HBA port,
+software iSCSI, or network device (ethX) used to bind sessions.
+To view available iface configurations, run iscsiadm -m iface. This will display iface information
+in the following format:
+iface_name 
+transport_name,hardware_address,ip_address,net_ifacename,initiator_name
+Refer to the following table for an explanation of each value/setting.
+Table 25.2. iface Settings
+Setting
+Description
+iface_name
+iface configuration name.
+transport_name
+Name of driver
+hardware_address
+MAC address
+ip_address
+IP address to use for this port
+net_iface_name
+Name used for the vlan or alias binding of a
+software iSCSI session. For iSCSI offloads, 
+net_iface_name will be <empty> because this
+value is not persistent across reboots.
+initiator_name
+This setting is used to override a default name for the
+initiator, which is defined in 
+/etc/iscsi/initiatorname.iscsi
+Example 25.6. Sample Output of the iscsiadm -m iface Command
+The following is a sample output of the iscsiadm -m iface command:
+iface0 qla4xxx,00:c0:dd:08:63:e8,20.15.0.7,default,iqn.2005-
+06.com.redhat:madmax
+iface1 qla4xxx,00:c0:dd:08:63:ea,20.15.0.9,default,iqn.2005-
+06.com.redhat:madmax
+For software iSCSI, each iface configuration must have a unique name (with less than 65 characters).
+The iface_name for network devices that support offloading appears in the format 
+transport_name.hardware_name.
+Example 25.7. iscsiadm -m iface Output with a Chelsio Network Card
+For example, the sample output of iscsiadm -m iface on a system using a Chelsio network card
+might appear as:
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+223
+
+default tcp,<empty>,<empty>,<empty>,<empty>
+iser iser,<empty>,<empty>,<empty>,<empty>
+cxgb3i.00:07:43:05:97:07 cxgb3i,00:07:43:05:97:07,<empty>,<empty>,
+<empty>
+It is also possible to display the settings of a specific iface configuration in a more friendly way. To do
+so, use the option -I iface_name. This will display the settings in the following format:
+iface.setting = value
+Example 25.8. Using iface Settings with a Chelsio Converged Network Adapter
+Using the previous example, the iface settings of the same Chelsio converged network adapter (i.e.
+iscsiadm -m iface -I cxgb3i.00:07:43:05:97:07) would appear as:
+# BEGIN RECORD 2.0-871
+iface.iscsi_ifacename = cxgb3i.00:07:43:05:97:07
+iface.net_ifacename = <empty>
+iface.ipaddress = <empty>
+iface.hwaddress = 00:07:43:05:97:07
+iface.transport_name = cxgb3i
+iface.initiatorname = <empty>
+# END RECORD
+25.13.2. Configuring an iface for Software iSCSI
+As mentioned earlier, an iface configuration is required for each network object that will be used to bind
+a session.
+Before
+To create an iface configuration for software iSCSI, run the following command:
+# iscsiadm -m iface -I iface_name --op=new
+This will create a new empty iface configuration with a specified iface_name. If an existing iface
+configuration already has the same iface_name, then it will be overwritten with a new, empty one.
+To configure a specific setting of an iface configuration, use the following command:
+# iscsiadm -m iface -I iface_name --op=update -n iface.setting -v 
+hw_address
+Example 25.9. Set MAC Address of iface0
+For example, to set the MAC address (hardware_address) of iface0 to 00:0F:1F:92:6B:BF,
+run:
+# iscsiadm -m iface -I iface0 --op=update -n iface.hwaddress -v 
+00:0F:1F:92:6B:BF
+Storage Administration Guide
+224
+
+WARNING
+Do not use default or iser as iface names. Both strings are special values
+used by iscsiadm for backward compatibility. Any manually-created iface
+configurations named default or iser will disable backwards compatibility.
+25.13.3. Configuring an iface for iSCSI Offload
+By default, iscsiadm creates an iface configuration for each port. To view available iface
+configurations, use the same command for doing so in software iSCSI: iscsiadm -m iface.
+Before using the iface of a network card for iSCSI offload, first set the iface.ipaddress value of the
+offload interface to the initiator IP address that the interface should use:
+For devices that use the be2iscsi driver, the IP address is configured in the BIOS setup
+screen.
+For all other devices, to configure the IP address of the iface, use:
+# iscsiadm -m iface -I iface_name -o update -n iface.ipaddress -v 
+initiator_ip_address
+Example 25.10. Set the iface IP Address of a Chelsio Card
+For example, to set the iface IP address to 20.15.0.66 when using a card with the iface name
+of cxgb3i.00:07:43:05:97:07, use:
+# iscsiadm -m iface -I cxgb3i.00:07:43:05:97:07 -o update -n 
+iface.ipaddress -v 20.15.0.66
+25.13.4. Binding/Unbinding an iface to a Portal
+Whenever iscsiadm is used to scan for interconnects, it will first check the iface.transport
+settings of each iface configuration in /var/lib/iscsi/ifaces. The iscsiadm utility will then bind
+discovered portals to any iface whose iface.transport is tcp.
+This behavior was implemented for compatibility reasons. To override this, use the -I iface_name to
+specify which portal to bind to an iface, as in:
+# iscsiadm -m discovery -t st -p target_IP:port -I iface_name -P 1
+[5]
+By default, the iscsiadm utility will not automatically bind any portals to iface configurations that use
+
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+225
+
+offloading. This is because such iface configurations will not have iface.transport set to tcp. As
+such, the iface configurations need to be manually bound to discovered portals.
+It is also possible to prevent a portal from binding to any existing iface. To do so, use default as the 
+iface_name, as in:
+# iscsiadm -m discovery -t st -p IP:port -I default -P 1
+To remove the binding between a target and iface, use:
+# iscsiadm -m node -targetname proper_target_name -I iface0 --op=delete[6]
+To delete all bindings for a specific iface, use:
+# iscsiadm -m node -I iface_name --op=delete
+To delete bindings for a specific portal (e.g. for Equalogic targets), use:
+# iscsiadm -m node -p IP:port -I iface_name --op=delete
+NOTE
+If there are no iface configurations defined in /var/lib/iscsi/iface and the -I
+option is not used, iscsiadm will allow the network subsystem to decide which device a
+specific portal should use.
+25.14. SCANNING ISCSI INTERCONNECTS
+For iSCSI, if the targets send an iSCSI async event indicating new storage is added, then the scan is
+done automatically.
+However, if the targets do not send an iSCSI async event, you need to manually scan them using the 
+iscsiadm utility. Before doing so, however, you need to first retrieve the proper --targetname and
+the --portal values. If your device model supports only a single logical unit and portal per target, use 
+iscsiadm to issue a sendtargets command to the host, as in:
+# iscsiadm -m discovery -t sendtargets -p target_IP:port
+[5]
+The output will appear in the following format:
+target_IP:port,target_portal_group_tag proper_target_name
+Example 25.11. Using iscsiadm to issue a sendtargets Command
+For example, on a target with a proper_target_name of iqn.1992-
+08.com.netapp:sn.33615311 and a target_IP:port of 10.15.85.19:3260, the output may
+appear as:
+10.15.84.19:3260,2 iqn.1992-08.com.netapp:sn.33615311
+Storage Administration Guide
+226
+
+10.15.85.19:3260,3 iqn.1992-08.com.netapp:sn.33615311
+In this example, the target has two portals, each using target_ip:ports of 10.15.84.19:3260
+and 10.15.85.19:3260.
+To see which iface configuration will be used for each session, add the -P 1 option. This option will
+print also session information in tree format, as in:
+    Target: proper_target_name
+        Portal: target_IP:port,target_portal_group_tag
+           Iface Name: iface_name
+Example 25.12. View iface Configuration
+For example, with iscsiadm -m discovery -t sendtargets -p 10.15.85.19:3260 -P 
+1, the output may appear as:
+Target: iqn.1992-08.com.netapp:sn.33615311
+    Portal: 10.15.84.19:3260,2
+       Iface Name: iface2
+    Portal: 10.15.85.19:3260,3
+       Iface Name: iface2
+This means that the target iqn.1992-08.com.netapp:sn.33615311 will use iface2 as its 
+iface configuration.
+With some device models a single target may have multiple logical units and portals. In this case, issue a
+sendtargets command to the host first to find new portals on the target. Then, rescan the existing
+sessions using:
+# iscsiadm -m session --rescan
+You can also rescan a specific session by specifying the session's SID value, as in:
+# iscsiadm -m session -r SID --rescan[7]
+If your device supports multiple targets, you will need to issue a sendtargets command to the hosts to
+find new portals for each target. Rescan existing sessions to discover new logical units on existing
+sessions using the --rescan option.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+227
+
+IMPORTANT
+The sendtargets command used to retrieve --targetname and --portal values
+overwrites the contents of the /var/lib/iscsi/nodes database. This database will
+then be repopulated using the settings in /etc/iscsi/iscsid.conf. However, this will
+not occur if a session is currently logged in and in use.
+To safely add new targets/portals or delete old ones, use the -o new or -o delete
+options, respectively. For example, to add new targets/portals without overwriting 
+/var/lib/iscsi/nodes, use the following command:
+iscsiadm -m discovery -t st -p target_IP -o new
+To delete /var/lib/iscsi/nodes entries that the target did not display during
+discovery, use:
+iscsiadm -m discovery -t st -p target_IP -o delete
+You can also perform both tasks simultaneously, as in:
+iscsiadm -m discovery -t st -p target_IP -o delete -o new
+The sendtargets command will yield the following output:
+ip:port,target_portal_group_tag proper_target_name
+Example 25.13. Output of the sendtargets Command
+For example, given a device with a single target, logical unit, and portal, with equallogic-iscsi1
+as your target_name, the output should appear similar to the following:
+10.16.41.155:3260,0 iqn.2001-05.com.equallogic:6-8a0900-ac3fe0101-
+63aff113e344a4a2-dl585-03-1
+Note that proper_target_name and ip:port,target_portal_group_tag are identical to the
+values of the same name in Section 25.6.1, "iSCSI API".
+At this point, you now have the proper --targetname and --portal values needed to manually scan
+for iSCSI devices. To do so, run the following command:
+# iscsiadm --mode node --targetname proper_target_name --portal 
+ip:port,target_portal_group_tag \ --login 
+[8]
+Example 25.14. Full iscsiadm Command
+Using our previous example (where proper_target_name is equallogic-iscsi1), the full
+command would be:
+Storage Administration Guide
+228
+
+# iscsiadm --mode node --targetname  \ iqn.2001-05.com.equallogic:6-
+8a0900-ac3fe0101-63aff113e344a4a2-dl585-03-1  \ --portal 
+10.16.41.155:3260,0 --login[8]
+25.15. LOGGING IN TO AN ISCSI TARGET
+As mentioned in Section 25.6, "iSCSI", the iSCSI service must be running in order to discover or log into
+targets. To start the iSCSI service, run:
+# systemctl start iscsi
+When this command is executed, the iSCSI init scripts will automatically log into targets where the 
+node.startup setting is configured as automatic. This is the default value of node.startup for all
+targets.
+To prevent automatic login to a target, set node.startup to manual. To do this, run the following
+command:
+# iscsiadm -m node --targetname proper_target_name -p target_IP:port -o 
+update -n node.startup -v manual
+Deleting the entire record will also prevent automatic login. To do this, run:
+# iscsiadm -m node --targetname proper_target_name -p target_IP:port -o 
+delete
+To automatically mount a file system from an iSCSI device on the network, add a partition entry for the
+mount in /etc/fstab with the _netdev option. For example, to automatically mount the iSCSI device 
+sdb to /mount/iscsi during startup, add the following line to /etc/fstab:
+/dev/sdb /mnt/iscsi ext3 _netdev 0 0
+To manually log in to an iSCSI target, use the following command:
+# iscsiadm -m node --targetname proper_target_name -p target_IP:port -l
+NOTE
+The proper_target_name and target_IP:port refer to the full name and IP
+address/port combination of a target. For more information, refer to Section 25.6.1, "iSCSI
+API" and Section 25.14, "Scanning iSCSI Interconnects".
+25.16. RESIZING AN ONLINE LOGICAL UNIT
+In most cases, fully resizing an online logical unit involves two things: resizing the logical unit itself and
+reflecting the size change in the corresponding multipath device (if multipathing is enabled on the
+system).
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+229
+
+To resize the online logical unit, start by modifying the logical unit size through the array management
+interface of your storage device. This procedure differs with each array; as such, consult your storage
+array vendor documentation for more information on this.
+NOTE
+In order to resize an online file system, the file system must not reside on a partitioned
+device.
+25.16.1. Resizing Fibre Channel Logical Units
+After modifying the online logical unit size, re-scan the logical unit to ensure that the system detects the
+updated size. To do this for Fibre Channel logical units, use the following command:
+$ echo 1 > /sys/block/sdX/device/rescan
+IMPORTANT
+To re-scan Fibre Channel logical units on a system that uses multipathing, execute the
+aforementioned command for each sd device (i.e. sd1, sd2, and so on) that represents a
+path for the multipathed logical unit. To determine which devices are paths for a multipath
+logical unit, use multipath -ll; then, find the entry that matches the logical unit being
+resized. It is advisable that you refer to the WWID of each entry to make it easier to find
+which one matches the logical unit being resized.
+25.16.2. Resizing an iSCSI Logical Unit
+After modifying the online logical unit size, re-scan the logical unit to ensure that the system detects the
+updated size. To do this for iSCSI devices, use the following command:
+# iscsiadm -m node --targetname target_name -R
+[5]
+Replace target_name with the name of the target where the device is located.
+NOTE
+You can also re-scan iSCSI logical units using the following command:
+# iscsiadm -m node -R -I interface
+Replace interface with the corresponding interface name of the resized logical unit (for
+example, iface0). This command performs two operations:
+It scans for new devices in the same way that the command echo "- - -" > 
+/sys/class/scsi_host/host/scan does (refer to Section 25.14, "Scanning
+iSCSI Interconnects").
+It re-scans for new/modified logical units the same way that the command echo 
+1 > /sys/block/sdX/device/rescan does. Note that this command is the
+same one used for re-scanning Fibre Channel logical units.
+Storage Administration Guide
+230
+
+25.16.3. Updating the Size of Your Multipath Device
+If multipathing is enabled on your system, you will also need to reflect the change in logical unit size to
+the logical unit's corresponding multipath device (after resizing the logical unit). This can be done through
+multipathd. To do so, first ensure that multipathd is running using service multipathd 
+status. Once you've verified that multipathd is operational, run the following command:
+# multipathd -k"resize map multipath_device"
+The multipath_device variable is the corresponding multipath entry of your device in /dev/mapper.
+Depending on how multipathing is set up on your system, multipath_device can be either of two
+formats:
+mpathX, where X is the corresponding entry of your device (for example, mpath0)
+a WWID; for example, 3600508b400105e210000900000490000
+To determine which multipath entry corresponds to your resized logical unit, run multipath -ll. This
+displays a list of all existing multipath entries in the system, along with the major and minor numbers of
+their corresponding devices.
+IMPORTANT
+Do not use multipathd -k"resize map multipath_device" if there are any
+commands queued to multipath_device. That is, do not use this command when the 
+no_path_retry parameter (in /etc/multipath.conf) is set to "queue", and there
+are no active paths to the device.
+For more information about multipathing, refer to the Red Hat Enterprise Linux 7 DM Multipath guide.
+25.16.4. Changing the Read/Write State of an Online Logical Unit
+Certain storage devices provide the user with the ability to change the state of the device from
+Read/Write (R/W) to Read-Only (RO), and from RO to R/W. This is typically done through a
+management interface on the storage device. The operating system will not automatically update its view
+of the state of the device when a change is made. Follow the procedures described in this chapter to
+make the operating system aware of the change.
+Run the following command, replacing XYZ with the desired device designator, to determine the
+operating system's current view of the R/W state of a device:
+# blockdev --getro /dev/sdXYZ
+The following command is also available for Red Hat Enterprise Linux 7:
+# cat /sys/block/sdXYZ/ro 1 = read-only 0 = read-write
+When using multipath, refer to the ro or rw field in the second line of output from the multipath -ll
+command. For example:
+36001438005deb4710000500000640000 dm-8 GZ,GZ500
+[size=20G][features=0][hwhandler=0][ro]
+\_ round-robin 0 [prio=200][active]
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+231
+
+ \_ 6:0:4:1  sdax 67:16  [active][ready]
+ \_ 6:0:5:1  sday 67:32  [active][ready]
+\_ round-robin 0 [prio=40][enabled]
+ \_ 6:0:6:1  sdaz 67:48  [active][ready]
+ \_ 6:0:7:1  sdba 67:64  [active][ready]
+To change the R/W state, use the following procedure:
+Procedure 25.12. Change the R/W State
+1. To move the device from RO to R/W, see step 2.
+To move the device from R/W to RO, ensure no further writes will be issued. Do this by stopping
+the application, or through the use of an appropriate, application-specific action.
+Ensure that all outstanding write I/Os are complete with the following command:
+# blockdev --flushbufs /dev/device
+Replace device with the desired designator; for a device mapper multipath, this is the entry for
+your device in dev/mapper. For example, /dev/mapper/mpath3.
+2. Use the management interface of the storage device to change the state of the logical unit from
+R/W to RO, or from RO to R/W. The procedure for this differs with each array. Consult
+applicable storage array vendor documentation for more information.
+3. Perform a re-scan of the device to update the operating system's view of the R/W state of the
+device. If using a device mapper multipath, perform this re-scan for each path to the device
+before issuing the command telling multipath to reload its device maps.
+This process is explained in further detail in Section 25.16.4.1, "Rescanning Logical Units".
+25.16.4.1. Rescanning Logical Units
+After modifying the online logical unit Read/Write state, as described in Section 25.16.4, "Changing the
+Read/Write State of an Online Logical Unit", re-scan the logical unit to ensure the system detects the
+updated state with the following command:
+# echo 1 > /sys/block/sdX/device/rescan
+To re-scan logical units on a system that uses multipathing, execute the above command for each sd
+device that represents a path for the multipathed logical unit. For example, run the command on sd1, sd2
+and all other sd devices. To determine which devices are paths for a multipath unit, use multipath -
+11, then find the entry that matches the logical unit to be changed.
+Example 25.15. Use of the multipath -11 Command
+For example, the multipath -11 above shows the path for the LUN with WWID
+36001438005deb4710000500000640000. In this case, enter:
+# echo 1 > /sys/block/sdax/device/rescan
+# echo 1 > /sys/block/sday/device/rescan
+# echo 1 > /sys/block/sdaz/device/rescan
+# echo 1 > /sys/block/sdba/device/rescan
+Storage Administration Guide
+232
+
+25.16.4.2. Updating the R/W State of a Multipath Device
+If multipathing is enabled, after rescanning the logical unit, the change in its state will need to be reflected
+in the logical unit's corresponding multipath drive. Do this by reloading the multipath device maps with
+the following command:
+# multipath -r
+The multipath -11 command can then be used to confirm the change.
+25.16.4.3. Documentation
+Further information can be found in the Red Hat Knowledgebase. To access this, navigate to
+https://www.redhat.com/wapps/sso/login.html?redirect=https://access.redhat.com/knowledge/ and log in.
+Then access the article at https://access.redhat.com/kb/docs/DOC-32850.
+25.17. ADDING/REMOVING A LOGICAL UNIT THROUGH RESCAN-SCSI-
+BUS.SH
+The sg3_utils package provides the rescan-scsi-bus.sh script, which can automatically update
+the logical unit configuration of the host as needed (after a device has been added to the system). The 
+rescan-scsi-bus.sh script can also perform an issue_lip on supported devices. For more
+information about how to use this script, refer to rescan-scsi-bus.sh --help.
+To install the sg3_utils package, run yum install sg3_utils.
+Known Issues with rescan-scsi-bus.sh
+When using the rescan-scsi-bus.sh script, take note of the following known issues:
+In order for rescan-scsi-bus.sh to work properly, LUN0 must be the first mapped logical
+unit. The rescan-scsi-bus.sh can only detect the first mapped logical unit if it is LUN0. The 
+rescan-scsi-bus.sh will not be able to scan any other logical unit unless it detects the first
+mapped logical unit even if you use the --nooptscan option.
+A race condition requires that rescan-scsi-bus.sh be run twice if logical units are mapped
+for the first time. During the first scan, rescan-scsi-bus.sh only adds LUN0; all other logical
+units are added in the second scan.
+A bug in the rescan-scsi-bus.sh script incorrectly executes the functionality for recognizing
+a change in logical unit size when the --remove option is used.
+The rescan-scsi-bus.sh script does not recognize ISCSI logical unit removals.
+25.18. MODIFYING LINK LOSS BEHAVIOR
+This section describes how to modify the link loss behavior of devices that use either Fibre Channel or
+iSCSI protocols.
+25.18.1. Fibre Channel
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+233
+
+If a driver implements the Transport dev_loss_tmo callback, access attempts to a device through a link
+will be blocked when a transport problem is detected. To verify if a device is blocked, run the following
+command:
+$ cat /sys/block/device/device/state
+This command will return blocked if the device is blocked. If the device is operating normally, this
+command will return running.
+Procedure 25.13. Determining the State of a Remote Port
+1. To determine the state of a remote port, run the following command:
+$ cat
+/sys/class/fc_remote_port/rport-H:B:R/port_state
+2. This command will return Blocked when the remote port (along with devices accessed through
+it) are blocked. If the remote port is operating normally, the command will return Online.
+3. If the problem is not resolved within dev_loss_tmo seconds, the rport and devices will be
+unblocked and all I/O running on that device (along with any new I/O sent to that device) will be
+failed.
+Procedure 25.14. Changing dev_loss_tmo
+To change the dev_loss_tmo value, echo in the desired value to the file. For example, to set 
+dev_loss_tmo to 30 seconds, run:
+$ echo 30 >
+/sys/class/fc_remote_port/rport-H:B:R/dev_loss_tmo
+For more information about dev_loss_tmo, refer to Section 25.3.1, "Fibre Channel API".
+When a link loss exceeds dev_loss_tmo, the scsi_device and sdN devices are removed. Typically,
+the Fibre Channel class will leave the device as is; i.e. /dev/sdx will remain /dev/sdx. This is
+because the target binding is saved by the Fibre Channel driver so when the target port returns, the
+SCSI addresses are recreated faithfully. However, this cannot be guaranteed; the sdx will be restored
+only if no additional change on in-storage box configuration of LUNs is made.
+25.18.2. iSCSI Settings with dm-multipath
+If dm-multipath is implemented, it is advisable to set iSCSI timers to immediately defer commands to
+the multipath layer. To configure this, nest the following line under device { in 
+/etc/multipath.conf:
+features  "1 queue_if_no_path"
+This ensures that I/O errors are retried and queued if all paths are failed in the dm-multipath layer.
+You may need to adjust iSCSI timers further to better monitor your SAN for problems. Available iSCSI
+timers you can configure are NOP-Out Interval/Timeouts and replacement_timeout, which are
+discussed in the following sections.
+Storage Administration Guide
+234
+
+25.18.2.1. NOP-Out Interval/Timeout
+To help monitor problems the SAN, the iSCSI layer sends a NOP-Out request to each target. If a NOP-
+Out request times out, the iSCSI layer responds by failing any running commands and instructing the
+SCSI layer to requeue those commands when possible.
+When dm-multipath is being used, the SCSI layer will fail those running commands and defer them to
+the multipath layer. The multipath layer then retries those commands on another path. If dm-multipath
+is not being used, those commands are retried five times before failing altogether.
+Intervals between NOP-Out requests are 10 seconds by default. To adjust this, open 
+/etc/iscsi/iscsid.conf and edit the following line:
+node.conn[0].timeo.noop_out_interval = [interval value]
+Once set, the iSCSI layer will send a NOP-Out request to each target every [interval value] seconds.
+By default, NOP-Out requests time out in 10 seconds[9]. To adjust this, open 
+/etc/iscsi/iscsid.conf and edit the following line:
+node.conn[0].timeo.noop_out_timeout = [timeout value]
+This sets the iSCSI layer to timeout a NOP-Out request after [timeout value] seconds.
+SCSI Error Handler
+If the SCSI Error Handler is running, running commands on a path will not be failed immediately when a
+NOP-Out request times out on that path. Instead, those commands will be failed after 
+replacement_timeout seconds. For more information about replacement_timeout, refer to
+Section 25.18.2.2, "replacement_timeout".
+To verify if the SCSI Error Handler is running, run:
+# iscsiadm -m session -P 3
+25.18.2.2. replacement_timeout
+replacement_timeout controls how long the iSCSI layer should wait for a timed-out path/session to
+reestablish itself before failing any commands on it. The default replacement_timeout value is 120
+seconds.
+To adjust replacement_timeout, open /etc/iscsi/iscsid.conf and edit the following line:
+node.session.timeo.replacement_timeout = [replacement_timeout]
+The 1 queue_if_no_path option in /etc/multipath.conf sets iSCSI timers to immediately defer
+commands to the multipath layer (refer to Section 25.18.2, "iSCSI Settings with dm-multipath"). This
+setting prevents I/O errors from propagating to the application; because of this, you can set 
+replacement_timeout to 15-20 seconds.
+By configuring a lower replacement_timeout, I/O is quickly sent to a new path and executed (in the
+event of a NOP-Out timeout) while the iSCSI layer attempts to re-establish the failed path/session. If all
+paths time out, then the multipath and device mapper layer will internally queue I/O based on the settings
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+235
+
+in /etc/multipath.conf instead of /etc/iscsi/iscsid.conf.
+IMPORTANT
+Whether your considerations are failover speed or security, the recommended value for 
+replacement_timeout will depend on other factors. These factors include the network,
+target, and system workload. As such, it is recommended that you thoroughly test any
+new configurations to replacements_timeout before applying it to a mission-critical
+system.
+25.18.3. iSCSI Root
+When accessing the root partition directly through an iSCSI disk, the iSCSI timers should be set so that
+iSCSI layer has several chances to try to reestablish a path/session. In addition, commands should not
+be quickly re-queued to the SCSI layer. This is the opposite of what should be done when dm-
+multipath is implemented.
+To start with, NOP-Outs should be disabled. You can do this by setting both NOP-Out interval and
+timeout to zero. To set this, open /etc/iscsi/iscsid.conf and edit as follows:
+node.conn[0].timeo.noop_out_interval = 0
+node.conn[0].timeo.noop_out_timeout = 0
+In line with this, replacement_timeout should be set to a high number. This will instruct the system to
+wait a long time for a path/session to reestablish itself. To adjust replacement_timeout, open 
+/etc/iscsi/iscsid.conf and edit the following line:
+node.session.timeo.replacement_timeout = replacement_timeout
+After configuring /etc/iscsi/iscsid.conf, you must perform a re-discovery of the affected storage.
+This will allow the system to load and use any new values in /etc/iscsi/iscsid.conf. For more
+information on how to discover iSCSI devices, refer to Section 25.14, "Scanning iSCSI Interconnects".
+Configuring Timeouts for a Specific Session
+You can also configure timeouts for a specific session and make them non-persistent (instead of using 
+/etc/iscsi/iscsid.conf). To do so, run the following command (replace the variables accordingly):
+# iscsiadm -m node -T target_name -p target_IP:port -o update -n 
+node.session.timeo.replacement_timeout -v $timeout_value
+IMPORTANT
+The configuration described here is recommended for iSCSI sessions involving root
+partition access. For iSCSI sessions involving access to other types of storage (namely, in
+systems that use dm-multipath), refer to Section 25.18.2, "iSCSI Settings with dm-
+multipath".
+25.19. CONTROLLING THE SCSI COMMAND TIMER AND DEVICE
+STATUS
+Storage Administration Guide
+236
+
+The Linux SCSI layer sets a timer on each command. When this timer expires, the SCSI layer will
+quiesce the host bus adapter (HBA) and wait for all outstanding commands to either time out or
+complete. Afterwards, the SCSI layer will activate the driver's error handler.
+When the error handler is triggered, it attempts the following operations in order (until one successfully
+executes):
+1. Abort the command.
+2. Reset the device.
+3. Reset the bus.
+4. Reset the host.
+If all of these operations fail, the device will be set to the offline state. When this occurs, all I/O to that
+device will be failed, until the problem is corrected and the user sets the device to running.
+The process is different, however, if a device uses the Fibre Channel protocol and the rport is blocked.
+In such cases, the drivers wait for several seconds for the rport to become online again before
+activating the error handler. This prevents devices from becoming offline due to temporary transport
+problems.
+Device States
+To display the state of a device, use:
+$ cat /sys/block/device-name/device/state
+To set a device to the running state, use:
+# echo running > /sys/block/device-name/device/state
+Command Timer
+To control the command timer, modify the /sys/block/device-name/device/timeout file:
+# echo value > /sys/block/device-name/device/timeout
+Replace value in the command with the timeout value, in seconds, that you want to implement.
+25.20. TROUBLESHOOTING ONLINE STORAGE CONFIGURATION
+This section provides solution to common problems users experience during online storage
+reconfiguration.
+Logical unit removal status is not reflected on the host.
+When a logical unit is deleted on a configured filer, the change is not reflected on the host. In such
+cases, lvm commands will hang indefinitely when dm-multipath is used, as the logical unit has
+now become stale.
+To work around this, perform the following procedure:
+P
+d
+W
+ki
+A
+d S
+l
+L
+i
+l U i
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+237
+
+Procedure 25.15. Working Around Stale Logical Units
+1. Determine which mpath link entries in /etc/lvm/cache/.cache are specific to the stale
+logical unit. To do this, run the following command:
+$ ls -l /dev/mpath | grep stale-logical-unit
+Example 25.16. Determine Specific mpath Link Entries
+For example, if stale-logical-unit is 3600d0230003414f30000203a7bc41a00, the
+following results may appear:
+lrwxrwxrwx 1 root root 7 Aug  2 10:33 
+/3600d0230003414f30000203a7bc41a00 -> ../dm-4
+lrwxrwxrwx 1 root root 7 Aug  2 10:33 
+/3600d0230003414f30000203a7bc41a00p1 -> ../dm-5
+This means that 3600d0230003414f30000203a7bc41a00 is mapped to two mpath links: 
+dm-4 and dm-5.
+2. Next, open /etc/lvm/cache/.cache. Delete all lines containing stale-logical-unit
+and the mpath links that stale-logical-unit maps to.
+Example 25.17. Delete Relevant Lines
+Using the same example in the previous step, the lines you need to delete are:
+/dev/dm-4 
+/dev/dm-5 
+/dev/mapper/3600d0230003414f30000203a7bc41a00
+/dev/mapper/3600d0230003414f30000203a7bc41a00p1
+/dev/mpath/3600d0230003414f30000203a7bc41a00
+/dev/mpath/3600d0230003414f30000203a7bc41a00p1
+25.21. CONFIGURING MAXIMUM TIME FOR ERROR RECOVERY WITH
+EH_DEADLINE
+Storage Administration Guide
+238
+
+IMPORTANT
+In most scenarios, you do not need to enable the eh_deadline parameter. Using the 
+eh_deadline parameter can be useful in certain specific scenarios, for example if a link
+loss occurs between a Fibre Channel switch and a target port, and the Host Bus Adapter
+(HBA) does not receive Registered State Change Notifications (RSCNs). In such a case,
+I/O requests and error recovery commands all time out rather than encounter an error.
+Setting eh_deadline in this environment puts an upper limit on the recovery time, which
+enables the failed I/O to be retried on another available path by multipath.
+However, if RSCNs are enabled, the HBA does not register the link becoming
+unavailable, or both, the eh_deadline functionality provides no additional benefit, as the
+I/O and error recovery commands fail immediately, which allows multipath to retry.
+The SCSI host object eh_deadline parameter enables you to configure the maximum amount of time
+that the SCSI error handling mechanism attempts to perform error recovery before stopping and resetting
+the entire HBA.
+The value of the eh_deadline is specified in seconds. The default setting is off, which disables the
+time limit and allows all of the error recovery to take place. In addition to using sysfs, a default value
+can be set for all SCSI HBAs by using the scsi_mod.eh_deadline kernel parameter.
+Note that when eh_deadline expires, the HBA is reset, which affects all target paths on that HBA, not
+only the failing one. As a consequence, I/O errors can occur if some of the redundant paths are not
+available for other reasons. Enable eh_deadline only if you have a fully redundant multipath
+configuration on all targets.
+[5] The target_IP and port variables refer to the IP address and port combination of a target/portal, respectively. For
+more information, refer to Section 25.6.1, "iSCSI API" and Section 25.14, "Scanning iSCSI Interconnects".
+[6] Refer to Section 25.14, "Scanning iSCSI Interconnects" for information on proper_target_name.
+[7] For information on how to retrieve a session's SID value, refer to Section 25.6.1, "iSCSI API".
+[8] This is a single command split into multiple lines, to accommodate printed and PDF versions of this document.
+All concatenated lines — preceded by the backslash (\) — should be treated as one command, sans backslashes.
+[9] Prior to Red Hat Enterprise Linux 5.4, the default NOP-Out requests time out was 15 seconds.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+239
+
+CHAPTER 26. DEVICE MAPPER MULTIPATHING AND VIRTUAL
+STORAGE
+Red Hat Enterprise Linux 7 supports DM-Multipath and virtual storage. Both features are documented in
+detail in the Red Hat books DM Multipath and Virtualization Deployment and Administration Guide.
+26.1. VIRTUAL STORAGE
+Red Hat Enterprise Linux 7 supports the following file systems/online storage methods for virtual storage:
+Fibre Channel
+iSCSI
+NFS
+GFS2
+Virtualization in Red Hat Enterprise Linux 7 uses libvirt to manage virtual instances. The libvirt
+utility uses the concept of storage pools to manage storage for virtualized guests. A storage pool is
+storage that can be divided up into smaller volumes or allocated directly to a guest. Volumes of a storage
+pool can be allocated to virtualized guests. There are two categories of storage pools available:
+Local storage pools
+Local storage covers storage devices, files or directories directly attached to a host. Local storage
+includes local directories, directly attached disks, and LVM Volume Groups.
+Networked (shared) storage pools
+Networked storage covers storage devices shared over a network using standard protocols. It
+includes shared storage devices using Fibre Channel, iSCSI, NFS, GFS2, and SCSI RDMA
+protocols, and is a requirement for migrating guest virtualized guests between hosts.
+IMPORTANT
+For comprehensive information on the deployment and configuration of virtual storage
+instances in your environment, refer to the Virtualization Deployment and Administration
+Guide provided by Red Hat.
+26.2. DM-MULTIPATH
+Device Mapper Multipathing (DM-Multipath) is a feature that allows you to configure multiple I/O paths
+between server nodes and storage arrays into a single device. These I/O paths are physical SAN
+connections that can include separate cables, switches, and controllers. Multipathing aggregates the I/O
+paths, creating a new device that consists of the aggregated paths.
+DM-Multipath are used primarily for the following reasons:
+Redundancy
+DM-Multipath can provide failover in an active/passive configuration. In an active/passive
+configuration, only half the paths are used at any time for I/O. If any element of an I/O path (the cable,
+switch, or controller) fails, DM-Multipath switches to an alternate path.
+Storage Administration Guide
+240
+
+Improved Performance
+DM-Multipath can be configured in active/active mode, where I/O is spread over the paths in a round-
+robin fashion. In some configurations, DM-Multipath can detect loading on the I/O paths and
+dynamically re-balance the load.
+IMPORTANT
+For comprehensive information on the deployment and configuration of DM Multipath in
+your environment, refer to the DM Multipath guide provided by Red Hat.
+CHAPTER 26. DEVICE MAPPER MULTIPATHING AND VIRTUAL STORAGE
+241
+
+CHAPTER 27. EXTERNAL ARRAY MANAGEMENT
+(LIBSTORAGEMGMT)
+Red Hat Enterprise Linux 7 ships with a new external array management library called 
+libStorageMgmt.
+27.1. INTRODUCTION TO LIBSTORAGEMGMT
+The libStorageMgmt library is a storage array independent Application Programming Interface (API).
+It provides a stable and consistent API that allows developers the ability to programmatically manage
+different storage arrays and leverage the hardware accelerated features provided.
+This library is used as a building block for other higher level management tools and applications. End
+system administrators can also use it as a tool to manually manage storage and automate storage
+management tasks with the use of scripts.
+The libStorageMgmt library allows operations such as:
+List storage pools, volumes, access groups, or file systems.
+Create and delete volumes, access groups, file systems, or NFS exports.
+Grant and remove access to volumes, access groups, or initiators.
+Replicate volumes with snapshots, clones, and copies.
+Create and delete access groups and edit members of a group.
+Server resources such as CPU and interconnect bandwidth are not utilized because the operations are
+all done on the array.
+The libstoragemgmt package provides:
+A stable C and Python API for client application and plug-in developers.
+A command-line interface that utilizes the library (lsmcli).
+A daemon that executes the plug-in (lsmd).
+A simulator plug-in that allows the testing of client applications (sim).
+Plug-in architecture for interfacing with arrays.
+Storage Administration Guide
+242
+
+WARNING
+This library and its associated tool have the ability to destroy any and all data
+located on the arrays it manages. It is highly recommended to develop and test
+applications and scripts against the storage simulator plug-in to remove any logic
+errors before working with production systems. Testing applications and scripts on
+actual non-production hardware before deploying to production is also strongly
+encouraged if possible.
+The libStorageMgmt library in Red Hat Enterprise Linux 7 adds a default udev rule to handle the
+REPORTED LUNS DATA HAS CHANGED unit attention.
+When a storage configuration change has taken place, one of several Unit Attention ASC/ASCQ codes
+reports the change. A uevent is then generated and is rescanned automatically with sysfs.
+The file /lib/udev/rules.d/90-scsi-ua.rules contains example rules to enumerate other
+events that the kernel can generate.
+The libStorageMgmt library uses a plug-in architecture to accommodate differences in storage arrays.
+For more information on libStorageMgmt plug-ins and how to write them, refer to the Red Hat
+Developer Guide.
+27.2. LIBSTORAGEMGMT TERMINOLOGY
+Different array vendors and storage standards use different terminology to refer to similar functionality.
+This library uses the following terminology.
+Storage array
+Any storage system that provides block access (FC, FCoE, iSCSI) or file access through Network
+Attached Storage (NAS).
+Volume
+Storage Area Network (SAN) Storage Arrays can expose a volume to the Host Bus Adapter (HBA)
+over different transports, such as FC, iSCSI, or FCoE. The host OS treats it as block devices. One
+volume can be exposed to many disks if multipath[2] is enabled).
+This is also known as the Logical Unit Number (LUN), StorageVolume with SNIA terminology, or
+virtual disk.
+Pool
+A group of storage spaces. File systems or volumes can be created from a pool. Pools can be
+created from disks, volumes, and other pools. A pool may also hold RAID settings or thin provisioning
+settings.
+This is also known as a StoragePool with SNIA Terminology.
+Snapshot
+A point in time, read only, space efficient copy of data.
+
+CHAPTER 27. EXTERNAL ARRAY MANAGEMENT (LIBSTORAGEMGMT)
+243

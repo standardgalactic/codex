@@ -1,0 +1,962 @@
+
+
+
+
+
+SQL
+Beginner's Guide for Coding SQL (sql, database programming, computer programming, how to program, sql for dummies)
+ 
+STEPHEN HOFFMAN
+
+
+
+
+
+
+
+
+
+ 
+
+CONTENTS
+ 
+ 
+ 
+Introduction
+Types of Databases
+Chapter 1 -A Closer Look on Relational Model
+Tables, Columns, and Rows
+Keys
+Chapter 2 - Examples of Relational Models
+Chapter 3 - SQL Statements
+SQL Facts
+SQL Commands
+Naming Values
+Creating Data in SQL
+Data Types
+CHAPTER 4 - Coding in MySQL
+SELECT Command Anatomy
+FROM Command
+Limiting The Results
+Conclusion
+ 
+
+
+
+
+
+
+
+
+
+ 
+
+I think next books will also be interesting for you:
+C++
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+Python
+ 
+ 
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+Javascript
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+Computer Hacking
+ 
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+Hacking for Dummies
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+Amazon Prime and Kindle Lending Library
+ 
+  
+
+
+
+
+
+
+
+
+
+
+Introduction
+ 
+A database serves as a container. It is a storage where programmer scan organize data in a constructive manner. Keep in mind that there is no need to create a database if you are only dealing with few amounts of data. For instance, handling hundreds of Excel spreadsheets require a database while five spreadsheets can be dealt with even without a database. In other words, organizing a threshold amount of data inside a database will save you from complex data management.
+ 
+A Closer Look On Database
+ 
+Organizing all data inside a database allows you to easily execute tasks such as querying the data, updating the data, and deleting previous data. Most of all, a database prevents conflicts from having multiple copies of data.
+ 
+Let us say, for instance, that a company has to manage its overall financial expenses. Basically, there is a specific department to handle this and such department has several people in it. Now if these people have their own copies of the spreadsheets, then it will be somewhat difficult to come up with non-conflicting data considering the possibility of human errors.
+ 
+A database, on the other hand, will be able to store and organize the data with higher accuracy and lesser conflicts.
+ 
+Another example to help you understand what a database is, is by looking at your phone's contact list. Each contact is a data and your smartphone serves as the database. With just a touch of a few buttons, you can easily get the contact you are looking for. You can easily edit the details of each contact as well. This advance data management is way better than listing each contact in a pen-and-paper phone directory.
+
+
+
+
+
+
+
+
+
+
+
+
+Types of Databases
+ 
+The different types of database are as follows:
+ 
+
+Relational Databases
+Object-Oriented Databases
+Document-Based Databases
+
+ 
+In this eBook, I will mainly focus on relational databases. Nevertheless, I will not hesitate to include the other two types if deemed necessary.
+ 
+You might have been introduced to some sort of new database type such as NoSQL. They are considered to be under the category of the document-based databases. These databases are now becoming popular and you might think that it is better to study them instead of learning SQL. 
+ 
+Please do not consider the relational databases to be the things of the past. A lot of databases that we still have today use the relational model. Moreover, SQL is useful when it comes to relational data queries. Besides, the query language of newly popularized databases is still somehow related to SQLsince they were mostly developed after SQL.
+ 
+In other words, jumping into the new type of databases without understanding SQL will give you tons of challenges along the way. Hence, you have made the right decision of learning SQL first before moving forward to other databases like MongoDB.
+ 
+Without further ado, let me now bring you to the world of SQL.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+Chapter 1 -A Closer Look on Relational Model
+ 
+The Structured Query Language, or SQL, was originally designed for relational model. It is the language used to define the relationships between multiple data. It is also the database programming language used to query data in a relationalschema.
+ 
+So when did this all began?
+ 
+The first relational database was created in the 60s and the programming in this model were primarily defined by mathematics.In fact, this model of database was based on Tuple Relational Calculus and Relational Algebra.
+ 
+Don't worry, though, there is no need for you to jump into algebra and calculus to handle relational databases. SQL will make relational database programming easier.
+ 
+Tables, Columns, and Rows
+ 
+In the relational database, the data is stored in a table. In this model, all tables have names. For instance, you may name a table as "people" while you may name another table as "sales". These names refer to the kind of data stored inside the table. In other words, the table we call "people" contains data of people while the table we call "sales" contains data of sales.
+ 
+Every table features a set of columns. These columns define the different pieces of data within the table. This what makes the relational model different from other types of databases. You will notice that there are some databases that store data altogether. In a relational model, however, all data is separated by columns and each column has a name. Each column can also restrict the category and size of data that will be added in it. For instance, some columns can only store strings while some columns can only store numbers. The restriction assigned to each column depends on the creator of the database.
+ 
+Columns are also categorized by being required and not required. A required column means that every row in the table must have a data which corresponds to what the column requires. A not required column, on the other hand, means that we can assert a NULL value for each row under that column. As you go through SQL, you will find that NULL has a lot uses in database programming.
+ 
+The primary point of using rows is to have retrievable data and containers where you can store data. Why do we store data? Simply because we want to get that data again in the future and we simply want a place for it to stay for the mean time. Hence, the core idea of a database.
+ 
+Keys
+ 
+One of the vital elements of a relational database are keys. We now know that a table has several columns and each column has names. Each column has related properties as well. One of these properties that we can assert in a column is a key.
+ 
+In a relational database, we always assign a primary key for each row. This special type of key is used to uniquely determine a specific row. This means that the value of that key must remain unique and must not have any duplicates within the table. If, and only if, there is another table which contains that key in our relation model; then, we may merge those two tables together.
+ 
+When merging two tables, there will always be primary keys that have no duplicates. Upon merging, you will notice that there will be a new column in the table with these keys. These keys are now known as the Foreign keys. They serve as links to the primary keys of the second table, allowing you to conveniently link rows from two separated tables.
+ 
+Aside from primary keys and foreign keys, we also have the natural keys. Natural keys are global. This means that you cannot change them since they are used all over the globe to identify a single entity. Published books, for instance, always have natural keys which we know as ISBN. Each published book has its own unique ISBN which you need to use as primary keys when handling relational database for books. This is different when handling databases with unnatural keys like emails, people, where you need to invent your own primary keys for each row.
+ 
+Let us use a database for people and their contact numbers as an example. We cannot consider the name as the primary key. We cannot consider the person's phone number as the primary key as well. This is because it is possible that there are two or more people in the globe that have the same contact number, first name, or even last name. Hence, we should create the primary key ourselves. This is where the identity column comes in.
+ 
+The identity column serves as an auto-incrementing column that continues to generate unique keys as we add data in the table. The key combination does not matter since what we only need is a unique key for every identity in our database.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+Chapter 2 - Examples of Relational Models
+ 
+Since I have been using thepeople's database in the previous chapter, I will now give to you a contacts database as a perfect example of a relational model.
+ 
+A simple database for contacts typically looks like this:
+ 
+
+
+
+ First Name 
+ Last Name 
+ Email Address 
+
+
+ John 
+ Doe 
+ johndoe@email.com 
+
+
+ Mae 
+ Lee 
+ maelee@email.com 
+
+
+
+ 
+In this table, we have three columns that are looking for specific data. The first column requests for the first name. The second for the last name and the third for the email address of the person.
+ 
+Our rows, excluding the first row, refers to a single entity. The row for our first entity refers to the person with the name John Doe and his email is johndoe@email.com. The row for our second entity refers to Mae Lee with an email address of maelee@email.com. 
+ 
+This is an example of a database with two entities divided by three columns.
+ 
+Let us say that John Doe has two email addresses while Mae Lee has three. Some people will end up adding columns to add the additional data. Hence, the table will end up like this.
+ 
+
+
+
+
+ First Name 
+ Last Name 
+ Email 1 
+ Email 2 
+ Email 3 
+
+
+ John 
+ Doe 
+ johndoe@... 
+ johndoe2@... 
+ NULL 
+
+
+ Mae 
+ Lee 
+ maelee@... 
+ maelee2@... 
+ maelee3@... 
+
+
+
+
+ 
+There is a problem here if we use this kind of database design. First, what if the problem we have at hand is to find how many email address each person has? It is quite difficult and cumbersome to get the answer we need. This is the disadvantage in using a column-base database. The second problem is that we will end up with a lot of NULL values for those people that only have one email address. Third, this design is not practical and you do not need to be a database specialist to realize that.
+ 
+In order to address these three issues, here is how we can do it.
+ 
+
+
+
+ Key 
+ First Name 
+ Last Name 
+
+
+ 1 
+ John 
+ Doe 
+
+
+ 2 
+ Mae 
+ Lee 
+
+
+
+ 
+The first step is to create a table for the entity first. In this table, we assigned the first column for the primary keys. The second step is to create another table where we can store the values for these people's email addresses. The second table will look like this.
+ 
+
+
+
+ Key 
+ Person's Key 
+ Email Address 
+
+
+ 1 
+ 1 
+ johndoe@email.com 
+
+
+ 2 
+ 1 
+ johndoe2@email.com 
+
+
+ 3 
+ 2 
+ maelee@email.com 
+
+
+ 4 
+ 2 
+ maelee2@email.com 
+
+
+ 5 
+ 2 
+ maelee3@email.com 
+
+
+
+ 
+In this table, you will see that there are two columns for the keys. The first column refers to the primary key designated to each email address. The second column refers to the foreign keys from our first table. This is an example of a one-to-many relational model.
+ 
+In this model, we are able to organize the data in the most practical way possible. It is now easier for us to answer a query on how many emails each person has as well. This method is known as Normalization.
+ 
+There are different ways to design your database and efficient designs depend on what queries you are trying to answer.
+ 
+With all that being said, you are now ready to meet SQL.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+Chapter 3 - SQL Statements
+ 
+SQL is a specific database language. We use this language to create statements. These statements are made up of valid words. Some of the words should be defined by SQL while some of the words should be defined by you. Some words you will be asserting in these statements are table names, column names, and variables or data that is inside your tables.
+ 
+SQL Facts
+ 
+Before we proceed, I would like to show you some important facts about SQL.
+ 
+The first thing you need to know about SQL is that it is readable since it is written in the English language. In other words, it is easier to learn SQL more than any other programming languages.
+ 
+Second is that you can do a lot more using SQL. This is in contrast with most people's impressions that SQL is only used for data queries. This is wrong.
+ 
+Third is that a valid SQL statement should end with a semi-colon (;). Although some people will tell you that it is no longer needed, I suggest adding it in your queries because it is part of the ANSI standard. Furthermore, it works fine with both old and modern databases. Semi-colons allow you to conveniently assert multiple statements together in what we call a batch.This method works even with modern databases.
+ 
+The fourth is that SQL is not case-sensitive. You can put your variables in both lower and upper cases. Both ways will work out just fine in the structured query language. One good way to practice this is to assert SQL-specific keywords in uppercases and user-defined keywords in lowercases. This will allow you to efficiently and quickly identify the different keywords within a statement.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+SQL Commands
+ 
+It is important to keep in mind that all SQL statements begin with a command. The command is typically a verb to signify what the database needs to do. One good example of a command used in SQL statements is SELECT.
+ 
+The SELECT command tells the database to select a set of data. As you can see, it is an English-based word and pretty much obvious of what the system will do. This is how the command looks like when used in an SQL statement.
+ 
+
+
+
+   SELECTVALUES FROMTABLENAME;   
+
+
+
+ 
+The example above is a generic example of an SQL statement and I will talk about it piece by piece later on.
+ 
+Take note that the set of values or variables that you need to assert in a statement depends upon what command you are trying to execute.All these variables come in the statement right after the command.
+ 
+Naming Values
+ 
+As what I have already said, the SQL statement is made up of words that are within SQL specification and user-created names. This means that naming values such as keys, table names, columns, and etc. are significant in SQL.
+ 
+There is no absolute rule in naming things in SQL. People have their own ways to name variables, but I suggest you follow the method I use in this book for the sake of consistency. Here are two naming rules that I will be implementing in this book:
+ 
+
+All table names must be in singular form. (e.g. person, email, phone, user, etc.)
+Column names should never be repeated in the database.
+
+ 
+There are some people who prefer to use plural names for their table names. This is not wrong. Nevertheless, I am more comfortable when using singular form table names. As for the column names, there will always be a time when two or more columns from separated tables have the same name. Hence, what I do is to uniquely name each column for disambiguation purposes. For instance, instead of using ID as the column name for primary keys in both the user table and email table; I would rather use the names user_ID and email_ID for each column.
+ 
+You should also take note that names in SQL are scoped. This means that the database itself must have a name. The tables within the database must have names too. The columns inside every table must be named as well. When calling for the table, its name must be scoped through the database name with the use of period (.) to separate the names. Hence, this is how they are going to look like when asserted in an SQL statement:
+ 
+
+Database.Table
+Table.Column
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Creating Data in SQL
+ 
+I have no intention to teach you how to create a database from scratch. As beginners, your tasks should only circle around adding or updating values to an already existing database. However, I have a feeling that some of you still have that eagerness to learn SQL in order to create the entire application including the database itself. And so, I will introduce that part of SQL, but just enough to help you jumpstart.
+ 
+The SQL keyword to create a new database is the statement CREATE DATABASE and this falls under ANSI specification. Let us say you want to create a new database for contact numbers of people and you want to name this new database as Contacts. Here is how you are going to do it.
+ 
+
+
+
+   CREATE DATABASE Contact;   
+
+
+
+ 
+In order for you to work on that database, you need to use it first. The keyword we need here is the USE DATABASE command. This is how we are going to execute it.
+ 
+
+
+
+   USE DATABASEContact;   
+
+
+
+ 
+If you want to create a table inside the Contact database, then what you need to execute is the CREATE TABLE command and here is you do it.
+ 
+
+
+
+   CREATE TABLE Contacts.User (...);   
+
+
+
+ 
+After that, you can now put all column names, types, and definitions.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Data Types
+ 
+Data types are important because it follows column restrictions. Each column has a rule on which type of data you can store in it.
+ 
+Here are some of the major data types and their short descriptions.
+ 
+
+
+
+ Data Type 
+ Description 
+
+
+   CHARACTER   
+   Used to define the number of characters allowed in the column. No more, no less. 
+
+
+     CHARACTER VARYING 
+   Used to define the maximum number of characters allowed in the column. Can be less but not more than the specific value. 
+
+
+   BINARY 
+   Used to dedicate the column for hexadecimal data. 
+
+
+   SMALLINT 
+   Used to store numerical data ranging from -32, 768 to 32, 767. 
+
+
+   INTEGER 
+   Used to store numerical data ranging from -2, 147, 483, 648 to 2, 147, 483, 647. 
+
+
+     BIGINT 
+   Used to store numerical data ranging from -9, 223, 372, 036, 854, 775, 808 to 9, 223, 372, 036, 854, 775, 807. 
+
+
+   BOOLEAN 
+   Used to store either TRUE or FALSE values. 
+
+
+     DATE 
+   Used to store DAY, MONTH, and YEAR in the following format: YYYY-MM-DD. 
+
+
+     TIME 
+   Used to store SECOND, MINUTE, and HOUR in the following format: HH:MM:SS. 
+
+
+   TIMESTAMP   
+   Used to store both TIME and DATE. 
+
+
+
+ 
+ 
+There are other data types supported that you can use for more complex numbers, for instance. There is also specific data type for UNICODE characters against regular characters. Now these are just a few of the flavors that you can use in database programming.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+CHAPTER 4 - Coding in MySQL
+ 
+I will teach you how to code SQL database using MySQL. Why MySQL? First is because it is an open-source platform and you can get it for free. Second is because it is compatible with all major operating systems: Linux, OSX, and Windows. Third is because it features ANSI mode which enforces ANSI specifications to your database. Not all RDMs have this kind of feature.
+ 
+In this chapter, I will teach you how to efficiently use the SELECT command. This will allow you to effectively use this command to create interesting and efficient data queries.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+SELECT Command Anatomy
+ 
+You should have learned by now that we have the SQL keyword SELECT which is a command to get specific data from our database. After the SELECT keyword, what should follow is the list of items we want to have from our database. We call it the "select list". If the select list only contains variables, then you can simply write the statement in this manner:
+ 
+
+
+
+   SELECT '[Variable]','[Variable]';   
+
+
+
+ 
+Most of the time, the select list contains the names of the columns. When it does, it is important to define which table can we find these columns. This is where the FROM command comes in.
+ 
+For instance, our select list contains User (column A) and Email (column B) and we can find these columns inside the table named as Contact. In order to define which table to look for, we should include the FROM command by doing this.
+ 
+
+
+
+   Format: SELECT [COLUMN_NAME], [COLUMN_NAME] FROM [TABLE_NAME];   Example: SELECTUser,EmailFROMContact;   
+
+
+
+ 
+But, what if I have a lot of columns in the table and I want to select them all, you ask? Well, this is where the power of the asterisk (*) comes in. This is known as the wildcard symbol in SQL statement. To select all columns inside a table, you need to execute a statement in this format.
+ 
+
+
+
+   SELECT* FROM [TABLE_NAME];   
+
+
+
+ 
+As you can see, the wildcard symbol comes after the SELECT command. Now this is useful when selecting all the columns. If you do not need to select all the columns, then using the wildcard symbol may become dangerous and inefficient.
+ 
+There are different ways to quickly assert multiple columns in an SQL statement depending upon the platform that you are using. I personally recommend that you avoid using the wildcard command since the inefficient use of this syntax may also break applications.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+FROM Command
+ 
+Selecting a single table is fairly easy to write an SQL statement. As you can see from previous examples, it only follows a simple format.
+ 
+
+
+
+   FROM [TABLE_NAME]   
+
+
+
+ 
+In FROM clause, you can shorten the name of your table by creating an alias for the table name. Let us say that your table name is "telecommunication" and you are looking for the list of owner names that can be found under the "owner" column of our table. Typing it with the use of the generic format will give you this.
+ 
+
+
+
+   SELECTtelecommunication.ownerFROMtelecommunication;   
+
+
+
+ 
+Why do we need to type the table name before the column name in our format above? This is because we must qualify the column by using the table name. Furthermore, this will save you from name collisions in the future if there will be columns with similar names. I suggest you make this a habit.
+ 
+Going back to the topic, doing so is too much of inconvenience. We can shorten the table name by assigning an alias in the FROM clause. Here's the format.
+ 
+
+
+
+   SELECT [TABLE_NAME_ALIAS].[COLUMN_NAME] FROM [TABLE_NAME] [TABLE_NAME_ALIAS];   
+
+
+
+ 
+Using the owner column and telecommunication table, our new statement will look like this.
+ 
+
+
+
+   SELECTt.ownerFROMtelecommunication t;   
+
+
+
+As you can see, I assigned the letter "t" to be the alias of the table name. This is easier to write than repeating the complete name over and over again. Keep in mind that it is not necessary to use the first character of your table name as an alias. You can assign any alias to the table name and it can also be a combination of characters. Just make sure that you are consistent with the alias you use.
+ 
+Limiting The Results
+ 
+Whenever you execute a SELECT query, the database will give you all the rows under the column you specified. This means that if your table has 20, 000 rows, then it will return 20, 000 values to answer your statement.
+ 
+There are two ways to address this issue. One is to assert additional clause after the FROM clause. The other is by adding the DISTINCT qualifier before the select list. This shown in this format.
+ 
+
+
+
+   SELECT DISTINCT [SELECT LIST] FROM [TABLE_NAME];   
+
+
+
+ 
+This format will only give you distinct values in return instead of providing you with all the values under the specified column. This is the perfect way to have all the unique values under that column. For example, you have a table for your contacts and some entities were asserted in several rows because they own multiple phone numbers.
+ 
+Relying on the generic format will give you duplicated results. This is not efficient if you only want to know who are your contacts, right? Using the DISTINCT qualifier will prevent you from receiving multiple rows for the same entity.
+ 
+Here is our telecommunication table which has the column for owners and another column for the telecom company.
+ 
+
+
+
+ Key 
+ Owner 
+ Company 
+
+
+ 1 
+ Jean Grey 
+ AT&T 
+
+
+ 2 
+ Luke Skywalker 
+ Comcast 
+
+
+ 3 
+ Mae Lee 
+ AT&T 
+
+
+ 4 
+ Stan Lee 
+ AT&T 
+
+
+
+ 
+Let us say we want to find the list of telecom companies in our database. Using the generic format will give us three results for AT&T which is unnecessary. With the DISTINCT qualifier, however, we will get only two results - one for Comcast and another for AT&T which is what we really need.
+ 
+Aside from DISTINCT qualifier, you can add the WHERE clause after the FROM clause to limit the results as well. The WHERE clause serves as a search engine with higher precision. This is done by using the following format.
+ 
+
+
+
+   SELECT [SELECT LIST] FROM [TABLE_NAME] WHERE [EXPRESSION];   
+
+
+
+ 
+To give you a simple example, let us use another table for people's first and last names. Let us name this table "person".
+ 
+
+
+
+ Key 
+ First 
+ Last 
+
+
+ 1 
+ Lee 
+ Mortis 
+
+
+ 2 
+ Mae 
+ Lee 
+
+
+ 3 
+ John 
+ Doe 
+
+
+ 4 
+ Stan 
+ Lee 
+
+
+ 5 
+ Bruce 
+ Lee 
+
+
+
+ 
+Let us say imagine that this is our database for our customers and we would like to know how many customers do we have that have Lee as their family name. In order to do that, we need to the execute the WHERE clause command.
+ 
+
+
+
+ SELECTp.lastFROMperson p WHEREp.last = 'Lee'; 
+
+
+
+ 
+This will address the database to look specifically under the last name column and merely focus on rows with Lee value under that column. It will ignore the rows with no Lee value under that column. In other words, you will only get the rows of your customers that have Lee as their last names.
+ 
+The secret in understanding the WHERE clause is by taking note of the different operators you can use for WHERE expressions. These operators are similar to mathematical operators. This means that it is easy to remember them. In contrast with mathematics, the operators we use here also works for non-numerical data such as the equal (=) sign we have used in our WHERE clause above. Here is the list of the simple operators that you can use for the WHERE clause.
+ 
+
+
+
+ Operators 
+ Name & Description 
+
+
+ = 
+ Equal to - gives TRUE value if data on both sides are equal to one another. 
+
+
+   <> 
+ Not equal to - gives TRUE value if data on both sides are not equal to one another. 
+
+
+   > 
+ Greater than - gives TRUE value if data on the left side is greater than the data on the right side. 
+
+
+   < 
+ Less than - gives TRUE value if data on the left side is less than the data on the right side.   
+
+
+   >= 
+ Greater than or equal to - gives TRUE value if the data on the left is either greater than or equal to the data on the right. 
+
+
+   <= 
+ Less than or equal to - gives TRUE value if the data on the left is either less than or equal to the data on the right. 
+
+
+
+ 
+These are the operators that will give you Boolean values when handling WHERE clauses for your SQL queries.
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+Conclusion
+ 
+At this point, you are now familiar how relational databases work and how efficient SQL in querying data from databases that utilize relational models.
+ 
+It is important to take note of how to designate restrictions to columns and how to call them specifically using SELECT statements. You have also learned that SQL statements contain both SQL-defined keywords and user-defined keywords. These keywords are not case sensitive, but organizing and writing the statements in a visual-friendly manner is highly recommended. Doing so will not only give you convenience when viewing your SQL coding but other people as well. This is a best practice if you are working with a team.
+ 
+It is also significant to qualify column names using table names when writing SELECT statements. This will prevent future issues when there are different tables with similar column names. You just learned how to shorten the table names using an alias.
+ 
+You can also specify data extraction of the SELECT statement by using clauses such as FROM. Using the FROM clause allows you to specify which table to look at whenever your SQL statement looks for columns. Aside from that, FROM clause also allows you to assign an alias for the table name.
+ 
+You also learned how to limit the number of answered values with the use of DISTINCT qualifier and the WHERE clause. Keep in mind that you have to avoid using the wildcard symbol since it is an inefficient way to extract data from your database. The WHERE clause, on the other hand, is a powerful command that you need to master as a beginner. Familiarize the different operators and try them out on an already built database.
+ 
+I am aware that this book is basic, but it is enough to prepare you in moving forward to advanced studies in the structured query language. As a beginner, there is no need for you to rush immediately on how to create your own database. It is important to learn which database model does SQL functions first. By understanding the relational model, you will easily grasp the concept of SQL together with the statements that you can do using this language.
+ 
+If you want to continue learning about SQL, then I suggest that you take advantage of the book's sequel where you will be introduced to deeper clauses of SELECT statements. The second part also tackles about JOINS, handling data, and table creation
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+ 
+ 
+ 
+ 
+Thank you for reading. I hope you enjoy it. I ask you to leave your honest feedback.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

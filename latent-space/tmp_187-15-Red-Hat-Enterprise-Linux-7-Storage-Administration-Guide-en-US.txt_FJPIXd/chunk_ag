@@ -1,0 +1,1000 @@
+CHAPTER 18. REDUNDANT ARRAY OF INDEPENDENT DISKS (RAID)
+161
+
+[2] A hot-swap chassis allows you to remove a hard drive without having to power-down your system.
+[3] RAID level 1 comes at a high cost because you write the same information to all of the disks in the array,
+provides data reliability, but in a much less space-efficient manner than parity based RAID levels such as level 5.
+However, this space inefficiency comes with a performance benefit: parity-based RAID levels consume
+considerably more CPU power in order to generate the parity while RAID level 1 simply writes the same data more
+than once to the multiple RAID members with very little CPU overhead. As such, RAID level 1 can outperform the
+parity-based RAID levels on machines where software RAID is employed and CPU resources on the machine are
+consistently taxed with operations other than RAID activities.
+[4] Parity information is calculated based on the contents of the rest of the member disks in the array. This
+information can then be used to reconstruct data when one disk in the array fails. The reconstructed data can then
+be used to satisfy I/O requests to the failed disk before it is replaced and to repopulate the failed disk after it has
+been replaced.
+Storage Administration Guide
+162
+
+CHAPTER 19. USING THE MOUNT COMMAND
+On Linux, UNIX, and similar operating systems, file systems on different partitions and removable
+devices (CDs, DVDs, or USB flash drives for example) can be attached to a certain point (the mount
+point) in the directory tree, and then detached again. To attach or detach a file system, use the mount or
+umount command respectively. This chapter describes the basic use of these commands, as well as
+some advanced topics, such as moving a mount point or creating shared subtrees.
+19.1. LISTING CURRENTLY MOUNTED FILE SYSTEMS
+To display all currently attached file systems, use the following command with no additional arguments:
+$ mount
+This command displays the list of known mount points. Each line provides important information about
+the device name, the file system type, the directory in which it is mounted, and relevant mount options in
+the following form:
+device on directory type type (options)
+The findmnt utility, which allows users to list mounted file systems in a tree-like form, is also available
+from Red Hat Enterprise Linux 6.1. To display all currently attached file systems, run the findmnt
+command with no additional arguments:
+$ findmnt
+19.1.1. Specifying the File System Type
+By default, the output of the mount command includes various virtual file systems such as sysfs and 
+tmpfs. To display only the devices with a certain file system type, provide the -t option:
+$ mount -t type
+Similarly, to display only the devices with a certain file system using the findmnt command:
+$ findmnt -t type
+For a list of common file system types, see Table 19.1, "Common File System Types". For an example
+usage, see Example 19.1, "Listing Currently Mounted ext4 File Systems".
+Example 19.1. Listing Currently Mounted ext4 File Systems
+Usually, both / and /boot partitions are formatted to use ext4. To display only the mount points that
+use this file system, use the following command:
+$ mount -t ext4
+/dev/sda2 on / type ext4 (rw)
+/dev/sda1 on /boot type ext4 (rw)
+To list such mount points using the findmnt command, type:
+CHAPTER 19. USING THE MOUNT COMMAND
+163
+
+$ findmnt -t ext4
+TARGET SOURCE    FSTYPE OPTIONS
+/      /dev/sda2 ext4   rw,realtime,seclabel,barrier=1,data=ordered
+/boot  /dev/sda1 ext4   rw,realtime,seclabel,barrier=1,data=ordered
+19.2. MOUNTING A FILE SYSTEM
+To attach a certain file system, use the mount command in the following form:
+$ mount [option...] device directory
+The device can be identified by:
+a full path to a block device: for example, /dev/sda3
+a universally unique identifier (UUID): for example, UUID=34795a28-ca6d-4fd8-a347-
+73671d0c19cb
+a volume label: for example, LABEL=home
+Note that while a file system is mounted, the original content of the directory is not accessible.
+IMPORTANT
+Linux does not prevent a user from mounting a file system to a directory with a file system
+already attached to it. To determine whether a particular directory serves as a mount
+point, run the findmnt utility with the directory as its argument and verify the exit code:
+If no file system is attached to the directory, the given command returns 1.
+When you run the mount command without all required information, that is without the device name, the
+target directory, or the file system type, the mount reads the contents of the /etc/fstab file to check if
+the given file system is listed. The /etc/fstab file contains a list of device names and the directories in
+which the selected file systems are set to be mounted as well as the file system type and mount options.
+Therefore, when mounting a file system that is specified in /etc/fstab, you can choose one of the
+following options:
+Note that permissions are required to mount the file systems unless the command is run as root (see
+Section 19.2.2, "Specifying the Mount Options").
+findmnt directory; echo $?
+mount [option...] directory
+mount [option...] device
+Storage Administration Guide
+164
+
+NOTE
+To determine the UUID and—if the device uses it—the label of a particular device, use the
+blkid command in the following form:
+For example, to display information about /dev/sda3:
+# blkid /dev/sda3
+/dev/sda3: LABEL="home" UUID="34795a28-ca6d-4fd8-a347-
+73671d0c19cb" TYPE="ext3"
+19.2.1. Specifying the File System Type
+In most cases, mount detects the file system automatically. However, there are certain file systems, such
+as NFS (Network File System) or CIFS (Common Internet File System), that are not recognized, and
+need to be specified manually. To specify the file system type, use the mount command in the following
+form:
+$ mount -t type device directory
+Table 19.1, "Common File System Types" provides a list of common file system types that can be used
+with the mount command. For a complete list of all available file system types, see the section called
+"Manual Page Documentation".
+Table 19.1. Common File System Types
+Type
+Description
+ext2
+The ext2 file system.
+ext3
+The ext3 file system.
+ext4
+The ext4 file system.
+btrfs
+The btrfs file system.
+xfs
+The xfs file system.
+iso9660
+The ISO 9660 file system. It is commonly used by optical media, typically CDs.
+jfs
+The JFS file system created by IBM.
+nfs
+The NFS file system. It is commonly used to access files over the network.
+nfs4
+The NFSv4 file system. It is commonly used to access files over the network.
+blkid device
+CHAPTER 19. USING THE MOUNT COMMAND
+165
+
+ntfs
+The NTFS file system. It is commonly used on machines that are running the Windows
+operating system.
+udf
+The UDF file system. It is commonly used by optical media, typically DVDs.
+vfat
+The FAT file system. It is commonly used on machines that are running the Windows
+operating system, and on certain digital media such as USB flash drives or floppy disks.
+Type
+Description
+See Example 19.2, "Mounting a USB Flash Drive" for an example usage.
+Example 19.2. Mounting a USB Flash Drive
+Older USB flash drives often use the FAT file system. Assuming that such drive uses the /dev/sdc1
+device and that the /media/flashdisk/ directory exists, mount it to this directory by typing the
+following at a shell prompt as root:
+19.2.2. Specifying the Mount Options
+To specify additional mount options, use the command in the following form:
+When supplying multiple options, do not insert a space after a comma, or mount interprets incorrectly
+the values following spaces as additional parameters.
+Table 19.2, "Common Mount Options" provides a list of common mount options. For a complete list of all
+available options, consult the relevant manual page as referred to in the section called "Manual Page
+Documentation".
+Table 19.2. Common Mount Options
+Option
+Description
+async
+Allows the asynchronous input/output operations on the file system.
+auto
+Allows the file system to be mounted automatically using the mount -a command.
+defaults
+Provides an alias for async,auto,dev,exec,nouser,rw,suid.
+exec
+Allows the execution of binary files on the particular file system.
+loop
+Mounts an image as a loop device.
+~]# mount -t vfat /dev/sdc1 /media/flashdisk
+mount -o options device directory
+Storage Administration Guide
+166
+
+noauto
+Default behavior disallows the automatic mount of the file system using the mount -a
+command.
+noexec
+Disallows the execution of binary files on the particular file system.
+nouser
+Disallows an ordinary user (that is, other than root) to mount and unmount the file
+system.
+remount
+Remounts the file system in case it is already mounted.
+ro
+Mounts the file system for reading only.
+rw
+Mounts the file system for both reading and writing.
+user
+Allows an ordinary user (that is, other than root) to mount and unmount the file
+system.
+Option
+Description
+See Example 19.3, "Mounting an ISO Image" for an example usage.
+Example 19.3. Mounting an ISO Image
+An ISO image (or a disk image in general) can be mounted by using the loop device. Assuming that
+the ISO image of the Fedora 14 installation disc is present in the current working directory and that
+the /media/cdrom/ directory exists, mount the image to this directory by running the following
+command:
+# mount -o ro,loop Fedora-14-x86_64-Live-Desktop.iso /media/cdrom
+Note that ISO 9660 is by design a read-only file system.
+19.2.3. Sharing Mounts
+Occasionally, certain system administration tasks require access to the same file system from more than
+one place in the directory tree (for example, when preparing a chroot environment). This is possible, and
+Linux allows you to mount the same file system to as many directories as necessary. Additionally, the 
+mount command implements the --bind option that provides a means for duplicating certain mounts.
+Its usage is as follows:
+$ mount --bind old_directory new_directory
+Although this command allows a user to access the file system from both places, it does not apply on the
+file systems that are mounted within the original directory. To include these mounts as well, use the
+following command:
+$ mount --rbind old_directory new_directory
+CHAPTER 19. USING THE MOUNT COMMAND
+167
+
+Additionally, to provide as much flexibility as possible, Red Hat Enterprise Linux 7 implements the
+functionality known as shared subtrees. This feature allows the use of the following four mount types:
+Shared Mount
+A shared mount allows the creation of an exact replica of a given mount point. When a mount point is
+marked as a shared mount, any mount within the original mount point is reflected in it, and vice
+versa. To change the type of a mount point to a shared mount, type the following at a shell prompt:
+$ mount --make-shared mount_point
+Alternatively, to change the mount type for the selected mount point and all mount points under it:
+$ mount --make-rshared mount_point
+See Example 19.4, "Creating a Shared Mount Point" for an example usage.
+Example 19.4. Creating a Shared Mount Point
+There are two places where other file systems are commonly mounted: the /media/ directory for
+removable media, and the /mnt/ directory for temporarily mounted file systems. By using a
+shared mount, you can make these two directories share the same content. To do so, as root,
+mark the /media/ directory as shared:
+# mount --bind /media /media
+# mount --make-shared /media
+Create its duplicate in /mnt/ by using the following command:
+# mount --bind /media /mnt
+It is now possible to verify that a mount within /media/ also appears in /mnt/. For example, if
+the CD-ROM drive contains non-empty media and the /media/cdrom/ directory exists, run the
+following commands:
+# mount /dev/cdrom /media/cdrom
+# ls /media/cdrom
+EFI  GPL  isolinux  LiveOS
+# ls /mnt/cdrom
+EFI  GPL  isolinux  LiveOS
+Similarly, it is possible to verify that any file system mounted in the /mnt/ directory is reflected in 
+/media/. For instance, if a non-empty USB flash drive that uses the /dev/sdc1 device is
+plugged in and the /mnt/flashdisk/ directory is present, type:
+# # mount /dev/sdc1 /mnt/flashdisk
+# ls /media/flashdisk
+en-US  publican.cfg
+# ls /mnt/flashdisk
+en-US  publican.cfg
+Slave Mount
+Storage Administration Guide
+168
+
+A slave mount allows the creation of a limited duplicate of a given mount point. When a mount point
+is marked as a slave mount, any mount within the original mount point is reflected in it, but no mount
+within a slave mount is reflected in its original. To change the type of a mount point to a slave mount,
+type the following at a shell prompt:
+Alternatively, it is possible to change the mount type for the selected mount point and all mount points
+under it by typing:
+See Example 19.5, "Creating a Slave Mount Point" for an example usage.
+Example 19.5. Creating a Slave Mount Point
+This example shows how to get the content of the /media/ directory to appear in /mnt/ as well,
+but without any mounts in the /mnt/ directory to be reflected in /media/. As root, first mark the 
+/media/ directory as shared:
+Then create its duplicate in /mnt/, but mark it as "slave":
+Now verify that a mount within /media/ also appears in /mnt/. For example, if the CD-ROM
+drive contains non-empty media and the /media/cdrom/ directory exists, run the following
+commands:
+~]# mount /dev/cdrom /media/cdrom
+~]# ls /media/cdrom
+EFI  GPL  isolinux  LiveOS
+~]# ls /mnt/cdrom
+EFI  GPL  isolinux  LiveOS
+Also verify that file systems mounted in the /mnt/ directory are not reflected in /media/. For
+instance, if a non-empty USB flash drive that uses the /dev/sdc1 device is plugged in and the 
+/mnt/flashdisk/ directory is present, type:
+~]# mount /dev/sdc1 /mnt/flashdisk
+~]# ls /media/flashdisk
+~]# ls /mnt/flashdisk
+en-US  publican.cfg
+Private Mount
+A private mount is the default type of mount, and unlike a shared or slave mount, it does not receive
+or forward any propagation events. To explicitly mark a mount point as a private mount, type the
+following at a shell prompt:
+mount --make-slave mount_point
+mount --make-rslave mount_point
+~]# mount --bind /media /media
+~]# mount --make-shared /media
+~]# mount --bind /media /mnt
+~]# mount --make-slave /mnt
+CHAPTER 19. USING THE MOUNT COMMAND
+169
+
+Alternatively, it is possible to change the mount type for the selected mount point and all mount points
+under it:
+See Example 19.6, "Creating a Private Mount Point" for an example usage.
+Example 19.6. Creating a Private Mount Point
+Taking into account the scenario in Example 19.4, "Creating a Shared Mount Point", assume that
+a shared mount point has been previously created by using the following commands as root:
+To mark the /mnt/ directory as private, type:
+It is now possible to verify that none of the mounts within /media/ appears in /mnt/. For
+example, if the CD-ROM drives contains non-empty media and the /media/cdrom/ directory
+exists, run the following commands:
+~]# mount /dev/cdrom /media/cdrom
+~]# ls /media/cdrom
+EFI  GPL  isolinux  LiveOS
+~]# ls /mnt/cdrom
+~]#
+It is also possible to verify that file systems mounted in the /mnt/ directory are not reflected in 
+/media/. For instance, if a non-empty USB flash drive that uses the /dev/sdc1 device is
+plugged in and the /mnt/flashdisk/ directory is present, type:
+~]# mount /dev/sdc1 /mnt/flashdisk
+~]# ls /media/flashdisk
+~]# ls /mnt/flashdisk
+en-US  publican.cfg
+Unbindable Mount
+In order to prevent a given mount point from being duplicated whatsoever, an unbindable mount is
+used. To change the type of a mount point to an unbindable mount, type the following at a shell
+prompt:
+Alternatively, it is possible to change the mount type for the selected mount point and all mount points
+under it:
+mount --make-private mount_point
+mount --make-rprivate mount_point
+~]# mount --bind /media /media
+~]# mount --make-shared /media
+~]# mount --bind /media /mnt
+~]# mount --make-private /mnt
+mount --make-unbindable mount_point
+Storage Administration Guide
+170
+
+See Example 19.7, "Creating an Unbindable Mount Point" for an example usage.
+Example 19.7. Creating an Unbindable Mount Point
+To prevent the /media/ directory from being shared, as root:
+# mount --bind /media /media
+# mount --make-unbindable /media
+This way, any subsequent attempt to make a duplicate of this mount fails with an error:
+# mount --bind /media /mnt
+mount: wrong fs type, bad option, bad superblock on /media,
+missing codepage or helper program, or other error
+In some cases useful info is found in syslog - try
+dmesg | tail  or so
+19.2.4. Moving a Mount Point
+To change the directory in which a file system is mounted, use the following command:
+# mount --move old_directory new_directory
+See Example 19.8, "Moving an Existing NFS Mount Point" for an example usage.
+Example 19.8. Moving an Existing NFS Mount Point
+An NFS storage contains user directories and is already mounted in /mnt/userdirs/. As root,
+move this mount point to /home by using the following command:
+# mount --move /mnt/userdirs /home
+To verify the mount point has been moved, list the content of both directories:
+# ls /mnt/userdirs
+# ls /home
+jill  joe
+19.2.5. Setting Read-only Permissions for root
+Sometimes, you need to mount the root file system with read-only permissions. Example use cases
+include enhancing security or ensuring data integrity after an unexpected system power-off.
+19.2.5.1. Configuring root to Mount with Read-only Permissions on Boot
+1. In the /etc/sysconfig/readonly-root file, change READONLY to yes:
+mount --make-runbindable mount_point
+CHAPTER 19. USING THE MOUNT COMMAND
+171
+
+# Set to 'yes' to mount the file systems as read-only.
+READONLY=yes
+[output truncated]
+2. Change defaults to ro in the root entry (/) in the /etc/fstab file:
+/dev/mapper/luks-c376919e... / ext4 ro,x-systemd.device-timeout=0 1 
+1
+3. Add ro to the GRUB_CMDLINE_LINUX directive in the /etc/default/grub file and ensure
+that it does not contain rw:
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=rhel/root 
+rd.lvm.lv=rhel/swap rhgb quiet ro"
+4. Recreate the GRUB2 configuration file:
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+5. If you need to add files and directories to be mounted with write permissions in the tmpfs file
+system, create a text file in the /etc/rwtab.d/ directory and put the configuration there. For
+example, to mount /etc/example/file with write permissions, add this line to the 
+/etc/rwtab.d/example file:
+files /etc/example/file
+IMPORTANT
+Changes made to files and directories in tmpfs do not persist across boots.
+See Section 19.2.5.3, "Files and Directories That Retain Write Permissions" for more information
+on this step.
+6. Reboot the system.
+19.2.5.2. Remounting root Instantly
+If root (/) was mounted with read-only permissions on system boot, you can remount it with write
+permissions:
+# mount -o remount,rw /
+This can be particularly useful when / is incorrectly mounted with read-only permissions.
+To remount / with read-only permissions again, run:
+# mount -o remount,ro /
+Storage Administration Guide
+172
+
+NOTE
+This command mounts the whole / with read-only permissions. A better approach is to
+retain write permissions for certain files and directories by copying them into RAM, as
+described in Section 19.2.5.1, "Configuring root to Mount with Read-only Permissions on
+Boot".
+19.2.5.3. Files and Directories That Retain Write Permissions
+For the system to function properly, some files and directories need to retain write permissions. With root
+in read-only mode, they are mounted in RAM in the tmpfs temporary file system. The default set of
+such files and directories is read from the /etc/rwtab file, which contains:
+dirs /var/cache/man
+dirs /var/gdm
+[output truncated]
+empty /tmp
+empty /var/cache/foomatic
+[output truncated]
+files /etc/adjtime
+files /etc/ntp.conf
+[output truncated]
+Entries in the /etc/rwtab file follow this format:
+how the file or directory is copied to tmpfs        path to the file or 
+directory
+A file or directory can be copied to tmpfs in the following three ways:
+empty path: An empty path is copied to tmpfs. Example: empty /tmp
+dirs path: A directory tree is copied to tmpfs, empty. Example: dirs /var/run
+files path: A file or a directory tree is copied to tmpfs intact. Example: files 
+/etc/resolv.conf
+The same format applies when adding custom paths to /etc/rwtab.d/.
+19.3. UNMOUNTING A FILE SYSTEM
+To detach a previously mounted file system, use either of the following variants of the umount
+command:
+$ umount directory
+$ umount device
+Note that unless this is performed while logged in as root, the correct permissions must be available to
+unmount the file system. For more information, see Section 19.2.2, "Specifying the Mount Options". See
+Example 19.9, "Unmounting a CD" for an example usage.
+CHAPTER 19. USING THE MOUNT COMMAND
+173
+
+IMPORTANT
+When a file system is in use (for example, when a process is reading a file on this file
+system, or when it is used by the kernel), running the umount command fails with an
+error. To determine which processes are accessing the file system, use the fuser
+command in the following form:
+$ fuser -m directory
+For example, to list the processes that are accessing a file system mounted to the 
+/media/cdrom/ directory:
+$ fuser -m /media/cdrom
+/media/cdrom:         1793  2013  2022  2435 10532c 10672c
+Example 19.9. Unmounting a CD
+To unmount a CD that was previously mounted to the /media/cdrom/ directory, use the following
+command:
+$ umount /media/cdrom
+19.4. MOUNT COMMAND REFERENCES
+The following resources provide an in-depth documentation on the subject.
+Manual Page Documentation
+man 8 mount: The manual page for the mount command that provides a full documentation on
+its usage.
+man 8 umount: The manual page for the umount command that provides a full documentation
+on its usage.
+man 8 findmnt: The manual page for the findmnt command that provides a full
+documentation on its usage.
+man 5 fstab: The manual page providing a thorough description of the /etc/fstab file
+format.
+Useful Websites
+Shared subtrees — An LWN article covering the concept of shared subtrees.
+Storage Administration Guide
+174
+
+CHAPTER 20. THE VOLUME_KEY FUNCTION
+The volume_key function provides two tools, libvolume_key and volume_key. libvolume_key is a library
+for manipulating storage volume encryption keys and storing them separately from volumes. 
+volume_key is an associated command line tool used to extract keys and passphrases in order to
+restore access to an encrypted hard drive.
+This is useful for when the primary user forgets their keys and passwords, after an employee leaves
+abruptly, or in order to extract data after a hardware or software failure corrupts the header of the
+encrypted volume. In a corporate setting, the IT help desk can use volume_key to back up the
+encryption keys before handing over the computer to the end user.
+Currently, volume_key only supports the LUKS volume encryption format.
+NOTE
+volume_key is not included in a standard install of Red Hat Enterprise Linux 7 server.
+For information on installing it, refer to
+http://fedoraproject.org/wiki/Disk_encryption_key_escrow_use_cases.
+20.1. VOLUME_KEY COMMANDS
+The format for volume_key is:
+volume_key [OPTION]... OPERAND
+The operands and mode of operation for volume_key are determined by specifying one of the following
+options:
+--save
+This command expects the operand volume [packet]. If a packet is provided then volume_key will
+extract the keys and passphrases from it. If packet is not provided, then volume_key will extract the
+keys and passphrases from the volume, prompting the user where necessary. These keys and
+passphrases will then be stored in one or more output packets.
+--restore
+This command expects the operands volume packet. It then opens the volume and uses the keys and
+passphrases in the packet to make the volume accessible again, prompting the user where
+necessary, such as allowing the user to enter a new passphrase, for example.
+--setup-volume
+This command expects the operands volume packet name. It then opens the volume and uses the
+keys and passphrases in the packet to set up the volume for use of the decrypted data as name.
+Name is the name of a dm-crypt volume. This operation makes the decrypted volume available as 
+/dev/mapper/name.
+This operation does not permanently alter the volume by adding a new passphrase, for example. The
+user can access and modify the decrypted volume, modifying volume in the process.
+--reencrypt, --secrets, and --dump
+CHAPTER 20. THE VOLUME_KEY FUNCTION
+175
+
+These three commands perform similar functions with varying output methods. They each require the
+operand packet, and each opens the packet, decrypting it where necessary. --reencrypt then
+stores the information in one or more new output packets. --secrets outputs the keys and
+passphrases contained in the packet. --dump outputs the content of the packet, though the keys and
+passphrases are not output by default. This can be changed by appending --with-secrets to the
+command. It is also possible to only dump the unencrypted parts of the packet, if any, by using the --
+unencrypted command. This does not require any passphrase or private key access.
+Each of these can be appended with the following options:
+-o, --output packet
+This command writes the default key or passphrase to the packet. The default key or passphrase
+depends on the volume format. Ensure it is one that is unlikely to expire, and will allow --restore to
+restore access to the volume.
+--output-format format
+This command uses the specified format for all output packets. Currently, format can be one of the
+following:
+asymmetric: uses CMS to encrypt the whole packet, and requires a certificate
+asymmetric_wrap_secret_only: wraps only the secret, or keys and passphrases, and
+requires a certificate
+passphrase: uses GPG to encrypt the whole packet, and requires a passphrase
+--create-random-passphrase packet
+This command generates a random alphanumeric passphrase, adds it to the volume (without
+affecting other passphrases), and then stores this random passphrase into the packet.
+20.2. USING VOLUME_KEY AS AN INDIVIDUAL USER
+As an individual user, volume_key can be used to save encryption keys by using the following
+procedure.
+NOTE
+For all examples in this file, /path/to/volume is a LUKS device, not the plaintext
+device contained within. blkid -s type /path/to/volume should report 
+type="crypto_LUKS".
+Procedure 20.1. Using volume_key Stand-alone
+1. Run:
+volume_key --save /path/to/volume -o escrow-packet
+A prompt will then appear requiring an escrow packet passphrase to protect the key.
+2. Save the generated escrow-packet file, ensuring that the passphrase is not forgotten.
+Storage Administration Guide
+176
+
+If the volume passphrase is forgotten, use the saved escrow packet to restore access to the data.
+Procedure 20.2. Restore Access to Data with Escrow Packet
+1. Boot the system in an environment where volume_key can be run and the escrow packet is
+available (a rescue mode, for example).
+2. Run:
+volume_key --restore /path/to/volume escrow-packet
+A prompt will appear for the escrow packet passphrase that was used when creating the escrow
+packet, and for the new passphrase for the volume.
+3. Mount the volume using the chosen passphrase.
+To free up the passphrase slot in the LUKS header of the encrypted volume, remove the old, forgotten
+passphrase by using the command cryptsetup luksKillSlot.
+20.3. USING VOLUME_KEY IN A LARGER ORGANIZATION
+In a larger organization, using a single password known by every system administrator and keeping
+track of a separate password for each system is impractical and a security risk. To counter this, 
+volume_key can use asymmetric cryptography to minimize the number of people who know the
+password required to access encrypted data on any computer.
+This section will cover the procedures required for preparation before saving encryption keys, how to
+save encryption keys, restoring access to a volume, and setting up emergency passphrases.
+20.3.1. Preparation for Saving Encryption Keys
+In order to begin saving encryption keys, some preparation is required.
+Procedure 20.3. Preparation
+1. Create an X509 certificate/private pair.
+2. Designate trusted users who are trusted not to compromise the private key. These users will be
+able to decrypt the escrow packets.
+3. Choose which systems will be used to decrypt the escrow packets. On these systems, set up an
+NSS database that contains the private key.
+If the private key was not created in an NSS database, follow these steps:
+Store the certificate and private key in an PKCS#12 file.
+Run:
+At this point it is possible to choose an NSS database password. Each NSS database can
+have a different password so the designated users do not need to share a single password if
+a separate NSS database is used by each user.
+certutil -d /the/nss/directory -N
+CHAPTER 20. THE VOLUME_KEY FUNCTION
+177
+
+Run:
+4. Distribute the certificate to anyone installing systems or saving keys on existing systems.
+5. For saved private keys, prepare storage that allows them to be looked up by machine and
+volume. For example, this can be a simple directory with one subdirectory per machine, or a
+database used for other system management tasks as well.
+20.3.2. Saving Encryption Keys
+After completing the required preparation (see Section 20.3.1, "Preparation for Saving Encryption Keys")
+it is now possible to save the encryption keys using the following procedure.
+NOTE
+For all examples in this file, /path/to/volume is a LUKS device, not the plaintext
+device contained within; blkid -s type /path/to/volume should report 
+type="crypto_LUKS".
+Procedure 20.4. Saving Encryption Keys
+1. Run:
+2. Save the generated escrow-packet file in the prepared storage, associating it with the system
+and the volume.
+These steps can be performed manually, or scripted as part of system installation.
+20.3.3. Restoring Access to a Volume
+After the encryption keys have been saved (see Section 20.3.1, "Preparation for Saving Encryption Keys"
+and Section 20.3.2, "Saving Encryption Keys"), access can be restored to a driver where needed.
+Procedure 20.5. Restoring Access to a Volume
+1. Get the escrow packet for the volume from the packet storage and send it to one of the
+designated users for decryption.
+2. The designated user runs:
+After providing the NSS database password, the designated user chooses a passphrase for
+encrypting escrow-packet-out. This passphrase can be different every time and only
+protects the encryption keys while they are moved from the designated user to the target
+system.
+3. Obtain the escrow-packet-out file and the passphrase from the designated user.
+pk12util -d /the/nss/directory -i the-pkcs12-file
+volume_key --save /path/to/volume -c /path/to/cert escrow-packet
+volume_key --reencrypt -d /the/nss/directory escrow-packet-in -o 
+escrow-packet-out
+Storage Administration Guide
+178
+
+4. Boot the target system in an environment that can run volume_key and have the escrow-
+packet-out file available, such as in a rescue mode.
+5. Run:
+A prompt will appear for the packet passphrase chosen by the designated user, and for a new
+passphrase for the volume.
+6. Mount the volume using the chosen volume passphrase.
+It is possible to remove the old passphrase that was forgotten by using cryptsetup luksKillSlot,
+for example, to free up the passphrase slot in the LUKS header of the encrypted volume. This is done
+with the command cryptsetup luksKillSlot device key-slot. For more information and
+examples see cryptsetup --help.
+20.3.4. Setting up Emergency Passphrases
+In some circumstances (such as traveling for business) it is impractical for system administrators to work
+directly with the affected systems, but users still need access to their data. In this case, volume_key can
+work with passphrases as well as encryption keys.
+During the system installation, run:
+This generates a random passphrase, adds it to the specified volume, and stores it to passphrase-
+packet. It is also possible to combine the --create-random-passphrase and -o options to
+generate both packets at the same time.
+If a user forgets the password, the designated user runs:
+This shows the random passphrase. Give this passphrase to the end user.
+20.4. VOLUME_KEY REFERENCES
+More information on volume_key can be found:
+in the readme file located at /usr/share/doc/volume_key-*/README
+on volume_key's manpage using man volume_key
+online at http://fedoraproject.org/wiki/Disk_encryption_key_escrow_use_cases
+volume_key --restore /path/to/volume escrow-packet-out
+volume_key --save /path/to/volume -c /path/to/ert --create-random-
+passphrase passphrase-packet
+volume_key --secrets -d /your/nss/directory passphrase-packet
+CHAPTER 20. THE VOLUME_KEY FUNCTION
+179
+
+CHAPTER 21. SOLID-STATE DISK DEPLOYMENT GUIDELINES
+Solid-state disks (SSD) are storage devices that use NAND flash chips to persistently store data. This
+sets them apart from previous generations of disks, which store data in rotating, magnetic platters. In an
+SSD, the access time for data across the full Logical Block Address (LBA) range is constant; whereas
+with older disks that use rotating media, access patterns that span large address ranges incur seek
+costs. As such, SSD devices have better latency and throughput.
+Performance degrades as the number of used blocks approaches the disk capacity. The degree of
+performance impact varies greatly by vendor. However, all devices experience some degradation.
+To address the degradation issue, the host system (for example, the Linux kernel) may use discard
+requests to inform the storage that a given range of blocks is no longer in use. An SSD can use this
+information to free up space internally, using the free blocks for wear-leveling. Discards will only be
+issued if the storage advertises support in terms of its storage protocol (be it ATA or SCSI). Discard
+requests are issued to the storage using the negotiated discard command specific to the storage protocol
+(TRIM command for ATA, and WRITE SAME with UNMAP set, or UNMAP command for SCSI).
+Enabling discard support is most useful when the following points are true:
+Free space is still available on the file system.
+Most logical blocks on the underlying storage device have already been written to.
+For more information about TRIM, see Data Set Management T13 Specifications.
+For more information about UNMAP, see the section 4.7.3.4 of the SCSI Block Commands 3 T10
+Specification.
+NOTE
+Not all solid-state devices in the market have discard support. To determine if your
+solid-state device has discard support, check for 
+/sys/block/sda/queue/discard_granularity, which is the size of internal
+allocation unit of device.
+Deployment Considerations
+Because of the internal layout and operation of SSDs, it is best to partition devices on an internal erase
+block boundary. Partitioning utilities in Red Hat Enterprise Linux 7 chooses sane defaults if the SSD
+exports topology information. However, if the device does not export topology information, Red Hat
+recommends that the first partition should be created at a 1MB boundary.
+SSD has various types of TRIM mechanism depending on the vendors choice. The early versions of
+disks improved the performance by compromising possible data leakage after the read command.
+Following are the types of TRIM mechanism:
+Non-deterministic TRIM
+Deterministic TRIM (DRAT)
+Deterministic Read Zero after TRIM (RZAT)
+The first two types of TRIM mechanism can cause data leakage as the read command to the LBA after a
+TRIM returns different or same data. RZAT returns zero after the read command and Red Hat
+Storage Administration Guide
+180
+
+recommends this TRIM mechanism to avoid data leakage. It is affected only in SSD. Choose the disk
+which supports RZAT mechanism.
+Type of TRIM mechanism used depends on hardware implementation. To find the type of TRIM
+mechanism on ATA, use the hdparm command. See the following example to find the type of TRIM
+mechanism:
+# hdparm -I /dev/sda | grep TRIM
+Data Set Management TRIM supported (limit 8 block)
+Deterministic read data after TRIM
+For more information, see man hdparm.
+The Logical Volume Manager (LVM), the device-mapper (DM) targets, and MD (software raid) targets
+that LVM uses support discards. The only DM targets that do not support discards are dm-snapshot, dm-
+crypt, and dm-raid45. Discard support for the dm-mirror was added in Red Hat Enterprise Linux 6.1 and
+as of 7.0 MD supports discards.
+Using RAID level 5 over SSD results in low performance if SSDs do not handle discard correctly. You
+can set discard in the raid456.conf file, or in the GRUB2 configuration. For instructions, see the
+following procedures.
+Procedure 21.1. Setting discard in raid456.conf
+The devices_handle_discard_safely module parameter is set in the raid456 module. To enable
+discard in the raid456.conf file:
+1. Verify that your hardware supports discards:
+# cat /sys/block/disk-name/queue/discard_zeroes_data
+If the returned value is 1, discards are supported. If the command returns 0, the RAID code has
+to zero the disk out, which takes more time.
+2. Create the /etc/modprobe.d/raid456.conf file, and include the following line:
+options raid456 devices_handle_discard_safely=Y
+3. Use the dracut -f command to rebuild the initial ramdisk (initrd).
+4. Reboot the system for the changes to take effect.
+Procedure 21.2. Setting discard in the GRUB2 Configuration
+The devices_handle_discard_safely module parameter is set in the raid456 module. To enable
+discard in the GRUB2 configuration:
+1. Verify that your hardware supports discards:
+# cat /sys/block/disk-name/queue/discard_zeroes_data
+If the returned value is 1, discards are supported. If the command returns 0, the RAID code has
+to zero the disk out, which takes more time.
+CHAPTER 21. SOLID-STATE DISK DEPLOYMENT GUIDELINES
+181
+
+2. Add the following line to the /etc/default/grub file:
+raid456.devices_handle_discard_safely=Y
+3. The location of the GRUB2 configuration file is different on systems with the BIOS firmware and
+on systems with UEFI. Use one of the following commands to recreate the GRUB2 configuration
+file.
+On a system with the BIOS firmware, use:
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+On a system with the UEFI firmware, use:
+# grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+4. Reboot the system for the changes to take effect.
+NOTE
+In Red Hat Enterprise Linux 7, discard is fully supported by the ext4 and XFS file systems
+only.
+In Red Hat Enterprise Linux 6.3 and earlier, only the ext4 file system fully supports discard. Starting with
+Red Hat Enterprise Linux 6.4, both ext4 and XFS file systems fully support discard. To enable discard
+commands on a device, use the discard option of the mount command. For example, to mount 
+/dev/sda2 to /mnt with discard enabled, use:
+# mount -t ext4 -o discard /dev/sda2 /mnt
+By default, ext4 does not issue the discard command to, primarily, avoid problems on devices which
+might not properly implement discard. The Linux swap code issues discard commands to discard-
+enabled devices, and there is no option to control this behavior.
+Performance Tuning Considerations
+For information on performance tuning considerations regarding solid-state disks, see the Solid-State
+Disks section in the Red Hat Enterprise Linux 7 Performance Tuning Guide.
+Storage Administration Guide
+182
+
+CHAPTER 22. WRITE BARRIERS
+A write barrier is a kernel mechanism used to ensure that file system metadata is correctly written and
+ordered on persistent storage, even when storage devices with volatile write caches lose power. File
+systems with write barriers enabled ensures that data transmitted via fsync() is persistent throughout a
+power loss.
+Enabling write barriers incurs a substantial performance penalty for some applications. Specifically,
+applications that use fsync() heavily or create and delete many small files will likely run much slower.
+22.1. IMPORTANCE OF WRITE BARRIERS
+File systems safely update metadata, ensuring consistency. Journalled file systems bundle metadata
+updates into transactions and send them to persistent storage in the following manner:
+1. The file system sends the body of the transaction to the storage device.
+2. The file system sends a commit block.
+3. If the transaction and its corresponding commit block are written to disk, the file system assumes
+that the transaction will survive any power failure.
+However, file system integrity during power failure becomes more complex for storage devices with extra
+caches. Storage target devices like local S-ATA or SAS drives may have write caches ranging from
+32MB to 64MB in size (with modern drives). Hardware RAID controllers often contain internal write
+caches. Further, high end arrays, like those from NetApp, IBM, Hitachi and EMC (among others), also
+have large caches.
+Storage devices with write caches report I/O as "complete" when the data is in cache; if the cache loses
+power, it loses its data as well. Worse, as the cache de-stages to persistent storage, it may change the
+original metadata ordering. When this occurs, the commit block may be present on disk without having
+the complete, associated transaction in place. As a result, the journal may replay these uninitialized
+transaction blocks into the file system during post-power-loss recovery; this will cause data inconsistency
+and corruption.
+How Write Barriers Work
+Write barriers are implemented in the Linux kernel via storage write cache flushes before and after the
+I/O, which is order-critical. After the transaction is written, the storage cache is flushed, the commit block
+is written, and the cache is flushed again. This ensures that:
+The disk contains all the data.
+No re-ordering has occurred.
+With barriers enabled, an fsync() call also issues a storage cache flush. This guarantees that file data
+is persistent on disk even if power loss occurs shortly after fsync() returns.
+22.2. ENABLING AND DISABLING WRITE BARRIERS
+To mitigate the risk of data corruption during power loss, some storage devices use battery-backed write
+caches. Generally, high-end arrays and some hardware controllers use battery-backed write caches.
+However, because the cache's volatility is not visible to the kernel, Red Hat Enterprise Linux 7 enables
+write barriers by default on all supported journaling file systems.
+CHAPTER 22. WRITE BARRIERS
+183
+
+NOTE
+Write caches are designed to increase I/O performance. However, enabling write barriers
+means constantly flushing these caches, which can significantly reduce performance.
+For devices with non-volatile, battery-backed write caches and those with write-caching disabled, you
+can safely disable write barriers at mount time using the -o nobarrier option for mount. However,
+some devices do not support write barriers; such devices log an error message to 
+/var/log/messages. For more information, see Table 22.1, "Write Barrier Error Messages per File
+System".
+Table 22.1. Write Barrier Error Messages per File System
+File System
+Error Message
+ext3/ext4
+JBD: barrier-based sync failed on 
+device - disabling barriers
+XFS
+Filesystem device - Disabling 
+barriers, trial barrier write 
+failed
+btrfs
+btrfs: disabling barriers on dev 
+device
+22.3. WRITE BARRIER CONSIDERATIONS
+Some system configurations do not need write barriers to protect data. In most cases, other methods are
+preferable to write barriers, since enabling write barriers causes a significant performance penalty.
+Disabling Write Caches
+One way to alternatively avoid data integrity issues is to ensure that no write caches lose data on power
+failures. When possible, the best way to configure this is to disable the write cache. On a simple server
+or desktop with one or more SATA drives (off a local SATA controller Intel AHCI part), you can disable
+the write cache on the target SATA drives with the following command:
+# hdparm -W0 /device/
+Battery-Backed Write Caches
+Write barriers are also unnecessary whenever the system uses hardware RAID controllers with battery-
+backed write cache. If the system is equipped with such controllers and if its component drives have write
+caches disabled, the controller acts as a write-through cache; this informs the kernel that the write cache
+data survives a power loss.
+Most controllers use vendor-specific tools to query and manipulate target drives. For example, the LSI
+Megaraid SAS controller uses a battery-backed write cache; this type of controller requires the 
+MegaCli64 tool to manage target drives. To show the state of all back-end drives for LSI Megaraid
+SAS, use:
+Storage Administration Guide
+184
+
+# MegaCli64 -LDGetProp -DskCache -LAll -aALL
+To disable the write cache of all back-end drives for LSI Megaraid SAS, use:
+# MegaCli64 -LDSetProp -DisDskCache -Lall -aALL
+NOTE
+Hardware RAID cards recharge their batteries while the system is operational. If a system
+is powered off for an extended period of time, the batteries will lose their charge, leaving
+stored data vulnerable during a power failure.
+High-End Arrays
+High-end arrays have various ways of protecting data in the event of a power failure. As such, there is no
+need to verify the state of the internal drives in external RAID storage.
+NFS
+NFS clients do not need to enable write barriers, since data integrity is handled by the NFS server side.
+As such, NFS servers should be configured to ensure data persistence throughout a power loss (whether
+through write barriers or other means).
+CHAPTER 22. WRITE BARRIERS
+185
+
+CHAPTER 23. STORAGE I/O ALIGNMENT AND SIZE
+Recent enhancements to the SCSI and ATA standards allow storage devices to indicate their preferred
+(and in some cases, required) I/O alignment and I/O size. This information is particularly useful with
+newer disk drives that increase the physical sector size from 512 bytes to 4k bytes. This information may
+also be beneficial for RAID devices, where the chunk size and stripe size may impact performance.
+The Linux I/O stack has been enhanced to process vendor-provided I/O alignment and I/O size
+information, allowing storage management tools (parted, lvm, mkfs.*, and the like) to optimize data
+placement and access. If a legacy device does not export I/O alignment and size data, then storage
+management tools in Red Hat Enterprise Linux 7 will conservatively align I/O on a 4k (or larger power of
+2) boundary. This will ensure that 4k-sector devices operate correctly even if they do not indicate any
+required/preferred I/O alignment and size.
+For information on determining the information that the operating system obtained from the device, see
+the Section 23.2, "Userspace Access". This data is subsequently used by the storage management tools
+to determine data placement.
+The IO scheduler has changed for Red Hat Enterprise Linux 7. Default IO Scheduler is now Deadline,
+except for SATA drives. CFQ is the default IO scheduler for SATA drives. For faster storage, Deadline
+outperforms CFQ and when it is used there is a performance increase without the need of special tuning.
+If default is not right for some disks (for example, SAS rotational disks), then change the IO scheduler to
+CFQ. This instance will depend on the workload.
+23.1. PARAMETERS FOR STORAGE ACCESS
+The operating system uses the following information to determine I/O alignment and size:
+physical_block_size
+Smallest internal unit on which the device can operate
+logical_block_size
+Used externally to address a location on the device
+alignment_offset
+The number of bytes that the beginning of the Linux block device (partition/MD/LVM device) is offset
+from the underlying physical alignment
+minimum_io_size
+The device's preferred minimum unit for random I/O
+optimal_io_size
+The device's preferred unit for streaming I/O
+For example, certain 4K sector devices may use a 4K physical_block_size internally but expose a
+more granular 512-byte logical_block_size to Linux. This discrepancy introduces potential for
+misaligned I/O. To address this, the Red Hat Enterprise Linux 7 I/O stack will attempt to start all data
+areas on a naturally-aligned boundary (physical_block_size) by making sure it accounts for any
+alignment_offset if the beginning of the block device is offset from the underlying physical alignment.
+Storage vendors can also supply I/O hints about the preferred minimum unit for random I/O
+Storage Administration Guide
+186
+
+(minimum_io_size) and streaming I/O (optimal_io_size) of a device. For example, 
+minimum_io_size and optimal_io_size may correspond to a RAID device's chunk size and stripe
+size respectively.
+23.2. USERSPACE ACCESS
+Always take care to use properly aligned and sized I/O. This is especially important for Direct I/O access.
+Direct I/O should be aligned on a logical_block_size boundary, and in multiples of the 
+logical_block_size.
+With native 4K devices (i.e. logical_block_size is 4K) it is now critical that applications perform
+direct I/O in multiples of the device's logical_block_size. This means that applications will fail with
+native 4k devices that perform 512-byte aligned I/O rather than 4k-aligned I/O.
+To avoid this, an application should consult the I/O parameters of a device to ensure it is using the
+proper I/O alignment and size. As mentioned earlier, I/O parameters are exposed through the both 
+sysfs and block device ioctl interfaces.
+For more information, see man libblkid. This man page is provided by the libblkid-devel
+package.
+sysfs Interface
+/sys/block/disk/alignment_offset
+or
+/sys/block/disk/partition/alignment_offset
+NOTE
+The file location depends on whether the disk is a physical disk (be that a local
+disk, local RAID, or a multipath LUN) or a virtual disk. The first file location is
+applicable to physical disks while the second file location is applicable to virtual
+disks. The reason for this is because virtio-blk will always report an alignment
+value for the partition. Physical disks may or may not report an alignment value.
+/sys/block/disk/queue/physical_block_size
+/sys/block/disk/queue/logical_block_size
+/sys/block/disk/queue/minimum_io_size
+/sys/block/disk/queue/optimal_io_size
+The kernel will still export these sysfs attributes for "legacy" devices that do not provide I/O parameters
+information, for example:
+Example 23.1. sysfs Interface
+alignment_offset:    0
+physical_block_size: 512
+logical_block_size:  512
+CHAPTER 23. STORAGE I/O ALIGNMENT AND SIZE
+187
+
+minimum_io_size:     512
+optimal_io_size:     0
+Block Device ioctls
+BLKALIGNOFF: alignment_offset
+BLKPBSZGET: physical_block_size
+BLKSSZGET: logical_block_size
+BLKIOMIN: minimum_io_size
+BLKIOOPT: optimal_io_size
+23.3. I/O STANDARDS
+This section describes I/O standards used by ATA and SCSI devices.
+ATA
+ATA devices must report appropriate information via the IDENTIFY DEVICE command. ATA devices
+only report I/O parameters for physical_block_size, logical_block_size, and 
+alignment_offset. The additional I/O hints are outside the scope of the ATA Command Set.
+SCSI
+I/O parameters support in Red Hat Enterprise Linux 7 requires at least version 3 of the SCSI Primary
+Commands (SPC-3) protocol. The kernel will only send an extended inquiry (which gains access to the 
+BLOCK LIMITS VPD page) and READ CAPACITY(16) command to devices which claim compliance
+with SPC-3.
+The READ CAPACITY(16) command provides the block sizes and alignment offset:
+LOGICAL BLOCK LENGTH IN BYTES is used to derive 
+/sys/block/disk/queue/physical_block_size
+LOGICAL BLOCKS PER PHYSICAL BLOCK EXPONENT is used to derive 
+/sys/block/disk/queue/logical_block_size
+LOWEST ALIGNED LOGICAL BLOCK ADDRESS is used to derive:
+/sys/block/disk/alignment_offset
+/sys/block/disk/partition/alignment_offset
+The BLOCK LIMITS VPD page (0xb0) provides the I/O hints. It also uses OPTIMAL TRANSFER 
+LENGTH GRANULARITY and OPTIMAL TRANSFER LENGTH to derive:
+/sys/block/disk/queue/minimum_io_size
+/sys/block/disk/queue/optimal_io_size
+Storage Administration Guide
+188
+
+The sg3_utils package provides the sg_inq utility, which can be used to access the BLOCK LIMITS 
+VPD page. To do so, run:
+# sg_inq -p 0xb0 disk
+23.4. STACKING I/O PARAMETERS
+All layers of the Linux I/O stack have been engineered to propagate the various I/O parameters up the
+stack. When a layer consumes an attribute or aggregates many devices, the layer must expose
+appropriate I/O parameters so that upper-layer devices or tools will have an accurate view of the storage
+as it transformed. Some practical examples are:
+Only one layer in the I/O stack should adjust for a non-zero alignment_offset; once a layer
+adjusts accordingly, it will export a device with an alignment_offset of zero.
+A striped Device Mapper (DM) device created with LVM must export a minimum_io_size and 
+optimal_io_size relative to the stripe count (number of disks) and user-provided chunk size.
+In Red Hat Enterprise Linux 7, Device Mapper and Software Raid (MD) device drivers can be used to
+arbitrarily combine devices with different I/O parameters. The kernel's block layer will attempt to
+reasonably combine the I/O parameters of the individual devices. The kernel will not prevent combining
+heterogeneous devices; however, be aware of the risks associated with doing so.
+For instance, a 512-byte device and a 4K device may be combined into a single logical DM device, which
+would have a logical_block_size of 4K. File systems layered on such a hybrid device assume that
+4K will be written atomically, but in reality it will span 8 logical block addresses when issued to the 512-
+byte device. Using a 4K logical_block_size for the higher-level DM device increases potential for a
+partial write to the 512-byte device if there is a system crash.
+If combining the I/O parameters of multiple devices results in a conflict, the block layer may issue a
+warning that the device is susceptible to partial writes and/or is misaligned.
+23.5. LOGICAL VOLUME MANAGER
+LVM provides userspace tools that are used to manage the kernel's DM devices. LVM will shift the start
+of the data area (that a given DM device will use) to account for a non-zero alignment_offset
+associated with any device managed by LVM. This means logical volumes will be properly aligned
+(alignment_offset=0).
+By default, LVM will adjust for any alignment_offset, but this behavior can be disabled by setting 
+data_alignment_offset_detection to 0 in /etc/lvm/lvm.conf. Disabling this is not
+recommended.
+LVM will also detect the I/O hints for a device. The start of a device's data area will be a multiple of the 
+minimum_io_size or optimal_io_size exposed in sysfs. LVM will use the minimum_io_size if 
+optimal_io_size is undefined (i.e. 0).
+By default, LVM will automatically determine these I/O hints, but this behavior can be disabled by setting 
+data_alignment_detection to 0 in /etc/lvm/lvm.conf. Disabling this is not recommended.
+23.6. PARTITION AND FILE SYSTEM TOOLS
+CHAPTER 23. STORAGE I/O ALIGNMENT AND SIZE
+189
+
+This section describes how different partition and file system management tools interact with a device's
+I/O parameters.
+util-linux-ng's libblkid and fdisk
+The libblkid library provided with the util-linux-ng package includes a programmatic API to
+access a device's I/O parameters. libblkid allows applications, especially those that use Direct I/O, to
+properly size their I/O requests. The fdisk utility from util-linux-ng uses libblkid to determine

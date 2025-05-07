@@ -1,0 +1,1000 @@
+Additional Resources
+For more information, see the restore(8) man page.
+5.6. OTHER EXT4 FILE SYSTEM UTILITIES
+Red Hat Enterprise Linux 7 also features other utilities for managing ext4 file systems:
+e2fsck
+Used to repair an ext4 file system. This tool checks and repairs an ext4 file system more efficiently
+than ext3, thanks to updates in the ext4 disk structure.
+e2label
+Changes the label on an ext4 file system. This tool also works on ext2 and ext3 file systems.
+quota
+Controls and reports on disk space (blocks) and file (inode) usage by users and groups on an ext4 file
+system. For more information on using quota, refer to man quota and Section 17.1, "Configuring
+Disk Quotas".
+fsfreeze
+To suspend access to a file system, use the command # fsfreeze -f mount-point to freeze it
+and # fsfreeze -u mount-point to unfreeze it. This halts access to the file system and creates
+a stable image on disk.
+NOTE
+It is unnecessary to use fsfreeze for device-mapper drives.
+For more information see the fsfreeze(8) manpage.
+As demonstrated in Section 5.2, "Mounting an ext4 File System", the tune2fs utility can also adjust
+configurable file system parameters for ext2, ext3, and ext4 file systems. In addition, the following tools
+are also useful in debugging and analyzing ext4 file systems:
+debugfs
+Debugs ext2, ext3, or ext4 file systems.
+e2image
+Saves critical ext2, ext3, or ext4 file system metadata to a file.
+CHAPTER 5. THE EXT4 FILE SYSTEM
+49
+
+For more information about these utilities, refer to their respective man pages.
+Storage Administration Guide
+50
+
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+NOTE
+Btrfs is available as a Technology Preview feature in Red Hat Enterprise Linux 7 but has
+been deprecated since the Red Hat Enterprise Linux 7.4 release. It will be removed in a
+future major release of Red Hat Enterprise Linux.
+For more information, see Deprecated Functionality in the Red Hat Enterprise Linux 7.4
+Release Notes.
+Btrfs is a next generation Linux file system that offers advanced management, reliability, and scalability
+features. It is unique in offering snapshots, compression, and integrated device management.
+6.1. CREATING A BTRFS FILE SYSTEM
+In order to make a basic btrfs file system, use the following command:
+# mkfs.btrfs /dev/device
+For more information on creating btrfs file systems with added devices and specifying multi-device
+profiles for metadata and data, refer to Section 6.4, "Integrated Volume Management of Multiple
+Devices".
+6.2. MOUNTING A BTRFS FILE SYSTEM
+To mount any device in the btrfs file system use the following command:
+# mount /dev/device /mount-point
+Other useful mount options include:
+device=/dev/name
+Appending this option to the mount command tells btrfs to scan the named device for a btrfs volume.
+This is used to ensure the mount will succeed as attempting to mount devices that are not btrfs will
+cause the mount to fail.
+NOTE
+This does not mean all devices will be added to the file system, it only scans them.
+max_inline=number
+Use this option to set the maximum amount of space (in bytes) that can be used to inline data within a
+metadata B-tree leaf. The default is 8192 bytes. For 4k pages it is limited to 3900 bytes due to
+additional headers that need to fit into the leaf.
+alloc_start=number
+Use this option to set where in the disk allocations start.
+thread_pool=number
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+51
+
+Use this option to assign the number of worker threads allocated.
+discard
+Use this option to enable discard/TRIM on freed blocks.
+noacl
+Use this option to disable the use of ACL's.
+space_cache
+Use this option to store the free space data on disk to make caching a block group faster. This is a
+persistent change and is safe to boot into old kernels.
+nospace_cache
+Use this option to disable the above space_cache.
+clear_cache
+Use this option to clear all the free space caches during mount. This is a safe option but will trigger
+the space cache to be rebuilt. As such, leave the file system mounted in order to let the rebuild
+process finish. This mount option is intended to be used once and only after problems are apparent
+with the free space.
+enospc_debug
+This option is used to debug problems with "no space left".
+recovery
+Use this option to enable autorecovery upon mount.
+6.3. RESIZING A BTRFS FILE SYSTEM
+It is not possible to resize a btrfs file system but it is possible to resize each of the devices it uses. If there
+is only one device in use then this works the same as resizing the file system. If there are multiple
+devices in use then they must be manually resized to achieve the desired result.
+NOTE
+The unit size is not case specific; it accepts both G or g for GiB.
+The command does not accept t for terabytes or p for petabytes. It only accepts k, m, and
+g.
+Enlarging a btrfs File System
+To enlarge the file system on a single device, use the command:
+# btrfs filesystem resize amount /mount-point
+For example:
+Storage Administration Guide
+52
+
+# btrfs filesystem resize +200M /btrfssingle
+Resize '/btrfssingle' of '+200M'
+To enlarge a multi-device file system, the device to be enlarged must be specified. First, show all devices
+that have a btrfs file system at a specified mount point:
+# btrfs filesystem show /mount-point
+For example:
+# btrfs filesystem show /btrfstest
+Label: none  uuid: 755b41b7-7a20-4a24-abb3-45fdbed1ab39
+ Total devices 4 FS bytes used 192.00KiB
+ devid    1 size 1.00GiB used 224.75MiB path /dev/vdc
+ devid    2 size 524.00MiB used 204.75MiB path /dev/vdd
+ devid    3 size 1.00GiB used 8.00MiB path /dev/vde
+ devid    4 size 1.00GiB used 8.00MiB path /dev/vdf
+Btrfs v3.16.2
+Then, after identifying the devid of the device to be enlarged, use the following command:
+# btrfs filesystem resize devid:amount /mount-point
+For example:
+# btrfs filesystem resize 2:+200M /btrfstest
+Resize '/btrfstest/' of '2:+200M'
+NOTE
+The amount can also be max instead of a specified amount. This will use all remaining
+free space on the device.
+Shrinking a btrfs File System
+To shrink the file system on a single device, use the command:
+# btrfs filesystem resize amount /mount-point
+For example:
+# btrfs filesystem resize -200M /btrfssingle
+Resize '/btrfssingle' of '-200M'
+To shrink a multi-device file system, the device to be shrunk must be specified. First, show all devices
+that have a btrfs file system at a specified mount point:
+# btrfs filesystem show /mount-point
+For example:
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+53
+
+# btrfs filesystem show /btrfstest
+Label: none  uuid: 755b41b7-7a20-4a24-abb3-45fdbed1ab39
+ Total devices 4 FS bytes used 192.00KiB
+ devid    1 size 1.00GiB used 224.75MiB path /dev/vdc
+ devid    2 size 524.00MiB used 204.75MiB path /dev/vdd
+ devid    3 size 1.00GiB used 8.00MiB path /dev/vde
+ devid    4 size 1.00GiB used 8.00MiB path /dev/vdf
+Btrfs v3.16.2
+Then, after identifying the devid of the device to be shrunk, use the following command:
+# btrfs filesystem resize devid:amount /mount-point
+For example:
+# btrfs filesystem resize 2:-200M /btrfstest
+Resize '/btrfstest' of '2:-200M'
+Set the File System Size
+To set the file system to a specific size on a single device, use the command:
+# btrfs filesystem resize amount /mount-point
+For example:
+# btrfs filesystem resize 700M /btrfssingle
+Resize '/btrfssingle' of '700M'
+To set the file system size of a multi-device file system, the device to be changed must be specified.
+First, show all devices that have a btrfs file system at the specified mount point:
+# btrfs filesystem show /mount-point
+For example:
+# btrfs filesystem show /btrfstest
+Label: none  uuid: 755b41b7-7a20-4a24-abb3-45fdbed1ab39
+ Total devices 4 FS bytes used 192.00KiB
+ devid    1 size 1.00GiB used 224.75MiB path /dev/vdc
+ devid    2 size 724.00MiB used 204.75MiB path /dev/vdd
+ devid    3 size 1.00GiB used 8.00MiB path /dev/vde
+ devid    4 size 1.00GiB used 8.00MiB path /dev/vdf
+Btrfs v3.16.2
+Then, after identifying the devid of the device to be changed, use the following command:
+# btrfs filesystem resize devid:amount /mount-point
+For example:
+Storage Administration Guide
+54
+
+# btrfs filesystem resize 2:300M /btrfstest
+Resize '/btrfstest' of '2:300M'
+6.4. INTEGRATED VOLUME MANAGEMENT OF MULTIPLE DEVICES
+A btrfs file system can be created on top of many devices, and more devices can be added after the file
+system has been created. By default, metadata will be mirrored across two devices and data will be
+striped across all devices present, however if only one device is present, metadata will be duplicated on
+that device.
+6.4.1. Creating a File System with Multiple Devices
+The mkfs.btrfs command, as detailed in Section 6.1, "Creating a btrfs File System", accepts the
+options -d for data, and -m for metadata. Valid specifications are:
+raid0
+raid1
+raid10
+dup
+single
+The -m single option instructs that no duplication of metadata is done. This may be desired when
+using hardware raid.
+NOTE
+RAID 10 requires at least four devices to run correctly.
+Example 6.1. Creating a RAID 10 btrfs File System
+Create a file system across four devices (metadata mirrored, data striped).
+# mkfs.btrfs /dev/device1 /dev/device2 /dev/device3 /dev/device4
+Stripe the metadata without mirroring.
+# mkfs.btrfs -m raid0 /dev/device1 /dev/device2
+Use raid10 for both data and metadata.
+# mkfs.btrfs -m raid10 -d raid10 /dev/device1 /dev/device2 /dev/device3 
+/dev/device4
+Do not duplicate metadata on a single drive.
+# mkfs.btrfs -m single /dev/device
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+55
+
+Use the single option to use the full capacity of each drive when the drives are different sizes.
+# mkfs.btrfs -d single /dev/device1 /dev/device2 /dev/device3
+To add a new device to an already created multi-device file system, use the following command:
+# btrfs device add /dev/device1 /mount-point
+After rebooting or reloading the btrfs module, use the btrfs device scan command to discover all
+multi-device file systems. See Section 6.4.2, "Scanning for btrfs Devices" for more information.
+6.4.2. Scanning for btrfs Devices
+Use btrfs device scan to scan all block devices under /dev and probe for btrfs volumes. This must
+be performed after loading the btrfs module if running with more than one device in a file system.
+To scan all devices, use the following command:
+# btrfs device scan
+To scan a single device, use the following command:
+# btrfs device scan /dev/device
+6.4.3. Adding New Devices to a btrfs File System
+Use the btrfs filesystem show command to list all the btrfs file systems and which devices they
+include.
+The btrfs device add command is used to add new devices to a mounted file system.
+The btrfs filesystem balance command balances (restripes) the allocated extents across all
+existing devices.
+An example of all these commands together to add a new device is as follows:
+Example 6.2. Add a New Device to a btrfs File System
+First, create and mount a btrfs file system. Refer to Section 6.1, "Creating a btrfs File System" for
+more information on how to create a btrfs file system, and to Section 6.2, "Mounting a btrfs file
+system" for more information on how to mount a btrfs file system.
+# mkfs.btrfs /dev/device1
+# mount /dev/device1
+Next, add a second device to the mounted btrfs file system.
+# btrfs device add /dev/device2 /mount-point
+The metadata and data on these devices are still stored only on /dev/device1. It must now be
+balanced to spread across all devices.
+Storage Administration Guide
+56
+
+# btrfs filesystem balance /mount-point
+Balancing a file system will take some time as it reads all of the file system's data and metadata and
+rewrites it across the new device.
+6.4.4. Converting a btrfs File System
+To convert a non-raid file system to a raid, add a device and run a balance filter that changes the chunk
+allocation profile.
+Example 6.3. Converting a btrfs File System
+To convert an existing single device system, /dev/sdb1 in this case, into a two device, raid1 system
+in order to protect against a single disk failure, use the following commands:
+# mount /dev/sdb1 /mnt
+# btrfs device add /dev/sdc1 /mnt
+# btrfs balance start -dconvert=raid1 -mconvert=raid1 /mnt
+IMPORTANT
+If the metadata is not converted from the single-device default, it remains as DUP. This
+does not guarantee that copies of the block are on separate devices. If data is not
+converted it does not have any redundant copies at all.
+6.4.5. Removing btrfs Devices
+Use the btrfs device delete command to remove an online device. It redistributes any extents in
+use to other devices in the file system in order to be safely removed.
+Example 6.4. Removing a Device on a btrfs File System
+First create and mount a few btrfs file systems.
+# mkfs.btrfs /dev/sdb /dev/sdc /dev/sdd /dev/sde
+# mount /dev/sdb /mnt
+Add some data to the file system.
+Finally, remove the required device.
+# btrfs device delete /dev/sdc /mnt
+6.4.6. Replacing Failed Devices on a btrfs File System
+Section 6.4.5, "Removing btrfs Devices" can be used to remove a failed device provided the super block
+can still be read. However, if a device is missing or the super block corrupted, the file system will need to
+be mounted in a degraded mode:
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+57
+
+# mkfs.btrfs -m raid1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
+  ssd is destroyed or removed, use -o degraded to force the mount
+  to ignore missing devices
+# mount -o degraded /dev/sdb /mnt
+  'missing' is a special device name
+# btrfs device delete missing /mnt
+The command btrfs device delete missing removes the first device that is described by the file
+system metadata but not present when the file system was mounted.
+IMPORTANT
+It is impossible to go below the minimum number of devices required for the specific raid
+layout, even including the missing one. It may be required to add a new device in order to
+remove the failed one.
+For example, for a raid1 layout with two devices, if a device fails it is required to:
+1. mount in degraded mode,
+2. add a new device,
+3. and, remove the missing device.
+6.4.7. Registering a btrfs File System in /etc/fstab
+If you do not have an initrd or it does not perform a btrfs device scan, it is possible to mount a multi-
+volume btrfs file system by passing all the devices in the file system explicitly to the mount command.
+Example 6.5. Example /etc/fstab Entry
+An example of a suitable /etc/fstab entry would be:
+/dev/sdb    /mnt    btrfs    
+device=/dev/sdb,device=/dev/sdc,device=/dev/sdd,device=/dev/sde    0
+Note that using universally unique identifiers (UUIDs) also works and is more stable than using device
+paths.
+6.5. SSD OPTIMIZATION
+Using the btrfs file system can optimize SSD. There are two ways this can be done.
+The first way is mkfs.btrfs turns off metadata duplication on a single device when 
+Storage Administration Guide
+58
+
+/sys/block/device/queue/rotational is zero for the single specified device. This is equivalent
+to specifying -m single on the command line. It can be overridden and duplicate metadata forced by
+providing the -m dup option. Duplication is not required due to SSD firmware potentially losing both
+copies. This wastes space and is a performance cost.
+The second way is through a group of SSD mount options: ssd, nossd, and ssd_spread.
+The ssd option does several things:
+It allows larger metadata cluster allocation.
+It allocates data more sequentially where possible.
+It disables btree leaf rewriting to match key and block order.
+It commits log fragments without batching multiple processes.
+NOTE
+The ssd mount option only enables the ssd option. Use the nossd option to disable it.
+Some SSDs perform best when reusing block numbers often, while others perform much better when
+clustering strictly allocates big chunks of unused space. By default, mount -o ssd will find groupings of
+blocks where there are several free blocks that might have allocated blocks mixed in. The command 
+mount -o ssd_spread ensures there are no allocated blocks mixed in. This improves performance
+on lower end SSDs.
+NOTE
+The ssd_spread option enables both the ssd and the ssd_spread options. Use the 
+nossd to disable both these options.
+The ssd_spread option is never automatically set if none of the ssd options are provided
+and any of the devices are non-rotational.
+These options will all need to be tested with your specific build to see if their use improves or reduces
+performance, as each combination of SSD firmware and application loads are different.
+6.6. BTRFS REFERENCES
+The man page btrfs(8) covers all important management commands. In particular this includes:
+All the subvolume commands for managing snapshots.
+The device commands for managing devices.
+The scrub, balance, and defragment commands.
+The man page mkfs.btrfs(8) contains information on creating a btrfs file system including all the
+options regarding it.
+The man page btrfsck(8) for information regarding fsck on btrfs systems.
+CHAPTER 6. BTRFS (TECHNOLOGY PREVIEW)
+59
+
+CHAPTER 7. GLOBAL FILE SYSTEM 2
+The Red Hat Global File System 2 (GFS2) is a native file system that interfaces directly with the Linux
+kernel file system interface (VFS layer). When implemented as a cluster file system, GFS2 employs
+distributed metadata and multiple journals.
+GFS2 is based on 64-bit architecture, which can theoretically accommodate an 8 exabyte file system.
+However, the current supported maximum size of a GFS2 file system is 100 TB. If a system requires
+GFS2 file systems larger than 100 TB, contact your Red Hat service representative.
+When determining the size of a file system, consider its recovery needs. Running the fsck command on
+a very large file system can take a long time and consume a large amount of memory. Additionally, in the
+event of a disk or disk-subsystem failure, recovery time is limited by the speed of backup media.
+When configured in a Red Hat Cluster Suite, Red Hat GFS2 nodes can be configured and managed with
+Red Hat Cluster Suite configuration and management tools. Red Hat GFS2 then provides data sharing
+among GFS2 nodes in a Red Hat cluster, with a single, consistent view of the file system namespace
+across the GFS2 nodes. This allows processes on different nodes to share GFS2 files in the same way
+that processes on the same node can share files on a local file system, with no discernible difference.
+For information about the Red Hat Cluster Suite, see Red Hat's Cluster Administration guide.
+A GFS2 must be built on a logical volume (created with LVM) that is a linear or mirrored volume. Logical
+volumes created with LVM in a Red Hat Cluster suite are managed with CLVM (a cluster-wide
+implementation of LVM), enabled by the CLVM daemon clvmd, and running in a Red Hat Cluster Suite
+cluster. The daemon makes it possible to use LVM2 to manage logical volumes across a cluster,
+allowing all nodes in the cluster to share the logical volumes. For information on the Logical Volume
+Manager, see Red Hat's Logical Volume Manager Administration guide.
+The gfs2.ko kernel module implements the GFS2 file system and is loaded on GFS2 cluster nodes.
+For comprehensive information on the creation and configuration of GFS2 file systems in clustered and
+non-clustered storage, see Red Hat's Global File System 2 guide.
+Storage Administration Guide
+60
+
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+A Network File System (NFS) allows remote hosts to mount file systems over a network and interact with
+those file systems as though they are mounted locally. This enables system administrators to
+consolidate resources onto centralized servers on the network.
+This chapter focuses on fundamental NFS concepts and supplemental information.
+8.1. INTRODUCTION TO NFS
+Currently, there are two major versions of NFS included in Red Hat Enterprise Linux:
+NFS version 3 (NFSv3) supports safe asynchronous writes and is more robust at error handling
+than the previous NFSv2; it also supports 64-bit file sizes and offsets, allowing clients to access
+more than 2 GB of file data.
+NFS version 4 (NFSv4) works through firewalls and on the Internet, no longer requires an 
+rpcbind service, supports ACLs, and utilizes stateful operations.
+Red Hat Enterprise Linux fully supports NFS version 4.2 (NFSv4.2) since the Red Hat
+Enterprise Linux 7.4 release.
+Following are the features of NFSv4.2 in Red Hat Enterprise Linux 7.5 :
+Server-Side Copy: NFSv4.2 supports copy_file_range() system call, which allows the NFS
+client to efficiently copy data without wasting network resources.
+Sparse Files: It verifies space efficiency of a file and allows placeholder to improve storage
+efficiency. It is a file having one or more holes; holes are unallocated or uninitialized data blocks
+consisting only of zeroes. lseek() operation in NFSv4.2, supports seek_hole() and 
+seek_data(), which allows application to map out the location of holes in the sparse file.
+Space Reservation: It permits storage servers to reserve free space, which prohibits servers to
+run out of space. NFSv4.2 supports allocate() operation to reserve space, deallocate()
+operation to unreserve space, and fallocate() operation to preallocate or deallocate space
+in a file.
+Labeled NFS: It enforces data access rights and enables SELinux labels between a client and a
+server for individual files on an NFS file system.
+Layout Enhancements: NFSv4.2 provides new operation, layoutstats(), which the client can
+use to notify the metadata server about its communication with the layout.
+Versions of Red Hat Enterprise Linux earlier than 7.4 support NFS up to version 4.1.
+Following are the features of NFSv4.1:
+Enhances performance and security of network, and also includes client-side support for Parallel
+NFS (pNFS).
+No longer requires a separate TCP connection for callbacks, which allows an NFS server to
+grant delegations even when it cannot contact the client. For example, when NAT or a firewall
+interferes.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+61
+
+It provides exactly once semantics (except for reboot operations), preventing a previous issue
+whereby certain operations could return an inaccurate result if a reply was lost and the operation
+was sent twice.
+NFS clients attempt to mount using NFSv4.1 by default, and fall back to NFSv4.0 when the server does
+not support NFSv4.1. The mount later fall back to NFSv3 when server does not support NFSv4.0.
+NOTE
+NFS version 2 (NFSv2) is no longer supported by Red Hat.
+All versions of NFS can use Transmission Control Protocol (TCP) running over an IP network, with
+NFSv4 requiring it. NFSv3 can use the User Datagram Protocol (UDP) running over an IP network to
+provide a stateless network connection between the client and server.
+When using NFSv3 with UDP, the stateless UDP connection (under normal conditions) has less protocol
+overhead than TCP. This can translate into better performance on very clean, non-congested networks.
+However, because UDP is stateless, if the server goes down unexpectedly, UDP clients continue to
+saturate the network with requests for the server. In addition, when a frame is lost with UDP, the entire
+RPC request must be retransmitted; with TCP, only the lost frame needs to be resent. For these
+reasons, TCP is the preferred protocol when connecting to an NFS server.
+The mounting and locking protocols have been incorporated into the NFSv4 protocol. The server also
+listens on the well-known TCP port 2049. As such, NFSv4 does not need to interact with rpcbind [1], 
+lockd, and rpc.statd daemons. The rpc.mountd daemon is still required on the NFS server to set
+up the exports, but is not involved in any over-the-wire operations.
+NOTE
+TCP is the default transport protocol for NFS version 3 under Red Hat Enterprise Linux.
+UDP can be used for compatibility purposes as needed, but is not recommended for wide
+usage. NFSv4 requires TCP.
+All the RPC/NFS daemons have a '-p' command line option that can set the port,
+making firewall configuration easier.
+After TCP wrappers grant access to the client, the NFS server refers to the /etc/exports configuration
+file to determine whether the client is allowed to access any exported file systems. Once verified, all file
+and directory operations are available to the user.
+IMPORTANT
+In order for NFS to work with a default installation of Red Hat Enterprise Linux with a
+firewall enabled, configure IPTables with the default TCP port 2049. Without proper
+IPTables configuration, NFS will not function properly.
+The NFS initialization script and rpc.nfsd process now allow binding to any specified
+port during system start up. However, this can be error-prone if the port is unavailable, or
+if it conflicts with another daemon.
+8.1.1. Required Services
+Red Hat Enterprise Linux uses a combination of kernel-level support and daemon processes to provide
+Storage Administration Guide
+62
+
+NFS file sharing. All NFS versions rely on Remote Procedure Calls (RPC) between clients and servers.
+RPC services under Red Hat Enterprise Linux 7 are controlled by the rpcbind service. To share or
+mount NFS file systems, the following services work together depending on which version of NFS is
+implemented:
+NOTE
+The portmap service was used to map RPC program numbers to IP address port number
+combinations in earlier versions of Red Hat Enterprise Linux. This service is now replaced
+by rpcbind in Red Hat Enterprise Linux 7 to enable IPv6 support.
+nfs
+systemctl start nfs starts the NFS server and the appropriate RPC processes to service
+requests for shared NFS file systems.
+nfslock
+systemctl start nfs-lock activates a mandatory service that starts the appropriate RPC
+processes allowing NFS clients to lock files on the server.
+rpcbind
+rpcbind accepts port reservations from local RPC services. These ports are then made available (or
+advertised) so the corresponding remote RPC services can access them. rpcbind responds to
+requests for RPC services and sets up connections to the requested RPC service. This is not used
+with NFSv4.
+The following RPC processes facilitate NFS services:
+rpc.mountd
+This process is used by an NFS server to process MOUNT requests from NFSv3 clients. It checks that
+the requested NFS share is currently exported by the NFS server, and that the client is allowed to
+access it. If the mount request is allowed, the rpc.mountd server replies with a Success status and
+provides the File-Handle for this NFS share back to the NFS client.
+rpc.nfsd
+rpc.nfsd allows explicit NFS versions and protocols the server advertises to be defined. It works
+with the Linux kernel to meet the dynamic demands of NFS clients, such as providing server threads
+each time an NFS client connects. This process corresponds to the nfs service.
+lockd
+lockd is a kernel thread which runs on both clients and servers. It implements the Network Lock
+Manager (NLM) protocol, which allows NFSv3 clients to lock files on the server. It is started
+automatically whenever the NFS server is run and whenever an NFS file system is mounted.
+rpc.statd
+This process implements the Network Status Monitor (NSM) RPC protocol, which notifies NFS clients
+when an NFS server is restarted without being gracefully brought down. rpc.statd is started
+automatically by the nfslock service, and does not require user configuration. This is not used with
+NFSv4.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+63
+
+rpc.rquotad
+This process provides user quota information for remote users. rpc.rquotad is started
+automatically by the nfs service and does not require user configuration.
+rpc.idmapd
+rpc.idmapd provides NFSv4 client and server upcalls, which map between on-the-wire NFSv4
+names (strings in the form of user@domain) and local UIDs and GIDs. For idmapd to function with
+NFSv4, the /etc/idmapd.conf file must be configured. At a minimum, the "Domain" parameter
+should be specified, which defines the NFSv4 mapping domain. If the NFSv4 mapping domain is the
+same as the DNS domain name, this parameter can be skipped. The client and server must agree on
+the NFSv4 mapping domain for ID mapping to function properly.
+NOTE
+In Red Hat Enterprise Linux 7, only the NFSv4 server uses rpc.idmapd. The NFSv4
+client uses the keyring-based idmapper nfsidmap. nfsidmap is a stand-alone
+program that is called by the kernel on-demand to perform ID mapping; it is not a
+daemon. If there is a problem with nfsidmap does the client fall back to using 
+rpc.idmapd. More information regarding nfsidmap can be found on the nfsidmap
+man page.
+8.2. PNFS
+Support for Parallel NFS (pNFS) as part of the NFS v4.1 standard is available as of Red Hat
+Enterprise Linux 6.4. The pNFS architecture improves the scalability of NFS, with possible improvements
+to performance. That is, when a server implements pNFS as well, a client is able to access data through
+multiple servers concurrently. It supports three storage protocols or layouts: files, objects, and blocks.
+NOTE
+The protocol allows for three possible pNFS layout types: files, objects, and blocks. While
+the Red Hat Enterprise Linux 6.4 client only supported the files layout type, Red Hat
+Enterprise Linux 7 supports the files layout type, with objects and blocks layout types
+being included as a technology preview.
+pNFS Flex Files
+Flexible Files is a new layout for pNFS that enables the aggregation of standalone NFSv3 and NFSv4
+servers into a scale out name space. The Flex Files feature is part of the NFSv4.2 standard as described
+in the RFC 7862 specification.
+Red Hat Enterprise Linux can mount NFS shares from Flex Files servers since Red Hat Enterprise
+Linux 7.4.
+Mounting pNFS Shares
+To enable pNFS functionality, mount shares from a pNFS-enabled server with NFS version 4.1
+or later:
+# mount -t nfs -o v4.1 server:/remote-export /local-directory
+Storage Administration Guide
+64
+
+After the server is pNFS-enabled, the nfs_layout_nfsv41_files kernel is automatically
+loaded on the first mount. The mount entry in the output should contain minorversion=1. Use
+the following command to verify the module was loaded:
+$ lsmod | grep nfs_layout_nfsv41_files
+To mount an NFS share with the Flex Files feature from a server that supports Flex Files, use
+NFS version 4.2 or later:
+# mount -t nfs -o v4.2 server:/remote-export /local-directory
+Verify that the nfs_layout_flexfiles module has been loaded:
+$ lsmod | grep nfs_layout_flexfiles
+Additional Resources
+For more information on pNFS, refer to: http://www.pnfs.com.
+8.3. CONFIGURING NFS CLIENT
+The mount command mounts NFS shares on the client side. Its format is as follows:
+# mount -t nfs -o options server:/remote/export /local/directory
+This command uses the following variables:
+options
+A comma-delimited list of mount options; for more information on valid NFS mount options, see
+Section 8.5, "Common NFS Mount Options".
+server
+The hostname, IP address, or fully qualified domain name of the server exporting the file system you
+wish to mount
+/remote/export
+The file system or directory being exported from the server, that is, the directory you wish to mount
+/local/directory
+The client location where /remote/export is mounted
+The NFS protocol version used in Red Hat Enterprise Linux 7 is identified by the mount options 
+nfsvers or vers. By default, mount uses NFSv4 with mount -t nfs. If the server does not support
+NFSv4, the client automatically steps down to a version supported by the server. If the nfsvers/vers
+option is used to pass a particular version not supported by the server, the mount fails. The file system
+type nfs4 is also available for legacy reasons; this is equivalent to running mount -t nfs -o 
+nfsvers=4 host:/remote/export /local/directory.
+For more information, see man mount.
+If an NFS share was mounted manually, the share will not be automatically mounted upon reboot. Red
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+65
+
+Hat Enterprise Linux offers two methods for mounting remote file systems automatically at boot time: the 
+/etc/fstab file and the autofs service. For more information, see Section 8.3.1, "Mounting NFS File
+Systems Using /etc/fstab" and Section 8.4, "autofs".
+8.3.1. Mounting NFS File Systems Using /etc/fstab
+An alternate way to mount an NFS share from another machine is to add a line to the /etc/fstab file.
+The line must state the hostname of the NFS server, the directory on the server being exported, and the
+directory on the local machine where the NFS share is to be mounted. You must be root to modify the 
+/etc/fstab file.
+Example 8.1. Syntax Example
+The general syntax for the line in /etc/fstab is as follows:
+server:/usr/local/pub    /pub   nfs    defaults 0 0
+The mount point /pub must exist on the client machine before this command can be executed. After
+adding this line to /etc/fstab on the client system, use the command mount /pub, and the mount
+point /pub is mounted from the server.
+A valid /etc/fstab entry to mount an NFS export should contain the following information:
+server:/remote/export /local/directory nfs options 0 0
+The variables server, /remote/export, /local/directory, and options are the same ones used when
+manually mounting an NFS share. For more information, see Section 8.3, "Configuring NFS Client".
+NOTE
+The mount point /local/directory must exist on the client before /etc/fstab is read.
+Otherwise, the mount fails.
+After editing /etc/fstab, regenerate mount units so that your system registers the new configuration:
+# systemctl daemon-reload
+Additional Resources
+For more information about /etc/fstab, refer to man fstab.
+8.4. AUTOFS
+One drawback of using /etc/fstab is that, regardless of how infrequently a user accesses the NFS
+mounted file system, the system must dedicate resources to keep the mounted file system in place. This
+is not a problem with one or two mounts, but when the system is maintaining mounts to many systems at
+one time, overall system performance can be affected. An alternative to /etc/fstab is to use the
+kernel-based automount utility. An automounter consists of two components:
+a kernel module that implements a file system, and
+Storage Administration Guide
+66
+
+a user-space daemon that performs all of the other functions.
+The automount utility can mount and unmount NFS file systems automatically (on-demand mounting),
+therefore saving system resources. It can be used to mount other file systems including AFS, SMBFS,
+CIFS, and local file systems.
+IMPORTANT
+The nfs-utils package is now a part of both the 'NFS file server' and the 'Network File
+System Client' groups. As such, it is no longer installed by default with the Base group.
+Ensure that nfs-utils is installed on the system first before attempting to automount an
+NFS share.
+autofs is also part of the 'Network File System Client' group.
+autofs uses /etc/auto.master (master map) as its default primary configuration file. This can be
+changed to use another supported network source and name using the autofs configuration (in 
+/etc/sysconfig/autofs) in conjunction with the Name Service Switch (NSS) mechanism. An
+instance of the autofs version 4 daemon was run for each mount point configured in the master map
+and so it could be run manually from the command line for any given mount point. This is not possible
+with autofs version 5, because it uses a single daemon to manage all configured mount points; as
+such, all automounts must be configured in the master map. This is in line with the usual requirements of
+other industry standard automounters. Mount point, hostname, exported directory, and options can all be
+specified in a set of files (or other supported network sources) rather than configuring them manually for
+each host.
+8.4.1. Improvements in autofs Version 5 over Version 4
+autofs version 5 features the following enhancements over version 4:
+Direct map support
+Direct maps in autofs provide a mechanism to automatically mount file systems at arbitrary points in
+the file system hierarchy. A direct map is denoted by a mount point of /- in the master map. Entries
+in a direct map contain an absolute path name as a key (instead of the relative path names used in
+indirect maps).
+Lazy mount and unmount support
+Multi-mount map entries describe a hierarchy of mount points under a single key. A good example of
+this is the -hosts map, commonly used for automounting all exports from a host under /net/host
+as a multi-mount map entry. When using the -hosts map, an ls of /net/host will mount autofs
+trigger mounts for each export from host. These will then mount and expire them as they are
+accessed. This can greatly reduce the number of active mounts needed when accessing a server
+with a large number of exports.
+Enhanced LDAP support
+The autofs configuration file (/etc/sysconfig/autofs) provides a mechanism to specify the 
+autofs schema that a site implements, thus precluding the need to determine this via trial and error
+in the application itself. In addition, authenticated binds to the LDAP server are now supported, using
+most mechanisms supported by the common LDAP server implementations. A new configuration file
+has been added for this support: /etc/autofs_ldap_auth.conf. The default configuration file is
+self-documenting, and uses an XML format.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+67
+
+Proper use of the Name Service Switch (nsswitch) configuration.
+The Name Service Switch configuration file exists to provide a means of determining from where
+specific configuration data comes. The reason for this configuration is to allow administrators the
+flexibility of using the back-end database of choice, while maintaining a uniform software interface to
+access the data. While the version 4 automounter is becoming increasingly better at handling the
+NSS configuration, it is still not complete. Autofs version 5, on the other hand, is a complete
+implementation.
+For more information on the supported syntax of this file, see man nsswitch.conf. Not all NSS
+databases are valid map sources and the parser will reject ones that are invalid. Valid sources are
+files, yp, nis, nisplus, ldap, and hesiod.
+Multiple master map entries per autofs mount point
+One thing that is frequently used but not yet mentioned is the handling of multiple master map entries
+for the direct mount point /-. The map keys for each entry are merged and behave as one map.
+Example 8.2. Multiple Master Map Entries per autofs Mount Point
+Following is an example in the connectathon test maps for the direct mounts:
+/- /tmp/auto_dcthon
+/- /tmp/auto_test3_direct
+/- /tmp/auto_test4_direct
+ 
+8.4.2. Configuring autofs
+The primary configuration file for the automounter is /etc/auto.master, also referred to as the
+master map which may be changed as described in the Section 8.4.1, "Improvements in autofs Version 5
+over Version 4". The master map lists autofs-controlled mount points on the system, and their
+corresponding configuration files or network sources known as automount maps. The format of the
+master map is as follows:
+mount-point map-name options
+The variables used in this format are:
+mount-point
+The autofs mount point, /home, for example.
+map-name
+The name of a map source which contains a list of mount points, and the file system location from
+which those mount points should be mounted.
+options
+If supplied, these applies to all entries in the given map provided they do not themselves have options
+specified. This behavior is different from autofs version 4 where options were cumulative. This has
+been changed to implement mixed environment compatibility.
+Storage Administration Guide
+68
+
+Example 8.3. /etc/auto.master File
+The following is a sample line from /etc/auto.master file (displayed with cat 
+/etc/auto.master):
+/home /etc/auto.misc
+The general format of maps is similar to the master map, however the "options" appear between the
+mount point and the location instead of at the end of the entry as in the master map:
+mount-point   [options]   location
+The variables used in this format are:
+mount-point
+This refers to the autofs mount point. This can be a single directory name for an indirect mount or
+the full path of the mount point for direct mounts. Each direct and indirect map entry key (mount-
+point) may be followed by a space separated list of offset directories (subdirectory names each
+beginning with a /) making them what is known as a multi-mount entry.
+options
+Whenever supplied, these are the mount options for the map entries that do not specify their own
+options.
+location
+This refers to the file system location such as a local file system path (preceded with the Sun map
+format escape character ":" for map names beginning with /), an NFS file system or other valid file
+system location.
+The following is a sample of contents from a map file (for example, /etc/auto.misc):
+payroll -fstype=nfs personnel:/dev/hda3
+sales -fstype=ext3 :/dev/hda4
+The first column in a map file indicates the autofs mount point (sales and payroll from the server
+called personnel). The second column indicates the options for the autofs mount while the third
+column indicates the source of the mount. Following the given configuration, the autofs mount points will
+be /home/payroll and /home/sales. The -fstype= option is often omitted and is generally not
+needed for correct operation.
+The automounter create the directories if they do not exist. If the directories exist before the automounter
+was started, the automounter will not remove them when it exits.
+To start the automount daemon, use the following command:
+# systemctl start autofs
+To restart the automount daemon, use the following command:
+# systemctl restart autofs
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+69
+
+Using the given configuration, if a process requires access to an autofs unmounted directory such as 
+/home/payroll/2006/July.sxc, the automount daemon automatically mounts the directory. If a
+timeout is specified, the directory is automatically unmounted if the directory is not accessed for the
+timeout period.
+To view the status of the automount daemon, use the following command:
+# systemctl status autofs
+8.4.3. Overriding or Augmenting Site Configuration Files
+It can be useful to override site defaults for a specific mount point on a client system. For example,
+consider the following conditions:
+Automounter maps are stored in NIS and the /etc/nsswitch.conf file has the following
+directive:
+automount:    files nis
+The auto.master file contains:
++auto.master
+The NIS auto.master map file contains:
+/home auto.home
+The NIS auto.home map contains:
+beth        fileserver.example.com:/export/home/beth
+joe        fileserver.example.com:/export/home/joe
+*       fileserver.example.com:/export/home/&
+The file map /etc/auto.home does not exist.
+Given these conditions, let's assume that the client system needs to override the NIS map auto.home
+and mount home directories from a different server. In this case, the client needs to use the following 
+/etc/auto.master map:
+/home ​/etc/auto.home
++auto.master
+The /etc/auto.home map contains the entry:
+*    labserver.example.com:/export/home/&
+Because the automounter only processes the first occurrence of a mount point, /home contain the
+contents of /etc/auto.home instead of the NIS auto.home map.
+Storage Administration Guide
+70
+
+Alternatively, to augment the site-wide auto.home map with just a few entries, create an 
+/etc/auto.home file map, and in it put the new entries. At the end, include the NIS auto.home map.
+Then the /etc/auto.home file map looks similar to:
+mydir someserver:/export/mydir
++auto.home
+With these NIS auto.home map conditions, the ls /home command outputs:
+beth joe mydir
+This last example works as expected because autofs does not include the contents of a file map of the
+same name as the one it is reading. As such, autofs moves on to the next map source in the 
+nsswitch configuration.
+8.4.4. Using LDAP to Store Automounter Maps
+LDAP client libraries must be installed on all systems configured to retrieve automounter maps from
+LDAP. On Red Hat Enterprise Linux, the openldap package should be installed automatically as a
+dependency of the automounter. To configure LDAP access, modify /etc/openldap/ldap.conf.
+Ensure that BASE, URI, and schema are set appropriately for your site.
+The most recently established schema for storing automount maps in LDAP is described by 
+rfc2307bis. To use this schema it is necessary to set it in the autofs configuration
+(/etc/sysconfig/autofs) by removing the comment characters from the schema definition. For
+example:
+Example 8.4. Setting autofs Configuration
+DEFAULT_MAP_OBJECT_CLASS="automountMap"
+DEFAULT_ENTRY_OBJECT_CLASS="automount"
+DEFAULT_MAP_ATTRIBUTE="automountMapName"
+DEFAULT_ENTRY_ATTRIBUTE="automountKey"
+DEFAULT_VALUE_ATTRIBUTE="automountInformation"
+Ensure that these are the only schema entries not commented in the configuration. The automountKey
+replaces the cn attribute in the rfc2307bis schema. Following is an example of an LDAP Data
+Interchange Format (LDIF) configuration:
+Example 8.5. LDF Configuration
+# extended LDIF
+#
+# LDAPv3
+# base <> with scope subtree
+# filter: (&(objectclass=automountMap)(automountMapName=auto.master))
+# requesting: ALL
+#
+# auto.master, example.com
+dn: automountMapName=auto.master,dc=example,dc=com
+objectClass: top
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+71
+
+objectClass: automountMap
+automountMapName: auto.master
+# extended LDIF
+#
+# LDAPv3
+# base <automountMapName=auto.master,dc=example,dc=com> with scope 
+subtree
+# filter: (objectclass=automount)
+# requesting: ALL
+#
+# /home, auto.master, example.com
+dn: automountMapName=auto.master,dc=example,dc=com
+objectClass: automount
+cn: /home
+automountKey: /home
+automountInformation: auto.home
+# extended LDIF
+#
+# LDAPv3
+# base <> with scope subtree
+# filter: (&(objectclass=automountMap)(automountMapName=auto.home))
+# requesting: ALL
+#
+# auto.home, example.com
+dn: automountMapName=auto.home,dc=example,dc=com
+objectClass: automountMap
+automountMapName: auto.home
+# extended LDIF
+#
+# LDAPv3
+# base <automountMapName=auto.home,dc=example,dc=com> with scope subtree
+# filter: (objectclass=automount)
+# requesting: ALL
+#
+# foo, auto.home, example.com
+dn: automountKey=foo,automountMapName=auto.home,dc=example,dc=com
+objectClass: automount
+automountKey: foo
+automountInformation: filer.example.com:/export/foo
+# /, auto.home, example.com
+dn: automountKey=/,automountMapName=auto.home,dc=example,dc=com
+objectClass: automount
+automountKey: /
+automountInformation: filer.example.com:/export/&
+8.5. COMMON NFS MOUNT OPTIONS
+Storage Administration Guide
+72
+
+Beyond mounting a file system with NFS on a remote host, it is also possible to specify other options at
+mount time to make the mounted share easier to use. These options can be used with manual mount
+commands, /etc/fstab settings, and autofs.
+The following are options commonly used for NFS mounts:
+intr
+Allows NFS requests to be interrupted if the server goes down or cannot be reached.
+lookupcache=mode
+Specifies how the kernel should manage its cache of directory entries for a given mount point. Valid
+arguments for mode are all, none, or pos/positive.
+nfsvers=version
+Specifies which version of the NFS protocol to use, where version is 3 or 4. This is useful for hosts
+that run multiple NFS servers. If no version is specified, NFS uses the highest version supported by
+the kernel and mount command.
+The option vers is identical to nfsvers, and is included in this release for compatibility reasons.
+noacl
+Turns off all ACL processing. This may be needed when interfacing with older versions of Red Hat
+Enterprise Linux, Red Hat Linux, or Solaris, since the most recent ACL technology is not compatible
+with older systems.
+nolock
+Disables file locking. This setting is sometimes required when connecting to very old NFS servers.
+noexec
+Prevents execution of binaries on mounted file systems. This is useful if the system is mounting a
+non-Linux file system containing incompatible binaries.
+nosuid
+Disables set-user-identifier or set-group-identifier bits. This prevents remote users
+from gaining higher privileges by running a setuid program.
+port=num
+Specifies the numeric value of the NFS server port. If num is 0 (the default value), then mount
+queries the remote host's rpcbind service for the port number to use. If the remote host's NFS
+daemon is not registered with its rpcbind service, the standard NFS port number of TCP 2049 is
+used instead.
+rsize=num and wsize=num
+These options set the maximum number of bytes to be transfered in a single NFS read or write
+operation.
+There is no fixed default value for rsize and wsize. By default, NFS uses the largest possible value
+that both the server and the client support. In Red Hat Enterprise Linux 7, the client and server
+maximum is 1,048,576 bytes. For more details, see the What are the default and maximum values for
+rsize and wsize with NFS mounts? KBase article.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+73
+
+sec=mode
+Its default setting is sec=sys, which uses local UNIX UIDs and GIDs. These use AUTH_SYS to
+authenticate NFS operations.
+sec=krb5 uses Kerberos V5 instead of local UNIX UIDs and GIDs to authenticate users.
+sec=krb5i uses Kerberos V5 for user authentication and performs integrity checking of NFS
+operations using secure checksums to prevent data tampering.
+sec=krb5p uses Kerberos V5 for user authentication, integrity checking, and encrypts NFS traffic to
+prevent traffic sniffing. This is the most secure setting, but it also involves the most performance
+overhead.
+tcp
+Instructs the NFS mount to use the TCP protocol.
+udp
+Instructs the NFS mount to use the UDP protocol.
+For more information, see man mount and man nfs.
+8.6. STARTING AND STOPPING THE NFS SERVER
+Prerequisites
+For servers that support NFSv2 or NFSv3 connections, the rpcbind[1] service must be running.
+To verify that rpcbind is active, use the following command:
+$ systemctl status rpcbind
+To configure an NFSv4-only server, which does not require rpcbind, see Section 8.7.7,
+"Configuring an NFSv4-only Server".
+On Red Hat Enterprise Linux 7.0, if your NFS server exports NFSv3 and is enabled to start at
+boot, you need to manually start and enable the nfs-lock service:
+# systemctl start nfs-lock
+# systemctl enable nfs-lock
+On Red Hat Enterprise Linux 7.1 and later, nfs-lock starts automatically if needed, and an
+attempt to enable it manually fails.
+Procedures
+To start an NFS server, use the following command:
+# systemctl start nfs
+To enable NFS to start at boot, use the following command:
+# systemctl enable nfs
+Storage Administration Guide
+74
+
+To stop the server, use:
+# systemctl stop nfs
+The restart option is a shorthand way of stopping and then starting NFS. This is the most
+efficient way to make configuration changes take effect after editing the configuration file for
+NFS. To restart the server type:
+# systemctl restart nfs
+After you edit the /etc/sysconfig/nfs file, restart the nfs-config service by running the
+following command for the new values to take effect:
+# systemctl restart nfs-config
+The try-restart command only starts nfs if it is currently running. This command is the
+equivalent of condrestart (conditional restart) in Red Hat init scripts and is useful because it
+does not start the daemon if NFS is not running.
+To conditionally restart the server, type:
+# systemctl try-restart nfs
+To reload the NFS server configuration file without restarting the service type:
+# systemctl reload nfs
+8.7. CONFIGURING THE NFS SERVER
+There are two ways to configure exports on an NFS server:
+Manually editing the NFS configuration file, that is, /etc/exports, and
+Through the command line, that is, by using the command exportfs
+8.7.1. The /etc/exports Configuration File
+The /etc/exports file controls which file systems are exported to remote hosts and specifies options.
+It follows the following syntax rules:
+Blank lines are ignored.
+To add a comment, start a line with the hash mark (#).
+You can wrap long lines with a backslash (\).
+Each exported file system should be on its own individual line.
+Any lists of authorized hosts placed after an exported file system must be separated by space
+characters.
+CHAPTER 8. NETWORK FILE SYSTEM (NFS)
+75
+
+Options for each of the hosts must be placed in parentheses directly after the host identifier,
+without any spaces separating the host and the first parenthesis.
+Each entry for an exported file system has the following structure:
+export host(options)
+The aforementioned structure uses the following variables:
+export
+The directory being exported
+host
+The host or network to which the export is being shared
+options
+The options to be used for host
+It is possible to specify multiple hosts, along with specific options for each host. To do so, list them on the
+same line as a space-delimited list, with each hostname followed by its respective options (in
+parentheses), as in:
+export host1(options1) host2(options2) host3(options3)
+For information on different methods for specifying hostnames, see Section 8.7.5, "Hostname Formats".
+In its simplest form, the /etc/exports file only specifies the exported directory and the hosts permitted
+to access it, as in the following example:
+Example 8.6. The /etc/exports File
+/exported/directory bob.example.com
+Here, bob.example.com can mount /exported/directory/ from the NFS server. Because no
+options are specified in this example, NFS uses default settings.
+The default settings are:
+ro
+The exported file system is read-only. Remote hosts cannot change the data shared on the file
+system. To allow hosts to make changes to the file system (that is, read and write), specify the rw
+option.
+sync
+The NFS server will not reply to requests before changes made by previous requests are written to
+disk. To enable asynchronous writes instead, specify the option async.
+wdelay
+The NFS server will delay writing to the disk if it suspects another write request is imminent. This can
+Storage Administration Guide
+76
+
+improve performance as it reduces the number of times the disk must be accessed by separate write
+commands, thereby reducing write overhead. To disable this, specify the no_wdelay. no_wdelay is
+only available if the default sync option is also specified.
+root_squash
+This prevents root users connected remotely (as opposed to locally) from having root privileges;
+instead, the NFS server assigns them the user ID nfsnobody. This effectively "squashes" the power
+of the remote root user to the lowest local user, preventing possible unauthorized writes on the remote
+server. To disable root squashing, specify no_root_squash.
+To squash every remote user (including root), use all_squash. To specify the user and group IDs that
+the NFS server should assign to remote users from a particular host, use the anonuid and anongid
+options, respectively, as in:
+export host(anonuid=uid,anongid=gid)
+Here, uid and gid are user ID number and group ID number, respectively. The anonuid and anongid
+options allow you to create a special user and group account for remote NFS users to share.
+By default, access control lists (ACLs) are supported by NFS under Red Hat Enterprise Linux. To disable

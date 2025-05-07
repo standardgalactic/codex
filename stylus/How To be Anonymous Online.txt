@@ -1,0 +1,919 @@
+
+
+
+
+
+ 
+ 
+How to be Anonymous Online
+ Step-by-Step Anonymity with Tor, Tails, Bitcoin and Writeprints
+(February 2016)
+ 
+By A M Eydie
+ 
+ 
+Copyright © A M Eydie
+All Rights Reserved
+2016
+
+
+
+
+
+
+
+
+
+
+
+ 
+Table of Contents
+Preface
+Preview
+WARNING, DISCLAIMER OR WHATEVER...
+Section: Build A Toolbox
+Section: Up and Running
+Section: Safe Updates and PGP Program Authentication
+Section: PGP/GPG - Everything you want to know
+Section: Email, Chatting, Messaging
+Section: Writeprints - They will identify those other anonymous netizens... but not you
+Section: Bitcoin is NOT Anonymous
+The Great Flaw - You are not Stealth, You are Secure
+In Closing
+The following works are cited in these instructions:
+ 
+
+
+
+
+
+
+
+
+
+Preface
+Why publish a new guide for 2016? 
+Since publishing the original How to be Anonymous Online guide in February 2013, I have made updates almost monthly. While this ensured that those who purchased the guide were buying relevant information, eventually the monthly tweaks to that information left them with partially outdated instructions. To make up for this, I did two things. First, I posted the updates as blog posts on my website howtobeanonymousonline.info. Second, I periodically asked Amazon to allow those that already owned the guide to download an updated version. 
+While blog updates are useful and ensure everyone stays in the loop, someone that purchased the guide in 2013 has the headache of going through three years of posts to see what has changed. As for Amazon, they usually deny my requests to send out free, updated versions to those that already own the guide. When Amazon has approved my request (which has happened once in three years), it has been eight weeks before they make the update available. 
+That brings us to this 2016 version of the guide. Those of you that purchased How to be Anonymous Online six months ago will not find this guide to be much different than the one you already own. Those of you that purchased How to be Anonymous Online three years ago will find that the 2016 edition is a whole new animal. And, those of you that are buying this guide for the first time have an up-to-date and entirely relevant set of instructions on How to be Anonymous Online. 
+***
+I know these instructions will be purchased by anonymity seekers of many levels. Here is where I am coming from in writing this guide and what you stand to gain.
+First, this guide is $4.99. There is something worth $4.99 in this for 95% of you. For beginners, you will be totally anonymous online in two hours (and that is giving you time for a cigarette break). For post-beginners, you will discover some little, yet important, detail(s), like a wrong setting in Tor, that will blow your cover if uncorrected. After all, Tor and Tails DO NOT come preconfigured for total anonymity (f.y.i., there is more to this guide than Tor). Remember, if you have one, single, tiny, little hole in your system, you are NOT anonymous. If you are a know-it-all anonymity expert hacker computer science grad student, you do not need this guide, so feel free to move on. Again, this guide is only $4.99. You probably earn that in 15 minutes at work. Amazon will even give you a refund if you think this whole thing is a total waste.
+Second, it is easy to be anonymous once you know how, but it is a pain in the ass when you don't. For $4.99, I will take the pain out of your ass. In the last ten years many anonymity "game changers," like Tor, Tails, and Bitcoin, have come about... However, they have flaws. Tor and Tails need some modifications to be secure. Bitcoin is not anonymous in its current form. It does not even pretend to be anonymous. It is pseudonymous... This is a HUGE difference. I talk about why this matters and how Bitcoin can be anonymous shortly with modifications YOU will make (and no, not "Bit-Laundry" services).
+Third, PGP Encryption is confusing. I break it down into short step-by-step instructions, saving hours of figuring it out yourself ($4.99 to save a few stressful hours of your life is a good deal).
+Fourth, this is not a book you read these are instructions you follow. If you are looking for a book to spend the day reading by the fire, do not buy these instructions. If you read these instructions in 30 minutes, and then complain that this 'book' merely says install Tails, you did not read this page, AND you did not follow the instructions. It will take you a couple of hours to build a solid system. If you want to spend $4.99 to do things the right way the first time instead of spending days searching Google and browsing forums trying to figure this stuff out yourself (and still leaving holes in your system), purchase these instructions. If you build your kid a doll house, you do not want a book about doll houses, you just want instructions for building a doll house. For $4.99, I am telling you what to do without asking you to subscribe to a proxy service, buy software or trust a third party. 
+Fifth, I post all updates on my blog. I make updates often, and there is no reason you should have to buy a new copy to stay "in-the-know." As new technologies are developed, new shortcomings are discovered (like how your mega-strong encryption will be broke in 5 years), and spelling mistakes are corrected :/ I will share them with you. 
+
+
+
+
+
+
+
+
+
+Preview
+This manual is written:
+
+In 1,2,3 step format
+With concise, yet thorough, instructions
+For beginners using a DVD bootable PC with a DVD burner
+
+I will teach you how to: 
+
+Use someone else's computer without them knowing
+Browse the internet anonymously
+Circumvent Windows without altering anything on the system
+Make an email account that actually is anonymous
+Use PGP Encryption the right way (I make this simple)
+Taunt Kim Jong-Un
+
+I will show you that Bitcoin is NOT Anonymous and how that is about to change.
+I will provide you with future updates.
+I believe in the "Keep It Simple Stupid" methodology. This manual details exactly what you need to get what you want, no more, no less. I wrote this so you could be anonymous today instead of spending the next week reading everything you find on Google and, in the end, still not know how to implement the proper steps.
+The problem I've seen in other books and online instructions is they give you a bunch of sources and programs for anonymity, but they do not tie all the loose ends together. For instance, you might buy anonymity software, but God knows what a totally unrelated program in Windows is still tracking and saving to your hard drive. Besides that, if you want to use a work computer, they certainly are not going to allow you to install anonymity software. Moreover, maybe, you do not want to encrypt your hard drive because that looks suspicious. You need to run straight from a DVD, Flash Drive or Micro SD card outside of Windows altogether. I will even show you how to boot with a flash drive on old computers that typically will not do so. 
+Let's tie up those loose ends.
+----------
+Here are a couple of important points regarding Online Anonymity:
+
+Disabling Cookies is USELESS - You are still traceable through your digital fingerprints
+Using an IP Proxy Service is BAD - It routes all your activity through a central source that can track you
+Logging into a computer is BAD - It leaves a record that you were there
+Subscribing to an Anonymity Service is BAD - You are giving out your name, credit card, etc. to buy your anonymity... You are not anonymous if you have to share personal information! 
+Creating an anonymous Yahoo, Gmail, etc. account is BAD - Just ask General Petraeus how well this works
+JavaScript is BAD - This is a prime vehicle for transporting malware into your system
+Super-Cookies are BAD - They regenerate deleted cookies, are stealthy and hard to delete
+Digital Fingerprints are REALLY BAD - Advertisers have begun using digital fingerprints to track an individual's activity. Digital Fingerprints are pulled by gathering the data your system provides websites, such as installed fonts, browser extensions and their micro-versions, operating system and its updates, time zone, and such. While individual bits of this information are not particularly dangerous, collectively, they are compiled to create a traceable and absolute "digital fingerprint." 
+Bitcoin is NOT Anonymous - Other books tell you that Bitcoins are Anonymous or that you can use "Bitcoin Laundry" services to cover your tracks. I will show why they are wrong and what technology is in the works to fix this.
+You Have Writeprints - Writeprints are a means of identifying an author solely from the characteristics of her written work. With the ability for individuals to mask IP addresses and minimize digital fingerprints, writeprinting is often the only method available to identify the author.
+
+Don't worry, we are going to work around these.
+
+
+
+
+
+
+
+
+
+WARNING, DISCLAIMER OR WHATEVER...
+Do not be a fool. None of this is 100%.
+To my knowledge, as of July 14, 2015, no one following my instructions has faced an exploit. Since I update these instructions regularly to reflect changes in technology, weaknesses that develop will see rectification quickly and accordingly. 
+Unfortunately, everything has flaws, especially software. The most popular, and probably most secure, software for online anonymity is Tor. The most popular operating system for online anonymity is Tails. These are the heart and nervous system of these instructions. The strength of these programs comes from the ongoing development of each and their open code. When good guys find flaws, work to rectify them begins immediately. When bad guys find flaws, they may be exploited indefinitely. 
+If being anonymous online is a hobby, this is the way to go. If being anonymous online is a way to restrict corporate advertisers from tracking your online life, this is the way to go. If you hate the fact that some governments are collectively spying on you for no reason, this is a way to make a point that you are not blindly submitting and a way to complicate their efforts. 
+The great length that people must go to break these systems hints that they work well. However, if you want a foolproof, 100% certain way to avoid the prying eyes of every entity, there is no solution for you. There are organizations with thousands of people dedicated to tracking and watching you. If you want to use Tor to bad mouth Vladimir Putin, you should know that the Russian Ministry of Internal Affairs has a 3.9 million ruble reward for developing methods to identify you. If for nothing more than bragging rights, there are academics and hackers that simply want to be the first to publicize mistakes. In fact, a couple of researchers from Carnegie Mellon University gained a huge amount of attention for their attempts to de-anonymize Tor users in 2014. 
+These are advanced methods for protecting your anonymity. I take you through detailed steps, far more than you are likely to find in one place online, to authenticate your software. I think the sections on authenticating your system are the most overlooked, yet most valuable aspect of this guide. However, if you are looking for a way to evade every entity in existence, I do not know what to tell you. 
+Nothing I say, do, provide, link to or recommend is guaranteed to protect your anonymity. Whether it is tomorrow or thirty years from now, every security measure will eventually be compromised. That is the power of technology. Frankly, if you can sue me for it, I am telling you that I am not guaranteeing it; therefore, it is at your risk to follow or do anything that I write in this manual.
+
+
+
+
+
+
+
+
+
+Section: Build A Toolbox
+The first thing you need to do is gather your tools. By the end of this section, everything you need will be in place and ready to go. 
+If you are already comfortable and familiar with Tails, you can skip to Section: Safe Updates and PGP Program Authentication. 
+Your Tool List:
+Hardware
+
+DVD Bootable Computer with a DVD burner
+Three Blank DVD-R's (you only need one to get started)
+One 4 GB+ USB Flash Drive (Important -The flash drive you use must NOT be "Windows 8 Certified." If you fail to find a flash drive that is NOT "Windows 8 Certified," you can use a Micro SD Card with a USB adapter. Many SD cards come with the USB adapter so a quick trip to Walmart and $10 should take care of things)
+(Optional) Micro SD card with a USB adapter
+
+Software
+
+Tails
+Plop Boot Manager 
+InfraRecorder
+
+Step 1: On your Desktop, create a folder named Toolbox.
+Step 2: Download your Tools
+
+I have bunched all the software you need into one .zip file that you can download from my website.
+I have https encryption, malware protection, and you do not have to register or subscribe to anything. 
+I recommend that you initially download the Tools from my website, so you have the exact versions I used when writing this guide. Doing so will make it much easier to follow along.
+Later on, you will download and install the latest versions of the software directly from the developer's websites.
+Download the tools from https://howtobeanonymousonline.info/toolbox/ (click 'Download Toolbox' to download the file from my secureserver online storage)
+Save the Toolbox.zip file into the Toolbox folder on your desktop (it is over 800MB because it contains an outdated version of Linux that will serve as the foundation of the system)
+Now, extract the Toolbox.zip file's contents into the Toolbox folder (right-click > Extract All)
+
+If you need a .zip file extraction program, I use 7-zip (http://sourceforge.net/projects/sevenzip)
+If you would rather download the Tools directly from the developer websites up front, the links are posted below:
+
+Tails ISO Image (https://tails.boum.org)
+Plop Boot Manager (http://www.plop.at)
+InfraRecorder (http://portableapps.com/apps/utilities/infrarecorder_portable)
+
+Step 3: Burn two DVD's
+Burn Tails
+
+Insert a blank DVD-R into your computer
+Go to your Toolbox folder
+Right-click the Tails.iso file
+Select Burn or Burn disc image *** (if this option does not exist or work, see below) ***
+
+Burn Plop Boot Manager 
+
+Insert a blank DVD-R into your computer
+Go to your Toolbox folder
+Right-click the Plop Boot Manager.iso file
+Select Burn or Burn disc image *** (if this option does not exist or work, see below) ***
+
+If you succeed in burning these DVD's, you can delete InfraRecorder from your Toolbox as you do not need it.
+***To burn your DVD's, install InfraRecorder from your Toolbox
+
+Install InfraRecorder by double-clicking the InfraRecorderPortable_XXX.exe file and selecting OK
+Install and take note of the install location (probably Toolbox/InfraRecorderPortable) 
+Once installed, open InfraRecorder by double-clicking InfraRecorderPortable.exe
+Click the Write Image box
+Find the Toolbox folder and Open the Tails.iso file or Plop Boot Manager.iso file
+Choose your DVD drive from the drop-down box and click OK (the drive is probably preselected)
+Once the DVD is burned, you may close InfraRecorder
+
+
+
+
+
+
+
+
+
+
+
+Section: Up and Running
+Now, you are now ready to boot your computer using the Tails DVD
+Tails - DVD Version
+The single biggest advantage of the Tails DVD is that you cannot save data or customize it. These limitations reduce your risk of falling victim to a virus or Malware.
+Here's how to use it:
+
+You need to boot your computer from the Tails DVD. Pretty much every computer made in the last ten years will boot straight from the DVD if it is inserted during the startup process. So, either restart the computer with the Tails DVD inserted or insert it immediately upon starting the computer. If the system boots into Tails, pat yourself on the back. If not, immediately upon starting your computer you may see a message instructing you how to boot from a DVD
+If the computer boots properly from the Tails DVD, you will come to a screen that says Boot Tails
+Select Live
+You may see 'error' and 'failed' messages during the boot process. Just wait them out. Tails should boot within 3 or 4 minutes.
+Once Tails starts, you will see the Welcome to Tails screen. Just click Login
+
+Getting Online:
+Ethernet Cable
+
+Once an Ethernet cable is plugged in, just wait, Tails will automatically establish a connection.
+You will get a message in the top right corner that says Connection Established, followed by another that says Synchronizing the System's Clock.
+Also, you will get a message saying your version of Tails is out of date and has numerous security holes... You will fix this later. 
+The Iceweasel Web Browser will automatically open once you are online.
+Once open, go to https://check.torproject.org/ to verify that your connection is established
+
+Wi-Fi
+
+Click on the network icon (it is a little icon with two computers and a little "x" located toward the right side of the top toolbar).
+Click it to see the available wireless networks.
+Select a network and, if needed, enter its password.
+You will get a message in the top right corner that says Connection Established, followed by another that tells Synchronizing the System's Clock. 
+Also, you will get a message saying your version of Tails is out of date and has numerous security holes... You will fix this later. 
+The Iceweasel Web Browser will automatically open once you are online.
+Once open, go to https://check.torproject.org/ to verify that your connection is established
+
+IMPORTANT! - For security purposes, you have to disable JavaScript, as it leaves your system vulnerable to malware.
+In the Iceweasel Web Browser:
+
+Click Edit > Preferences
+Select the Content tab and uncheck the "Enable JavaScript" box
+Click Close
+
+At this point, you are running an anonymity system that is three years out of date. If you are already bored with these instructions, play online with what you have so far, but, come back later because there is A LOT more that must be done to secure your system.
+Tails - Flash Drive and MicroSD Version
+The big advantage of the Flash Drive or MicroSD card version of Tails is it allows you to upgrade safely. Also, the Flash Drive lets you do an emergency shutdown simply by removing it. Furthermore, you can save files, bookmarks, etc. from session to session. 
+To minimize the chances of compromising your anonymity, you should keep changes to Tails at a minimum. Part of your anonymity stems from not having a digital fingerprint... Or, more accurately, not having a unique digital fingerprint. Every time you make a change to Tails, your digital fingerprint becomes a little more unique. You do not want Kim Jong-Un using your prints to compile a track record of everywhere you have been.
+Also, saving data opens the possibility of housing malware inside your system. Encryption and anonymous IP addresses are not going to protect you if you are being watched from inside your system. 
+That being said, it is time to set up your Tails USB Flash Drive or Micro SD card:
+***Again - "Windows 8 Certified" Flash Drives Do Not Work With Tails. "Windows 8 Certified" flash drives are not bootable, meaning you cannot use them to boot your computer into Tails. Flash drives that are NOT "Windows 8 Certified" work fine. Just check the packaging when you buy a drive. It will be clearly marked if it is Windows 8 Certified. An alternative is to use a Micro SD Card with a USB adapter. Many SD Cards are sold with a USB adapter for under $10. USB adapters sold separately cost even less.***
+
+(Re)Boot your computer from the Tails DVD (to shut down or reboot, click the top-right red button or press ctrl+alt+delete)
+It is common to see 'error' and 'failed' messages during the boot process. Just wait them out. Tails should boot within 3 or 4 minutes.
+Unlike before, at the Welcome to Tails screen, click Yes under More Options, and then Forward
+Create a Password*** (this is temporary so you can make it easy) and Login
+
+***This is a temporary administrative password that only lasts one session. Occasionally you will be required to use an administrative password to perform certain tasks.***
+
+Once logged in, insert your USB Flash Drive or Micro SD card with its USB adapter
+From the top toolbar, click Applications > System Tools > Tails USB installer
+Click Clone & Install
+In the Tails LiveUSB Creator window, click the Target Device drop-down menu and choose your USB Flash Drive (it is probably preselected)
+Click Create Live USB
+Click Next
+Once installation is complete, click OK
+YOU ARE NOT FINISHED
+
+Now, you will configure a Persistent Volume.
+
+Go ahead and shut down Tails (click the top-right red button or press ctrl+alt+delete)
+Leaving the Tails USB Flash Drive or Micro SD card inserted, restart the computer and boot from the Flash Drive or Micro SD card. If you know how to do this skip to step 4, if not...
+Leaving the Tails USB Flash Drive or Micro SD card inserted, restart the computer with the Plop Boot Manager DVD also inserted. The computer will boot to a menu with a few options. Choose USB
+Next, choose the Live option to start Tails
+At the Welcome to Tails screen, choose Yes, and then Forward
+Create a Password (this is temporary so you can make it easy) and Login
+From the top toolbar, click Applications > System Tools > Configure persistent volume
+Create an insanely strong 20+ character password (You can go to https://identitysafe.norton.com/password-generator to generate some strong password examples, then make up your own) and click Create. THIS IS THE SINGLE KEY TO YOUR NEW SECRET WORLD. MEMORIZE IT!
+A Persistence Wizard - Persistent volume configuration window will open once the persistence volume is created. Personally, I click every option except the last three (APT Packages, APT Lists, Dotfiles). This way almost everything I do in Tails carries over to the next session
+Once you have made your selections, click Save
+Now, restart Tails and boot from the Tails USB Flash Drive or Micro SD card (using Plop Boot Manager if necessary)
+
+Now that a Persistence volume has been created, you have the option to use it each time you start Tails from your Flash Drive or MicroSD card. If you choose not to use a Persistence volume at startup, Tails will run like the DVD version. If you choose to use a Persistence volume, Tails will run with your personal settings, files, etc.
+To use a Persistence Volume:
+
+In the Welcome to Tails window, answer Yes to Use Persistence?
+Enter the Persistence volume password you created and Login
+Once you login to Tails, you can find your Persistent folder inside the Amnesia Home folder located on your desktop. Anything you save into the Persistent folder will carry over each time you use Tails with the persistence option selected
+
+A few things you should know about the Persistence Volume:
+
+Your encrypted persistence volume is not hidden. This means that Kim Jong-Un cannot randomly access it, but, since he knows it is there, he might torture you for the password. 
+Tails relies on consistency across all platforms to reduce the uniqueness of your digital fingerprint, therefore, customizing your system may create a traceable digital fingerprint.
+
+REMINDER - When you go online, do not forget to disable JavaScript in the Iceweasel Web Browser (Edit > Preferences, select the Content tab and uncheck "Enable JavaScript").
+To see how well you have minimized your digital fingerprint, visit https://panopticlick.eff.org and click the Test Me button. Visit it from Windows, Tails DVD, Tails USB with JavaScript enabled, disabled, etc. Compare your various results and see which options leave you with and without a unique digital fingerprint.
+Remember when I told you that you could use someone else's computer without them knowing? Tails is how. When a computer boots from Tails it circumvents Windows and the computer's hard drive (in fact, you can remove the hard drive and still use Tails). Instead, it runs as its own operating system, utilizing only the computer's RAM. At shutdown, even if you eject the Tails DVD or remove the USB flash drive while the system is running, Tails wipes the RAM.
+When using a computer other than my own, I only use the Flash Drive or Micro SD card in its USB adapter. The reason being, I do not have to worry about the Flash Drive getting stuck inside the computer when I need to do a quick bailout. I can just yank it and go. Even if I need the Plop Boot Manager DVD to boot, I can remove it as soon as Tails starts.
+The websites pages to visit EVERY TIME you go online
+Anonymity is always under threat. As such, you need to verify that you are securely connected to the Tor network, and you must stay current on Tor news. Every time you go online, the first websites to visit are:
+
+https://check.torproject.org/
+https://panopticlick.eff.org/
+https://blog.torproject.org/
+http://slashdot.org and search "Tor"
+https://search.disconnect.me/, search "Tor", and then click "News"
+
+News of a Tails or Tor exploit will travel fast. You do not want to find out when it is too late.
+ 
+
+
+
+
+
+
+
+
+
+
+Section: Safe Updates and PGP Program Authentication
+In this section, you will upgrade to the latest version of Tails. Unlike just about everyone else, you will not leave yourself vulnerable to a security breach during the upgrade. I cannot stress how important it is to upgrade Tails properly. Once upgraded, you can go stand outside Labor Camp 16's fence and wave to all those people that said, "just download and install Tails." Since they did not follow these steps, they installed Kim Jong-Un's decoy program, Twails. 
+You are going to use PGP encryption to authenticate this upgrade. In the next section, I will fully explain PGP, but, for now, just follow these steps to get through the upgrade. This way, once you get to the next section and start making encryption keys, you will know you are working within an authentic system. 
+Downloading and Authenticating Tails
+
+Boot from your Tails Flash Drive or MicroSD card and log in with Persistence enabled
+Once in Tails, go online and visit the website https://tails.boum.org/download
+
+The Tails website offers plenty of information about authentication, but, it ain't easy. I am going to make the process more "keep it simple stupid" like.
+
+You need to download three files from this page. Scroll down to the 'Direct download' sub-section. The download links will be green rectangular boxes 
+
+
+First, download "Tails x.xx ISO image" (Click the "Tails x.xx ISO image" box, and then click Save File and OK. Then choose Persistent from the "Save in folder" drop-down menu and Save.
+Second, download "Tails x.xx signature" to your Persistent folder
+Third, scroll down a bit more and download the "Tails signing key" to your Persistent folder
+
+At this point, you should be downloading the files "tails-i386-x.xx.iso", "tails-signing.key", and either "tails-i386-x.xx.iso.sig" OR "tails.i386-x.xx.iso.pgp"
+You need to wait for all three files to download before continuing to step 4. It can take a few hours, sorry.
+
+Verify if "tails-signing.key" is authentic. This step is a little erratic yet VERY IMPORTANT!
+
+
+In your Persistent folder, right-click tails-signing.key and choose Open With > gedit
+You should now see the text of the Tails PGP Public Key
+To verify that this is the real key, not a decoy, you have to check it against other sources. Think of it as trying to figure out if someone is lying to you. If one person says he did not do it, but 20 witnesses say he did do it, he probably did it. To corroborate a signing key, you have to find other sources that agree it is authentic 
+Organizations change keys sometimes. However, as of February 6, 2016, the Tails key I have starts out with mQINBEytkvQBEAC3G9iFTj... and so on. I believe this is the authentic key. If this matches your key, then I believe you also have the authentic key (I will show you better ways to authenticate a key in the next section)
+Once the key text checks out, you can close it 
+
+F.Y.I., in Windows, you can open a .key, .sig or .pgp file in Notepad.
+
+Now you will authenticate Tails
+
+
+Open the Terminal program (from the top toolbar, select Applications > Accessories > Terminal)
+In the Terminal, type "gpg --import " (there is a space after 'gpg' and '--import'), and then click and drag the 'tails-signing.key' file into the Terminal window. All-in-all, you should have something like "gpg --import '/xxx/xxx/tails-signing.key/'"
+Hit Enter
+You should see a response that starts out something like 'gpg: key 58ACD8AF...' and so on. 
+Next, in the Terminal, type "gpg --verify " (there is a space after 'gpg' and '--verify'), and then click and drag the 'tails-i386-xxx.iso.sig' file into the Terminal window. All-in-all, you should have something like "gpg --import '/xxx/xxx/ tails-i386-xxx.iso.sig/'"
+Hit Enter
+The second line of the rather long response should state 'gpg: Good Signature'
+You have authenticated the tails-i386-xxx.iso file
+
+It is common for PGP files to end in ".asc" instead of ".sig", ".key", or ".pgp". For any of these files, simply open them in gedit and the top line of the file's text will tell you if it is a Key, Signature, etc. That should save you a few headaches.
+Updating Tails
+
+Now that you have authenticated your tails-i383-x.xx.iso file, you can burn it to a DVD-R
+
+
+Insert a Blank DVD-R into your system.
+Right-click "tails-i386-x.xx.iso" and select "Open with Brasero".
+Your Tails ".iso" file is preselected. Choose your blank DVD-R from the "Select disc to write to" drop-down menu. Click Burn.
+Get some cheese, crackers and a glass of wine.
+Success! You have an up-to-date Tails DVD. Next, you will update your personal Tails Flash Drive or MicroSD card.
+
+
+Restart your system, this time booting from your new, up-to-date Tails DVD. Just go all the way into Tails; you do not need to create an Administrator password at login.
+Insert the same Tails Flash Drive or MicroSD card you have been using all along (Don't worry; you are only updating it, not erasing it).
+From the top toolbar, select Applications > Tails > Tails installer.
+Select Upgrade by cloning
+Choose your target device (it is probably preselected), click Install Tails, and then Yes
+Once completed, you can boot from your up-to-date Tails Flash Drive or MicroSD card with your Persistent volume intact.
+
+The following are a few differences in Tails 2.0 from the Tails .16 version you installed from the Toolbox...
+When starting Tails, if you choose Yes for More Options at the Welcome to Tails screen, you are given the option to uncheck Spoof all MAC addresses and to use a Bridge to connect to Tor. Under almost all circumstances, you can leave these settings unchanged. 
+MAC address spoofing is a way of anonymizing your machine's identity within your local network. Spoofing can be a problem if your local network has restrictions that only allow connections from 'approved' machines. That could be the case within some office networks. Do not worry if you do not spoof your MAC address, it is not visible online like an IP address. It will only show a network administrator that your machine connected to the internet on a particular network at a particular time. It does not reveal your online activities. 
+A Bridge is an unlisted access point to the Tor network. Using a Bridge is necessary when a local network (like your office, coffee shop or internet service provider) blocks access to Tor by blacklisting known Tor servers. I talk more about Bridges in a few posts on my blog. You can read them at https://howtobeanonymousonline.info/?s=bridges.
+To connect to Wi-Fi
+
+Click the little upside-down triangle on the far right side of the top toolbar
+Click 'Wi-Fi'
+Select your network
+
+The Tor Web Browser will not automatically open upon connecting to the internet. So...
+
+Connect to an Ethernet cable or Wi-Fi network
+Wait for a little Onion Icon to appear on the right half of the top toolbar. It will be yellow while it connects to the Tor network. Wait for it to turn Green
+Once the onion turns green, open your browser from Applications > Internet > Tor Browser
+
+To disable JavaScript, in the Tor Browser:
+
+Click the Green Onion to the left of the address bar
+Click Privacy and Security Settings...
+Select High
+Click OK and you are finished
+
+This also disables automatic loading of online custom fonts (an extra preventative measure to stop a website from determining fonts installed on your system)
+Disabling Cookies: You no longer have the option of disabling all cookies. However, by default, Third-Party cookies are Disabled. These are the dangerous ones that track you from one site to another. First-Party cookies are Enabled, but, automatically deleted when no longer needed. These cookies only track you within the site that gave you the cookies. They are used, for example, to keep you logged into a website that requires a password. 
+A few optional steps:
+To disable automatic loading of online images (helpful for faster browsing):
+
+In the Tor browser URL address bar, type 'about:config' and hit Enter
+Click the I'll be careful, I promise! button
+Scroll down or use the search bar to find permissions.default.image
+Right-click permissions.default.image and select Modify
+Change the integer value to "2"
+Click OK and you are finished
+
+
+
+
+
+
+
+
+
+
+
+Section: PGP/GPG - Everything you want to know
+PGP allows you to encrypt messages. So, if you want to email a secret love note or favorite recipe without Kim Jong-Un fixing his hungry eyes upon it, type it into a little text file, encrypt it and send it.
+PGP vs. GPG
+PGP and GPG are pretty much the same. The difference between the two comes down to licensing and encryption algorithms that you probably will never notice. They are interoperable, so, using one will not leave you unable to communicate with someone that uses the other. Unless you are a mega uptight person, there is no need to distinguish between the two. I will refer to it all as PGP. 
+Quick explanation of .asc, .key, .pgp, .gpg and .sig files?
+
+.asc - this extension is for a public PGP key file saved using the American Standard Code for Information Interchange character-encoding scheme, abbreviated ASCII (when you import or export a public PGP key the file name will be keyname.asc)
+.key - this can be the same as a .pgp, .gpg or .asc file (since they are the same, filename.key can be renamed filename.asc)
+.pgp - this extension is for a file that has been encrypted using PGP (if you encrypt filename.txt, the new file created will be named filename.txt.pgp)
+.gpg - this extension is for a file that has been encrypted using GPG. Just consider it the same as .pgp
+.sig - this extension is for a signature file (if you sign filename.txt, a second file, filename.txt.sig, will be created)
+
+It is common to find PGP related files with the wrong extensions. If you suspect this to be the case, open the file in your gedit program (right-click the file > Open with > gedit). The top line of the text will tell you if it is a public PGP key, private PGP key or signature file. Just rename the file as needed. If the entire text is pure chaos, including the first line, it is an encrypted file, which you can give a .pgp extension.
+Create your PGP key
+
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys)
+In the Passwords and Keys window, click File > New
+Choose PGP key, and then continue
+Enter a full name and email address (these do not have to be real)
+Click 'Advanced key options'
+Adding a Comment is optional
+Choose RSA and set the Key Strength to "4096" bits. You do not need to set an Expiration Date
+Click Create
+Make a strong password and remember it (it is unrecoverable)
+Your brand new public PGP key is visible by selecting GnuPG keys from the left column of the Passwords and Keys window
+By right-clicking your key and selecting Properties, you can view its details, as well as change its password
+
+Export and share your public PGP key
+
+Open the Passwords and Keys program  (Applications > Utilities > Passwords and Keys)
+Select the GnuPG from the left column
+Click your key to highlight it
+Click File > Export
+Select Armored PGP keys from the PGP Keys drop-box (in the bottom right corner of the Export window)
+Give your key any Name you wish, just make sure it has the .asc extension (keyname.asc)
+Choose a location, and then click Export
+This file is your public PGP key. As the name suggests, it is for the public. You can share it with anyone, post it on a website, and give it to your worst enemy. It is used to 'lock' a file so that only you can 'unlock' it
+An Extra Special Step - Go to the location that you saved your exported public PGP key and use gedit to open it (right-click the file, Open with > gedit Text Editor). The text is your actual public PGP key. You can share this text instead of sharing the file. For example, instead of attaching a public PGP key file to an email, you can paste its text into an email. Likewise, you can post the key's text on a website as opposed to the file 
+
+Copy everything, Starting with "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+and ending with "-----END PGP PUBLIC KEY BLOCK-----"
+Import someone else's public PGP key
+
+Save their filename.asc or filename.pgp public PGP key (you can save it anywhere, this is temporary). If you only have the text of someone's public PGP key, copy the text into gedit and save it as filename.asc. The filename can be any name you choose
+
+Copy everything, Starting with "-----BEGIN PGP PUBLIC KEY BLOCK-----"
+and ending with "-----END PGP PUBLIC KEY BLOCK-----"
+
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys)
+In the main window, click File > Import
+Find and open filename.asc
+You have imported the key and can see it by selecting GnuPG keys from the left column
+You can now delete the original filename.asc file that you used in Step 1
+
+Import a public PGP key from a Keyserver
+You can easily look up someone's public PGP key if they upload it to a keyserver. Keyservers are databases that anyone (even you) can use to share their public PGP key(s) with the world. To import someone's public PGP key from the keyservers:
+
+Make sure you are connected to the internet
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys)
+Select Remote > Find Remote Keys
+Enter a search term, such as a Key ID or a Key name
+A list of public PGP keys containing the search term will appear. To Import a key, right-click it and select Import. Once imported, you can close the window
+The public PGP key is visible by selecting GnuPG keys from the left column
+
+Encrypt a file with PGP
+In the next steps, you are NOT using the Passwords and Encryption Keys program
+
+Before you choose a file to encrypt, you must have already imported the intended recipient's public PGP key. If you do not have anyone else's public PGP key, you can use your own key and send a file to yourself. Better yet, make a second public PGP key, and then use it 
+Find the file that you want to encrypt (it can be on your desktop, in the persistent folder, or wherever) (if you need a file to test, just open gedit, write yourself a little note and save it)
+Right-click the file and select Encrypt
+The Choose Recipients window will open. The public PGP keys you have in your system are listed
+ Select the recipient(s) for whom you are encrypting the file. Whether or not you sign the file is up to you. If you sign it, when the recipient decrypts the file they can see it is from you. It is kind of like putting your signature on a letter 
+Click OK
+If you do not sign the file, you will be prompted to name the file. Any name will do (filename.pgp), and then click OK
+Only the chosen recipient(s) will be able to decrypt the file
+You can now send the encrypted file
+
+Sign a file using your PGP key
+You can put your signature on a file, so people know it is from you, not an impostor. You can sign both encrypted and non-encrypted files. 
+
+Find the file that you want to sign (it can be on your desktop, in the persistent folder, or wherever) (if you need a file to test, just open gedit, write yourself a little note and save it)
+Right-click the file and select Sign
+Select your PGP key from the Choose signer window, and then click OK
+If prompted, enter your key password, and then click OK
+At the location of the original file, a second file appears. It has the same name as the original, plus '.sig' added to the end (filename.txt.sig appears after signing filename.txt)
+The person verifying your signature needs three things, the original file you signed, the '.sig' file and your public PGP key (filename.txt, filename.txt.sig and your_public_key.asc)
+
+Where security gets tricky
+Ideally, the person verifying your signature had previously received and verified your public PGP key.
+This process works like bank signatures did in the old days.
+
+When you opened a checking account, you would go the bank in person and sign a signature card. This way the bank had your authentic signature on file
+When a check came into the bank, they would compare the signature on the check with the authentic signature on file
+If the signatures matched, they would consider the check authenticated 
+
+Now, suppose the bank received a signature card and a signed check at the same time. Meanwhile, you were not present. Even though the signatures match, the bank cannot tell if they are authentic. 
+You face the same dilemma if you get a public PGP key online at the same time as a signed file. You need a way to authenticate the public PGP key before you can use it to authenticate a signed file.
+Authenticating a public PGP key
+There are a two ways to make sure you have someone's actual public PGP key, not a fake.
+
+You can check the key with the Keyservers
+You can check the key by its Fingerprint
+
+Authenticate with the Keyservers:
+If someone trusts that a public PGP key is authentic, they can sign it. When you import a particular key, you can see the keys of all the people that have chosen to sign it publicly, vouching for its authenticity. Using the terminal, you will view these signatures.
+
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys)
+Select the GnuPG from the left column
+Right-click an imported public PGP key, and then select Properties (as an example, select Tails Developers tails@boum.org 'offline long-term identity key')
+Take note of the Key ID, because you will need it in a moment (in this case, 58ACD84F - as of February 6, 2016). You can leave this window open while you proceed to the next step
+Open the Terminal program (Applications > Utilities > Terminal)
+In the Terminal window, type "gpg --list-sigs Key_ID". In this example, you would type gpg --list-sigs 58ACD84F 
+The terminal displays a list of signers
+
+The more signatures that are from people you know and trust, the more trust you can have in the keys authenticity
+This trust stuff is a big deal for software developers collaborating on projects and, in the case of my family, Christian missionaries spreading the word in hostile lands. For most other people, PGP is just a way of pretending to be Batman and Robin exchanging puppy memes without the Joker eavesdropping.
+Authenticate with the key's Fingerprint.
+To check a key's Fingerprint:
+
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys), and then import the key in question
+Select the GnuPG from the left column
+Right-click the key, and then select Properties
+Under the Details tab is the key's Fingerprint (for example, the Tails developers fingerprint is A490 D0F4 D311 A415 3E2B B7CA DBB8 02B2 58AC D84F)
+Compare the Fingerprint to that of others who have the same key in their possession. The more corroborating sources, the more trust you can have in the keys authenticity. If it is a popular key, an online search may provide a number of comparisons 
+If you believe the key is fake, you can delete it (right-click the key, and then select Delete)
+
+Upload your key to the keyservers / Sync keys you have signed
+You DO NOT need to upload your public PGP key to the keyservers in order to sync the other keys. However, if you want your public PGP key publicly available, use the following "sync everything" steps. If you would rather not publicly list your public PGP key, use the following "sync a particular key" steps.
+To upload/sync everything...
+
+Open the Passwords and Keys program (Applications > Utilities > Passwords and Keys), and then import the key in question
+Select Remote > Sync and Publish Keys
+Click Key Servers, and then choose a keyserver from the Publish keys to: drop-down menu and click Close 
+Click Sync
+Your personal public PGP key will be uploaded. Also, the other keys will sync to reflect new trust signatures 
+
+Authenticate software
+
+Download the following files into one folder...
+
+
+Download the program or file that you will be authenticating (filename.iso, filename.txt, etc.)
+Download the signature file (it should be filename.iso.sig, filename.txt.sig, etc. Sometimes it has a .pgp or .asc file extension - just rename/change the extension to .sig.
+If you do not already have it, download and import the signing party's public PGP key, also known as the "signing key" (usually developername.asc or developername.key)
+
+Wait for all three files to download before preceding
+
+If you need to, authenticate the imported public PGP key, aka "signing key" (get it in person, check the keyservers, fingerprint or whatever else works for you)
+Verify the signature...
+
+
+If the signature file does not have a '.sig' extension, rename it (if it is filename.xxx.asc, rename it filename.xxx.sig) (right-click > rename).
+Right-click filename.xxx.sig and select Open with Verify Signature
+In the top-right corner, you will either see filename.xxx Good Signature, filename.xxx Untrusted Valid Signature or filename.xxx Unknown Signature
+
+If you see filename.xxx Good Signature or filename.xxx Untrusted Valid Signature, you have authenticated the file! ('Untrusted Valid Signature' means that the signature matches but you have not previously established trust in the signer)
+If you see filename.xxx Unknown Signature, you have not authenticated the file. Either you did not download the entire file, forgot to import the public PGP key before checking the signature, imported the wrong public PGP key, or the signature is wrong or forged.
+Authenticate software (Real Life Example)
+Here is a real life example using a few demonstration files from my website
+
+Make sure you are connected to the internet, and then open the Tor Browser (Accessories > Internet > Tor Browser)
+Go to https://howtobeanonymousonline.info/pgpkey/
+Right-click 'Anna M Eydie Public PGP Key', and then select Save Link As
+Click Save to save annameydie.asc. Any location will do
+Now, go to https://howtobeanonymousonline.info/sigtest/
+Right-click 'Some Random File', and then select Save Link As
+Click Save to save some_random_file.zip. Any location will do
+On the same web page, right-click 'Some Random File Signature', and then select Save Link As
+Click Save to save some_random_file.zip.sig. You must save it to the same location as some_random_file.zip
+You can close or minimize the Tor Browser
+Using the File Manager (Applications > Accessories > Files), navigate to the location of annameydie.asc
+Right-click annameydie.asc, and then select Open With Import Key. A 'Key Imported' message will display along the bottom of your screen
+Now, navigate to the location of some_random_file.zip and some_random_file.zip.sig
+Right-click some_random_file.zip.sig, and then select Open With Verify Signature
+A 'some_random_file.zip.sig: Good Signature' message will display along the bottom of your screen 
+
+
+
+
+
+
+
+
+
+
+
+Section: Email, Chatting, Messaging
+I do not trust email providers and neither should you.
+Since the Snowden scandal erupted, there are service providers touting their non-USA based servers. To me, this means nothing. What do I care if the server is in the United States or not? The United States is not the only country with intelligence agencies that want to read people's email. The only difference between the United States and other countries is Edward Snowden happened to work for the USA, so he blew his whistle on them and fled to Russia. If he worked for the Russians, he would have blown the whistle on them, fled to the United States and received a medal from the President. If he worked for North Korea, he would have been too hungry to blow the community whistle. 
+Anyway...
+Three criteria for anonymous email:
+
+A confirmation method must NOT be required. Confirming an account requires that you already figured out how to be anonymous for the previous account, which would then mean you do not need a new anonymous account.
+JavaScript must NOT be required since it is a vehicle for malware.
+Tor affiliated IP addresses must be allowed. Gmail, for instance, blocks IP addresses it links to Tor.
+
+Email providers that meet all three criteria:
+You can use any email provider that meets the three criteria. You are not limited to one I mention. However, you are limited by the difficulty in finding providers that meet the criteria (Hushmail does not meet the criteria). 
+*If the limits prove too constricting, I cover alternative email options later in this section*
+The risk with email providers is they can change or shutdown at any time. Since I first wrote these instructions, I have had to abandon three email providers. One no longer meets our criteria, another quit accepting new accounts, and a third shutdown. At the moment, one service, Safe-mail.net, meets the three criteria.
+[Latest Update: a new email service, https://ruggedinbox.com, now meets the three criteria!]
+Safe-mail is not safe! Do not let anyone tell you otherwise. Its servers are in Israel. It is easy to imagine that a backdoor is built into their system per government request. Having said that, Safe-mail meets the three criteria. You just have to access the website from within your anonymous system and encrypt messages yourself BEFORE they are uploaded and sent. If you follow the rules, you do not need to trust the email provider that you use.
+Signing up with Safe-mail
+
+Go to https://www.safe-mail.net
+Click Sign Up now!
+Read about how you give them the right to access your account, and then Agree (or Disagree and go home)
+Fill the stuff out and click Sign Up
+Congratulations! it will say.
+From your browser's address bar, go back to https://www.safe-mail.net. (if you click the 'Continue to Safe-mail System' button, you are taken to the JavaScript interface. It will not work well)
+On the main page, when you sign in you need to select Fast (no scripts or icons) from the Interface drop-down menu. The other interface options do not work with JavaScript disabled
+If you get a Security message, just click Continue. If you get a Your IP Address has changed... message, just enter your password and Continue
+
+Now, you have an anonymous email account. 
+Is Not-so-Anonymous email actually more Anonymous?
+Anonymous Email is NOT convenient. First of all, since options are limited, you are totally dependent on a service not shutting down or changing its system in a way that is incompatible with your system. Second of all, you might not want an email address that looks anonymous. Your careless boss is going to keep an eye on you, wondering why you need a '@safe-mail.net' email address. To be honest, I would never use Safe-Mail.net. I do not think they have a bad system; I just think using them puts a target on my back.
+A now defunct email provider, TorMail, was the source of a major JavaScript exploit in which an attacker was able to insert malware into the systems of Tor users visiting the TorMail website. The malware learned a TorMail user's real IP address and then reported it back to the attacker. The malware relied on the user having JavaScript enabled in an outdated version of Tor Browser running on a Windows System. Users following this guide were immune to the exploit.
+Let us consider four reasons why TorMail and its users were likely targets. First, TorMail was run on servers owned by a small company specializing in anonymity, which also happened to host illegal websites. Second, TorMail was a relatively small, unknown service that was popular among individuals conducting illegal activity. Third, since TorMail was only accessible to Tor users, an attacker was going to put forth the creative energy to unmask its users. Fourth, in the event an attacker was able to access the contents of TorMail accounts (and they did), they could retrieve user's past communications and pseudonyms to link them to physical locations and real identities. Had TorMail been a large company, it is likely they would have had a security team in place to identify and stop attacks in a relatively short amount of time. Also, it would have run from in-house servers, not ones that also hosted someone else's content that may have been a target for seizure. Besides, had it not been billed as some super-secret anonymous email provider, nobody would have given it a look in the first place. 
+For the sake of inconspicuousness, selectively, thoughtfully breaking the JavaScript rule is not the end of the world. Following, are a few points that might help you decide if breaking the rule for email is right for you. 
+Instead of Windows, you are running Tails, an open source Linux operating system. This fact alone reduces the likelihood that you fall victim to a malware attack. It makes much more sense for an adversary to develop an attack for Windows than Linux since Windows has a larger user base. Not only does Linux have a smaller user base, but there are also numerous variants of Linux within that base. Additionally, being open source and popular, the Tails code has many eyes on it. An attack targeted at more than a few, select Tails users will hurriedly be recognized and rectified by the open source community.
+By running Tails from a DVD-R and selecting No when prompted at the initial More Options screen, you have two layers of security that the TorMail victims did not. Using the DVD denies the ability for a program to carry over from one session to another. Furthermore, when you select No from More Options, you deny Root Access. Without root access, changes cannot be made to system files. 
+There are also some advantages to using a well-known email provider: 
+
+The user base is huge. If an attacker gets into their system, it is far less likely that they will scour through your account than if you are on a smaller service with only a few thousand users.
+Anything you do is unlikely to stand out as unique among the user base, including using encryption and logging in from Tor. 
+The email provider's servers are not going to be shared with those of not-so-legit services, and, therefore, are not going to go down as collateral damage when some other service gets seized. 
+The service will not be out-of-business tomorrow. 
+It will be difficult for an attacker to execute a JavaScript exploit, especially for a sustained period. 
+Since you will encrypt your communications BEFORE you upload and send, a provider or attacker will not be able to read them. 
+
+Is not-so-anonymous email actually more anonymous? Weigh the options. If you need super-untraceable anonymous email, the account must meet the three criteria. However, your options are limited and may leave you using an email provider that draws unwanted attention. By flying under-the-radar, you have more services to choose from and are less noticeable. 
+Internet Relay Chat
+IRC (Internet Relay Chat) has been around since the old days... That is the 1980's. Just like Ray-Ban's and Will Smith, it has not aged a bit. It is simple, it is quick, you can send private messages, and you can group chat. So, let's get to it...
+Special Notice: Unfortunately, DDOS attacks on the Tor IRC server happen. During such events, connections may fail. So, if you cannot get a connection, despite doing everything right, you are not crazy. 
+Chatting
+
+From the top toolbar, Go to Applications > Internet > Pidgin Internet Messenger
+The "Buddy List" and "Accounts" windows will open... If not, look at the right half of the top toolbar. To the left of the Green Onion icon will be an icon that looks like a little message box behind a circle. Click this icon and the windows will open. Then, select Accounts > Manage Accounts
+An account that you can use is already created with a random username. To use it, click the checkbox in the "Enabled" column next to random_username@irc.oftc.net. I will show you how to create a new account later.
+
+(If you are working within your Persistence system, your account and username will carry over to future sessions. If not, you will have a new name for each session)
+
+A third window will open and display your connection (If you get an SSL Connection Failed, double check to see if you are online). At the top of this window select Conversation > Join a Chat.... You can also join a chat from the Buddy List window by selecting Buddies > Join a Chat...
+Now a fourth window opens! Just click Room List
+Finally, your last window is open!!! From this Room List window, you can... you guessed it... choose a chat room. Just scroll around, pick a room and click Join (you can join more than one room)
+Move or Close the Room List window and go back to the Conversation window. Your room choices will show as Tabs. Click the tab for a room and go chat 
+To Instant Messaging an individual, right-click their name, select IM and send a message
+I want you to look at something. Right-click a name in the names list and select Info (your name or someone else's... it does not matter). There is revealing information here. If you log in to IRC from outside Tails, the information under the Username will be your IP address and internet provider. Kim Jong-Un's cyber scouts would love to see this it!
+
+Messaging
+
+In the Buddy List window, select Buddies > +Add Buddy
+Add the username of the buddy you want to instant message within the Buddy's username box (I realize you probably do not have a buddy yet, so, the easiest thing to do is run Tails on a second computer, open up another IRC window and talk to yourself OR you can go randomly select some lucky user in some random chat room and hope he/she is lonely enough to humor you)
+You will now see your buddies name under Buddies in the Buddy List window. Right-click it and select IM
+You can chat away, BUT, you need to follow a couple more steps to be Private
+From the top toolbar of your Chat window, select OTR > Start private conversation
+After a few seconds, your conversation will turn private, BUT, you still need to Authenticate your Buddy
+Again, select OTR, and then select Authenticate buddy
+The Authenticate Buddy window will open. There are three options for authenticating your buddy. For simplicity, just choose Question and answer. Then, type a question and answer that only you and your buddy know and click Authenticate 
+Your Buddy will receive the question on her end. If answered correctly, you will be told Authentication successful. Your Buddy is now Authenticated (Even though you just Authenticated your Buddy, she has not Authenticated you. To Authenticate you, she will send you a question)
+Click OK
+Go back to the Buddy List window that has been open the whole time. Right-click your Buddie's name and select OTR Settings. The OTR Settings window will open
+Uncheck Use default OTR settings for this buddy
+Check Enable private messaging, Automatically initiate private messaging and Require private messaging
+Whether you want to "log OTR conversations" is up to you. Personally, I do not log anything, just in case Kim Jong-Un gets into my Persistence system. Then again, the whole point of a Persistence system is so you can save stuff like this, so, to each his own.
+DONE. Yay!
+
+Other IRC stuff
+Adding Another Account:
+
+From the Buddy List window, select Accounts > Manage Accounts
+In the Accounts window, click the Add button
+The Modify Account window will open
+IMPORTANT - There are 1000's of IRC networks throughout the world. Many block TOR IP addresses... meaning they are blocking you. If you are curious, internet searches will turn up other networks and their settings. We will use the irc.oftc.net server.
+Input the following in the Modify Account window, under the Basic tab:
+
+
+for Protocol, select IRC
+for Username, type whatever you want your username to be
+for Server, enter irc.oftc.net
+
+
+Under the Advanced tab:
+
+
+for Port, enter 6697 (not 6667)
+for Encodings, enter UTF-8,ISO-8859-1
+for Ident name and Real name, enter the username you created in the Basic tab
+check Use SSL. Leave the rest unchecked
+under the Proxy tab, leave Use Global Proxy Settings as the choice for Proxy type
+click Add
+enable an account by checking the Enabled box for your new account. You can also enable and disable accounts by selecting Accounts in the Buddy List window
+ERROR - If you get an SSL Handshake Failed message, close out the entire messaging program (Buddies > Quit) and then restart it
+once all is well, you will have a fresh, clean Buddy List and a new xxxxxx.oftc.net identity
+
+Sending/Receiving Files
+This feature does not work on IRC through the Tor network. Sorry.
+Add Buddy Pounce
+This is for you to set some notifications
+
+Right-click your Buddies' name and select Add Buddy Pounce...
+Check the boxes that fulfill your Buddies' activity notification desires
+
+
+
+
+
+
+
+
+
+
+
+Section: Writeprints - They will identify those other anonymous netizens... but not you
+As I stated before, my goal in writing this manual is to provide you with a means of being anonymous. It is not intended to be a comprehensive book about anonymity technology, so, please forgive me for the brevity on this topic. Still, I will try to give you a clear understanding of writeprints, how they can be used as a weapon against your anonymity and how to counter the attack. A sharp, good looking person like you can keep the writeprinters off your ass with just a little bit of knowledge and effort. Let's get to it. 
+Writeprints are a means of identifying an author solely from the characteristics of her written work. It is a separate discipline from handwriting analysis and digital forensics. With the ability for individuals to mask IP addresses and minimize digital fingerprints, writeprinting is often the only method available to identify the author.
+The field of writeprinting is far from perfect, however, the accuracy of some writeprinting analysis is scary. Bloggers, tweeters, chatters, and posters are identified enough to warrant concern. I do not rank writeprints as high as fingerprints, digital fingerprints, handwriting analysis or DNA when it comes to evidence. Writeprinting is more comparable to a witness telling the police that the thief was "around 5'5, 300lbs, round-faced, oddly tanned skin, had short brown hair shaved on the sides, was smiling, waving, wearing a Dennis Rodman jersey and riding a white stallion into the sunset." That does not give the police a name or address, but, it does allow them to focus their search.
+A number of methods are available for writeprint analysis. Most seek to identify an author by combining a variety of features, such as average word length, vocabulary complexity, favorite words, topics, grammar, punctuation, capitalization and sentence length. These nuances vary enough among individuals that they can be compiled to create a unique writeprint. To clarify, when I talk about the author, this does not only mean someone that has written a book, article or some other large body of work. That applies to individuals who post on message boards, tweet, blog or email. Ten 50 word tweets can be as useful as one 500 word email. 
+As part of China's 12th Five-Year Plan, funding was provided for extensive research into identifying bloggers with writeprints. Apparently, they find it imperative to identify people who exercise free speech. A China funded study at their own Wuhan University had an 80% success rate when attempting to single out different authors from a pool of 50 Amazon.com reviews [1]. Of course, China is not the only beneficiary of writeprinting. Corporations and other governments can use writeprints to identify whistleblowers.
+The most famous case study in writeprinting involves the Federalist Papers. The Federalist Papers are 85 anonymously authored articles, published in the late 1780's, to promote the ratification of the United States Constitution. Speculation by scholars, as well as contradicting claims by various Founding Fathers, narrowed the field to only a handful of potential authors. Researchers writeprinted the 85 articles and determined there were three authors. Author #1 wrote 51 articles, Author #2 wrote 26 articles, Author #3 wrote five articles, and Authors #1 and #2 collaborated on three articles. By matching the writeprints of each article with the writeprints of the Founding Fathers, it was determined that Author #1 was Alexander Hamilton, Author #2 was James Madison, and Author #3 was John Jay.
+Investigators are not always so lucky as to have a list of suspects from which to identify an author. This scenario was tested by a team of researchers who mined writeprints from an email database in which all emails were anonymous, and no suspects were given. The researchers extracted each email's writeprint. With that, they grouped the emails by their respective authors (example: suppose there were 100 emails, they determined 30 emails were by one author, 20 by another and 50 by a third). Once each author's emails were grouped, creating a larger body of work per author, a more accurate writeprint was extracted [2]. No further attempt was made to identify each author's true identity, but, one can only imagine what an entity with large resources and supercomputers scouring the web could do with the "more accurate" writeprints. 
+In another project, researchers extracted unknown authors writeprints from individual, anonymous blog posts. The writeprints were matched against a database of 100,000 non-anonymous blogs (2.4 million blog posts in total). With no further personal investigative work and strictly using open source software, the researchers were able to identify successfully the authors 7.5% of the time. When the researchers extracted an unknown authors writeprints using three anonymous blogs posts, the success rate grew to 25%. Even when writeprinting failed to match unknown authors to their non-anonymous blogs, the field of possibilities was often narrowed from 100,000 to 20 [3]. 
+Given the previous research, let's play out a scenario that applies existing technology:
+
+An anonymous whistleblower named Sam is one of ACME Corporation's 100,000 employees.
+Sam anonymously writes an open letter to The News Network Times detailing the evil doings of ACME Corporation.
+Sam is thrilled to find The News Network Times publishes his open letter. The whistle is officially blown!
+ACME Corporation hires investigators to identify the whistleblower.
+Using existing software, the investigators writeprint Sam's letter and run it against ACME Corporation's database of emails from its 100,000 employees.
+Depending on the length of Sam's letter, we can project that there is a 7.5% to 20% chance the writeprinting software identifies Sam as the whistleblower.
+
+Realistically, the investigators are going to be more thorough. The scenario will probably go more like this:
+
+An anonymous whistleblower named Sam is one of ACME Corporation's 100,000 employees.
+Sam anonymously writes an open letter to The News Network Times revealing ACME Corporation's secret toxic waste dump in Tumangang City.
+Sam is thrilled to find The News Network Times publishes his open letter. The whistle is officially blown!
+ACME Corporation hires investigators to identify the whistleblower.
+From the subject of the letter, it is clear that Sam is one of the 900 employees that have worked in Tumangang City since 2006.
+Using existing software, the investigators writeprint Sam's letter and run it against ACME Corporation's database of emails from those 900 employees.
+
+Given this scenario, there is probably a much greater than 7.5% to 20% chance that the software correctly identifies Sam from the 900 employees. There is probably a near 100% chance that the writeprinting software can narrow the field to 20 suspects, of which Sam is included. From these 20 suspects, traditional investigative techniques can probably weed out Sam as the whistleblower. 
+This scenario might be hypothetical, but, it is not unrealistic.
+You have an advantage over Sam in that you know writeprints exist. As such, you will not be naive when you send that letter exposing the toxic waste dump in Tumangang City. Moreover, since you are a genius, you can wear your leather writer gloves, so your prints do not end up all over the net.
+IMPORTANT - You should not mask your writeprints in your daily life. You only mask them when you need to be anonymous. You do not want to alter your non-anonymous writeprints and end up with them matching your anonymous ones.
+A few techniques you can apply to anonymize writing:
+
+Put your writing through online language translators. DO NOT rely on translators as the sole method of masking writeprints. Writeprinters can detect the use of online translators and the languages used. From there, it is occasionally possible to reverse-translate the writing to extract a writeprint [4,5]
+Write in short sentences to minimize the expression of your personality and the ability for writeprinters to match average sentence length to your daily writing [6].
+Write at an average level of intelligence, not at your physics Ph. D. level of intelligence [6]
+Do not use fancy words or elaborate descriptions. Favorite adjectives, rarely used words and consistent choices among words with many synonyms can be matched to your real life writing (Example: don't say he is mindless, dopey, idiotic, nonsensical, rash or half-baked. Just say he's fucking stupid) [6]
+Do not write in paragraphs. Writeprinters will compare average paragraph length to that of your daily writing [5]
+Write less than 250 words. Writeprinters want at least 500 words to pull an accurate writeprint. The 500 words could be from an email, compiled tweets, chatroom conversations, etc. [2]
+If the short sentences and robotic writing style do not appeal to you, try to observe and mimic another author. This is often successful [6]
+Do not make spelling mistakes or typos. Writeprinters will try to match those errors to your daily writing [2]
+Use perfect punctuation or do not use it at all (you can still use 'periods'... it's the 'commas' that'll kill ya). Again, writeprinters will try to match those errors to those of your daily writing [2]
+
+You do not necessarily need to follow all of these methods. You can pick and choose those that you feel best work for you
+Applying the previous techniques can make you stand out as trying to hide your writeprints. Feel free to use them as a guide to fake your writeprints instead of following them exactly to obscure your writeprints
+Above all else, writeprinting relies on your consistency as a writer. Fortunately, you can change your style anytime without too much hassle.
+For fun, visit http://www.textalyser.net to have stuff writeprinted.
+
+
+
+
+
+
+
+
+
+Section: Bitcoin is NOT Anonymous
+Think of Bitcoin as digital cash. Until recently, it served as a means for high-risk currency trading, gambling and drug dealing. It was popular for these transactions because it was unregulated, easily used internationally and could be traded for government-issued currencies on exchanges, the most famous being the now-defunct Mt. Gox.
+Here is a tiny history of Bitcoin. It was introduced to the world in 2009 via the white paper "Bitcoin: A Peer-to-Peer Electronic Cash System." Just about nobody cared about Bitcoin until 2011 when the price of one Bitcoin went from $1 to $32 and back down to $2. After this first crash, financial nerds figured Bitcoin was just a cheap thrill that would soon fade away. After creeping up to $14 by the end of 2012, Bitcoin reached $1240 on December 4, 2013. Now, Bitcoin has scrutiny. Venture capitalists, FBI agents, and Academics are all over the technology, and, for various reasons, are dedicating resources to tracking and identifying users. The IRS and DEA showed that they are in the game by making the high-profile arrests of Charlie Shrem, CEO of BitInstant and Robert Faiella, aka BTCKing, from the Silk Road on January 27th, 2014 (read a brief of the events at https://howtobeanonymousonline.info/bitcoin/busted/.
+Before I go into why Bitcoin is not anonymous, I want to mention why Bitcoin is awesome:
+
+It makes online transactions easy without involving third parties.
+It avoids big payment processing fees. 
+It gives the little guy a chance to have fun trading currencies with limited funds and minimal commissions.
+It has no central authority.[1]*
+
+While I am not going into all the details of Bitcoin's inner workings, I am going to dispel the misconception that Bitcoin is anonymous. In fact, Bitcoin is the most public payment system in the world. Previously, it was considered "anonymous" because no entity cared enough to track transactions and identify users. Well, as I just mentioned, they care now.
+Tracking Bitcoin is manageable for those with ample resources because every Bitcoin transaction is broadcast to the world through what is known as the Blockchain (visit https://www.blockchain.info to see). The Blockchain prevents a person from double spending a Bitcoin. Since every transaction is broadcast to the public, the "anonymity" comes from the fact that an individual's Bitcoin wallet address is publicly displayed instead of their actual identity. This is known as pseudonymity, not anonymity.
+Here is a liberal scenario to help explain why this is a problem.
+
+We have one $5 Bill and three people using fake names, Xavier the Addict, Yasmin the Dealer and Zack the Maker.
+For $5, Xavier the Addict buys a crack rock from Yasmin the Dealer.
+Now, Yasmin the Dealer takes the $5 and goes to Zack the Maker to buy fresh crack rocks for future sales.
+Xavier, Yasmin, and Zack worked on the "down-low", so nobody saw their activity. Since they did not raise anyone's suspension, nobody will try to backtrack the trail of the $5 Bill (that links Xavier to Yasmin to Zack), or investigate their real identities. 
+
+Let's rework this scenario with a Bitcoin.
+
+We have one Bitcoin (β1) and three people using fake names, Xavier the Addict, Yasmin the Dealer and Zack the Maker.
+For β1, Xavier the Addict buys a crack rock from Yasmin the Dealer.
+Now, Yasmin the Dealer takes the β1 and goes to Zack the Maker to buy fresh crack rocks for future sales.
+Even though Xavier, Yasmin, and Zack are fake names, since they used a Bitcoin, their fake names (i.e. wallet addresses) and the chain of transactions that link them together are broadcast to the world.
+
+Using Bitcoins, Xavier, Yasmin and Zack thought they were on the "down-low" since all of their activity was done behind their computers using fake IP addresses and randomly generated "anonymous" Bitcoin wallet addresses. So wrong they are!
+There are a number of ways to track Bitcoins along their transaction chain [7]. In fact, many stolen Bitcoins have never been used because there are no places to spend them without the risk of being identified. If they are traded on one of the major Bitcoin exchanges for government-issued currency, to be useful, the money must eventually be transferred to a bank. Subpoenaing an exchange would reveal where the money was transferred to or from. Subpoenaing the bank would identify who owned the account (Subpoenaing an exchange is one of the means the Feds used to identify BTCKing, from the Silk Road, as Robert M Faiella). If the Bitcoins were used to purchase physical goods, those physical goods would need to be physically delivered, exposing the receiver to the risk of identification or the goods to possible seizure. Selling a lot of Bitcoins in person is unrealistic since a well-informed person would not buy an enormous volume of Bitcoins from a mysterious seller knowing we now live in a world where the FBI can and has seized illegally obtained Bitcoins (read about Ross William Ulbricht).
+Thank God for Bitcoin "laundry" services! They will scrub those dirty, traceable Bitcoin's clean... Right? Maybe?? Hopefully???
+Nope.
+Using a Bitcoin laundry service assumes two things; First, they will wash your Bitcoins. Second, you can trust them for anything else.
+Washing a Bitcoin is no simple task. The laundry service needs to mix your Bitcoin with LOTS of other Bitcoins. Then, those mixed Bitcoins must be divvied up and sent through LOTS of separate transactions where, again, they are mixed with new Bitcoins and re-divvied up at every step. That must happen to the point where it is statistically impossible to prove the link from a fraction of the Bitcoin at the beginning of the process to a fraction of the Bitcoin at the end of the process. That just is not going to happen. In fact, researchers tested out some Bit-Laundry services. The results? The Bitcoins were stolen, or the same Bitcoins were returned [7]. I am no genius, but, I would say if you took your dirty shirt to the cleaners and it came back dirty, you got f-cked. If you took your dirty shirt to the cleaners and they stole it, you got double f-cked.
+Using a Bit-laundry service also brings us back to the third party trust issue. This entity could be tracking or sharing data, susceptible to subpoenas or under siege by Kim Jong-Un. Seriously, when is the last time you went to the cleaners, and it was not run by Koreans? I certainly can't remember.
+So what the heck!
+As with everything else cyber-related, there are computer geeks working on a solution. Last year, the John Hopkins University Department of Computer Science began developing Zerocoin, an add-on to Bitcoin to anonymize Bitcoin transactions. This year, the Zerocoin developers joined another group of developers and renamed the project Zerocash.
+Zerocash will make use of two new crypto-currencies, a new 'Zerocoin' and a yet-to-be-named 'basecoin.' Zerocoins will be anonymous, and the basecoins will not.
+If a user cannot initially obtain Zerocoins through a transaction, she will purchase or accept basecoins, and then convert those to Zerocoins. Once the user has Zerocoins, they can be spent without revealing the coin amount or addresses of the parties involved and without relying on a central authority. Importantly, the Zerocoins will not need to be spent in the same amount as the original basecoin conversion (an improvement upon the original Zerocoin project). In other words, a user can convert two basecoins into two Zerocoins, and then only spend one. As long as the two parties in the transaction are willing to accept Zerocoins, there will be no need to convert back to basecoins, although that will be an option. The Zerocash project remains in the testing phase.
+In my opinion, for crypto-currencies to achieve widespread use, they must incorporate anonymity. Imagine if all of your financial records are public. Your coworkers will see your income. Your useless friend that needs a loan or your needy pastor that wants to remodel the chapel will know your bank balance. Your nosy neighbor will tell everyone you are broke and a month behind on your Mercedes payment. If the current Bitcoin becomes a dominant currency, this will be your reality.
+On my blog (https://howtobeanonymousonline.info/) I will keep you up to date on crypto-currency anonymity innovations.
+
+
+
+
+
+
+
+
+
+The Great Flaw - You are not Stealth, You are Secure
+At the source, anyone spying on your home internet connection can see if you are using Tor (You Are Not Stealth). They cannot see what you are doing, whom you are talking to or what you are reading. All they know is that you are going somewhere, and they will probably not find out where (You Are Secure). 
+In the middle, out in the Tor network, spies can see activity. They cannot see what it is, where it came from or where it is going (You Are Secure).
+At the destination, wherever that may be, spies can see Tor users visiting. They cannot see who the visitors are or where they came from (You Are Secure).
+On a grand scale, this is all the security you need. It does not matter that you are not stealth. Since you are one person out of hundreds of thousands floating across the Tor network every second, it should not be inferred which of those anonymous connections is yours. On an intimate scale, this is not the case.
+During December 2013's final exam's week, Harvard University was emailed a bomb threat. Upon reviewing the email, the FBI could see that it was sent using the Guerrilla Mail service from a Tor IP address. From there, they searched Harvard's system records for all students that accessed Tor around the time of the email. Next, they asked those students if they sent the bomb threat. One student, a Korean whose surname happens to be Kim, confessed (I swear to God, it was a Korean named Kim).
+I only use this story as an example of blowing one's cover because the good morality stories do not make the news. Please do not send any bomb threats. You will make us both look like a--holes.
+ 
+
+
+
+
+
+
+
+
+
+
+In Closing
+The Germans used the "unbreakable" Enigma machine to encrypt communications during WWII. Unfortunately for the Nazis, the United Kingdom's Ultra program broke Enigma, and the Brits read their sh-t. See the story in the movie The Imitation Game!
+In the 1950's, the United States was flying over the Soviet Union with a badass spy-plane called the U-2. Even though the Soviets could see it, it was too high to shoot down. Then, on May Day, 1960, the Soviets shot one down. 
+In the 1970's, the Data Encryption Standard was developed and implemented as the United States' federal standard for data encryption. In 1998, it was broken by brute force using background processing power provided by volunteers on the internet. 
+Eventually, all security is breached. When? Who knows. Apply the analogies as you see fit. 
+A M Eydie
+***
+If you want to say something nice, Amazon.com has a comment section...
+If you hate me and/or this guide, instead of leaving a bad review, get a refund (Amazon.com > Your Account > Manage Your Content and Device > Actions > Return for Refund)
+***
+To donate to Tails, visit: https://tails.boum.org/contribute/how/donate. 
+***
+If you want to send an e-card to taunt or praise Kim Jong-Un, one of these cheerleaders for human equality can forward it to him: http://www.korea-dpr.com/organization.html. Long live the Kim's!
+***
+
+
+
+
+
+
+
+
+
+The following works are cited in these instructions:
+
+ 
+
+1: Jianwen Sun, Zongkai Yang, Sanya Liu, Pei Wang, Applying Stylometric Analysis Techniques to Counter Anonymity in Cyberspace, 2012
+2: Iqbal, Farkhund, Hamad Binsalleeh, Benjamin Fung, and Mourad Debbabi, Mining writeprints from anonymous e-mails for forensic investigation, 2010
+3: Michael Brennan, Rachel Greenstadt, Deceiving Authorship Detection, 2011
+4: Aylin Caliskan, Rachel Greenstadt, Translate once, translate twice, translate thrice and attribute: Identifying authors and machine translation tools in translated text, 2012
+5: M. Schmid, Computer-aided Writeprint Modeling For Cybercrime Investigations, 2012
+6: Michael Brennan, Rachel Greenstadt, Practical Attacks Against Authorship Recognition Techniques, 2009
+7: Meiklejohn, Sarah, Marjori Pomarole, Grant Jordan, Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker, and Stefan Savage, A fistful of bitcoins: characterizing payments among men with no names, 2013
+
+ 
+
+ 
+
+
+[1]              In the first half of 2014, a Bitcoin mining pool named GHash.IO came to comprise over 50% of the mining power in the Bitcoin network. Previously, it was thought to be practically impossible for a single entity to gain such a large position. GHash.IO could have used their position to manipulate and compromise the Bitcoin system... essentially, asserting some 'Central Authority' powers. Major Bitcoin miners left the pool to remove the 50% threat, as those most vested in Bitcoin would stand to lose the most if confidence in the currency evaporated. Do an online search of "Bitcoin 51% Attack" to learn more.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

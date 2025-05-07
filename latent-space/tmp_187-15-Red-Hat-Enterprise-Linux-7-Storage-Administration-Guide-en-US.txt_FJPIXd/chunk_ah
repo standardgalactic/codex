@@ -1,0 +1,1000 @@
+the I/O parameters of a device for optimal placement of all partitions. The fdisk utility will align all
+partitions on a 1MB boundary.
+parted and libparted
+The libparted library from parted also uses the I/O parameters API of libblkid. Anaconda, the
+Red Hat Enterprise Linux 7 installer, uses libparted, which means that all partitions created by either
+the installer or parted will be properly aligned. For all partitions created on a device that does not
+appear to provide I/O parameters, the default alignment will be 1MB.
+The heuristics parted uses are as follows:
+Always use the reported alignment_offset as the offset for the start of the first primary
+partition.
+If optimal_io_size is defined (i.e. not 0), align all partitions on an optimal_io_size
+boundary.
+If optimal_io_size is undefined (i.e. 0), alignment_offset is 0, and minimum_io_size
+is a power of 2, use a 1MB default alignment.
+This is the catch-all for "legacy" devices which don't appear to provide I/O hints. As such, by
+default all partitions will be aligned on a 1MB boundary.
+NOTE
+Red Hat Enterprise Linux 7 cannot distinguish between devices that don't provide
+I/O hints and those that do so with alignment_offset=0 and 
+optimal_io_size=0. Such a device might be a single SAS 4K device; as such,
+at worst 1MB of space is lost at the start of the disk.
+File System Tools
+The different mkfs.filesystem utilities have also been enhanced to consume a device's I/O
+parameters. These utilities will not allow a file system to be formatted to use a block size smaller than the
+logical_block_size of the underlying storage device.
+Except for mkfs.gfs2, all other mkfs.filesystem utilities also use the I/O hints to layout on-disk data
+structure and data areas relative to the minimum_io_size and optimal_io_size of the underlying
+storage device. This allows file systems to be optimally formatted for various RAID (striped) layouts.
+Storage Administration Guide
+190
+
+CHAPTER 24. SETTING UP A REMOTE DISKLESS SYSTEM
+To set up a basic remote diskless system booted over PXE, you need the following packages:
+tftp-server
+xinetd
+dhcp
+syslinux
+dracut-network
+NOTE
+After installing the dracut-network package, add the following line to 
+/etc/dracut.conf:
+add_dracutmodules+="nfs"
+Remote diskless system booting requires both a tftp service (provided by tftp-server) and a DHCP
+service (provided by dhcp). The tftp service is used to retrieve kernel image and initrd over the
+network via the PXE loader.
+NOTE
+SELinux is only supported over NFSv4.2. To use SELinux, NFS must be explicitly
+enabled in /etc/sysconfig/nfs by adding the line:
+RPCNFSDARGS="-V 4.2"
+Then, in /var/lib/tftpboot/pxelinux.cfg/default, change 
+root=nfs:server-ip:/exported/root/directory to root=nfs:server-
+ip:/exported/root/directory,vers=4.2.
+Finally, reboot the NFS server.
+The following sections outline the necessary procedures for deploying remote diskless systems in a
+network environment.
+IMPORTANT
+Some RPM packages have started using file capabilities (such as setcap and getcap).
+However, NFS does not currently support these so attempting to install or update any
+packages that use file capabilities will fail.
+24.1. CONFIGURING A TFTP SERVICE FOR DISKLESS CLIENTS
+Prerequisites
+Install the necessary packages. See Chapter 24, Setting up a Remote Diskless System
+CHAPTER 24. SETTING UP A REMOTE DISKLESS SYSTEM
+191
+
+Procedure
+To configure tftp, perform the following steps:
+Procedure 24.1. To Configure tftp
+1. Enable PXE booting over the network:
+# systemctl enable --now tftp
+2. The tftp root directory (chroot) is located in /var/lib/tftpboot. Copy 
+/usr/share/syslinux/pxelinux.0 to /var/lib/tftpboot/:
+# cp /usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/
+3. Create a pxelinux.cfg directory inside the tftp root directory:
+# mkdir -p /var/lib/tftpboot/pxelinux.cfg/
+4. Configure firewall rules to allow tftp traffic.
+As tftp supports TCP wrappers, you can configure host access to tftp in the 
+/etc/hosts.allow configuration file. For more information on configuring TCP wrappers and
+the /etc/hosts.allow configuration file, see the Red Hat Enterprise Linux 7 Security Guide.
+The hosts_access(5) also provides information about /etc/hosts.allow.
+Next Steps
+After configuring tftp for diskless clients, configure DHCP, NFS, and the exported file system
+accordingly. For instructions on configuring the DHCP, NFS, and the exported file system, see
+Section 24.2, "Configuring DHCP for Diskless Clients" and Section 24.3, "Configuring an Exported File
+System for Diskless Clients".
+24.2. CONFIGURING DHCP FOR DISKLESS CLIENTS
+Prerequisites
+Install the necessary packages. See Chapter 24, Setting up a Remote Diskless System
+Configure the tftp service. See Section 24.1, "Configuring a tftp Service for Diskless Clients".
+Procedure
+1. After configuring a tftp server, you need to set up a DHCP service on the same host machine.
+For instructions on setting up a DHCP server, see the Configuring a DHCP Server.
+2. Enable PXE booting on the DHCP server by adding the following configuration to 
+/etc/dhcp/dhcp.conf:
+allow booting;
+allow bootp;
+class "pxeclients" {
+   match if substring(option vendor-class-identifier, 0, 9) = 
+"PXEClient";
+Storage Administration Guide
+192
+
+   next-server server-ip;
+   filename "pxelinux.0";
+}
+Replace server-ip with the IP address of the host machine on which the tftp and DHCP
+services reside.
+NOTE
+When libvirt virtual machines are used as the diskless client, libvirt
+provides the DHCP service and the stand alone DHCP server is not used. In this
+situation, network booting must be enabled with the bootp file='filename'
+option in the libvirt network configuration, virsh net-edit.
+Next Steps
+Now that tftp and DHCP are configured, configure NFS and the exported file system. For instructions,
+see the Section 24.3, "Configuring an Exported File System for Diskless Clients".
+24.3. CONFIGURING AN EXPORTED FILE SYSTEM FOR DISKLESS
+CLIENTS
+Prerequisites
+Install the necessary packages. See Chapter 24, Setting up a Remote Diskless System
+Configure the tftp service. See Section 24.1, "Configuring a tftp Service for Diskless Clients".
+Configure DHCP. See Section 24.2, "Configuring DHCP for Diskless Clients".
+Procedure
+1. The root directory of the exported file system (used by diskless clients in the network) is shared
+via NFS. Configure the NFS service to export the root directory by adding it to /etc/exports.
+For instructions on how to do so, see the Section 8.7.1, "The /etc/exports Configuration
+File".
+2. To accommodate completely diskless clients, the root directory should contain a complete
+Red Hat Enterprise Linux installation. You can either clone an existing installation or install a
+new base system:
+To synchronize with a running system, use the rsync utility:
+# rsync -a -e ssh --exclude='/proc/*' --exclude='/sys/*' \ 
+hostname.com:/exported-root-directory
+Replace hostname.com with the hostname of the running system with which to
+synchronize via rsync.
+Replace exported-root-directory with the path to the exported file system.
+To install Red Hat Enterprise Linux to the exported location, use the yum utility with the --
+installroot option:
+CHAPTER 24. SETTING UP A REMOTE DISKLESS SYSTEM
+193
+
+# yum install @Base kernel dracut-network nfs-utils \ --
+installroot=exported-root-directory --releasever=/
+The file system to be exported still needs to be configured further before it can be used by diskless
+clients. To do this, perform the following procedure:
+Procedure 24.2. Configure File System
+1. Select the kernel that diskless clients should use (vmlinuz-kernel-version) and copy it to
+the tftp boot directory:
+# cp /boot/vmlinuz-kernel-version /var/lib/tftpboot/
+2. Create the initrd (that is, initramfs-kernel-version.img) with network support:
+# dracut initramfs-kernel-version.img kernel-version
+3. Change the initrd's file permissions to 644 using the following command:
+# chmod 644 initramfs-kernel-version.img
+WARNING
+If the initrd's file permissions are not changed, the pxelinux.0 boot loader
+will fail with a "file not found" error.
+4. Copy the resulting initramfs-kernel-version.img into the tftp boot directory as well.
+5. Edit the default boot configuration to use the initrd and kernel in the /var/lib/tftpboot/
+directory. This configuration should instruct the diskless client's root to mount the exported file
+system (/exported/root/directory) as read-write. Add the following configuration in the 
+/var/lib/tftpboot/pxelinux.cfg/default file:
+default rhel7
+label rhel7
+  kernel vmlinuz-kernel-version
+  append initrd=initramfs-kernel-version.img root=nfs:server-
+ip:/exported/root/directory rw
+Replace server-ip with the IP address of the host machine on which the tftp and DHCP
+services reside.
+The NFS share is now ready for exporting to diskless clients. These clients can boot over the network via
+PXE.
+
+Storage Administration Guide
+194
+
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+It is often desirable to add, remove or re-size storage devices while the operating system is running, and
+without rebooting. This chapter outlines the procedures that may be used to reconfigure storage devices
+on Red Hat Enterprise Linux 7 host systems while the system is running. It covers iSCSI and Fibre
+Channel storage interconnects; other interconnect types may be added it the future.
+This chapter focuses on adding, removing, modifying, and monitoring storage devices. It does not
+discuss the Fibre Channel or iSCSI protocols in detail. For more information about these protocols, refer
+to other documentation.
+This chapter makes reference to various sysfs objects. Red Hat advises that the sysfs object names
+and directory structure are subject to change in major Red Hat Enterprise Linux releases. This is
+because the upstream Linux kernel does not provide a stable internal API. For guidelines on how to
+reference sysfs objects in a transportable way, refer to the document /usr/share/doc/kernel-
+doc-version/Documentation/sysfs-rules.txt in the kernel source tree for guidelines.
+WARNING
+Online storage reconfiguration must be done carefully. System failures or
+interruptions during the process can lead to unexpected results. Red Hat advises
+that you reduce system load to the maximum extent possible during the change
+operations. This will reduce the chance of I/O errors, out-of-memory errors, or
+similar errors occurring in the midst of a configuration change. The following
+sections provide more specific guidelines regarding this.
+In addition, Red Hat recommends that you back up all data before reconfiguring
+online storage. 
+25.1. TARGET SETUP
+Red Hat Enterprise Linux 7 uses the targetcli shell as a front end for viewing, editing, and saving the
+configuration of the Linux-IO Target without the need to manipulate the kernel target's configuration files
+directly. The targetcli tool is a command-line interface that allows an administrator to export local
+storage resources, which are backed by either files, volumes, local SCSI devices, or RAM disks, to
+remote systems. The targetcli tool has a tree-based layout, includes built-in tab completion, and
+provides full auto-complete support and inline documentation.
+The hierarchy of targetcli does not always match the kernel interface exactly because targetcli is
+simplified where possible.
+IMPORTANT
+To ensure that the changes made in targetcli are persistent, start and enable the
+target service:
+# systemctl start target
+# systemctl enable target
+
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+195
+
+25.1.1. Installing and Running targetcli
+To install targetcli, use:
+# yum install targetcli
+Start the target service:
+# systemctl start target
+Configure target to start at boot time:
+# systemctl enable target
+Open port 3260 in the firewall and reload the firewall configuration:
+# firewall-cmd --permanent --add-port=3260/tcp
+Success
+# firewall-cmd --reload
+Success
+Use the targetcli command, and then use the ls command for the layout of the tree interface:
+# targetcli
+:
+/> ls
+o- /........................................[...]
+  o- backstores.............................[...]
+  | o- block.................[Storage Objects: 0]           
+  | o- fileio................[Storage Objects: 0]       
+  | o- pscsi.................[Storage Objects: 0]         
+  | o- ramdisk...............[Storage Ojbects: 0]         
+  o- iscsi...........................[Targets: 0]   
+  o- loopback........................[Targets: 0]
+NOTE
+In Red Hat Enterprise Linux 7.0, using the targetcli command from Bash, for example,
+targetcli iscsi/ create, does not work and does not return an error. Starting with
+Red Hat Enterprise Linux 7.1, an error status code is provided to make using targetcli
+with shell scripts more useful.
+25.1.2. Creating a Backstore
+Backstores enable support for different methods of storing an exported LUN's data on the local machine.
+Creating a storage object defines the resources the backstore uses.
+Storage Administration Guide
+196
+
+NOTE
+In Red Hat Enterprise Linux 6, the term 'backing-store' is used to refer to the mappings
+created. However, to avoid confusion between the various ways 'backstores' can be used,
+in Red Hat Enterprise Linux 7 the term 'storage objects' refers to the mappings created
+and 'backstores' is used to describe the different types of backing devices.
+The backstore devices that LIO supports are:
+FILEIO (Linux file-backed storage)
+FILEIO storage objects can support either write_back or write_thru operation. The 
+write_back enables the local file system cache. This improves performance but increases the risk
+of data loss. It is recommended to use write_back=false to disable write_back in favor of 
+write_thru.
+To create a fileio storage object, run the command /backstores/fileio create file_name 
+file_location file_size write_back=false. For example:
+/> /backstores/fileio create file1 /tmp/disk1.img 200M write_back=false
+Created fileio file1 with size 209715200
+BLOCK (Linux BLOCK devices)
+The block driver allows the use of any block device that appears in the /sys/block to be used with
+LIO. This includes physical devices (for example, HDDs, SSDs, CDs, DVDs) and logical devices (for
+example, software or hardware RAID volumes, or LVM volumes).
+NOTE
+BLOCK backstores usually provide the best performance.
+To create a BLOCK backstore using any block device, use the following command:
+# fdisk /dev/vdb
+Welcome to fdisk (util-linux 2.23.2).
+Changes will remain in memory only, until you decide to write them.
+Be careful before using the write command.
+Device does not contain a recognized partition table
+Building a new DOS disklabel with disk identifier 0x39dc48fb.
+Command (m for help): n
+Partition type:
+   p   primary (0 primary, 0 extended, 4 free)
+   e   extended
+Select (default p): *Enter*
+Using default response p
+Partition number (1-4, default 1): *Enter*
+First sector (2048-2097151, default 2048): *Enter*
+Using default value 2048
+Last sector, +sectors or +size{K,M,G} (2048-2097151, default 2097151): 
++250M
+Partition 1 of type Linux and of size 250 MiB is set
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+197
+
+Command (m for help): w
+The partition table has been altered!
+Calling ioctl() to re-read partition table.
+Syncing disks.
+/> /backstores/block create name=block_backend dev=/dev/vdb
+Generating a wwn serial.
+Created block storage object block_backend using /dev/vdb.
+NOTE
+You can also create a BLOCK backstore on a logical volume.
+PSCSI (Linux pass-through SCSI devices)
+Any storage object that supports direct pass-through of SCSI commands without SCSI emulation,
+and with an underlying SCSI device that appears with lsscsi in /proc/scsi/scsi (such as a SAS
+hard drive) can be configured as a backstore. SCSI-3 and higher is supported with this subsystem.
+WARNING
+PSCSI should only be used by advanced users. Advanced SCSI commands
+such as for Aysmmetric Logical Unit Assignment (ALUAs) or Persistent
+Reservations (for example, those used by VMware ESX, and vSphere) are
+usually not implemented in the device firmware and can cause malfunctions or
+crashes. When in doubt, use BLOCK for production setups instead.
+To create a PSCSI backstore for a physical SCSI device, a TYPE_ROM device using /dev/sr0 in
+this example, use:
+/> backstores/pscsi/ create name=pscsi_backend dev=/dev/sr0
+Generating a wwn serial.
+Created pscsi storage object pscsi_backend using /dev/sr0
+Memory Copy RAM disk (Linux RAMDISK_MCP)
+Memory Copy RAM disks (ramdisk) provide RAM disks with full SCSI emulation and separate
+memory mappings using memory copy for initiators. This provides capability for multi-sessions and is
+particularly useful for fast, volatile mass storage for production purposes.
+To create a 1GB RAM disk backstore, use the following command:
+/> backstores/ramdisk/ create name=rd_backend size=1GB
+Generating a wwn serial.
+Created rd_mcp ramdisk rd_backend with size 1GB.
+
+Storage Administration Guide
+198
+
+25.1.3. Creating an iSCSI Target
+To create an iSCSI target:
+Procedure 25.1. Creating an iSCSI target
+1. Run targetcli.
+2. Move into the iSCSI configuration path:
+/> iscsi/
+NOTE
+The cd command is also accepted to change directories, as well as simply listing
+the path to move into.
+3. Create an iSCSI target using a default target name.
+/iscsi> create
+Created target
+iqn.2003-01.org.linux-iscsi.hostname.x8664:sn.78b473f296ff
+Created TPG1
+Or create an iSCSI target using a specified name.
+/iscsi > create iqn.2006-04.com.example:444
+Created target iqn.2006-04.com.example:444
+Created TPG1
+4. Verify that the newly created target is visible when targets are listed with ls.
+/iscsi > ls
+o- iscsi.......................................[1 Target]
+    o- iqn.2006-04.com.example:444................[1 TPG]
+        o- tpg1...........................[enabled, auth]
+            o- acls...............................[0 ACL]
+            o- luns...............................[0 LUN]
+            o- portals.........................[0 Portal]
+NOTE
+As of Red Hat Enterprise Linux 7.1, whenever a target is created, a default portal is also
+created.
+25.1.4. Configuring an iSCSI Portal
+To configure an iSCSI portal, an iSCSI target must first be created and associated with a TPG. For
+instructions on how to do this, refer to Section 25.1.3, "Creating an iSCSI Target".
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+199
+
+NOTE
+As of Red Hat Enterprise Linux 7.1 when an iSCSI target is created, a default portal is
+created as well. This portal is set to listen on all IP addresses with the default port number
+(that is, 0.0.0.0:3260). To remove this and add only specified portals, use /iscsi/iqn-
+name/tpg1/portals delete ip_address=0.0.0.0 ip_port=3260 then create a
+new portal with the required information.
+Procedure 25.2. Creating an iSCSI Portal
+1. Move into the TPG.
+/iscsi> iqn.2006-04.example:444/tpg1/
+2. There are two ways to create a portal: create a default portal, or create a portal specifying what
+IP address to listen to.
+Creating a default portal uses the default iSCSI port 3260 and allows the target to listen on all IP
+addresses on that port.
+/iscsi/iqn.20...mple:444/tpg1> portals/ create
+Using default IP port 3260
+Binding to INADDR_Any (0.0.0.0)
+Created network portal 0.0.0.0:3260
+To create a portal specifying what IP address to listen to, use the following command.
+/iscsi/iqn.20...mple:444/tpg1> portals/ create 192.168.122.137
+Using default IP port 3260
+Created network portal 192.168.122.137:3260
+3. Verify that the newly created portal is visible with the ls command.
+/iscsi/iqn.20...mple:444/tpg1> ls
+o- tpg.................................. [enambled, auth] 
+    o- acls ......................................[0 ACL]
+    o- luns ......................................[0 LUN]
+    o- portals ................................[1 Portal]
+        o- 192.168.122.137:3260......................[OK]
+25.1.5. Configuring LUNs
+To configure LUNs, first create storage objects. See Section 25.1.2, "Creating a Backstore" for more
+information.
+Procedure 25.3. Configuring LUNs
+1. Create LUNs of already created storage objects.
+/iscsi/iqn.20...mple:444/tpg1> luns/ create 
+/backstores/ramdisk/rd_backend
+Created LUN 0.
+Storage Administration Guide
+200
+
+/iscsi/iqn.20...mple:444/tpg1> luns/ create 
+/backstores/block/block_backend
+Created LUN 1.
+/iscsi/iqn.20...mple:444/tpg1> luns/ create /backstores/fileio/file1
+Created LUN 2.
+2. Show the changes.
+/iscsi/iqn.20...mple:444/tpg1> ls
+o- tpg.................................. [enambled, auth]
+    o- acls ......................................[0 ACL]
+    o- luns .....................................[3 LUNs]
+    |  o- lun0.........................[ramdisk/ramdisk1]
+    |  o- lun1.................[block/block1 (/dev/vdb1)]
+    |  o- lun2...................[fileio/file1 (/foo.img)]
+    o- portals ................................[1 Portal]
+        o- 192.168.122.137:3260......................[OK]
+NOTE
+Be aware that the default LUN name starts at 0, as opposed to 1 as was the case
+when using tgtd in Red Hat Enterprise Linux 6.
+IMPORTANT
+By default, LUNs are created with read-write permissions. In the event that a new LUN is
+added after ACLs have been created that LUN will be automatically mapped to all
+available ACLs. This can cause a security risk. Use the following procedure to create a
+LUN as read-only.
+Procedure 25.4. Create a Read-only LUN
+1. To create a LUN with read-only permissions, first use the following command:
+/> set global auto_add_mapped_luns=false
+Parameter auto_add_mapped_luns is now 'false'.
+This prevents the auto mapping of LUNs to existing ACLs allowing the manual mapping of LUNs.
+2. Next, manually create the LUN with the command 
+iscsi/target_iqn_name/tpg1/acls/initiator_iqn_name/ create 
+mapped_lun=next_sequential_LUN_number tpg_lun_or_backstore=backstore 
+write_protect=1.
+/> iscsi/iqn.2015-06.com.redhat:target/tpg1/acls/iqn.2015-
+06.com.redhat:initiator/ create mapped_lun=1 
+tpg_lun_or_backstore=/backstores/block/block2 write_protect=1
+Created LUN 1.
+Created Mapped LUN 1.
+/> ls
+o- / ...................................................... [...]
+  o- backstores ........................................... [...]
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+201
+
+  <snip>
+  o- iscsi ......................................... [Targets: 1]
+  | o- iqn.2015-06.com.redhat:target .................. [TPGs: 1]
+  |   o- tpg1 ............................ [no-gen-acls, no-auth]
+  |     o- acls ....................................... [ACLs: 2]
+  |     | o- iqn.2015-06.com.redhat:initiator .. [Mapped LUNs: 2]
+  |     | | o- mapped_lun0 .............. [lun0 block/disk1 (rw)]
+  |     | | o- mapped_lun1 .............. [lun1 block/disk2 (ro)]
+  |     o- luns ....................................... [LUNs: 2]
+  |     | o- lun0 ...................... [block/disk1 (/dev/vdb)]
+  |     | o- lun1 ...................... [block/disk2 (/dev/vdc)]
+  <snip>
+The mapped_lun1 line now has (ro) at the end (unlike mapped_lun0's (rw)) stating that it is read-
+only.
+25.1.6. Configuring ACLs
+Create an ACL for each initiator that will be connecting. This enforces authentication when that initiator
+connects, allowing only LUNs to be exposed to each initiator. Usually each initator has exclusive access
+to a LUN. Both targets and initiators have unique identifying names. The initiator's unique name must be
+known to configure ACLs. For open-iscsi initiators, this can be found in 
+/etc/iscsi/initiatorname.iscsi.
+Procedure 25.5. Configuring ACLs
+1. Move into the acls directory.
+/iscsi/iqn.20...mple:444/tpg1> acls/
+2. Create an ACL. Either use the initiator name found in /etc/iscsi/initiatorname.iscsi
+on the initiator, or if using a name that is easier to remember, refer to Section 25.2, "Creating an
+iSCSI Initiator" to ensure ACL matches the initiator. For example:
+/iscsi/iqn.20...444/tpg1/acls> create iqn.2006-
+04.com.example.foo:888
+Created Node ACL for iqn.2006-04.com.example.foo:888
+Created mapped LUN 2.
+Created mapped LUN 1.
+Created mapped LUN 0.
+NOTE
+The given example's behavior depends on the setting used. In this case, the
+global setting auto_add_mapped_luns is used. This automatically maps LUNs
+to any created ACL.
+You can set user-created ACLs within the TPG node on the target server:
+/iscsi/iqn.20...scsi:444/tpg1> set attribute 
+generate_node_acls=1
+3. Show the changes.
+Storage Administration Guide
+202
+
+/iscsi/iqn.20...444/tpg1/acls> ls
+o- acls .................................................[1 ACL]
+    o- iqn.2006-04.com.example.foo:888 ....[3 Mapped LUNs, auth]
+        o- mapped_lun0 .............[lun0 ramdisk/ramdisk1 (rw)]
+        o- mapped_lun1 .................[lun1 block/block1 (rw)]
+        o- mapped_lun2 .................[lun2 fileio/file1 (rw)]
+25.1.7. Configuring Fibre Channel over Ethernet (FCoE) Target
+In addition to mounting LUNs over FCoE, as described in Section 25.4, "Configuring a Fibre Channel
+over Ethernet Interface", exporting LUNs to other machines over FCoE is also supported with the aid of 
+targetcli.
+IMPORTANT
+Before proceeding, refer to Section 25.4, "Configuring a Fibre Channel over Ethernet
+Interface" and verify that basic FCoE setup is completed, and that fcoeadm -i displays
+configured FCoE interfaces.
+Procedure 25.6. Configure FCoE target
+1. Setting up an FCoE target requires the installation of the targetcli package, along with its
+dependencies. Refer to Section 25.1, "Target Setup" for more information on targetcli basics
+and set up.
+2. Create an FCoE target instance on an FCoE interface.
+/> tcm_fc/ create 00:11:22:33:44:55:66:77
+If FCoE interfaces are present on the system, tab-completing after create will list available
+interfaces. If not, ensure fcoeadm -i shows active interfaces.
+3. Map a backstore to the target instance.
+Example 25.1. Example of Mapping a Backstore to the Target Instance
+/> tcm_fc/00:11:22:33:44:55:66:77
+/> luns/ create /backstores/fileio/example2
+4. Allow access to the LUN from an FCoE initiator.
+/> acls/ create 00:99:88:77:66:55:44:33
+The LUN should now be accessible to that initiator.
+5. To make the changes persistent across reboots, use the saveconfig command and type yes
+when prompted. If this is not done the configuration will be lost after rebooting.
+6. Exit targetcli by typing exit or entering ctrl+D.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+203
+
+25.1.8. Removing Objects with targetcli
+To remove an backstore use the command:
+/> /backstores/backstore-type/backstore-name
+To remove parts of an iSCSI target, such as an ACL, use the following command:
+/> /iscsi/iqn-name/tpg/acls/ delete iqn-name
+To remove the entire target, including all ACLs, LUNs, and portals, use the following command:
+/> /iscsi delete iqn-name
+25.1.9. targetcli References
+For more information on targetcli, refer to the following resources:
+man targetcli
+The targetcli man page. It includes an example walk through.
+The Linux SCSI Target Wiki
+http://linux-iscsi.org/wiki/Targetcli
+Screencast by Andy Grover
+https://www.youtube.com/watch?v=BkBGTBadOO8
+NOTE
+This was uploaded on February 28, 2012. As such, the service name has changed
+from targetcli to target.
+25.2. CREATING AN ISCSI INITIATOR
+After creating a target with targetcli as in Section 25.1, "Target Setup", use the iscsiadm utility to
+set up an initiator.
+In Red Hat Enterprise Linux 7, the iSCSI service is lazily started by default: the service starts after
+running the iscsiadm command.
+Procedure 25.7. Creating an iSCSI Initiator
+1. Install iscsi-initiator-utils:
+# yum install iscsi-initiator-utils -y
+2. If the ACL was given a custom name in Section 25.1.6, "Configuring ACLs", modify the 
+/etc/iscsi/initiatorname.iscsi file accordingly. For example:
+Storage Administration Guide
+204
+
+# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2006-04.com.example.node1
+# vi /etc/iscsi/initiatorname.iscsi
+3. Discover the target:
+# iscsiadm -m discovery -t st -p target-ip-address 
+10.64.24.179:3260,1 iqn.2006-04.com.example:3260
+4. Log in to the target with the target IQN you discovered in step 3:
+# iscsiadm -m node -T iqn.2006-04.com.example:3260 -l 
+Logging in to [iface: default, target: iqn.2006-04.com.example:3260, 
+portal: 10.64.24.179,3260] (multiple)
+Login to [iface: default, target: iqn.2006-04.com.example:3260, 
+portal: 10.64.24.179,3260] successful.
+This procedure can be followed for any number of initators connected to the same LUN so long
+as their specific initiator names are added to the ACL as described in Section 25.1.6,
+"Configuring ACLs".
+5. Find the iSCSI disk name and create a file system on this iSCSI dick:
+# grep "Attached SCSI" /var/log/messages
+# mkfs.ext4 /dev/disk_name
+Replace disk_name with the iSCSI disk name displayed in /var/log/messages.
+6. Mount the file system:
+# mkdir /mount/point
+# mount /dev/disk_name /mount/point
+Replace /mount/point with the mount point of the partition.
+7. Edit the /etc/fstab to mount the file system automatically when the system boots:
+# vim /etc/fstab
+/dev/disk_name /mount/point ext4 _netdev 0 0
+Replace disk_name with the iSCSI disk name.
+8. Log off from the target:
+# iscsiadm -m node -T iqn.2006-04.com.example:3260 -u
+25.3. FIBRE CHANNEL
+This section discusses the Fibre Channel API, native Red Hat Enterprise Linux 7 Fibre Channel drivers,
+and the Fibre Channel capabilities of these drivers.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+205
+
+25.3.1. Fibre Channel API
+Following is a list of /sys/class/ directories that contain files used to provide the userspace API. In
+each item, host numbers are designated by H, bus numbers are B, targets are T, logical unit numbers
+(LUNs) are L, and remote port numbers are R.
+IMPORTANT
+If your system is using multipath software, Red Hat recommends that you consult your
+hardware vendor before changing any of the values described in this section.
+Transport: /sys/class/fc_transport/targetH:B:T/
+port_id — 24-bit port ID/address
+node_name — 64-bit node name
+port_name — 64-bit port name
+Remote Port: /sys/class/fc_remote_ports/rport-H:B-R/
+port_id
+node_name
+port_name
+dev_loss_tmo: controls when the scsi device gets removed from the system. After 
+dev_loss_tmo triggers, the scsi device is removed.
+In multipath.conf, you can set dev_loss_tmo to infinity, which sets its value to
+2,147,483,647 seconds, or 68 years, and is the maximum dev_loss_tmo value.
+In Red Hat Enterprise Linux 7, if you do not set the fast_io_fail_tmo option, 
+dev_loss_tmo is capped to 600 seconds. By default, fast_io_fail_tmo is set to 5
+seconds in Red Hat Enterprise Linux 7 if the multipathd service is running; otherwise, it is
+set to off.
+fast_io_fail_tmo: specifies the number of seconds to wait before it marks a link as
+"bad". Once a link is marked bad, existing running I/O or any new I/O on its corresponding
+path fails.
+If I/O is in a blocked queue, it will not be failed until dev_loss_tmo expires and the queue is
+unblocked.
+If fast_io_fail_tmo is set to any value except off, dev_loss_tmo is uncapped. If 
+fast_io_fail_tmo is set to off, no I/O fails until the device is removed from the system.
+If fast_io_fail_tmo is set to a number, I/O fails immediately when the 
+fast_io_fail_tmo timeout triggers.
+Host: /sys/class/fc_host/hostH/
+port_id
+Storage Administration Guide
+206
+
+issue_lip: instructs the driver to rediscover remote ports.
+25.3.2. Native Fibre Channel Drivers and Capabilities
+Red Hat Enterprise Linux 7 ships with the following native Fibre Channel drivers:
+lpfc
+qla2xxx
+zfcp
+bfa
+IMPORTANT
+The qla2xxx driver runs in initiator mode by default. To use qla2xxx with Linux-IO, enable
+Fibre Channel target mode with the corresponding qlini_mode module parameter.
+First, make sure that the firmware package for your qla device, such as ql2200-firmware
+or similar, is installed.
+To enable target mode, add the following parameter to the 
+/usr/lib/modprobe.d/qla2xxx.conf qla2xxx module configuration file:
+options qla2xxx qlini_mode=disabled
+Then, use the dracut -f command to rebuild the initial ramdisk (initrd), and reboot
+the system for the changes to take effect.
+Table 25.1, "Fibre Channel API Capabilities" describes the different Fibre Channel API capabilities of
+each native Red Hat Enterprise Linux 7 driver. X denotes support for the capability.
+Table 25.1. Fibre Channel API Capabilities
+lpfc
+qla2xxx
+zfcp
+bfa
+Transport 
+port_id
+X
+X
+X
+X
+Transport 
+node_name
+X
+X
+X
+X
+Transport 
+port_name
+X
+X
+X
+X
+Remote Port 
+dev_loss_tmo
+X
+X
+X
+X
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+207
+
+Remote Port 
+fast_io_fail
+_tmo
+X
+X [a]
+X [b]
+X
+Host port_id
+X
+X
+X
+X
+Host issue_lip
+X
+X
+X
+[a] Supported as of Red Hat Enterprise Linux 5.4
+[b] Supported as of Red Hat Enterprise Linux 6.0
+lpfc
+qla2xxx
+zfcp
+bfa
+25.4. CONFIGURING A FIBRE CHANNEL OVER ETHERNET INTERFACE
+Setting up and deploying a Fibre Channel over Ethernet (FCoE) interface requires two packages:
+fcoe-utils
+lldpad
+Once these packages are installed, perform the following procedure to enable FCoE over a virtual LAN
+(VLAN):
+Procedure 25.8. Configuring an Ethernet Interface to Use FCoE
+1. To configure a new VLAN, make a copy of an existing network script, for example 
+/etc/fcoe/cfg-eth0, and change the name to the Ethernet device that supports FCoE. This
+provides you with a default file to configure. Given that the FCoE device is ethX, run:
+# cp /etc/fcoe/cfg-ethx  /etc/fcoe/cfg-ethX
+Modify the contents of cfg-ethX as needed. Notably, set DCB_REQUIRED to no for networking
+interfaces that implement a hardware Data Center Bridging Exchange (DCBX) protocol client.
+2. If you want the device to automatically load during boot time, set ONBOOT=yes in the
+corresponding /etc/sysconfig/network-scripts/ifcfg-ethX file. For example, if the
+FCoE device is eth2, edit /etc/sysconfig/network-scripts/ifcfg-eth2 accordingly.
+3. Start the data center bridging daemon (dcbd) by running:
+# systemctl start lldpad
+4. For networking interfaces that implement a hardware DCBX client, skip this step.
+For interfaces that require a software DCBX client, enable data center bridging on the Ethernet
+interface by running:
+# dcbtool sc ethX dcb on
+Storage Administration Guide
+208
+
+Then, enable FCoE on the Ethernet interface by running:
+# dcbtool sc ethX app:fcoe e:1
+Note that these commands only work if the dcbd settings for the Ethernet interface were not
+changed.
+5. Load the FCoE device now using:
+# ip link set dev ethX up
+6. Start FCoE using:
+# systemctl start fcoe
+The FCoE device appears soon if all other settings on the fabric are correct. To view configured
+FCoE devices, run:
+# fcoeadm -i
+After correctly configuring the Ethernet interface to use FCoE, Red Hat recommends that you set FCoE
+and the lldpad service to run at startup. To do so, use the systemctl utility:
+# systemctl enable lldpad
+# systemctl enable fcoe
+NOTE
+Running the # systemctl stop fcoe command stops the daemon, but does not reset
+the configuration of FCoE interfaces. To do so, run the # systemctl -s SIGHUP 
+kill fcoe command.
+As of Red Hat Enterprise Linux 7, Network Manager has the ability to query and set the DCB settings of
+a DCB capable Ethernet interface.
+25.5. CONFIGURING AN FCOE INTERFACE TO AUTOMATICALLY
+MOUNT AT BOOT
+NOTE
+The instructions in this section are available in /usr/share/doc/fcoe-
+utils-version/README as of Red Hat Enterprise Linux 6.1. Refer to that document for
+any possible changes throughout minor releases.
+You can mount newly discovered disks via udev rules, autofs, and other similar methods. Sometimes,
+however, a specific service might require the FCoE disk to be mounted at boot-time. In such cases, the
+FCoE disk should be mounted as soon as the fcoe service runs and before the initiation of any service
+that requires the FCoE disk.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+209
+
+To configure an FCoE disk to automatically mount at boot, add proper FCoE mounting code to the
+startup script for the fcoe service. The fcoe startup script is 
+/lib/systemd/system/fcoe.service.
+The FCoE mounting code is different per system configuration, whether you are using a simple formatted
+FCoE disk, LVM, or multipathed device node.
+Example 25.2. FCoE Mounting Code
+The following is a sample FCoE mounting code for mounting file systems specified via wild cards in 
+/etc/fstab:
+mount_fcoe_disks_from_fstab()
+ {
+     local timeout=20
+     local done=1
+     local fcoe_disks=($(egrep 'by-path\/fc-.*_netdev' /etc/fstab | cut 
+-d ' ' -f1))
+     test -z $fcoe_disks && return 0
+     echo -n "Waiting for fcoe disks . "
+     while [ $timeout -gt 0 ]; do
+  for disk in ${fcoe_disks[*]}; do
+   if ! test -b $disk; then
+    done=0
+    break
+   fi
+  done
+  test $done -eq 1 && break;
+  sleep 1
+  echo -n ". "
+  done=1
+  let timeout--
+     done
+     if test $timeout -eq 0; then
+  echo "timeout!"
+     else
+  echo "done!"
+     fi
+     # mount any newly discovered disk
+     mount -a 2>/dev/null
+ }
+The mount_fcoe_disks_from_fstab function should be invoked after the fcoe service script starts
+the fcoemon daemon. This will mount FCoE disks specified by the following paths in /etc/fstab:
+/dev/disk/by-path/fc-0xXX:0xXX /mnt/fcoe-disk1 ext3  defaults,_netdev    0 
+0
+/dev/disk/by-path/fc-0xYY:0xYY /mnt/fcoe-disk2 ext3  defaults,_netdev    0 
+0
+Storage Administration Guide
+210
+
+Entries with fc- and _netdev sub-strings enable the mount_fcoe_disks_from_fstab function to
+identify FCoE disk mount entries. For more information on /etc/fstab entries, refer to man 5 fstab.
+NOTE
+The fcoe service does not implement a timeout for FCoE disk discovery. As such, the
+FCoE mounting code should implement its own timeout period.
+25.6. ISCSI
+This section describes the iSCSI API and the iscsiadm utility. Before using the iscsiadm utility, install
+the iscsi-initiator-utils package first by running yum install iscsi-initiator-utils.
+In Red Hat Enterprise Linux 7, the iSCSI service is lazily started by default. If root is not on an iSCSI
+device or there are no nodes marked with node.startup = automatic then the iSCSI service will
+not start until an iscsiadm command is run that requires iscsid or the iscsi kernel modules to be started.
+For example, running the discovery command iscsiadm -m discovery -t st -p ip:port will
+cause iscsiadmin to start the iSCSI service.
+To force the iscsid daemon to run and iSCSI kernel modules to load, run systemctl start 
+iscsid.service.
+25.6.1. iSCSI API
+To get information about running sessions, run:
+# iscsiadm -m session -P 3
+This command displays the session/device state, session ID (sid), some negotiated parameters, and the
+SCSI devices accessible through the session.
+For shorter output (for example, to display only the sid-to-node mapping), run:
+# iscsiadm -m session -P 0
+or
+# iscsiadm -m session
+These commands print the list of running sessions with the format:
+driver [sid] target_ip:port,target_portal_group_tag proper_target_name
+Example 25.3. Output of the iscsisadm -m session Command
+For example:
+# iscsiadm -m session
+tcp [2] 10.15.84.19:3260,2 iqn.1992-08.com.netapp:sn.33615311
+tcp [3] 10.15.85.19:3260,3 iqn.1992-08.com.netapp:sn.33615311
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+211
+
+For more information about the iSCSI API, refer to /usr/share/doc/iscsi-initiator-
+utils-version/README.
+25.7. PERSISTENT NAMING
+Red Hat Enterprise Linux provides a number of ways to identify storage devices. It is important to use the
+correct option to identify each device when used in order to avoid inadvertently accessing the wrong
+device, particularly when installing to or reformatting drives.
+25.7.1. Major and Minor Numbers of Storage Devices
+Storage devices managed by the sd driver are identified internally by a collection of major device
+numbers and their associated minor numbers. The major device numbers used for this purpose are not
+in a contiguous range. Each storage device is represented by a major number and a range of minor
+numbers, which are used to identify either the entire device or a partition within the device. There is a
+direct association between the major and minor numbers allocated to a device and numbers in the form
+of sd<letter(s)>[number(s)]. Whenever the sd driver detects a new device, an available major
+number and minor number range is allocated. Whenever a device is removed from the operating system,
+the major number and minor number range is freed for later reuse.
+The major and minor number range and associated sd names are allocated for each device when it is
+detected. This means that the association between the major and minor number range and associated 
+sd names can change if the order of device detection changes. Although this is unusual with some
+hardware configurations (for example, with an internal SCSI controller and disks that have their SCSI
+target ID assigned by their physical location within a chassis), it can nevertheless occur. Examples of
+situations where this can happen are as follows:
+A disk may fail to power up or respond to the SCSI controller. This will result in it not being
+detected by the normal device probe. The disk will not be accessible to the system and
+subsequent devices will have their major and minor number range, including the associated sd
+names shifted down. For example, if a disk normally referred to as sdb is not detected, a disk
+that is normally referred to as sdc would instead appear as sdb.
+A SCSI controller (host bus adapter, or HBA) may fail to initialize, causing all disks connected to
+that HBA to not be detected. Any disks connected to subsequently probed HBAs would be
+assigned different major and minor number ranges, and different associated sd names.
+The order of driver initialization could change if different types of HBAs are present in the
+system. This would cause the disks connected to those HBAs to be detected in a different order.
+This can also occur if HBAs are moved to different PCI slots on the system.
+Disks connected to the system with Fibre Channel, iSCSI, or FCoE adapters might be
+inaccessible at the time the storage devices are probed, due to a storage array or intervening
+switch being powered off, for example. This could occur when a system reboots after a power
+failure, if the storage array takes longer to come online than the system take to boot. Although
+some Fibre Channel drivers support a mechanism to specify a persistent SCSI target ID to
+WWPN mapping, this will not cause the major and minor number ranges, and the associated sd
+names to be reserved, it will only provide consistent SCSI target ID numbers.
+These reasons make it undesirable to use the major and minor number range or the associated sd
+names when referring to devices, such as in the /etc/fstab file. There is the possibility that the wrong
+device will be mounted and data corruption could result.
+Storage Administration Guide
+212
+
+Occasionally, however, it is still necessary to refer to the sd names even when another mechanism is
+used (such as when errors are reported by a device). This is because the Linux kernel uses sd names
+(and also SCSI host/channel/target/LUN tuples) in kernel messages regarding the device.
+25.7.2. World Wide Identifier (WWID)
+The World Wide Identifier (WWID) can be used in reliably identifying devices. It is a persistent, system-
+independent ID that the SCSI Standard requires from all SCSI devices. The WWID identifier is
+guaranteed to be unique for every storage device, and independent of the path that is used to access the
+device.
+This identifier can be obtained by issuing a SCSI Inquiry to retrieve the Device Identification Vital
+Product Data (page 0x83) or Unit Serial Number (page 0x80). The mappings from these WWIDs to the
+current /dev/sd names can be seen in the symlinks maintained in the /dev/disk/by-id/ directory.
+Example 25.4. WWID
+For example, a device with a page 0x83 identifier would have:
+scsi-3600508b400105e210000900000490000 -> ../../sda
+Or, a device with a page 0x80 identifier would have:
+scsi-SSEAGATE_ST373453LW_3HW1RHM6 -> ../../sda
+Red Hat Enterprise Linux automatically maintains the proper mapping from the WWID-based device
+name to a current /dev/sd name on that system. Applications can use the /dev/disk/by-id/ name
+to reference the data on the disk, even if the path to the device changes, and even when accessing the
+device from different systems.
+If there are multiple paths from a system to a device, DM Multipath uses the WWID to detect this. DM
+Multipath then presents a single "pseudo-device" in the /dev/mapper/wwid directory, such as 
+/dev/mapper/3600508b400105df70000e00000ac0000.
+The command multipath -l shows the mapping to the non-persistent identifiers: 
+Host:Channel:Target:LUN, /dev/sd name, and the major:minor number.
+3600508b400105df70000e00000ac0000 dm-2 vendor,product 
+[size=20G][features=1 queue_if_no_path][hwhandler=0][rw] 
+\_ round-robin 0 [prio=0][active] 
+ \_ 5:0:1:1 sdc 8:32  [active][undef] 
+ \_ 6:0:1:1 sdg 8:96  [active][undef]
+\_ round-robin 0 [prio=0][enabled] 
+ \_ 5:0:0:1 sdb 8:16  [active][undef] 
+ \_ 6:0:0:1 sdf 8:80  [active][undef]
+DM Multipath automatically maintains the proper mapping of each WWID-based device name to its
+corresponding /dev/sd name on the system. These names are persistent across path changes, and
+they are consistent when accessing the device from different systems.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+213
+
+When the user_friendly_names feature (of DM Multipath) is used, the WWID is mapped to a name
+of the form /dev/mapper/mpathn. By default, this mapping is maintained in the file 
+/etc/multipath/bindings. These mpathn names are persistent as long as that file is maintained.
+IMPORTANT
+If you use user_friendly_names, then additional steps are required to obtain
+consistent names in a cluster. Refer to the Consistent Multipath Device Names in a
+Cluster section in the DM Multipath book.
+In addition to these persistent names provided by the system, you can also use udev rules to implement
+persistent names of your own, mapped to the WWID of the storage.
+25.7.3. Device Names Managed by the udev Mechanism in /dev/disk/by-*
+The udev mechanism consists of three major components:
+The kernel
+Generates events that are sent to user space when devices are added, removed, or changed.
+The udevd service
+Receives the events.
+The udev rules
+Specifies the action to take when the udev service receives the kernel events.
+This mechanism is used for all types of devices in Linux, not just for storage devices. In the case of
+storage devices, Red Hat Enterprise Linux contains udev rules that create symbolic links in the 
+/dev/disk/ directory allowing storage devices to be referred to by their contents, a unique identifier,
+their serial number, or the hardware path used to access the device.
+/dev/disk/by-label/
+Entries in this directory provide a symbolic name that refers to the storage device by a label in the
+contents (that is, the data) stored on the device. The blkid utility is used to read data from the device
+and determine a name (that is, a label) for the device. For example:
+/dev/disk/by-label/Boot
+NOTE
+The information is obtained from the contents (that is, the data) on the device so if the
+contents are copied to another device, the label will remain the same.
+The label can also be used to refer to the device in /etc/fstab using the following syntax:
+LABEL=Boot
+/dev/disk/by-uuid/
+Storage Administration Guide
+214
+
+Entries in this directory provide a symbolic name that refers to the storage device by a unique
+identifier in the contents (that is, the data) stored on the device. The blkid utility is used to read data
+from the device and obtain a unique identifier (that is, the UUID) for the device. For example:
+UUID=3e6be9de-8139-11d1-9106-a43f08d823a6
+/dev/disk/by-id/
+Entries in this directory provide a symbolic name that refers to the storage device by a unique
+identifier (different from all other storage devices). The identifier is a property of the device but is not
+stored in the contents (that is, the data) on the devices. For example:
+/dev/disk/by-id/scsi-3600508e000000000ce506dc50ab0ad05
+/dev/disk/by-id/wwn-0x600508e000000000ce506dc50ab0ad05
+The id is obtained from the world-wide ID of the device, or the device serial number. The 
+/dev/disk/by-id/ entries may also include a partition number. For example:
+/dev/disk/by-id/scsi-3600508e000000000ce506dc50ab0ad05-part1
+/dev/disk/by-id/wwn-0x600508e000000000ce506dc50ab0ad05-part1
+/dev/disk/by-path/
+Entries in this directory provide a symbolic name that refers to the storage device by the hardware
+path used to access the device, beginning with a reference to the storage controller in the PCI
+hierarchy, and including the SCSI host, channel, target, and LUN numbers and, optionally, the
+partition number. Although these names are preferable to using major and minor numbers or sd
+names, caution must be used to ensure that the target numbers do not change in a Fibre Channel
+SAN environment (for example, through the use of persistent binding) and that the use of the names
+is updated if a host adapter is moved to a different PCI slot. In addition, there is the possibility that the
+SCSI host numbers could change if a HBA fails to probe, if drivers are loaded in a different order, or
+if a new HBA is installed on the system. An example of by-path listing is:
+/dev/disk/by-path/pci-0000:03:00.0-scsi-0:1:0:0
+The /dev/disk/by-path/ entries may also include a partition number, such as:
+/dev/disk/by-path/pci-0000:03:00.0-scsi-0:1:0:0-part1
+25.7.3.1. Limitations of the udev Device Naming Convention
+The following are some limitations of the udev naming convention.
+It is possible that the device may not be accessible at the time the query is performed because
+the udev mechanism may rely on the ability to query the storage device when the udev rules
+are processed for a udev event. This is more likely to occur with Fibre Channel, iSCSI or FCoE
+storage devices when the device is not located in the server chassis.
+The kernel may also send udev events at any time, causing the rules to be processed and
+possibly causing the /dev/disk/by-*/ links to be removed if the device is not accessible.
+CHAPTER 25. ONLINE STORAGE MANAGEMENT
+215
+
+There can be a delay between when the udev event is generated and when it is processed,
+such as when a large number of devices are detected and the user-space udevd service takes
+some amount of time to process the rules for each one). This could cause a delay between when
+the kernel detects the device and when the /dev/disk/by-*/ names are available.
+External programs such as blkid invoked by the rules may open the device for a brief period of
+time, making the device inaccessible for other uses.

@@ -1,0 +1,1700 @@
+
+
+
+
+
+  
+AWS Lambda
+A Guide To Serverless Microservices
+By: Matthew Fuller
+
+ 
+This book is presented solely as-is and for educational purposes only. The author makes no claims to the accuracy of the information presented within. The code samples and tutorials are provided as complements to the book and may change at any time. All references to Amazon, Amazon Web Services, AWS, Lambda, or other Amazon Web Services affiliated products, as well as screenshots and code examples are done so for purposes of reference and do not imply trademark or other rights held by the author of this book.
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+Table of Contents
+ 
+1. Introduction
+2. A Different Kind of Workload
+3. This Book
+4. Lambda Background
+5. Hello World
+6. Working with Events
+7. The Context Object
+8. Roles and Permissions
+9. Dependencies and Resources
+10. Logging
+11. Testing Your Function
+12. Hello S3 Object
+13. When Lambda Isn't the Answer
+14. Where Lambda Excels
+15. Real-World Use Cases
+16. Execution Environment
+17. From Development to Deployment
+18. Versioning and Aliasing
+19. Costs
+20. CloudFormation
+21. AWS API Gateway
+22. Lambda Competitors
+23. The Future of Lambda
+24. More Resources
+25. Conclusion
+
+
+
+
+
+
+
+
+
+
+1. Introduction
+ 
+Software developers, developer operations engineers, systems administrators, and other IT workers are well aware that the process of running software usually requires significant forethought into how and where that software will run. Traditionally, companies required servers; physical boxes lined row upon row of a data center, each requiring the attention of an administrator or teams of engineers. Larger shops could easily employ a dozen team members to handle the hardware, security, networking, upgrades, and all other aspects of the life of a server.
+ 
+As a reader of this book, you are most likely familiar with where the industry trended next: the cloud. Rather rapidly in the last few years, existing businesses have transferred large swaths of their networks to cloud providers, while new businesses have been built from the ground up solely relying on cloud-based infrastructure. Cloud providers like Google, DigitalOcean, Rackspace, and Amazon have surged in popularity, each providing a means of offloading the traditional tasks of hardware management. Despite the reluctance of some large companies, most industry experts agree that cloud-based environments (or, at the very least, hybrid environments) are the way of the future.
+ 
+Without getting into the pros and cons of vendor lock-in, each of these cloud hosting providers has worked continuously to provide cloud-based solutions for traditional problems. Storage solutions, networking capabilities, direct data center connections, and computing power have been developed and continually improved to address the needs of thousands of companies that are now relying on these public cloud environments. With each passing year, more and more computing services are being offered by these companies.
+ 
+The single largest entity of these cloud providers is Amazon. Its Amazon Web Services (AWS) business is now larger than all of its competitors combined and is growing at an incredible pace. With over 45 different offerings, AWS provides solutions that span storage, networking, computing, machine learning, and mobile device testing. One of the oldest products in the AWS catalog is Elastic Compute Cloud, or EC2, which allows developers to launch virtual server instances on-demand. After declaring parameters such as the amount of memory, disk space, and CPU size, administrators can provision a single virtual instance or up to thousands of running instances at once. The administrators and developers are then responsible for deploying code, running the applications, and ensuring that the instances remain healthy (are not consuming too much memory, disk space, etc.).
+ 
+EC2 has been, and remains one of AWS's most popular core offerings. With root or administrator access to a base Linux or Windows machine, developers are free to run almost any kind of code imaginable. Millions of applications have been developed on top of EC2, and entire businesses (such as Heroku) use EC2 for their underlying infrastructure. In fact, using nothing but EC2, most organizations could run their entire workloads including storage, database, and routing needs. The availability and performance of EC2 on AWS is unparalleled.
+
+
+
+
+
+
+
+
+
+
+2. A Different Kind of Workload
+ 
+EC2 quickly became an extremely popular option for companies looking to run websites, manage databases, and balance traffic. As AWS grew as a business, so did the number of websites powered by its EC2 platform. Huge names like Netflix and Instagram are, or were for some time, running a majority of their sites and operations on AWS-powered services. Hundreds of thousands of domains can be resolved to an EC2 host.
+ 
+At some point around late 2012 or early 2013, developers and managers at Amazon realized that, while a bulk of EC2 usage was web-related, an entire other category of usage existed: event-driven processing. Many companies were turning to EC2 to react to events in other parts of the infrastructure: images saved by users of a web service would trigger EC2 instances to automatically generate thumbnails; new log files being delivered would cause EC2 instances to process and make sense of the data; databases updates launched EC2 instances to process these changes and apply updates elsewhere. Essentially, EC2 was being used in a chain of events that could contain many moving parts, most utilizing additional AWS services.
+ 
+To respond to this demand, AWS announced another product during the keynote of its 2014 Re:Invent conference in Las Vegas: AWS Lambda. According to Amazon, "AWS Lambda is a compute service that runs your code in response to events and automatically manages the compute resources for you, making it easy to build applications that respond quickly to new information."[1]
+ 
+The announcement of Lambda was a huge game changer for many organizations that have traditionally relied on EC2 to process events, resize images, respond to database updates, or react to user clicks or website updates. Under the EC2 model, a developer and/or operations staff must: design code, deploy resources, configure event hooks, manage those resources, implement monitoring, respond to downtime, plan for scale, and react to surges in traffic with proper scaling policies. With Lambda, a developer only needs to: design code, configure a few options, and release the application.
+ 
+Despite these advantages, Lambda is not yet designed for workloads that are not primarily event-driven. For example, Lambda functions cannot respond directly to HTTP requests (unless paired with AWS API Gateway, another recently-announced service), or run long-running processes in the background. Given their low timeouts (currently 300 seconds) and moderate memory allowances (up to 1.5 GB at the time of writing this book), Lambda functions are not designed to completely replace EC2; instead, they can replace some of the functionality for specific services and support an entirely new form of computing in the cloud.
+
+
+
+
+
+
+
+
+
+3. This Book
+ 
+This book will focus on AWS Lambda from the viewpoint of an AWS user who has not yet used the service. Hopefully you are familiar with AWS terms and concepts, and have launched projects on AWS before. While it is not necessary that you are a certified AWS expert, some hands-on experience will be helpful as we dive into the AWS Lambda service. With that in mind, I will assume that you have not used Lambda before, or have very little knowledge of it. I'll do my best to explain the terms and functionality surrounding it in a beginner-focused way.
+ 
+To begin, I will explain what this book is not. It is not an officially-sanctioned guide; everything in it comes from my own knowledge and experience having deployed numerous projects on AWS Lambda in the past few months since it was released. While I have consulted with numerous users and experts to ensure its accuracy, this book does not intend to replace the official documentation published by AWS, but instead act as a complementary guide that will take the strict technical details published by AWS and relay them in a way that is easier to understand and apply to your own projects.
+ 
+I have made a best-effort attempt to ensure that this book is up-to-date and feature-complete. However, Lambda is a brand new service and things could change at any moment. I don't guarantee the accuracy of anything written here, but I can assure you that all of the code and screenshots are real and worked at the time of publishing; I have worked intimately with Lambda for both personal and professional projects, as well as to develop examples for this book.
+ 
+The structure of this book will act as a guide to enhancing your experience with Lambda. Using example code and functional examples, we will begin with simple Lambda tasks and work our way towards more complex integrations using Lambda. During our exercises we will also utilize additional AWS services (especially IAM and S3). If you're following along at home, keep in mind that while most AWS services provide a free tier of usage for one year, you may incur costs if you go above that limit or have already been using AWS and are no longer eligible for the free tier.
+ 
+Now that we've covered most of the technicalities, let's begin with an introduction to how Lambda works under the hood, as well as a look at the Lambda console to familiarize ourselves with the layout.
+
+
+
+
+
+
+
+
+
+
+4. Lambda Background
+ 
+From its conception, Lambda was designed with a sort of "run and forget" model in mind. In other words, the developer provides the code and describes when it should be run (whether on-demand or in response to some event) and AWS takes care of the rest; they provision the compute power, deal with code storage and updates, deploy the code to the required locations, scale up to match the appropriate demand, manage the disk space, memory, and CPU requirements of the underlying resources, and manage the networking, OS updates, and all the other requirements in between. Compared to "traditional" models, or even workloads running on EC2, this is a vast amount of work that is being offloaded from developers to AWS. This is not without its downsides, so be sure to continue reading to make sure a Lambda replacement is appropriate for your project.
+ 
+The Internals
+ 
+Under the hood, Lambda really just uses all of the same AWS resources that you're likely already familiar with. The code is stored on S3, metadata for the function is stored in DynamoDB, execution occurs from Amazon Linux EC2 instances, and the function assumes an IAM role. While AWS likely added many new features to these existing services to create Lambda, they really didn't reinvent the wheel for the service.
+ 
+Despite the fact that many well-known services are in use, Lambda does require a different thought process and development pattern. We'll be sure to cover how developing for Lambda differs from traditional computing in the coming chapters. For now, let's look at the basics of a Lambda function.
+ 
+The Basics
+ 
+Functions
+ 
+Lambda projects are deployed to the service as functions. I will commonly refer to a project in its entirety as a Lambda function. Each function is designed to do just a single or a few common processes. For example, a Lambda function may download an uploaded image and convert it to black and white. Unlike a traditional project, Lambda functions are usually quite small - most that I've written are only a few hundred lines of code (not including Node.js dependencies).
+ 
+  
+ 
+Each Lambda function can be treated as a separate project. Personally, I create a GitHub project for each; however you may wish to use subfolders within a single repository if you're limited by number of repositories. The organizational structure is up to you; however, each Lambda function must be able to function independently (i.e. it cannot rely on dependencies within a different project unless they are copied to the project before deployment).
+ 
+Lambda functions are uploaded to Lambda as a ZIP file. The ZIP file can be uploaded from the console, the command line, or placed on S3 (preferable for larger files). AWS takes care of downloading the ZIP to the backend resources it manages. Each successive update to the code only requires you to re-upload another ZIP to replace the previous. Again, AWS will manage the deployment of the new code to its resources.
+ 
+In the next chapter, we will cover the contents of the ZIP file, but for now, know that it is a fully-contained codebase. If you've used Node.js before, think of it as the complete project with all of its NPM dependencies included.
+ 
+Languages
+ 
+For the time being, Lambda supports code written in Node.js, Java, and Python. The Lambda team have reportedly said that they will expand to additional languages but have not provided time lines. For this book, I will be using Node.js for a majority of the code samples.
+ 
+Resource Allocation
+ 
+When uploading your Lambda function as a ZIP, you must decide how much computing power to allocate to the execution of your code. Of course, these allocations affect the performance of your function, as well as its cost. Be sure to review the Lambda pricing page[2] to find a good balance of resources to allocate.
+ 
+The allocated memory of your function is how much memory you want to allow your function to consume. It does not mean that every function execution will utilize all of the available memory, but it does allow the function to use up to that amount. Memory is allocated in increments of 128 MB, up to a (current) maximum of 1536 MB.
+ 
+As an example, let's say that you've created a function called "imageProcessor" which downloads an image from S3 and performs an analysis on its metadata. Because image sizes can vary widely, you will need to test various allocations of memory on the performance of your function. Once done, you settle on allocating 256 MB of memory. If the function executes 5 times, it may consume 30 MB, 100 MB, 70 MB, 200 MB, and 40 MB. Each of these executions is charged at the allocated rate (not the consumed rate, so it is important not to over-allocate resources). If the function executes a sixth time and requires 280 MB to complete, it will fail with an error saying it ran out of memory. You would then be charged for an execution at the 256 MB rate.
+ 
+In the same way that memory allocation will limit your function to consuming a certain amount of memory, the timeout value will limit your function to a certain running time. Timeout values range from 1 second to 300 seconds (at the time of publication). Setting a high timeout value does not mean that every function execution will be charged at the maximum rate, but rather it indicates that the function can execute for up to a specific amount of time. In the above example, if I had set a timeout of 10 seconds for the first execution and the function executed in 2 seconds, I would be charged for only 2 seconds, not 10 seconds. These values are rounded to the nearest 100 milliseconds by AWS.
+ 
+Getting Set Up
+ 
+In the next chapter we will create the simplest of Lambda functions: one that only responds with "Hello World." Before we can do that, it will be helpful to understand the Lambda console.
+ 
+To get started, open the AWS console and navigate to "Lambda." If it's your first time using the service you'll likely see a splash page that prompts you to create a new function.
+ 
+  
+ 
+Selecting "Get Started Now" will display a number of "blueprints." AWS has provided a number of sample Lambda functions to help you get started. In the next chapter, we will use the "hello-world" blueprint to create our function. For now, read through the rest of this chapter to gain an understanding of what the dashboard will look like once it is populated with functions.
+ 
+On the main page of functions, the Lambda console lists the function name, a description, the base code size, the memory, and the timeout. You can click on the function to open additional details.
+  
+ 
+  
+The function details page allows you to upload new code, configure the function's entry point, event sources, and see some graphs of performance over the past few days.
+ 
+Now, we'll get started with a "Hello World" Lambda function.
+ 
+
+
+
+
+
+
+
+
+
+
+5. Hello World
+ 
+Just like almost every other programming tutorial, I will begin our exploration of Lambda with the simplest function: one that only echos back "Hello World." Even though Lambda allows you to edit code in-line directly from the Lambda console, only the simplest of functions can use this. The rest, any functions with more than one file or dependencies, will need to be zipped and uploaded. Since almost every function you write will require this, we'll use this format for creating our "Hello World" function.
+ 
+Create a new file in your editor of choice named "index.js". Inside this file, add the following contents:
+ 
+
+
+
+ exports.handler = function(event, context) {    context.succeed("Hello world"); }; 
+
+
+
+ 
+That's it! This is the simplest Lambda function you can create. While we're here, let's talk about each of its parts:
+ 
+●       exports.handler
+○       This is the exported method that will be called by Lambda when the function executes. You can export multiple methods, but you will need to select one when creating your Lambda function in the console. While you don't have to call your exported method "handler," it's the default used by Lambda and I recommend using it.
+●       (event, context)
+○       Your exported method must take these two arguments. The "event" is the object that contains details about the executing event. For example, when S3 triggers a Lambda function, the event contains information about the bucket and key. When the API Gateway triggers a Lambda function, the event contains details about the HTTP method, user input, and other web-based session information. The "context" object contains internal information about the function itself, as well as methods for ending the function (both successfully and unsuccessfully). We'll explore these objects in-depth shortly.
+●       context.succeed
+○       The "succeed" method of the context object allows the function author to tell Lambda that the function has completed its execution successfully. The argument passed to "succeed" ("Hello World" in this case) will be returned to the invoker.
+ 
+Uploading the Function
+ 
+Despite the fact that our function only contains a single file, create a ZIP file to wrap it. The name of the ZIP file doesn't matter.
+ 
+Log into the Lambda console and click "Create a Lambda function." AWS provides a number of Lambda blueprints, but since we already have a ZIP, just click "Skip." Give your function a useful name and description, and select "Node.js" as the runtime.
+ 
+The next page allows you to either enter your code inline, upload it via a ZIP, or enter an S3 URL path to a ZIP hosted on S3. Select the second option and locate the ZIP you created.
+ 
+Under the "Lambda function handler and role" section, you will need to define which file and exported method should be used to process events. If you followed the steps above, you can leave the default "index.handler." If you've chosen a different name, make sure that it follows the guidelines above (takes "event" and "context" as arguments, and ends with "context.succeed").
+ 
+Next, you'll need to select a role for the execution of your function. We'll discuss roles in more depth soon, but for now, understand that they behave just like EC2 IAM roles and allow your Lambda function to access resources within your account. At a minimum, your function will need permission to log its events to CloudWatch. AWS has simplified the creation of roles by allowing you to select pre-defined roles from a drop-down list. For the "Hello World" function, you can select the basic execution role. A popup will prompt you to create the role within IAM.
+ 
+The "Advanced settings" allow you to define the memory and time allocated to your function. In our case, echoing "Hello World" should only require the minimum memory and time.
+ 
+  
+ 
+You can review and then create your function on the next page. Once complete, you'll be able to test it. To do this, click on your function from the main overview page and then choose "Actions" > "Configure sample event." You can just use an empty event object of "{}" because the "Hello World" function does not require any event properties. Click "Submit" and you should see the results of your function: "Hello World." You'll also see a lot of extra information like logs, execution time, and memory consumption.
+ 
+  
+ 
+You'll also notice that a log group and stream were created within CloudWatch. Every Lambda execution will log its events (and any in-app console.log statements) to the CloudWatch log group.
+
+
+
+
+
+
+
+
+
+
+6. Working with Events
+ 
+In the previous chapter, our "Hello World" function did not require any specific input; it was entirely self-contained and would return the same text regardless of how it was called. In almost all cases, programmers want their programs to react to outside input and behave differently depending on what that input is. In this chapter, we will look at the event object and show how it can be used to process user, or system, input.
+ 
+To start, let's modify our previous "Hello World" function to say "hello" to a specific user:
+ 
+
+
+
+ exports.handler = function(event, context) {    context.succeed("Hello, " + event.username); }; 
+
+
+
+ 
+As you can probably tell, the event object will need to contain a "username" property. Ideally, we would check for the existence of this property before attempting to access it (as well as pass it through a sanity check to ensure it's a valid string), but let's keep it simple for now.
+ 
+Modify your function, resave it as a ZIP, and then return to the Lambda console for your "Hello World" function. Upload your new ZIP and then click "Save."
+ 
+Now, let's test it again, but this time, change the sample event object to:
+ 
+
+
+
+ {    "username" : "Sally" } 
+
+
+
+ 
+Your test output should now read "Hello, Sally."
+ 
+AWS Events
+ 
+You are probably wondering how an event is created outside of the test dialog. In most cases, the event object is created by AWS when an event occurs. For example, S3 creates events when objects are created and removed. If you've configured your Lambda function to act in response to such an event, the event object will contain information from S3 such as the bucket, key, request ID, time information, and much more. To properly create a Lambda function, you will need to look at the format of these events and process them accordingly.
+ 
+At the time of this book's publication, AWS supports triggering Lambda functions from: S3 create and remove events, DynamoDB row updates, CloudWatch Logs "put" events, SNS notifications, Kinesis events, and Alexa voice commands. Exploring each of these services is beyond the scope of this book, but I will be using S3 events frequently in my examples. As of now, they are relatively easy to test and don't require setting up additional, costly resources.
+ 
+The following sample event comes from an S3 "put object" request:
+
+
+
+ {  "Records": [    {      "eventVersion": "2.0",      "eventTime": "1970-01-01T00:00:00.000Z",      "requestParameters": {        "sourceIPAddress": "127.0.0.1"      },      "s3": {        "configurationId": "testConfigRule",        "object": {          "eTag": "0123456789abcdef0123456789abcdef",          "sequencer": "0A1B2C3D4E5F678901",          "key": "HappyFace.jpg",          "size": 1024        },        "bucket": {          "arn": "arn:aws:s3:::mybucket",          "name": "sourcebucket",          "ownerIdentity": {            "principalId": "EXAMPLE"          }        },        "s3SchemaVersion": "1.0"      },      "responseElements": {        "x-amz-id-2": "EXAMPLE123/e/yzABCDEFGH",        "x-amz-request-id": "EXAMPLE123456789"      },      "awsRegion": "us-east-1",      "eventName": "ObjectCreated:Put",      "userIdentity": {        "principalId": "EXAMPLE"      },      "eventSource": "aws:s3"    }  ] } 
+
+
+
+ 
+As you can see, the event object contains a lot of information about the trigger of this event. Most useful to your function will likely be "event.Records[0].s3.bucket.name" and "event.Records[0].object.key". Together, these can be used to download the object from S3 for future processing.
+ 
+Custom Events
+ 
+Earlier, when we tested our "Hello, {user}" function, we defined a custom event. In the cases of AWS-triggered events (like S3 objects being added), the event object is predefined for us. However, when directly invoking a Lambda function, whether through the command line, one of the AWS SDKs, or through the "test function" feature used above, the makeup of the event object is left to the user.
+ 
+This allows us to create functions that can consume pretty much any input (as long as it's valid JSON). Take a look at the following example of triggering a Lambda function from the Node.js SDK:
+ 
+
+
+
+ var params = {    FunctionName: 'test-function',    InvocationType: 'Event',    Payload: JSON.stringify({username:"Sally"}) };   lambda.invoke(params, function(err, data){    // Handle err and data }); 
+
+
+
+ 
+This code is defining a custom event object, delivered in the "Payload," which will be ingested and processed by our function. In fact, the Lambda test console is doing a very similar call behind the scenes.
+ 
+At this point, we've covered enough information about events to move into more detailed concepts of Lambda. When working with Lambda, always keep in mind that it is event-driven; every time it executes, it's because it was invoked by some event. These events are usually AWS-specific, but can also be user-generated.
+ 
+
+
+
+
+
+
+
+
+
+
+7. The Context Object
+ 
+The second argument to the handler of a Lambda function is the context object. Whereas the event object provided information about the event that triggered the Lambda function, the context object provides details about the function itself and ways to terminate its execution, either successfully or with an error.
+ 
+Properties
+ 
+To demonstrate the properties of the context object, let's update our "Hello, {user}" function to log some more information:
+ 
+
+
+
+ exports.handler = function(event, context) {    console.log("Request ID: " + context.awsRequestId);    console.log("Log Group Name: " + context.logGroupName);    console.log("Log Stream Name: " + context.logStreamName);    console.log("Identity: " + context.identity);    console.log("Function Name: " + context.functionName);    context.succeed("Hello, " + event.username); }; 
+
+
+
+ 
+Now, when you test the event in the console, you'll still see the same "Hello, Sally" output, but your logs should contain many more details. The context properties are useful for debugging and can even be included within the app to make control flow decisions.
+ 
+Methods
+ 
+Besides its properties that provide information about the function and its current execution, you can also call methods on the context object. These are helpful for managing the closure of the function's execution. The following methods deal with exiting a Lambda function:
+ 
+●       context.succeed()
+○       Indicates that the function has completed successfully. You may optionally pass an object or string as a parameter which can be used by the calling event (for example, the API Gateway service can use the object in the HTTP response to the user).
+●       context.fail()
+○       Indicates that the function has failed during execution. In some cases, this is used to requeue the function. For example, if a function fails in response to an S3 event, AWS will attempt to rerun the Lambda function two more times before giving up. Again, you can pass an optional parameter to context.fail containing the reason for the failure.
+●       context.done()
+○       This method simulates both the "succeed" and "fail" methods in traditional Node.js callback style. You can call context.done(err, data) where err is an optional error message (or null) and data is an optional success object.
+●       context.getRemainingTimeInMillis()
+○       Returns the number of milliseconds remaining before Lambda will terminate the function. This is helpful to check if a function will have enough time to complete before taking on an additional workload.
+ 
+The context is a very useful part of the Lambda function, and we will utilize its "succeed" and "fail" methods extensively, especially when working with the API Gateway.
+ 
+
+
+
+
+
+
+
+
+
+
+8. Roles and Permissions
+ 
+AWS has encouraged the move from hard-coded AWS access keys and secrets to IAM roles in EC2 for quite some time. IAM roles are a much more secure feature that allow a specific resource, such as an EC2 instance, to assume the privileges required to interact with other AWS services. It does this through AWS's temporary tokens feature, which means that access for a specific resource can easily be modified or revoked at any time.
+ 
+Policies
+ 
+IAM roles are required for all Lambda functions. These roles define a specific policy which grant "allow" or "deny" permissions to other AWS resources. Below is a sample IAM role assigned to the execution of our previous "Hello World" function.
+ 
+
+
+
+ {  "Version": "2012-10-17",  "Statement": [    {      "Effect": "Allow",      "Action": [        "logs:*"      ],      "Resource": "arn:aws:logs:*:*:*"    }  ] } 
+
+
+
+ 
+As you can see, this permissions document allows the Lambda function to perform CloudWatch Logs actions such as creating a log group, creating a log stream, and saving log entries into that stream.
+ 
+The above set of permissions is the minimum required for all functions. While it is possible to launch a function without these permissions, it will not be able to create any logs, thus leading to a very difficult debugging process. If you're concerned about log storage costs, AWS CloudWatch is pretty cheap, and also includes a free tier of several gigabytes. You can always reduce the log retention time to a few days or a week which will further reduce your costs.
+ 
+Unlike our "Hello World" function, most Lambda functions are going to need to interact with other AWS resources. For example, a Lambda function that processes images uploaded to S3 will need permissions to read those objects from S3. Fortunately, AWS has adopted its same IAM permissions model for Lambda, so creating policy documents should be both familiar and simple. The following example gives the Lambda function permissions to download, upload, and delete objects from a specific S3 bucket called "example-my-org". Policies can be extended to any other resources as well. You can also attach AWS managed policies for more flexibility.
+ 
+
+
+
+ {    "Version": "2012-10-17",    "Statement": [        {            "Effect": "Allow",            "Action": [                "s3:DeleteObject",                "s3:GetObject",                "s3:PutObject",                "s3:PutObjectAcl"            ],            "Resource": [                "arn:aws:s3:::example-my-org/*"            ]        }    ] } 
+
+
+
+ 
+This should be very familiar if you've worked with IAM in the past.
+ 
+Trust Relationships
+ 
+AWS IAM provides the ability for roles to be restricted to specific resources. For example, the above policy enabling access to S3 objects can be tied to the Lambda service so that new Lambda instances can assume the role. This concept is called a "trust relationship" because it defines which components of the infrastructure you trust to assume the policy model you've developed. To apply this relationship to Lambda, you must add the following policy document to the "Trust Relationships" section of the IAM role.
+ 
+
+
+
+ {  "Version": "2012-10-17",  "Statement": [    {      "Sid": "",      "Effect": "Allow",      "Principal": {        "Service": "lambda.amazonaws.com"      },      "Action": "sts:AssumeRole"    }  ] } 
+
+
+
+ 
+  
+ 
+If you are using the Lambda console creation wizard to create your functions, it will automatically create the policies and trust relationships required. However, I prefer to create the Lambda roles required directly within IAM (usually through CloudFormation) and then attach them when I create the function.
+ 
+Console Popups
+ 
+When interacting with Lambda through the AWS console, it is quite common to see a popup that looks like this:
+ 
+  
+ 
+When this appears, AWS is attempting to connect an event trigger (an inbound SES email in this example) with the execution of a specific Lambda function ("helloworld" above). Clicking "Add permissions" will allow AWS to make this connection and give the source service the necessary IAM permissions to invoke the function.
+ 
+Cross Account Access
+ 
+In some cases, you may need to give permission to one AWS account that you trust to launch a Lambda function in your account. I've found that this is common in larger organizations where one team may operate the front-end of the environment (API servers, load balancers, etc.) and then pass traffic to a backend managed by another team. In this situation, the front-end team could be given permission to invoke a function in the backend team's account. This can be done via the command line with the following command using the AWS CLI.
+ 
+
+
+
+ aws lambda add-permission \  --function-name your-function-name \  --region us-east-1 \  --action "lambda:InvokeFunction" \  --principal 123456789012 
+
+
+
+ 
+To see all of the permissions assigned to the function, you can then run:
+ 
+
+
+
+ aws lambda get-policy --function-name your-function-name 
+
+
+
+ 
+If you need to authorize additional functionality, such as triggering a Lambda function in one account from an S3 upload event in another, AWS has written a blog post[3] which dives into much greater detail than I can here.
+ 
+
+
+
+
+
+
+
+
+
+
+9. Dependencies and Resources
+ 
+Node Modules
+ 
+At their core, Lambda functions are simply Node.js (or Java or Python) code. For this reason, dependencies function similarly to traditional Node.js programs in that they are installed via "npm install" to the "node_modules" directory. When uploading your code, the packaged ZIP must contain all dependencies required. There are, however, a few exceptions: the AWS SDK module ("aws-sdk"), the AWS Lambda module ("awslambda"), a DynamoDB interaction module ("dynamodb-doc"), and an image processing tool ("imagemagick"). If your code relies on modules not listed, it will need to include them in the "node_modules" directory. You can then reference them:
+ 
+
+
+
+ var mymodule = require("mymodule"); 
+
+
+
+ 
+OS Dependencies
+ 
+Under the hood, AWS is running its Lambda functions in a secure, segregated environment on top of a traditional Amazon Linux EC2 instance. According to the Lambda docs, this instance is built from the publicly available Amazon Linux AMI, so that should be the machine of choice for developing and testing your functions with OS-level dependencies. Keep in mind that any additional libraries that are not included as part of the operating system must be included in your packaged function contents.
+ 
+An example of a pre-included library is imagemagick, an image processing library for easy image manipulation. The imagemagick node module typically requires the underlying imagemagick library to be installed, but on the AMI used for Lambda, AWS has already installed these dependencies. We will explore image manipulation with Lambda in more depth in the coming chapters.
+ 
+OS Resources
+ 
+In addition to the pre-installed libraries and modules, AWS also provisions a small amount of space to use for temporary storage with your Lambda functions. As of publication time, this amounts to 500 MB of disk space located in the "/tmp" directory. CPU and memory are allocated as part of the function creation process created above and network calls can be made, but you do not have access to additional directories on the underlying instance.
+ 
+OS Commands
+ 
+Occasionally, Node.js programs make use of OS-level commands via "exec" and "spawn". In Lambda, you can utilize these OS functions to spawn native system calls. In fact, up until AWS introduced Python support, a common workaround was to use Node.js to "exec" Python code in the background. Below is a sample program that calls "spawn" to list the files in a directory.
+ 
+
+
+
+ exports.handler = function(event, context) {    var spawn = require('child_process').spawn;    var ls    = spawn('ls', ['-lah']);      ls.stdout.on('data', function (data) {      console.log('stdout: ' + data);    });        ls.stderr.on('data', function (data) {      console.log('stderr: ' + data);    });        ls.on('close', function (code) {      console.log('child process exited with code ' + code);      context.succeed();    }); }; 
+
+
+
+ 
+The logs for this function will produce something similar to:
+ 
+
+
+
+ START RequestId: 9754a20f-ad5b-4471-aaae-8639e00b034e Version: $LATEST 2015-01-01T21:12:02.263Z9754a20f-ad5b-4471-aaae-8639e00b034e              stdout: total 12K drwxr-xr-x  2 slicer  497 4.0K Jan 1 21:12 . drwxr-xr-x 20 root   root 4.0K Jan 01 20:06 .. -rw-rw-r--  1 slicer  497  454 Jan 01 21:12 index.js   2015-01-01T21:12:02.303Z              9754a20f-ad5b-4471-aaae-8639e00b034e              child process exited with code 0 END RequestId: 9754a20f-ad5b-4471-aaae-8639e00b034e REPORT RequestId: 9754a20f-ad5b-4471-aaae-8639e00b034e              Duration: 178.50 ms              Billed Duration: 200 ms               Memory Size: 128 MB              Max Memory Used: 28 MB 
+
+
+
+ 
+If you wanted to do any kind of bash programming, this would be a great way to create your function in bash and then execute it via Lambda with Node.
+ 
+
+
+
+
+
+
+
+
+
+
+10. Logging
+ 
+Lambda functions are actually relatively difficult to debug. Despite the fact that all "console.log" statements will be saved to CloudWatch, there is a huge amount of information included with each execution that makes locating relevant log entries difficult. Each execution results in a log entry with the start time, a large, UUID string, the relevant event data, and another entry containing the end of the request, as well as a final line for the reported memory and time usage. Additionally, multiple executions of the same function can be interspersed in the logs, resulting in a dizzying array of content that isn't easily readable. For this reason, I recommend using a log format that enables you to easily filter out your application logs from the AWS-provided logs. Personally, I've created a small NPM module that I can install in each project that can handle logging. Below is the code I've used to do this. It's quite simple, but it does the trick (you could also use existing tools like "Winston" or "Bunyan" but they may be overkill).
+ 
+
+
+
+ module.exports = function(level) {               var levelValue = 100;               switch (level) {            case 'TRACE':                  levelValue = 0;                  break;                             case 'DEBUG':                                           levelValue = 1;                                           break;                             case 'INFO':                                           levelValue = 2;                                           break;                             case 'WARN':                                           levelValue = 3;                                           break;                             case 'ERROR':                                           levelValue = 4;                                           break;            case 'FATAL':                                           levelValue = 5;                                           break;               }                 // Override all logs if testing with mocha               if (process.argv.join('').indexOf('mocha') > -1) {                             levelValue = 100;               }                 return {                             trace: function(message) {                                           if (levelValue <= 0) { console.log('TRACE: ' + message); }                             },                             debug: function(message) {                                           if (levelValue <= 1) { console.log('DEBUG: ' + message); }                             },                             info: function(message) {                                           if (levelValue <= 2) { console.log('INFO: ' + message); }                             },                             warn: function(message) {                                           if (levelValue <= 3) { console.log('WARN: ' + message); }                             },                             error: function(message) {                                           if (levelValue <= 4) { console.log('ERROR: ' + message); }                             },                             fatal: function(message) {                                           if (levelValue <= 5) { console.log('FATAL: ' + message); }                             }               }; }; 
+
+
+
+ 
+Then, in my main code, I can do the following:
+ 
+
+
+
+ var logs = require(__dirname + 'logger.js'); var logger = new logs('INFO');   // Application code...logger.info('Some informational statement'); logger.debug('Some debug statement'); 
+
+
+
+ 
+Because each log message is appended to its level, I can easily search CloudWatch for "INFO" or "DEBUG" to find the messages needed. Also, I can adjust the log level depending on the environment; staging may require a debug level, while production may only need warnings.
+ 
+Searching Logs
+ 
+After your function executes, its logs will appear in CloudWatch within a few minutes. Each Lambda function creates a separate log group. Within the group, each execution instance creates a new stream. The actual logs are then added to the streams. Do not confuse a stream with an individual execution of a Lambda function; oftentimes the same function will execute multiple times on the same underlying instance (especially if the function is invoked several times within a short time period). Each underlying instance writes to its own stream, which may result in several executions being written to the same stream.
+ 
+Finding the logs you're looking for is as simple as entering a search term in the box. However, CloudWatch is notoriously limited in functionality, so if detailed log searching is important to you, I recommend a proper third party platform.
+ 
+One additional feature of CloudWatch that I've found useful is the ability to configure metrics and alerts based on log patterns. For example, if you'd like to receive an email every time your Lambda function logs the words "error: invalid", you can. I will not delve into this in this book since it is not Lambda-specific, but AWS has already created many useful tutorials for setting up CloudWatch metric alerts.
+ 
+  
+
+
+
+
+
+
+
+
+
+
+11. Testing Your Function
+ 
+As with any programming cycle, it is very likely that you will need the ability to code, test, iterate the code, test again, and repeat. Because Lambda executes in a custom environment managed by AWS, it can be difficult to work through this cycle. Fortunately, a number of open source third-party libraries have sprung up to fill the need for testing. Ultimately, these tools mimic the "event" and "context" objects, along with their properties and method to simulate the environment in which Lambda functions launch once uploaded. In this chapter, I'll first work through the process of using the built-in testing functionality, then move to recommending a few third-party tools which I believe are much easier to work with.
+ 
+Lambda Console Tests
+ 
+When you upload your Lambda function to the AWS Lambda console, the ability to test it is built directly into the page. You simply need to provide an event (configurable via the interface) and you can see the logs and results immediately.
+ 
+Within the console, click on your Lambda function and then select "Configure test event" from the "Actions" drop-down menu. In this window, you will be able to either work from a template provided by AWS or configure your own JSON body to send as an event. Remember, this event is parsed as the incoming event by your function.
+ 
+  
+ 
+Once you select an applicable event and submit, the function will run and output its logs and result to the page.
+ 
+  
+ 
+As you can probably tell, re-uploading your function and navigating through these screens is not feasible. When developing, I'm constantly saving, re-running, editing, saving, and running again.
+ 
+Third-Party Testing Libraries
+ 
+Because of the difficulties described above, several third-party tools have been developed to simulate Lambda testing locally. Personally, I prefer "node-lambda" (https://www.npmjs.com/package/node-lambda) because of its slim package size and rapid prototyping. Simulating events is as simple as describing them in a JSON file.
+ 
+The node-lambda package has a lot more functionality that can help you create, edit, test, and deploy your functions. However, the inner workings of third-party modules are beyond the scope of this book, so I suggest you simply install the module and test it out according to its README.
+ 
+
+
+
+ npm install -g node-lambda 
+
+
+
+ 
+Some other third-party Lambda testing modules include:
+ 
+●       local-node-lambda: https://www.npmjs.com/package/local-node-lambda
+●       lambda-local: https://github.com/ashiina/lambda-local
+ 
+Simulating Context
+ 
+If you'd rather create a method of testing Lambda locally on your own, you will need to simulate the event and context objects. The methods and properties of the context object were described in Chapter 7; however, to put this into code, you can use the following template:
+ 
+
+
+
+ // Create a sample event to test var event = {               key1: 'value1',               key2: 'value2' };   var context = {               succeed: function(event) {            console.log('Success');                             // Do something with the event                             console.log(JSON.stringify(event,null,2));               },               fail: function(event) {            console.log('Fail');                             console.log(JSON.stringify(event,null,2));               },               done: function(event) {                             console.log(JSON.stringify(event,null,2));               } };   // Call your handler handler(event, context); 
+
+
+
+ 
+As you can see, this is pretty simple; all you need is the ability to "succeed" or "fail" from the context.
+
+
+
+
+
+
+
+
+
+
+12. Hello S3 Object
+ 
+At this point, I believe we have covered enough basics to create a more complex Lambda function. The next function we'll create will extend our existing "Hello World" function, but will instead download an object from S3 containing a user's name, and respond with "Hello" to that user. Additionally, we will setup Lambda to trigger this event when new objects are uploaded to an S3 bucket.
+ 
+The Bucket
+ 
+First, let's set up an S3 bucket that will be used to hold the uploaded objects which will trigger the Lambda function. Make sure the bucket is in the same region as the Lambda function you will create.
+ 
+The Role
+ 
+Since the Lambda function will need to download objects from the S3 bucket you just created, you will need to give it permissions to do this. Just like IAM roles associated with EC2 instances, Lambda uses IAM roles to assume the privileges provided to it.
+ 
+Log into the IAM console and create a new role, giving it the correct trust relationship described in Chapter 8. Make sure that the necessary logging permissions are declared in addition to the S3 "GetObject" permission required for your code to execute. When finished, your IAM policy should look similar to:
+ 
+
+
+
+ {    "Statement" : [        {            "Effect" : "Allow",            "Action" : [                "logs:CreateLogGroup",                "logs:CreateLogStream",                "logs:PutLogEvents"            ],            "Resource" : "arn:aws:logs:*:*:*"                             },        {                      "Effect" : "Allow",                      "Action" : [                "s3:GetObject"                      ],                      "Resource" : "arn:aws:s3:::your-bucket-name"        }               ] } 
+
+
+
+ 
+The Code
+ 
+Note: this code is slightly adapted from the sample code available in the "Blueprints" section of the Lambda console.
+ 
+
+
+
+ var aws = require('aws-sdk'); var s3 = new aws.S3();   exports.handler = function(event, context) {    // Get the object from the event and show its content type    var bucket = event.Records[0].s3.bucket.name;    var key = decodeURIComponent(       event.Records[0].s3.object.key.replace(/\+/g, ' '));    var params = {        Bucket: bucket,        Key: key    };    s3.getObject(params, function(err, data) {        if (err) {            console.log(err);            context.fail('Error getting object ' +                key + ' from bucket ' + bucket +                '. Make sure they exist and your ' +                'bucket is in the same region as ' +                'this function.');        } else {            context.succeed('Hello, ' + data.Body);        }    }); }; 
+
+
+
+ 
+This code will download the object that triggered the event from S3 and read its contents ("data.Body"), appending it to "Hello, " to create the success response.
+ 
+Save the above code in a file called "index.js" and ZIP it up. Then log into the Lambda console and create a new Lambda function using the ZIP. Make sure your handler matches "index.handler" and you select the correct role that you created above. You can select the lowest memory allotment and give the function a couple seconds for processing time.
+ 
+The Event
+ 
+To fully understand the code above, please refer to the sample event object outlined in Chapter 6. This event would be used by AWS when triggering this function, and contains data about the S3 event.
+ 
+In our code above, the bucket name and key of the object are used to download that same object. While there is a lot of other information exposed in the S3 "Put" event (region, uploader's IP, size of the object, etc.) we won't be using them for now.
+ 
+The Trigger
+ 
+After completing the steps above, you will need to create the trigger that connects an upload event on S3 to the execution of the function you've created. This can easily be done within the Lambda console by clicking on the "Event Sources" tab and adding a new source.
+ 
+  
+ 
+Select "S3" from the source list, and then choose your bucket. You can optionally provide suffix and prefix requirements so that only objects uploaded with the starting or ending string you define trigger the event. To determine which S3 events trigger an execution, select an event type from the drop down list. It is important to understand the differences between "Put," (HTTP PUT by a client) "Post," (HTTP POST by a client) "Copy," (through the S3 console or API) and "Complete Multipart Upload" (direct multipart upload from the client) since they all are considered "Object Created" events by S3. If you want each of these event types to trigger your function, you can simply select the parent element in the dropdown list.
+ 
+Testing
+ 
+To make sure everything works, create a simple text file containing your name and upload it to S3. You can then navigate to the "Monitoring" tab within the Lambda console and see if your function executed.
+ 
+  
+ 
+You can then click the link to be taken to CloudWatch Logs where you can see the full logs of your function's execution.
+
+
+
+
+
+
+
+
+
+
+13. When Lambda Isn't the Answer
+ 
+As promised at the beginning of this book, I will take a pause in the technical documentation for a bit to discuss the theory and hypotheticals involved when considering a switch to Lambda. As I have mentioned, the event-driven computing model is one designed to solve a slightly different set of problems than traditional computing, but still shares some overlap. Working with Lambda requires a fundamental shift in the way developers treat the environment in which their code runs.
+ 
+Host Access
+ 
+The first, and most obvious difference, between Lambda and traditional AWS setups is that access to the host instance is much more restricted. This affects everything from logging and monitoring to troubleshooting and development. Previously, developers launching EC2 servers were essentially given free reign over the environment; they could SSH into the instance, download specific packages, utilize package managers, apply specific sets of updates, create periodic tasks, script workloads, and essentially have root or administrative access to a Linux or Windows server. With Lambda, none of this is true. The concept of a "host" is abstracted away in favor of a code-focused development environment. While AWS has given us some clues into the actual host environment (an Amazon Linux AMI), everything else is quite opaque and access to this instance is severely restricted.
+ 
+If you're considering using Lambda, first ask the following questions:
+ 
+       Does your application rely on a heavily configured AMI?
+       Do you install multiple dependencies before running your application?
+       Do you frequently SSH into your host instances?
+       Does your application rely on native OS interaction (such as user accounts)?
+       Does your application require extensive testing or reconfiguration each time the host OS updates?
+       Do you tend to apply the latest OS patches and security updates minutes after they're released?
+       Do you have multiple user accounts accessing your host instance via SSH/Telnet/some other protocol?
+       Do you require the ability to directly access system, access, and security logs of the host?
+       Does your application utilize utilities that change underlying OS settings or preferences (i.e. max open network connections, max file handlers, etc.)?
+       Do your auditing, compliance, or regulatory needs require you to save snapshots of the host OS during a security incident?
+ 
+If you answered "yes" to some or most of these questions, Lambda may not be the best fit for your application. If, however, your application is not designed to be OS-dependent, and you can work without the traditional access to SSH, system logs, and other OS-level runtimes, then you should be able to begin converting your application to Lambda.
+ 
+Fine-Tuned Configuration
+ 
+One of the most appealing features of Lambda is that AWS manages the entire host environment; the developer does not need to administer memory, CPU, disk, and networking performance. However, this appeal can also be a drawback to some power users or simply to developers requiring more fine-tuned control over the environment in which their applications run.
+ 
+One major caveat of using Lambda is that you must adjust the expected memory requirements of a function in order to increase CPU and networking performance. While this is to be expected (almost all of the AWS EC2 instance classes scale other system attributes in tandem), it doesn't allow for the fine-tuned configurations provided by EC2 instance classes that prioritize CPU, GPU, networking, or disk space and speed. For example, the G2 class of GPU-optimized instances can provide massive improvements in GPU processing while the I2 class focuses on storage. With Lambda, these considerations are removed in favor of a single memory selection. The developer has no insight into disk speed, GPU, networking, or CPU beyond the fact that "increasing memory will increase the other attributes similarly." Adding to the confusion, AWS does not make known exactly what instance class is being used on the host-level, so there is no way to tell if Lambda functions will have improved performance over a traditional EC2 service.
+ 
+Purely from experimenting with various applications and performing stress tests across thousands of Lambda executions, I've determined that the most likely instance class is general purpose (M). I have no way of independently verifying this, but as a rule of thumb, I would be sure to heavily test any applications you are considering moving from a different instance class before migrating it to Lambda. For example, if your application is extremely GPU-intensive, I fear it would not function well on Lambda, and you may be better off leaving it on a GPU-enhanced EC2 instance.
+ 
+Here are a number of questions you can use to determine if a move to Lambda would benefit your application:
+ 
+       Does your application currently run on any optimized EC2 instance class?
+       Do you perform custom, OS-level tuning before running your application?
+       Would you be uncomfortable not knowing the allotted networking speeds, CPU class, or other environment details of the instance running your application?
+       Is your application extremely dependent on GPU processing?
+ 
+Again, if your answers are mostly answered in the affirmative, you may want to reconsider a move to Lambda. Unfortunately (or fortunately, depending on your viewpoint), Lambda removes the granular options available to users of its EC2 platform. If you can live with a single, memory-based, sliding scale of performance, then Lambda is an excellent choice.
+ 
+Security
+ 
+One of AWS's most-touted security features is the ability to create a completely private (software-based) network in which EC2 instances and infrastructure can be launched called a virtual private cloud (VPC). With the announcement of Lambda, VPC support was noticeably absent. Additionally, AWS invests a lot of time, effort, and money in ensuring that its services are compliant across a wide range of privacy and security requirement programs. A majority of AWS services are PCI, ISO 9001, ISO 27001, SOC, and HIPAA compliant[4]. Lambda has not yet obtained these same certifications.
+ 
+While AWS has announced that VPC support is on the way and that bringing Lambda under the umbrella of many of their existing compliance certifications is a priority, the fact that they are not currently included may immediately disqualify Lambda from being used in a number of sensitive industries. I have no doubt that Lambda was built with the utmost concern for security, but until the official paperwork is complete, most government, financial, and medical companies cannot use it for their workloads.
+ 
+Beyond compliance requirements, Lambda functions quite similarly to launching new EC2 instances. Each function is given an IAM role, access can be shared across accounts using the cross-account role feature, and policy documents help determine which infrastructure resources (such as S3) can trigger a Lambda function with an event.
+ 
+Because of the fundamental shift in architecture from a traditional host-based application to one where the application is running in an arbitrary container on an arbitrary instance determined by AWS, some host-level security insight may be lost. For example, host-based intrusion detection systems cannot be installed, system-level access logs are not made available, and the developer has no way of knowing which steps AWS has taken to harden the host instance. The understanding is that "AWS is taking care of security," but that doesn't quite provide a concrete answer to these questions, especially for security-paranoid industries.
+ 
+The following questions can help you decide if relinquishing this tight management of security to AWS is beneficial to your organization:
+ 
+       Does your environment have specific compliance requirements or require certifications such as PCI, HIPAA, or ISO 9001?
+       Does your application consume, store, or manage sensitive user, financial, or company data (SSNs, addresses, credit card numbers, trade secrets, etc.)?
+       Do your security and compliance teams restrict your from running applications in a non-VPC environment?
+       Do you install specific host-based security software (antivirus, firewall, intrusion detection, etc.)?
+       Can you launch applications without access to host security and access logs?
+       Do you trust AWS to manage your OS-level security requirements (patching, updates, etc.)?*
+ 
+* Note: Despite the framing of this question, AWS is quite responsive to updating their Amazon Linux AMIs and responding to security incidents. In fact, AWS often receives embargoed security disclosures before the general public, so a particular security vulnerability may actually be patched before you're even aware of it.
+ 
+My personal suggestion is to wait for AWS to announce VPC support for Lambda before using it for any security-sensitive projects, but to consider it heavily for any other projects in your environment. Of course, if your industry requires a certain certification, you're at the mercy of AWS obtaining it before you can begin working with Lambda.
+ 
+Long-Running Tasks
+ 
+Lambda excels at providing immediate, event-driven responses to triggers within an environment. Currently, it is not designed as a catch-all replacement for a traditional server. The current timeout of 300 seconds makes it quite clear that AWS is designing this as a reactive, rather than long-running, service. Lambda cannot currently be considered for projects where any kind of extended access is required. Even though Lambda provides access to a /tmp storage directory and you could technically have one function trigger itself again at the end of its execution time, there is no guarantee that successive functions will execute on the same underlying host. Additionally, Lambda's pricing model is not very favorable to this setup, as hypothetically having a single Lambda function with 1GB of memory running for an entire month would cost over three times as much as a comparable EC2 instance ($37 vs $9 at current costs).
+ 
+If, however, you need to have a specific task execute at predefined times, and that task takes under 300 seconds to run, then it would be advantageous to create a Lambda function using the scheduled execution model.
+ 
+Some applications, such as build systems like Jenkins or messaging servers like IRC, simply have no way of running as Lambda functions. Any application that requires the service to listen for incoming connections or that must wait for work to be complete elsewhere will not run properly on the Lambda platform.
+
+
+
+
+
+
+
+
+
+14. Where Lambda Excels
+ 
+It must seem odd that, in a book geared towards developing for Lambda, one of the longest chapters is devoted to what Lambda can't do. However, I firmly believe that if you don't understand what Lambda can't do, you may mistakenly fall into developing the wrong kinds of applications on Lambda. This may cause lots of headaches and lead you to abandon an otherwise-excellent platform. Since the last chapter gave a very clear picture of what tasks Lambda is not suited for, I've included this chapter as a reconciliation of sorts; I intend to provide lots of reasons for when you should be using Lambda.
+ 
+AWS Event-Driven Tasks
+ 
+Event-driven tasks are the types of Lambda use cases that AWS had in mind when designing the Lambda service. In fact, some of the most common examples used in AWS documentation and Re:Invent presentations are event-driven tasks. Tasks of this nature include essentially any form of AWS service event: objects uploaded to S3, DynamoDB table updates, CloudWatch Logs log deliveries, SNS topic entries, etc. Because of the existing AWS development pattern, any changes to these services previously required a polling mechanism to detect for most use cases. For example, before Lambda, new objects uploaded to S3 could only trigger SNS or SQS events. This required additional infrastructure to either continually poll for new SQS entries, or to listen to an SNS topic subscription; there was no way to directly invoke code immediately after an S3 event. Users of S3 that had to process objects on S3 immediately after they were uploaded developed all kinds of hacks and workarounds, most involving code that continually polled either S3 or SQS for new events. This was inefficient not only for users, but also for AWS who had to support the high API demand.
+ 
+The story repeats itself for a variety of additional use cases throughout AWS: new posts to an SNS topic required listening servers, new CloudWatch logs could only be processed by polling the CloudWatch API, and so on. As the Lambda service grows, AWS is continually adding new integrations; soon it will likely be possible to trigger Lambda functions from virtually any event within the AWS ecosystem: a new EC2 instance launches, a CloudFormation template updates, an ELB is created, an RDS instance consumes a certain percentage of storage space, a route is created in Route53, and much more.
+ 
+Lambda solves the polling problem by creating an on-demand response to particular events. Developers no longer have to constantly check for new S3 objects, new CloudWatch logs, or DynamoDB updates, because AWS has developed an environment whereby those events are pushed to Lambda rather than pulled by traditional AWS resources accessing the API. This is truly game changing for users who heavily utilize AWS for their projects.
+ 
+Scheduled Events (Cron)
+ 
+One very popular feature request during the early days of Lambda was for the ability to trigger a Lambda function at predefined intervals. Users were frustrated that an event-driven service couldn't be executed by one of the most common events in computing: time. Although there were some clever workarounds (a one hour presentation at Re:Invent 2015 described how CloudWatch alarms, combined with an SNS topic, could create an oscillating 0/1 Lambda trigger), AWS finally announced a more supported option in October of 2015. As of the time of writing, a developer can now use an interval or cron-like definition to trigger Lambda functions.
+ 
+  
+ 
+As a developer, it would probably take me several hands to count the number of cron-based scripts I have running in my environments. I use these scripts to perform background work, task synchronization, resource cleanup, monitoring checks, and much more. In most cases, these scripts run on a variety of EC2 servers depending on the project. While this is a valid approach, it does present several problems: the servers cost money to run, even when not in use, the server type must be allocated (and paid for) based on the maximum workload, IAM role permissions must be assigned to the instance based on the aggregate of all running scripts (if ten scripts access ten different S3 buckets, the execution environment has excessive permissions for nine of their executions), script updates require SSH or complicated deployment mechanisms, a server that goes down will take down all of the scripts with it (solved with overly complicated AMIs and autoscaling groups), and script failures are not easily detected. As you can see, there is a lot of room for improvement when running cron-based scripts on an EC2 server.
+ 
+Lambda solves these problems with its scheduled execution model. As long as the script can execute in under five minutes (likely increasing in the future) and doesn't rely on copious amounts of local resources, it can probably be replaced by Lambda. If each script is replaced with a Lambda function, the permissions can be much more narrowly applied, failures are much more easily noticed, deployments can be easily triggered, logs are aggregated in one place, and the underlying server management is handled by AWS. For a busy infrastructure administrator, this can mean the difference between spending hours ensuring hundreds of scripts execute across a fleet of EC2 servers and simply setting up CloudWatch alerts for failed Lambda executions.
+ 
+Offloading Heavy Processing
+ 
+Imagine that you have an application that accepts a series of image edits (crop, rotate, etc.) as well as a URL of an image to which those effects should be applied. When the user makes a new request, your application downloads the image at the provided URL and then applies the necessary edits before saving the result to S3. If you're working with traditional AWS resources, you may have a fleet of x-large EC2 servers in an autoscaling group behind an ELB. For highly-trafficked applications, you may need a handful of servers to manage the load. Since image processing is a fairly CPU-intensive task, each new request consumes a good portion of available processing power. This limits the maximum number of concurrent images your application can save and as more requests arrive your autoscaling group must increase, costing more money.
+ 
+With Lambda, the processor-intensive image manipulation tasks can be offloaded from the EC2 server to Lambda. Instead of handling the request directly, the EC2 server can trigger a Lambda function to do the processing, wait for a response, and then respond directly to the user. Now, your application can handle thousands of requests on a single server because the actual processing is being done in Lambda and not locally. While you may still need a few EC2 instances, it is highly possible that you can downsize to a much cheaper option, as well as decrease the total number of running instances.
+ 
+  
+ 
+In the diagram above, the number and size requirements of the EC2 instances in the "Servers ASGs" would decrease significantly.
+ 
+API Endpoints
+ 
+When Lambda was first released, many developers quickly realized that entire websites could be created using Lambda functions. However, to do so, the permissions to invoke the function had to be exposed globally - not a security conscious thing to do. Again, lots of intermediary hacks were developed to create "serverless" API endpoints, but just like in the case of scheduled Lambda events, these were quickly made obsolete by the official announcement of the AWS API Gateway service. The API Gateway made it possible to easily and securely configure a Lambda-based backend to replace an entire API web server.
+ 
+The API Gateway is essentially treated as a first class citizen in the world of Lambda. While other services such as S3 and Dynamo were updated to allow their events to be sent to Lambda, the API Gateway was built from the ground up with Lambda in mind. Because of this, the interaction between the two services is quite seamless: API endpoints and Lambda functions can be tied together with just a few clicks, testing can be performed entirely in the console, and almost all of the API Gateway documentation involves Lambda in some way. Chapter 21 covers the API Gateway service, and its integration with Lambda in detail.
+ 
+Infrequently Used Services
+ 
+During my time working with AWS, I've seen scores of applications running on micro, small, or medium sized instances that supported a very small amount of traffic. These applications included legacy APIs, internal dashboards, "glue" holding other applications together, and a variety of other use cases. The common thread was the disparity between the amount of money and maintenance required to keep these applications running and their level of actual use. Some organizations spend hundreds of dollars a month to run a handful of applications which may be accessed only twice - a colossal waste of resources. If you have multiple instances with less than 5% average CPU usage throughout the entire month, you've probably questioned this wastage as well.
+ 
+The pay-per-execution pricing model of Lambda makes it an ideal candidate to replace these applications. You could have one hundred applications hosted on Lambda, each being accessed one hundred times per month and you wouldn't even have to break out a nickel to pay for the costs. Even if traffic to your application suddenly spiked, it would have to approach three million executions before becoming more expensive than a single t2.micro instance (at the current rate of $9/month).
+
+
+
+
+
+
+
+
+
+
+15. Real-World Use Cases
+ 
+Up until now, we've only explored hypothetical use cases for Lambda. In this Chapter, I'll fix that by providing a number of real-world situations in which Lambda can be used. While I don't envision each of these being universally applicable, hopefully you can find at least a few places in your current infrastructure that could benefit from a Lambda function inspired by the examples here.
+ 
+S3 Image Processing
+ 
+I'll begin with the example most commonly cited in AWS presentations: processing images uploaded to S3. This is helpful if your applications require several sizes of images: perhaps a 480px wide thumbnail is used on a multi-image layout, a 1000px wide rendition is used for the image details page, and the full-size image is available for download. Regardless of the application specifics, storing multiple sizes of an image is a great way to save bandwidth and costs.
+ 
+As discussed previously, Lambda can respond almost instantly when a new object is uploaded to S3. A Lambda function will then be responsible for downloading the original image, resizing it, and uploading it to S3. Chapter 12 included an in-depth look at the multiple pieces required for a working S3 download function (S3 bucket, IAM role, event trigger). To create our image processing function, we will extend this setup to not only download the object, but also to process it and upload resized copies back to S3. Be sure that you have a valid S3 bucket and an IAM role that has permissions to "GetObject" and "PutObject" on the bucket (for detailed steps, refer to Chapter 12).
+ 
+
+
+
+ var async = require('async'); var AWS = require('aws-sdk'); var s3 = new AWS.S3(); var gm = require('gm').subClass({imageMagick: true});   var widths = [480, 640, 1000]; exports.handler = function(event, context) {               var bucket = event.Records[0].s3.bucket.name;               var key = decodeURIComponent(          event.Records[0].s3.object.key).replace(/\+/g, ' ');                 s3.getObject({                             Bucket: bucket,                             Key: key               }, function(s3Err, s3Data){                             if (s3Err) return context.fail(s3Err);                               var origImg = gm(s3Data.Body);                               // Loop through each width required to generate the resize                             async.each(widths, function(width, next){                                           origImg.resize(width)                  .toBuffer('jpg', resizeErr, resizedBuffer) {                                                         if (resizeErr) return next(resizeErr);                                                           // Upload the resized data to S3                                                         s3.putObject({                                                                       Bucket: bucket,                                                                       Key: 'resized/' + width + '-' + key,                                                                       Body: resizedBuffer,                                                                       ContentType: "image/jpg"                                                         }, function(s3UploadErr) {                                                                       next(s3UploadErr);                                                         });                                           }                             }, function(err){                                           if (err) return context.fail(err);                                           context.succeed('Completed ' +                      widths.length + ' resizes');                             });               }); }; 
+
+
+
+ 
+When creating the event trigger, be sure to utilize the prefix and suffix options so that the function is not triggered for uploads to the "resized" directory (this would cause a recursive loop that increases in size as Lambda launches functions in response to uploads from the previous function).
+ 
+Shutting Down Untagged Instances
+ 
+Many organizations utilize the AWS tagging feature to keep track of costs, projects, or other parameters. Oftentimes, developers will forget to tag an instance launched for development purposes and then forget what its purpose was months later. While I won't delve into the various policies and processes that companies have to solve this problem, many have settled on requiring every instance to be tagged with specific variables and shutting down the ones that aren't. Previously a cron script on an EC2 instance, this is a perfect job for Lambda.
+ 
+Again, the IAM role for this function will need the proper permissions to work - "ec2:DescribeInstances" and "ec2:TerminateInstances" in this case.
+ 
+
+
+
+ var async = require('async'); var AWS = require('aws-sdk'); var ec2 = new AWS.EC2(); var REQ_TAG_KEY = 'cost_center';   exports.handler = function(event, context) {               ec2.describeInstances({}, function(diErr, diData){                             if (diErr) return context.fail(diErr);                               if (!diData || !diData.Reservations ||                 !diData.Reservations.length) {                                           return context.succeed('No instances found');                             }                               var instsToTerm = [];                               async.each(diData.Reservations, function(rsvtn, nxtRsvtn){                                           async.each(rsvtn.Instances, function(inst, nxtInst){                                                         var found = false;                                                           for (i in inst.Tags) {                                                                       if (inst.Tags[i].Key === REQ_TAG_KEY) {                                                                                     found = true;                                                                                     break;                                                                       }                                                         }                                                           if (!found) instsToTerm.push(inst.InstanceId);                                                           nxtInst();                                           }, function(){                                                         nxtRsvtn();                                           });                             }, function(){                                           if (!instsToTerm.length) {                                                         return context.succeed('No terminations');                                           }                                             ec2.terminateInstances({                                                         InstanceIds: instsToTerm                                           }, function(terminateErr, terminateData){                                                         if (terminateErr) return context.fail(terminateErr);                                                           context.succeed('Terminated the following ' +                              'instances:\n' +                                                                       instsToTerm.join('\n'));                                           });                             });               }); } 
+
+
+
+ 
+You can now schedule this function to run every hour, day, or other interval. You may want to test this function by adding "DryRun: true" to the first "ec2.terminateInstances" argument (right after "InstanceIds: instsToTerm").
+ 
+Triggering CodeDeploy with New S3 Uploads
+ 
+CodeDeploy is a relatively new AWS service that uses an agent on EC2 instances to coordinate deployments across potentially thousands of servers. It has options for rolling back to previous deployments, performing deployments to multiple groups (such as an A/B stack), and many more options to help deploy new code without downtime.
+ 
+I cannot elaborate on the CodeDeploy service much more (or else this book would be twice as long), but if you use it or have looked into using it, you're likely aware that it functions by deploying a ZIP of the application code from S3 to the EC2 servers. The usage pattern for CodeDeploy is: upload the new code ZIP to S3, copy the link, launch a new CodeDeploy deployment, paste the link, and then deploy. These steps can become quite cumbersome if you deploy frequently. Fortunately, Lambda can be used to automatically trigger new CodeDeploy deployments when the application's ZIP on S3 is updated.
+ 
+We'll begin with the same base setup of responding to an S3 "PutObject" event. However, instead of extracting and processing the ZIP, we'll simply trigger a CodeDeploy deployment using the object's location.
+ 
+
+
+
+ var AWS = require('aws-sdk'); var codedeploy = new AWS.CodeDeploy(); exports.handler = function(event, context) {               var bucket = event.Records[0].s3.bucket.name;               var key = decodeURIComponent(           event.Records[0].s3.object.key).replace(/\+/g, ' ');                 codedeploy.createDeployment({                             applicationName: 'My App',                             deploymentGroupName: 'Blue Group',                             revision: {                                           s3Location: {                                                         bucket: bucket,                                                         bundleType: 'zip',                                                         key: key                                           }                             }               }, function(cdErr, cdData) {                             if (err) return context.fail(cdErr);                                                          context.succeed('Successfully triggered deployment: ' +                             cdData.deploymentId);               }); }; 
+
+
+
+ 
+As with each of these examples, the associated IAM role will require the correct permissions ("codedeploy:createDeployment" in this case). Additionally, you will need to create an event trigger in the Lambda console that fires when an object is uploaded to the S3 bucket.
+ 
+This isn't quite a complete Jenkins replacement, but it does simplify the actual deployment of the application code once it is placed on S3. If you're organization is already using CodeDeploy, this could make the service more automated.
+ 
+Processing Inbound Email
+ 
+AWS recently updated the SES platform to allow inbound emails. Once an email is received by AWS on your behalf, it can be used to trigger a number of actions, including a Lambda function. This function has access to the original email and can perform a variety of actions with it. One common example is removing attachments, uploading them to S3, and inserting a download link in the original email to save email server bandwidth and storage space. Another potential use case is to copy the email contents to an S3 file for archiving purposes. You could even use Lambda as a rudimentary SPAM filter by maintaining a list of whitelisted sender addresses.
+ 
+Since we've already covered several similar code examples above, I will not include a full code example for email processing. Instead, I'll discuss the steps required to triggering a Lambda function from SES, since they differ from the others.
+ 
+While most event sources can be configured through the Lambda console, some must be designed in the consoles of other AWS services. In the case of SES, triggering a Lambda function from an inbound email must be configured as part of the inbound email ruleset within the SES console.
+ 
+Navigate to the SES console, and click on "Rule Sets" under "Email Receiving." Create a new rule, enter a recipient email (such as test@domain.com) and click next. Note that you must have a verified domain or else you cannot receive mail. On the next page, select "Lambda" as the action for the rule. Choose a Lambda function that you've uploaded and then select an invocation type. "Event" will simply trigger the event and complete, while "RequestResponse" will wait for the Lambda function to exit before completing. You do not need to enter an "SNS topic." Follow through the next steps to finish the creation of the rule. Be sure to accept the prompt asking whether you'd like to assign permissions to SES to invoke the function you've selected.
+ 
+  
+ 
+Once you begin receiving email at the specified address, AWS will trigger a Lambda function for each piece of inbound mail. If you constantly find yourself performing the same actions on inbound email or have scripts on your mail server, creating Lambda functions is one useful alternative.
+ 
+AWS has some helpful guides[5] for interacting with the SES inbound email event if this use case is appealing to you.
+ 
+Enforcing Security Policies
+ 
+AWS provides hundreds of helpful configuration options to secure accounts and the infrastructure within them. However, until recently, there haven't been many solutions for actually enforcing that these configurations were properly configured. For example, requiring multi-factor authentication (MFA) for users logging into the AWS console is a great security practice. However, there isn't currently a way to ensure that all existing users are configured to use MFA. A single developer with the right permissions could disable MFA for herself or even other users.
+ 
+Just like almost all other aspects of AWS, the security configuration is accessible and configurable via the AWS API and SDKs. Using this, we can easily develop a periodic Lambda function that scans all users for the presence of MFA on their accounts. If MFA is not enabled, the Lambda function could send an email to a security or compliance contact within the organization or even temporarily disable the user account.
+ 
+
+
+
+ var async = require('async'); var AWS = require('aws-sdk'); var iam = new AWS.IAM();   exports.handler = function(event, context) {               iam.listUsers({}, function(iamErr, iamData){                             if (iamErr) return context.fail(iamErr);                               if (!iamData ||                                           !iamData.Users ||                                           !iamData.Users.length) {                                           return context.fail('No users found');                             }                               var good = [];                             var bad = [];                               async.eachLimit(iamData.Users, 50, function(user, cb){                                           if (!user.PasswordLastUsed) {                                                         // Skip users without passwords since                                                         // they won't be logging into the console                                                         return cb();                                           }                                           iam.listMFADevices({                                                         UserName: user.UserName                                           }, function(mfaErr, mfaData){                                                         if (mfaErr) {                                                                       bad.push('User: ' + user.UserName +                                                                                     ' MFA check error: ' + mfaErr);                                                                       return cb();                                                         }                                                           if (!mfaData ||                                                                       !mfaData.MFADevices ||                                                                       !mfaData.MFADevices.length) {                                                                       bad.push('User: ' + user.UserName +                                                                                     ' does not have an MFA device');                                                                       return cb();                                                         }                                                           good.push('User: ' + user.UserName +                                                                       ' has an MFA device');                                                         cb();                                           });                             }, function(){                                           var report = 'Results for: ' + new Date() + '\n' +                                                         'Warnings: \n' +                                                         bad.join('\n') +                                                         '\nOkay: \n' +                                                          good.join('\n');                                             // Optional: Send an Email report                                           context.succeed(report);                             });               }); } 
+
+
+
+* This code is adapted from the open-source "CloudSploit" repository[6], of which I am the author.
+** Ideally, you can include code to send email reports if there are warnings, but that requires configuring AWS SES as an authorized email sending for your domain which is out of the scope of this book.
+ 
+To tie everything together, give the function's IAM role permissions to call "iam:ListUsers" and "iam:ListMFADevices" and then configure a scheduled event execution every few hours.
+ 
+MFA is just one example of a security policy that can be enforced using Lambda. Lambda can also scan for misconfigured security groups (allowing access to "0.0.0.0/0"), access keys that haven't been rotated recently, and more. If you're comfortable with allowing it, Lambda could also implement remediations for any potential risks as well: disabling users with old keys, removing the offending security group rule, etc. However, this has the potential to impact production performance, so I recommend getting human input before taking automated steps.
+ 
+Detecting Expiring Certificates
+ 
+There are probably almost as many services to detect expiring SSL/TLS certificates as there are certificates (maybe a slight exaggeration). Regardless, having an expired certificate is a pretty terrible thing, especially when that certificate expires at 9:30pm on a Friday. Let's add another service into the mix by creating a simple Lambda function to query for expiring certificates in an AWS account. Even if they aren't being actively used, having expired certificates in IAM makes them readily available for attaching to ELBs and CloudFront distributions. Everyone understands the risks of that, so instead of paying a third-party to monitor all your sites, use Lambda for a more complete picture instead.
+ 
+We're going to create another scheduled function (the interval is up to you, but I recommend at least weekly), this time with "iam:ListServerCertificates" permissions.
+ 
+
+
+
+ var AWS = require('aws-sdk'); var iam = new AWS.IAM();   exports.handler = function(event, context) {               iam.listServerCertificates(function(err, data){                             if (err) return context.fail(err);                             if (!data ||                                           !data.ServerCertificateMetadataList ||                                           !data.ServerCertificateMetadataList.length) {                                           return context.succeed('No certificates');                             }                               var now = new Date();                             var expired = [];                             var warning = [];                             var valid = [];                               for (i in data.ServerCertificateMetadataList) {                                           var certData = data.ServerCertificateMetadataList[i];                                             if (certData.ServerCertificateName &&                                                         certData.Expiration) {                                                         var then = new Date(certData.Expiration);                                                         // number of days difference                                                         var difference = Math.floor(                                                                       (then - now) / 1000 / 60 / 60 / 24);                                                           if (difference > 45) {                                                                       good.push(certData.ServerCertificateName);                                                         } else if (difference > 0) {                                                                       warning.push(certData.ServerCertificateName);                                                         } else {                                                                       expired.push(certData.ServerCertificateName);                                                         }                                           }                             }                               // Optional: Send an Email report                               context.succeed('Certificate Report:\n' +                                           'Expired:\n' +                                           expired.join('\n') +                                           '\nExpiring within 45 Days:\n' +                                           warning.join('\n') +                                           '\nValid:\n' +                                           valid.join('\n'));               }); } 
+
+
+
+ 
+Again, you will need to configure SES for outbound emails if you want to send email reports.
+ 
+Utilizing the AWS API
+ 
+The examples in this chapter provide just a small glimpse into what is possible with Lambda. Because Lambda executes using IAM roles and with full access to the AWS SDK, creating functions that interact with the AWS infrastructure is as simple as writing a script. When access to the AWS API is combined with on-demand, event-driven, pay-per-execution computing, the possibilities are virtually limitless. I challenge you to think of an existing monitoring, security, or infrastructure maintenance task that can be performed with Lambda and to implement it as a way of learning the platform.
+ 
+
+
+
+
+
+
+
+
+
+
+16. Execution Environment
+ 
+AWS has been fairly tight-lipped about the technical specifics of the environment running Lambda. Users have been left to guess how the service itself operates. For example, while AWS notes that it executes the Lambda function in a "container," there have not been many technical details released about this setup. Some users have hypothesized that Lambda is actually running in Docker containers; AWS has not confirmed or denied this. There is no documentation regarding the scaling policies, open ports on the instance, IP addressing, etc. While the vagueness is most likely intentional in order to make the service as "set and forget" as possible, this will not appease the developers requiring more information for compliance or auditing requirements.
+ 
+From the documentation and presentations that AWS has released, we've been able to gain some insight into how the architecture behind Lambda is structured. In this chapter, I will reveal what we do know, and how that affects the development of functions on Lambda.
+ 
+The Code Pipeline
+ 
+When the Lambda code is uploaded to the service as a ZIP file, AWS copies it to an S3 bucket under its control. According to the Lambda FAQ[7], the code is encrypted at rest, as well as passed through "additional integrity checks while your code is in use," which I assume means that they verify the checksum of the code when it is downloaded to an instance before execution.
+ 
+When the code is first uploaded and again when the code is updated, AWS downloads the code from S3 to a container allotted to execute it, based on memory requirements. Everything outside of the event handler is initialized. In the case of Node.js, this means that all of the modules are loaded into memory, any external database connections are made, and the code is prepared for execution.
+ 
+When the function is invoked, the event handler is called and the response is either returned to the caller ("ResponseRequired") or logged ("Event"). If the function is not invoked after a period of time (AWS has not released the exact amount of time, but my testing indicates it is around 10-15 minutes), it is removed from the underlying container. If it is subsequently invoked, the code is re-downloaded and initialized.
+ 
+Cold vs. Hot Execution
+ 
+This pattern of initialization and decommissioning of code creates a dilemma for infrequently accessed functions that have low latency requirements. Because the code must be re-initialized after the ten minute mark, there is an added period of latency before the code is ready for execution. From my work with Lambda, I've seen this latency range from 100 to 800 ms for most Node.js functions under 10MB. However, some Java users on the AWS forums have claimed latencies as high as 3500 ms. Obviously, this is not feasible for applications with low latency requirements, but may be acceptable for other use cases.
+ 
+These methods of starting a function are referred to by AWS as "hot" and "cold" executions. During a "hot" execution, the function has already been invoked and initialized in the past 10-15 minutes and simply re-executes the event handler. Response times for hot executions are usually determined only by the time requirements of the code itself. "Cold" executions involve re-downloading and initializing the code. Response times are composed of the ZIP download, extraction, code initialization, and then execution. Of course, larger files take longer to download and extract than their leaner counterparts, and thus take longer to invoke from a cold state. Here is a helpful chart to illustrate this.
+ 
+  
+ 
+Although the relationship isn't exactly linear, it is important to keep your ZIPs as small as possible. Removing README, help, documentation, unused module, and other files can help in reducing cold boot times.
+ 
+If you are running into latency issues due to cold booting, there is a fairly simple solution: establish a scheduled task to invoke your function every nine minutes. Be sure to add an if-else clause to the main event handler to exit immediately in order to reduce total execution time. Executing the function every nine minutes will only require about 4800 executions per month, well under the free tier limit. Even without the free tier, such a small number of executions will likely pay for itself by reducing cold boot times for the other executions.
+ 
+I encourage you to heavily test the impact of execution latency on your applications. When coming from an EC2-backed model, these latencies can introduce an unexpected wrench into the application.
+ 
+What is Saved in Memory
+ 
+As mentioned earlier, the application code outside of the event handler is only initialized once per host container. This means that if the function executes multiple times on the same container, all global variables and contents of memory will be accessible to each of those executions. This requires important performance and security considerations. It cannot be guaranteed that anything outside of the event handler will be unique to the execution. Take the following code samples using a hypothetical event object:
+ 
+
+
+
+ var ITEMS_TO_PROCESS = [];   exports.handler = function(event, context) {               for (i in event.items) {                             ITEMS_TO_PROCESS.push(event.items[i]);               }      context.succeed(); }; 
+
+
+
+ 
+
+
+
+ exports.handler = function(event, context) {      var ITEMS_TO_PROCESS = [];               for (i in event.items) {                             ITEMS_TO_PROCESS.push(event.items[i]);               }      context.succeed(); }; 
+
+
+
+ 
+In the first snippet, the "ITEMS_TO_PROCESS" array can be read and modified from any Lambda function that is executing on the container. If the function uses this array for future dictation of events, one function may wind up processing events pushed to the array from another function that has executed on the same container.
+ 
+In the second example, the array is kept private by its inclusion within the event handler. Every function invocation will create a separate array variable to which the event's items can be added.
+ 
+As you can likely see, this can lead to security issues if the function assumes that variables outside of the event handler are private. If the example above involved credit card numbers, it would certainly be a violation of regulatory requirements to make a list of credit card numbers accessible to additional copies of the same function being invoked. To put this in a traditional, web server context, this would be akin to saving user data to global variables rather than variables private to the individual request.
+ 
+Despite the negative issues associated with the sharing of globally initialized code, it can have beneficial use cases. One common example is caching. In the code samples above, "ITEMS_TO_PROCESS" could be replaced with an object cache. Imagine that data is retrieved from a database. The following example utilizes caching to reduce database queries and improve response time of the function.
+ 
+
+
+
+ var CACHE = {};   exports.handler = function(event, context) {               if (CACHE[event.item]) {                             return context.succeed(CACHE[event.item]);               }                 // Lookup object in database               db.find(event.item, function(err, item){                             if (err) return context.fail(err);                               CACHE[event.item] = item;                             context.succeed(item);               }); }; 
+
+
+
+ 
+Because the cache is outside of the event handler, subsequent executions will have access to the same cache shared among all other executions on the same container. Do keep in mind that you may want to clear the cache occasionally to reduce memory requirements depending on the frequency of the function's invocations.
+ 
+While caching can dramatically improve performance, keep in mind that the container running the Lambda function, and therefore storing the cache in memory, is not guaranteed to remain in place. Scaling events or increased times between execution can cause the cache to disappear without warning.
+ 
+Scaling and Container Reuse
+ 
+AWS has not released many details about the scaling policies of the hosts and containers running Lambda. Throughout the Lambda documentation, AWS only reveals that it "handles the scaling requirements automatically" in the background and that no input is required from the developers. For developers coming from EC2, this lack of control is a drastic contrast to the wide array of configuration options that can be used to create autoscaling policies.
+ 
+Many applications have strict latency requirements, the metrics of which can be used to scale a group of servers as soon as a threshold is reached. With Lambda, this is not possible. If the application must execute within 100 ms and Lambda is executing in 150 ms due to the load on the container, AWS may deem this acceptable and refuse to scale. Again, there is virtually no indication from AWS as to when these scaling events may occur, nor is there the ability to control how or when they do.
+ 
+AWS will reuse the same container when executing simultaneous Lambda functions until the allotted memory requirements force additional containers to be launched. There is no indication that this occurs, other than the fact that executions will continue to complete without added latency because of resource constraints. Perhaps in the future AWS will provide more configurations around scaling policies. Until then, be sure to stress test your functions heavily if you expect the load to increase considerably.
+
+
+
+
+
+
+
+
+
+
+17. From Development to Deployment
+ 
+In the next sections, I will be focusing on Lambda as a production service. As with other production services, there needs to be a focus on application design, proper development patterns, testing, deployment, and continuous monitoring. Unlike traditional, EC2-based projects, Lambda requires adaptations of thought for each of these processes, which I will explore here. As is also the case with software development, there are many very unique approaches, so do not assume that these are the only ways in which you can develop with Lambda.
+ 
+Application Design
+ 
+Perhaps the biggest difference between Lambda and traditional applications is that Lambda functions are designed around specific tasks while applications tend to be much more monolithic. If you've been following the recent trend of converting large applications into pieces, called "microservices," then Lambda should be familiar. Lambda takes the idea of microservices a bit further by compartmentalizing individual workflows into separate functions.
+ 
+To illustrate the design differences between traditional applications and Lambda, imagine a standard, web-based, e-commerce platform. At its core, the application is composed of interactions between a web front-end and a products database as well as payments and shipping systems. Older, monolithic applications may include everything bundled together. The microservices approach may separate the product, payments, and shipping interactions into separate APIs. Lambda may require a group of fifteen or twenty functions, several in each of the product, payment, and shipping focus areas. For example, one Lambda function could update the products database with new inventory counts after a purchase was made. Another may validate shipping address details. Still another may process shipping info to calculate a shipping and handling charge.
+ 
+There is no steadfast rule that dictates the separation of duties among Lambda functions. However, it is best to separate distinct duties into different functions.
+ 
+The following diagrams illustrate the progression from a traditional, monolithic application running on EC2 servers in autoscaling groups to a microservices-based architecture running on ECS, to finally a complete Lambda replacement. Obviously, the example is quite simplified, but the principles remain.
+ 
+  
+Traditional, Monolithic Architecture with EC2 Instances
+ 
+  
+Microservices Architecture Running on ECS with Docker Containers
+ 
+  
+Lambda Architecture
+ 
+This separation may become cumbersome due to the number of separate projects (functions) you must maintain. However, it has the advantage of allowing you to update pieces of your application without impacting the remaining parts. For example, you could update the logic used to calculate shipping costs without affecting the remaining functions that are updating the databases.
+ 
+If you do decide to convert a large application to Lambda, I recommend diagramming out each of the parts and how they will interact. While most smaller applications can easily be implemented in a couple functions, larger ones will not be as easy to organize and maintain.
+ 
+Development Patterns
+ 
+Just like microservices, most Lambda functions can (and should) be designed to be fairly project-agnostic. To continue our e-commerce example from earlier, the shipping cost calculation function is an ideal candidate for use in multiple projects. The e-commerce store, as well as internal tools and calculations could all rely on the same function.
+ 
+In most of our examples, the event object passed into the invocation of the function has been predetermined by AWS; the format is fairly standard across multiple services. When invoking the function directly, either from the command line or the SDK, the event object is arbitrary. As a good development practice, I recommend standardizing on a common format for all of your events across all functions. Here is a quick example of a format I've used for almost all of the functions I've created.
+ 
+
+
+
+ {               "metadata": {                             // Information about the invoking resource, date, etc.               },               "data": {                             // Arbitrary data required for use in the function               } } 
+
+
+
+ 
+The "metadata" object could contain the invoker's IP address, hostname, user agent (if applicable), the current date, timezone, region, AWS account, IAM role ARN, and anything else that is relevant or required by your logs. Once the function receives this event, it can include this information in its logs for debugging, security, and auditing purposes later.
+ 
+The "data" object contains the information necessary for the function to execute. To use a simple "Hello, User" example, this would be the user's name.
+ 
+Within the function itself, I tend to structure all of my Lambda functions in the same way. Below is a sample folder structure which I've found quite useful for medium and large sized projects.
+ 
+
+
+
+ ├── config │   ├── api.js │   └── db.js ├── controllers │   └── objectAdded.js │   └── objectRemoved.js ├── helpers │   ├── logger.js │   └── responses.js └── index.js 
+
+
+
+ 
+This may seem like overkill for a simple function like "Hello, world." But once you begin processing lots of data or writing Lambda functions that can handle a variety of inputs, I believe the above structure will become quite useful. Of course, you should adapt it to meet the needs of the majority of your projects.
+ 
+Within the "controllers" directory, each action performed by the Lambda function is separated into new files. For example, if this function responded to S3 "PutObject" and S3 "DeleteObject" events within a bucket, there could be "objectAdded.js" and "objectRemoved.js" controllers. Note that the line between creating multiple Lambda functions and creating multiple controllers within a single function can be blurry at times. As a rule of thumb, I create different Lambda functions if they touch different resources or I want to separate the updates to the functions from one another.
+ 
+To determine which controller to use, the "index.js" file can handle the routing. For example, the following sample code would call the correct controller depending on the S3 event.
+ 
+
+
+
+ var objectAdded = require(__dirname + '/controllers/objectAdded.js'); var objectRemoved = require(__dirname + '/controllers/objectRemoved.js');   exports.handler = function(event, context) {               var action = event.Records[0].eventName;                 if (action.indexOf('ObjectCreated') > -1) {                             objectAdded(event, context);               } else if (action.indexOf('ObjectRemoved') > -1) {                             objectRemoved(event, context);               } else {                             context.fail('Invalid event');               } }; 
+
+
+
+ 
+Every event source will require a different algorithm for determining the correct route. The API Gateway event source could call a different controller based on the URL path. Custom events could include a controller name in the metadata object. DynamoDB events could utilize a different controller based on the table name. Regardless of what you choose, I've found it is easiest to stick with one pattern per event type for all projects.
+ 
+The "helpers" directory contains resources that can be used in any of the other files in the function. The "logger.js" file could implement custom logging as described in Chapter 10. This file could then be required in all the other files, providing access to common logging functionality across the function. If you want to begin adding a timestamp to logs, the change could then be made in one place. The "responses.js" file could provide the same functionality for standardizing the format of responses. Below is a sample "responses.js" file that I use frequently.
+ 
+
+
+
+ var succeed = function(context, data) {               context.succeed({                             status: 200,                             code: 0,                             data: data               }); };   var error = function(context, message, errors, status, code) {               context.succeed({                             status: status || 200,                             code: code || 1,                             message: message || 'Error',                             errors: (Array.isArray(errors)) ? errors : [errors]               }); };   var fail = function(context, failureMessage) {               context.fail(failureMessage); };   module.exports = {               succeed: succeed,               error: error,               fail: fail }; 
+
+
+
+ 
+You can modify the response format as needed, but by providing a common format, errors due to conflicting or unexpected response formats can be minimized.
+ 
+In this chapter, I've presented a number of patterns that I follow when developing Lambda functions. They are by no means complete or required. However, regardless of how you choose to develop your functions, I urge you to consider creating some kind of base project which you can fork when starting a new Lambda function. Having a common starting point helps reduce development errors and standardize how you and your developers interact with Lambda in the application pipeline. Because of their "microservice" nature, you'll likely have many more Lambda functions than monolithic applications, so deciding on good standards early on is a must.
+ 
+Testing
+ 
+Chapter 11 focused on the technical specifics of testing Lambda functions, both locally using third-party modules and in the cloud using the Lambda console. In this section, I'll cover specific items that you'll want to test before launching a function into production. Most of these are difficult to detect when developing locally, so be sure to upload your function to a staging environment that mimics production.
+ 
+●       Does the function have the correct IAM role and permissions to send logs to CloudWatch?
+○       Debugging Lambda functions is especially difficult without logs. If the function does not have permission to create a log group, create a log stream, and write to that log stream, you won't find any logs.
+●       Does the function have the correct IAM role and permissions to access additional resources?
+○       Just like EC2's use of IAM roles, Lambda requires a role to access other resources in your account. If the function downloads an object from an S3 bucket and uploads it elsewhere, it will need permission to do both of these actions.
+●       Is the function timeout set too low?
+○       Even if you expect a function to execute in 1000 ms, cold boot times and potential external resource connection issues may mean the function occasionally takes 2000. For most functions, I recommend increasing the allotted time by a generous amount to prevent unexpected timeouts.
+●       Do resources accessed by your function limit access by IP address?
+○       Developers have no control over the external IP address of the container executing the Lambda function. If your database limits connections by IP address, Lambda won't be able to connect to it. In addition, don't expect the IP to remain the same for any extended period of time; containers are rotated at various times.
+●       Does the function always exit using context.fail(), context.succeed(), or context.done()?
+○       If a Lambda function does not call one of these methods, it will continue to consume billable time. To avoid unexpected behavior and increased costs, always exit cleanly. Don't let Node.js callbacks prevent an exit either!
+●       Is memory shared securely across executions?
+○       As discussed in the previous chapter, any code outside of the event handler is only initialized once. It is then shared across every execution of Lambda on the same container. Do not store sensitive information outside of the event handler if you do not want it to be accessible by other executions.
+ 
+Deployment
+ 
+The deployment of Lambda functions is perhaps one of my (many) favorite Lambda features. Gone are the days of blue-green deployments, DNS swaps, AWS CodeDeploy, SSH, downtime, traffic migrations, hot restarts, and other complicated mechanisms for deploying new functionality to production applications. With Lambda, deploying is as simple as updating the function with a new ZIP through the console or API. AWS manages the distribution of that function to the underlying containers, as well as the traffic flow off of the old function. You can deploy hundreds of times per day without worrying about downtime or performance impacts.
+ 
+Since we've already covered deploying a function through the console (simply uploading the ZIP), I will focus on ways to simplify the continuous integration pipeline with Lambda. Like most developers, you likely use a source control service like GitHub to manage your code. Additionally, you likely have dependencies that need to be installed (i.e. Node modules) and unit tests to run. While you could certainly run these locally, upload a ZIP of your local files to S3, and update the Lambda function using the AWS CLI, it will likely become tedious after a few deployments. For that reason, I've been using Jenkins, a very popular continuous integration tool, to install dependencies, test, ZIP, and deploy Lambda functions. Combined with a Git webhook, it makes deployments repeatable and fast.
+ 
+Jenkins provides a Lambda plugin that will update your function either directly or from S3. Personally, I prefer to keep a backup of files on S3 and then deploy from that, but either solution will work. To get started, simply search for "Lambda" in the Jenkins plugin console (it can also be downloaded directly[8]).
+ 
+The access key used by Jenkins must have the following permissions:
+ 
+
+
+
+ {               "Action": [                "lambda:GetFunction",        "lambda:GetFunctionConfiguration",        "lambda:ListFunctions",        "lambda:UpdateFunctionCode"               ],               "Effect": "Allow",               "Resource": "arn:aws:lambda:*:01234567890:*" } 
+
+
+
+* If Jenkins will only be operating in one region, the "*" can be replaced with that region.
+ 
+After applying the correct IAM permissions to the key and installing the plugin, new Lambda deployments can be initiated by adding a post-build action. The "Role" is the role of the Lambda function, not the Jenkins role (if you are using one).
+ 
+  
+ 
+In this example, the "s3://my-bucket/function.zip" location could easily be replaced with a local file system ZIP location such as "/tmp/function.zip."
+ 
+One thing to keep in mind is that Jenkins may apply special OS-level permissions to the files within the ZIP. To work on Lambda, they will need the proper permissions, which, if it occurs on your Jenkins instance, can be fixed with a bash step to "chmod" the files before generating the ZIP.
+ 
+If the deployment fails, the results of the calls made from Jenkins will be piped to the deployment logs, allowing further investigation.
+ 
+I won't dive into the steps of setting up a Git webhook with Jenkins, but the process is simple and easily found with a quick web search. Once connected, pushing to a Git branch should result in your function being built and updated by Jenkins.
+ 
+There are, of course, numerous other mechanisms of deploying Lambda functions. The simplest is to simply use the AWS CLI[9] and run:
+ 
+
+
+
+ aws lambda update-function-code --function-name <value> [--zip-file <value>] [--s3-bucket <value>] [--s3-key <value>] [--s3-object-version <value>] [--publish | --no-publish] [--cli-input-json <value>] [--generate-cli-skeleton] 
+
+
+
+ 
+Be sure that any local files, especially sensitive ones, that you do not wish to deploy are not included in ZIPs built locally.
+ 
+I've focused on Jenkins because it is one of the most popular build tools. However, any other build tool that allows shell scripts and the installation of the AWS CLI could easily replicate the above commands as a build step.
+ 
+Monitoring
+ 
+In Chapter 12, we briefly explored the Monitoring tab within the Lambda console for basic testing purposes. In this chapter, I will dive into how CloudWatch alerts can be configured to continuously monitor for failed or throttled executions as well as above-average execution times.
+ 
+Begin by creating a new alarm within the CloudWatch console. Select the function, resource, and metric name that you wish to monitor.
+ 
+  
+ 
+On the next page, specific information about what will trigger the alert can be added. For example, I can receive an SNS notification if the number of errors rises above two in a five minute timeframe.
+ 
+  
+ 
+I recommend setting up alarms for errors, invocation duration, and throttled invocations for every production function that you launch. Since Lambda functions execute mostly independently of one another, obscure errors that would crash a traditional application can go unnoticed for some time.
+ 
+
+
+
+
+
+
+
+
+
+
+18. Versioning and Aliasing
+ 
+When AWS first launched Lambda, updating a function would completely replace all future invocations with the new code. Since then, they have released an update which allows for both versioning and aliasing of Lambda functions, thus allowing an application to reference a specific version of a function which will continue to execute even as newer versions are uploaded.
+ 
+A direct comparison of this functionality with that of versioned APIs can be made. For APIs that support numerous other applications, it is important that the functionality and response formats remain the same, even as new features are added and updates are made.
+ 
+To create versions of a Lambda function, simply open the Lambda console, navigate to the function you'd like to update, and click "Actions" > "Publish new version." This will freeze the current code as a version, for which you can provide a description. This version will never change, even as new updates are made. It is now safe to reference this version directly in your application code.
+ 
+
+
+
+ var params = {  FunctionName: 'arn:aws:lambda:us-east-1:1234567890:function:test-function:1',  Payload: '{user:"Bob"}' }; lambda.invoke(params, function(err, data) {  if (err) console.log(err, err.stack);  else     console.log(data); }); 
+
+
+
+ 
+Note the "1" after "function:" in the ARN above. By specifying the "1," this invocation will call the specific version "1."
+ 
+If you did not provide a ":1", and simply invoked the function name or the base ARN, Lambda would execute the current, latest code.
+ 
+As you can imagine, referencing function versions only by a number can become quite confusing if you have numerous versions. For that reason, AWS added the ability to create aliases. These human-readable names can allow you to replace the "1" with something like ":working_backend".
+ 
+It is important to know that aliases are simply pointers to versions (and not vice versa). Aliases can be modified to point to new versions at any time. For example, I could have an alias called "staging" which I point to new versions before they are released to production. I could hard code the "staging" reference in my application code, but then change the function to which it is pointed at any time. This can all be done within the Lambda console.
+ 
+  
+
+
+
+
+
+
+
+
+
+
+19. Costs
+ 
+Lambda is designed to be a low-cost alternative for EC2. That being said, the cost model can cause the monthly charges to fluctuate quite heavily depending on the volume of requests and their execution times. Generally, Lambda is less expensive than comparable EC2 instances until the requests approach several million per month at low to moderate execution durations. For long-running processes with high memory requirements, that number can be reduced to just a few thousand before the costs would exceed the lowest EC2 offering. Let's look at a few examples to illustrate these points. All examples will be using the most recent pricing model at the time of publication as well as US dollars. In each case, I will calculate the number of executions allowed before the costs will exceed a t2.micro instance (currently $9/month). The free tier will not be included.
+ 
+Short Executions
+ 
+Lambda is quite suited to performing millions of small executions for a very small cost.
+ 
+
+
+
+ Allocated Memory (MB) 
+ Execution Time (ms) 
+ Number of Executions 
+
+
+ 128 
+ 100 
+ 22,000,000 
+
+
+ 1024 
+ 500 
+ 1,055,000 
+
+
+ 1536 
+ 1000 
+ 360,000 
+
+
+
+ 
+As you can see, if your function only requires the minimum memory (128 MB) and execution time (100 ms), you could execute 22 million times in a month for about $9. If you use the maximum memory (1536 MB) and a one second execution, that is reduced dramatically to 360,000 executions. At this point, if you could run a t2.micro EC2 server (1 GB of memory) that could perform more than 1 million, 500 ms executions in a month, it would be more cost effective than running Lambda.
+ 
+Long-Running Processes
+ 
+Currently, the maximum execution time of Lambda is five minutes. The following chart shows how long-running Lambda functions can wind up exceeding the cost of EC2's t2.micro at one, two and a half, and five minute durations.
+ 
+
+
+
+ Allocated Memory (MB) 
+ Execution Time (ms) 
+ Number of Executions 
+
+
+ 128 
+ 60,000 
+ 72,000 
+
+
+ 1024 
+ 150,000 
+ 3,600 
+
+
+ 1536 
+ 300,000 
+ 1,200 
+
+
+
+ 
+The number of executions is now drastically lower. If you can spawn multiple processes on an EC2 server and run more than 3,600, 2.5 minute executions in a month, it would be more cost effective.
+ 
+High-Memory Applications
+ 
+If your application has memory requirements that exceed 1.5 GB, they can not run directly on Lambda (the maximum memory allocation is currently 1.5 GB). However, some developers have split these applications into pieces in order to fall under the memory limitation. While this could save money in some cases, I urge you to calculate the total costs versus comparable EC2 costs. If you can launch an EC2 instance with 4 GB of memory for only $35/month, it may be able to complete far more executions in the same time period than $35 worth of Lambda executions. Of course, because of Lambda's per-execution pricing model, this only applies if the total number of executions exceeds the break-even point.
+ 
+Free Tier
+ 
+As with most AWS services, Lambda includes a free tier that is actually quite generous. Every month, developers receive one million free executions and 400,000 GB-seconds of compute time[10]. That's enough to replace quite a few EC2 servers running cron scripts.
+ 
+Calculating Pricing
+ 
+Although AWS describes pricing in detail, I've found their examples to be a bit confusing at first. For that reason, I've developed a pricing calculator which I host online[11]. The JavaScript script for this calculator is below; you only need to enter the number of executions, memory, and average execution time.
+ 
+
+
+
+ var NUM_EXECUTIONS = 0; var ALLOCATED_MEMORY = 128;              // MB var EXECUTION_TIME = 1000;              // ms var INCLUDE_FREE_TIER = true;   var executionsToCount =    INCLUDE_FREE_TIER ? (NUM_EXECUTIONS - 1000000) : NUM_EXECUTIONS; var requestCosts =    executionsToCount > 0 ? (executionsToCount / 1000000) * .20 : 0; var computeGBS =    (NUM_EXECUTIONS * (EXECUTION_TIME/1000)) * (ALLOCATED_MEMORY/1024); var totalCompute = INCLUDE_FREE_TIER ? (computeGBS - 400000) : computeGBS; var executionCosts = totalCompute > 0 ? totalCompute * 0.00001667 : 0; return '$' + (requestCosts + executionCosts).toFixed(2); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+20. CloudFormation
+ 
+One trend in infrastructure and operations has been the move towards describing infrastructure as code. By describing resources like EC2 servers, ELBs, and S3 buckets in a file as code, developers can version, check in, and comment on changes to the environment before they are made, reducing errors and maintaining a single source of truth for what is running. The AWS answer to this trend is CloudFormation, a service that uses JSON templates describing AWS resources to launch the resources themselves into an AWS environment.
+ 
+Although Lambda was not supported by CloudFormation at launch, it was added shortly afterwards. It is now possible to describe Lambda functions, their memory configurations, code locations, and IAM permissions using CloudFormation. In this chapter, I will provide a few examples of complete CloudFormation templates that can be used as starting points for new function launches. All of these templates are available on my GitHub repository[12] as well.
+ 
+Reusable Template with Minimum Permissions
+ 
+
+
+
+ {  "AWSTemplateFormatVersion": "2010-09-09",  "Description": "Launch a Lambda function with configurable memory and timeout",  "Parameters": {    "MemorySize": {      "Type": "Number",      "Description": "The memory size in 128 byte increments",      "Default": "128",      "MinValue": "128",      "MaxValue": "1536",      "ConstraintDescription": "Must be a valid number between 128 and 1536 in 128 byte increments."    },    "Timeout": {      "Type": "Number",      "Description": "The maximum seconds to allow the function to run",      "Default": "5",      "MinValue": "1",      "MaxValue": "60",      "ConstraintDescription": "Must be a valid number between 1 and 60."    },    "Runtime": {      "Type": "String",      "Description": "Which runtime to use",      "Default": "nodejs",      "AllowedValues": ["nodejs", "java8", "python2.7"]    },    "S3Bucket": {      "Type": "String",      "Description": "S3 bucket hosting the code"    },    "S3Key": {      "Type": "String",      "Description": "S3 key path to the code"    }  },    "Resources": {    "LambdaRole": {      "Type": "AWS::IAM::Role",      "Properties": {        "AssumeRolePolicyDocument": {          "Statement": [{            "Effect": "Allow",            "Principal": {              "Service": [ "lambda.amazonaws.com" ]            },            "Action": [ "sts:AssumeRole" ]          }]        }      }    },      "LambdaRolePolicies": {        "Type": "AWS::IAM::Policy",        "Properties": {          "PolicyName": "IAMLambdaPolicy",          "PolicyDocument": {            "Statement": [{              "Effect": "Allow",              "Action": [                "logs:CreateLogGroup",                "logs:CreateLogStream",                "logs:DescribeLogGroups",                "logs:DescribeLogStreams",                "logs:GetLogEvents",                "logs:PutLogEvents",                "logs:PutRetentionPolicy"              ],              "Resource": [{                "Fn::Join": [                  "", [                    "arn:aws:logs:", {"Ref": "AWS::Region"},                    ":", {"Ref": "AWS::AccountId"},                    ":log-group:/aws/lambda/*"                  ]                ]              }]            }]          },          "Roles": [{"Ref": "LambdaRole"}]        }    },      "LambdaFunction": {      "Type": "AWS::Lambda::Function",      "Properties": {        "Code": {          "S3Bucket": {"Ref": "S3Bucket"},          "S3Key": {"Ref": "S3Key"}        },        "Description": "Lambda function",        "Handler": "index.handler",        "MemorySize": {"Ref": "MemorySize"},        "Role": {"Fn::GetAtt": ["LambdaRole", "Arn"]},        "Runtime": "nodejs",        "Timeout": {"Ref": "Timeout"}      }    }  } } 
+
+
+
+ 
+This template can be launched for each new Lambda function. However, I recommend adapting it to handle several related functions with multiple parameters (simply copy additional parameter sets and function resources) instead of launching a single CloudFormation stack for every function. Personally, I create one stack for each project and include Lambda functions directly with the other resources. You can use the template above as a starting point for this.
+ 
+Cross Account Access
+ 
+In Chapter 8, we discussed giving access to one AWS account to invoke a function in an account you own. As shown, this can be done via the command line. However, if you prefer CloudFormation, the following template snippet will accomplish the same thing.
+ 
+
+
+
+ "CrossAccountLambdaRolePermissions" : {  "Type": "AWS::Lambda::Permission",  "Properties": {    "FunctionName" : {"Fn::GetAtt" : ["LambdaFunction","Arn"]},    "Action": "lambda:InvokeFunction",    "Principal": "arn:aws:iam::0123456789012:role/role-name"  } } 
+
+
+
+ 
+Be sure to replace the account number and role name in the ARN as well as reference the correct Lambda function name. By adding this resource to the CloudFormation template above, permission will be granted for the external AWS account to invoke this function.
+ 
+CloudWatch Alerts
+ 
+In Chapter 17, we created CloudWatch alerts within the CloudWatch console that can send a notification to an SNS topic if there are an elevated number of errors for a particular Lambda function. If you prefer CloudFormation, the following snippet will create this alarm. Note that if the Lambda function and SNS topic are not also created in the same template, you will have to replace the references with the correct function and topic names.
+ 
+
+
+
+ "TestLambdaErrorsAlarmHigh": {  "Type" : "AWS::CloudWatch::Alarm",  "Properties" : {    "AlarmName" : "test-lambda-errors-high",    "AlarmDescription" : "Alert if Lambda errors rise",    "AlarmActions" : [ { "Ref" : "TestAlertsSNSTopic" } ],    "MetricName" : "Errors",    "Namespace" : "AWS/Lambda",    "Statistic" : "Sum",    "Period" : "300",    "EvaluationPeriods": "1",    "Threshold" : "0",    "ComparisonOperator" : "GreaterThanThreshold",    "Dimensions" : [ {      "Name" : "FunctionName",      "Value" : {"Ref": "LambdaFunction"}    }]  } } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+21. AWS API Gateway
+ 
+Even though an entire other book could be written to cover the AWS API Gateway, I would be remiss if I didn't at least mention it here. As one of the services designed since the release of Lambda, the API Gateway is perfectly suited for integrating with the service. Without the API Gateway, Lambda functions cannot receive traffic directly from the Internet. The API Gateway allows traditional HTTP traffic to be mapped from a client's request, to a Lambda backend, and then back to the client. Let's look at a very basic API Gateway setup that will take our "Hello, User" Lambda function and make it accessible as a web-based API.
+ 
+API Gateway Event
+ 
+Developing Lambda functions that are designed to respond to API Gateway events differs slightly from the ones we've explored so far. Since Lambda input events must be valid JavaScript objects, the API Gateway must convert all the relevant portions of an HTTP request to such an object. For instance, the request headers, URL parameters, URL query strings, POST body, and additional client information are all accessible from the API Gateway. It then uses a configurable process called a "mapping" to turn that information into an event object which can be used in the Lambda invocation.
+ 
+A complete list of mappings is available in the API Gateway documentation[13]. However, some of the most relevant and useful include:
+ 
+●       $context.httpMethod
+○       The HTTP method of the original request. GET, POST, PUT, DELETE, etc.
+●       $context.resourcePath
+○       The URL path. Useful when making conditional decisions based on the URL.
+●       $input.json('$')
+○       The body of the request (POST/PUT/etc. body).
+●       $input.params().header
+○       The request headers.
+●       $input.params().querystring
+○       The URL query string (ex: ?user=bob&version=1)
+●       $input.params().path
+○       The URL path parameters. Not to be confused with the resourcePath. Whereas "$context.resourcePath" would look like "/hello/{user}", the "$input.params().path" would look like {"user":"bob"}.
+ 
+This is only a small portion of what is made available. Additional fields include the remote user's IP address and user agent, the AWS account hosting the API, identity information, and much more.
+ 
+When setting up the API Gateway, it's ultimately up to you which of the above items you pass to the Lambda function. Regardless of the ones you choose, it must be a valid object. We will look at creating this event mapping within the API Gateway console shortly, but for now, just understand the the event being passed to Lambda is configurable from the API Gateway and that this event differs from other AWS events like those created by S3 and DynamoDB.
+ 
+Creating the Lambda Function
+ 
+Before we can configure a new API, we must create the Lambda function that will respond to requests. We'll start out extremely simple and then build on it after the API is configured. Create a new Lambda function with 128 MB of memory, a ten second timeout, and a basic execution IAM role. Paste the following code into the box:
+ 
+
+
+
+ exports.handler = function(event, context) {    console.log(event);    context.succeed({code:0, data: "Hello, World"}); }; 
+
+
+
+ 
+At this point, we are only concerned with viewing what data is available via the event object. Later, we will add functionality to obtain the user's name from the HTTP request and send it as part of the response. Be sure to save the function.
+ 
+Creating a New API, Resource, and Method
+ 
+Creating a new API Gateway API is quite simple; just open the console and click "New API." Give it a name and description, then click create.
+ 
+  
+ 
+Click into the newly created API and create a new resource. We'll call it "hello." Note that the resource path can be either a hard-coded string, or a parameter denoted with brackets (such as {user}. While we'll use a query string for the user's name in this example, you could alternatively create a {user} child resource under "hello" (creating /hello/{user}).
+ 
+Once the resource is created, add a method to it and select "GET." This will then prompt you for the integration settings.
+ 
+  
+ 
+From here, you can connect your Lambda function by selecting the "Lambda Function" option and then locating the function you wish to use. You'll see a pop up asking you to approve the assignment of IAM permissions to your function which will allow the API Gateway to invoke the function. When finished, you'll be presented with the settings page for the resource's method.
+ 
+  
+ 
+While I won't dive into each of these sections (they can become quite complicated very quickly), here is a brief overview that will provide a base level of understanding in order to configure the Lambda function properly.
+ 
+●       Method Request
+○       Defines the format of the incoming request from the client. Possible URL query strings are added here, along with potential authorization options.
+●       Integration Request
+○       Determines how the incoming request is mapped to a backend resource. It could be Lambda, a mock response, or proxied to another URL. Additionally, a mapping template is defined to convert the HTTP request into useable data on the backend.
+●       Integration Response
+○       Maps the backend response to an expected format for the client. HTTP status codes and response headers can be set here (must be defined in Method Response first).
+●       Method Response
+○       Defines the format of the outgoing response from the backend. Possible response headers are added here, along with potential HTTP status codes.
+ 
+Initial Configuration
+ 
+If we tested the API function now, the response will be the value of what is passed to "context.succeed()" in the Lambda function from earlier.
+ 
+  
+ 
+However, the CloudWatch logs for the Lambda function will not print anything for the value of the event. The reason is that we have not defined an input mapping to convert the incoming HTTP request information into an event object that is useable by Lambda.
+ 
+Mapping Templates
+ 
+To properly pass information from the API Gateway to Lambda, you must create a mapping template. To do this, go to the "Integration Request" section and add a new mapping template. Enter "application/json" for the Content-Type and then click the check. In the box that appears to the right, select the pencil icon and change the selection from "Input passthrough" to "Mapping template."
+ 
+In the template area, enter the following code:
+ 
+
+
+
+ {    "httpMethod": "$context.httpMethod",    "resourcePath": "$context.resourcePath",    "body" : "$input.json('$')",    "headers" : "$input.params().header",    "query" : "$input.params().querystring",    "params" : "$input.params().path" } 
+
+
+
+ 
+  
+ 
+Testing the function again and then checking the Lambda CloudWatch logs reveals the following:
+ 
+
+
+
+ 2015-01-01T10:30:00.630Z 8273ecfe-a373-11e5-384e-32a8288f87ba { httpMethod: 'GET', resourcePath: '/hello', body: {}, headers: {}, query: {}, params: {} } 
+
+
+
+ 
+As you can see, we're now receiving information in the Lambda event that can be useful for creating an appropriate response.
+ 
+Adding A Query String
+ 
+Next, let's add a query string for the user's name to the API Gateway. This is done in the "Method Request" section by adding a new entry under "URL Query String Parameters." Create one for "name" (be sure to click the check to save).
+ 
+  
+ 
+When testing the function again, you should now be prompted to enter a name. Provide some input and click "test" to observe how it is mapped within the event object.
+ 
+
+
+
+ 2015-01-01T10:30:00.630Z 1353ecfe-f373-31e5-384e-32a8288f87ac { httpMethod: 'GET', resourcePath: '/hello', body: '{}', headers: '{}', query: '{name=bob}', params: '{}' } 
+
+
+
+ 
+The query string value is now passed to the Lambda function as part of the event object. While it is possible to parse "name=bob" within the code, I personally prefer to offload as much work as possible from Lambda to the API Gateway. The cost structure favors more work being done by the API Gateway, since work performed there is not counted towards the execution time of the Lambda function. Instead of parsing the query string within Lambda, let's update the API Gateway's mapping template like so:
+ 
+
+
+
+ {    "httpMethod": "$context.httpMethod",    "resourcePath": "$context.resourcePath",    "body" : $input.json('$'),    "headers" : $input.params().header,    "query": {        #foreach($query in $input.params().querystring.keySet())        "$query": "$util.escapeJavaScript($input.params().querystring.get($query))" #if($foreach.hasNext),#end        #end    },    "params" : $input.params().path } 
+
+
+
+ 
+After saving and testing again, the Lambda logs should now show the query string as an object instead of a string.
+ 
+
+
+
+ 2015-01-01T10:30:00.630Z 5553ecfe-f373-31e5-384e-32a8288f87ae { httpMethod: 'GET', resourcePath: '/hello', body: {}, headers: {}, query: { name: 'bob' }, params: {} } 
+
+
+
+ 
+This input mapping makes use of a language called "Velocity Template Language," which you can read more about in the Apache documentation[14]. You can update the "headers" and "params" to use the same process of converting the string to a useable object.
+ 
+Using HTTP Request Information Within Lambda
+ 
+Now that we have easy access to the "name" query string, let's update the Lambda function. 
+ 
+
+
+
+ exports.handler = function(event, context) {    console.log(event);    context.succeed({code:0, data: "Hello, " + event.query.name}); }; 
+
+
+
+ 
+Running the API Gateway test again should now display "Hello," with the value of "name" that you entered.
+ 
+Deploying the API
+ 
+Once you have a working API, you need to deploy it. The API Gateway uses stages to allow you to update your code in one place without affecting what is running. You can then make updates and test on one stage while keeping a working production stage in use.
+ 
+To deploy your API, simply click the "Deploy API" button and follow the steps to create a first stage. You can then create additional stages from the "stages" page.
+ 
+Once you deploy the API to a stage, you will be given a URL that looks like
+ 
+
+
+
+ https://abc123def.execute-api.us-east-1.amazonaws.com/stage-name 
+
+
+
+ 
+While you can certainly use that URL directly, you can also create a custom domain name mapping in the API Gateway settings page. You'll need to upload an SSL certificate, as the API Gateway enforces HTTPS-only useage.
+ 
+Additional Use Cases
+ 
+The demo above is only scratching the surface of what is possible when the API Gateway is connected to Lambda. Additional information from the HTTP request can be used to craft an entire REST API. The URL parameter values can be used to determine which resource is created, modified, or deleted based on the HTTP method value. AWS has a number of examples of further integrating the REST API concept with DynamoDB for management of data. 
+ 
+Numerous projects have been developed that allow for easy creation of API Gateway and Lambda resources for a complete API. The most popular of these projects is called "serverless" (previously "JAWS")[15]. It provides easy methods for developing, testing, and deploying a complete API to multiple regions.
+ 
+As you can see, AWS expects the combination of API Gateway and Lambda to be able to replace a traditional EC2 API server. While the API Gateway is still a bit cumbersome to use, AWS is heavily invested in the future of Lambda and serverless computing and is continually providing updates.
+
+
+
+
+
+
+
+
+
+
+22. Lambda Competitors
+ 
+To call Lambda a completely new idea would be unfair to the countless companies developed around "serverless" approaches to computing. While I have not extensively used the following services, they all aim to solve the similar problem of wanting to execute code in an isolated environment without managing the underlying infrastructure. If your organization is not entirely invested with AWS, you may find that these solutions work better for you. However, keep in mind that if you're looking to develop Lambda functions that respond to other AWS events, it may be best to stick with other AWS products for compatibility and simplicity purposes.
+ 
+Iron.io
+ 
+Iron.io's WebWorker service is perhaps the most similar service to Lambda. While both platforms support the same setup (uploading a Node.js file), Iron.io has a longer timeout period (one hour vs Lambda's five minutes), a larger maximum memory options (2 GB vs 1.5 GB), and support for more languages (Go, PHP, Python, Node, Java, Scala, Ruby, and .NET vs Node, Python, and Java). Predicatably, Iron.io also aims to be less tied to AWS, and has the ability to process events from all major cloud providers. The pricing model is difficult to compare since Iron.io works with monthly plans instead of per-request pricing.
+ 
+You can read more about the differences between Iron.io and Lambda at a blog post[16] on their site.
+ 
+StackHut
+ 
+At its core, Lambda is really just a container running on top of an EC2 server. StackHut has a similar approach, but uses a more open and familiar technology: Docker. The service allows you to run Docker container microservices on-demand, similar to invoking a Lambda function. However, the service is more oriented towards long running processes rather than many concurrent executions of the same process.
+ 
+Read more about StackHut on their website[17] or GitHub[18].
+ 
+WebTask.io
+ 
+Similar to StackHut, WebTask.io is solving the server management problem by providing access to long-running containers on managed infrastructure. After your code is uploaded, WebTask.io provides an API for invoking it. Pricing is based on the number of containers as well as the number of requests per second that each container can support. One helpful difference between WebTask.io and Lambda is the ability to respond to webhooks. While Lambda can be configured with the API Gateway to do this, WebTask tasks expose the functionality natively. Read more at their website[19].
+ 
+Existing Cloud Providers
+ 
+Google has a Lambda competitor called "Cloud Dataflow[20]," while Microsoft Azure has "Stream Analytics[21]." Even though these services are all designed to abstract away the management of the underlying infrastructure, they vary widely in their approach, pricing, and requirements.
+
+
+
+
+
+
+
+
+
+
+23. The Future of Lambda
+ 
+Lambda will continue to grow and evolve as a service that is tightly integrated with other AWS services. Even though S3, DynamoDB, SNS, Kinesis, and the API Gateway are currently setup to work with Lambda, I predict that, in the future, almost every AWS service will be tightly coupled to Lambda in some way. One of AWS's objectives is to tie users to the AWS ecosystem while still supporting a flexible development environment. By integrating Lambda in as many places as possible, AWS is essentially creating this vendor lock-in.
+ 
+Lambda has many potential use cases beyond short-lived, moderate-memory processing. I anticipate that AWS will drastically raise not only the timeout, but also the memory limits. In the future, expect to see Lambda timeouts in the range of hours instead of just minutes. I also hope that AWS adds the ability to optionally declare CPU, disk, and network requirements in addition to memory. This will make Lambda a much better drop-in replacement for EC2. Imagine having a function that can be designed for GPU processing, bandwidth intensive tasks, or tasks requiring extremely fast disk access.
+ 
+Regardless of how Amazon chooses to develop Lambda going forward, it has certainly shifted the realm of what is possible within AWS today.
+
+
+
+
+
+
+
+
+
+
+24. More Resources
+ 
+There are more possibilities with Lambda than I could ever fit into a single book. Because of its flexibility, developers have been using Lambda for more scenarios than AWS likely imagined possible. Throughout the web, there are numerous blog posts, third-party tutorials, walkthroughs, and resources that can aid you in your use of Lambda. I'll provide a few of my favorites here, but the list is growing all the time.
+ 
+●       alestic.com
+○       Eric Hammond is an AWS Power User who has been sharing his thoughts on AWS for some time. He has published a number of blog posts that dive into the technical specifics of Lambda as well as numerous use cases. Before AWS announced scheduled Lambda tasks, he was responsible for the "Unreliable Town Clock (UTC)" Project[22] which would run Lambda jobs at an interval.
+●       GitHub
+○       AWS services tend to have large numbers of related open-source applications created by third parties and Lambda is no exception. I've found many new and helpful repositories just by periodically searching "Lambda."
+●       AWS Blogs
+○       Many AWS employees and guest authors post on the AWS Blog[23] about Lambda. Most of their posts dive into concepts that are much more complex than what is explored in the traditional AWS documentation.
+●       Company Blogs
+○       Numerous organizations, from startups to huge enterprises are either running Lambda in production or are considering it for numerous workloads. A good number of them also like to share their experiences with Lambda on their own company blogs. It's always great to read about Lambda from the perspective of an operations team that has actually implemented it in a real-world project. I'm a fan of posts by Airpair[24], AdRoll[25], and Import.io[26] among many others.
+●       Cloud Academy
+○       Cloud Academy frequently creates course material designed to train users on various aspects of AWS. They have a number of blog posts[27], as well as a complete lesson[28] on Lambda.
+●       Udemy Courses
+○       If you prefer hands-on exercises and content delivered in easily digestible chunks, then you'll likely enjoy Udemy's course software. I can't personally vouch for the only Lambda course available currently[29], but it does have a number of positive ratings from users who have completed it.
+●       Yourself
+○       The best way to learn Lambda is to actually just try using it! Since Lambda costs are so small, you can upload multiple test functions, test them repeatedly, and learn how the service can work in your environment, all without spending a dime.
+ 
+
+
+
+
+
+
+
+
+
+
+25. Conclusion
+ 
+Computing has come a long way since the days of provisioning physical hardware for each server required. While AWS users are obviously quite familiar with the fairly standard practice of virtualization of server environments, Lambda represents one step beyond what has been the industry standard for some time. In this rapidly advancing field, AWS has put forward what it believes is a solution to the problems of server management and system administration. By using proprietary technology, AWS can provide not only an easy-to-use system for its customers, but also one that will tie them more closely to the overall AWS ecosystem.
+ 
+As with any technology, Lambda is not the answer to every problem. As we've discussed in this book, there are numerous use cases where Lambda just isn't suited for the job. However, the number of possibilities for Lambda will only continue to grow as AWS continues to integrate it into additional services and build upon the platform.
+ 
+My recommendation for your next steps is to take a high-level look at your environment. Ask yourself if you provide any services, run any scripts, or execute specific functionality at periodic intervals that could be replaced with Lambda. At best, you'll find that a majority of your current EC2-based platform can be replaced with Lambda. At worst, you'll understand a new service and can consider its potential for future projects.
+ 
+Thank you for purchasing this book; I hope that you've learned enough about Lambda to start testing the service in your own environment.
+
+
+[1] https://aws.amazon.com/lambda/
+[2] https://aws.amazon.com/lambda/pricing/
+[3] https://aws.amazon.com/blogs/compute/easy-authorization-of-aws-lambda-functions/
+[4] https://aws.amazon.com/compliance/
+[5] http://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-lambda.html
+[6] https://github.com/cloudsploit/scans
+[7] https://aws.amazon.com/lambda/faqs/
+[8] https://wiki.jenkins-ci.org/display/JENKINS/AWS+Lambda+Plugin
+[9] http://docs.aws.amazon.com/cli/latest/reference/lambda/update-function-code.html
+[10] https://aws.amazon.com/lambda/pricing/
+[11] https://s3.amazonaws.com/lambda-tools/pricing-calculator.html
+[12] https://github.com/matthewdfuller/lambda-examples
+[13] http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html
+[14] https://velocity.apache.org/engine/releases/velocity-1.5/user-guide.html
+[15] https://github.com/serverless/serverless
+[16] http://www.iron.io/blog/2015/01/aws-lambda-vs-ironworker.html
+[17] http://stackhut.com/
+[18] https://github.com/stackhut
+[19] https://webtask.io/
+[20] https://cloud.google.com/dataflow/
+[21] https://azure.microsoft.com/en-us/services/stream-analytics/
+[22] https://alestic.com/2015/05/aws-lambda-recurring-schedule/
+[23] https://aws.amazon.com/blogs/compute/category/aws-lambda/
+[24] https://www.airpair.com/javascript/posts/static-websites-aws-s3-lambda-kinesis-contentful
+[25] http://tech.adroll.com/blog/dev/2015/11/16/count-things-with-aws-lambda-python-and-dynamodb.html
+[26] http://blog.import.io/post/using-amazon-lambda-and-api-gateway
+[27] http://cloudacademy.com/blog/?s=lambda
+[28] https://cloudacademy.com/amazon-web-services/understanding-aws-lambda-course/
+[29] https://www.udemy.com/aws-lambda/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
