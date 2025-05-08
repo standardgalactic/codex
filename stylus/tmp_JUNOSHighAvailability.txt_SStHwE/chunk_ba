@@ -1,0 +1,1000 @@
+
+Note
+In phase 2 of this transition sequence, multiple redundant
+          secondary LSPs are currently configured. As you can probably
+          predict, some of these will soon be removed. An experienced
+          administrator would save these configurations for later reference or
+          potential fallback should the transition encounter unexpected
+          problems.
+
+
+
+
+
+
+
+
+
+
+Figure 16-7. Phase 2: promotion of secondary LSPs through NEW P-router-1
+          to primary LSPs
+
+
+Devices can remain in phase 2 (Figure 16-7) as long as
+        necessary to confirm expected performance across the new Provider
+        routers. The time period varies from business to business, but for
+        large carrier networks, it is typically 72 hours. Table 16-2 lists what to
+        check for during the time frame.
+
+
+Table 16-2. JUNOS and IOS commands to confirm stability
+
+
+
+
+
+
+
+
+
+
+Acceptance
+                criteria
+
+
+JUNOS
+                commands
+
+
+IOS
+                commands
+
+
+
+
+
+
+Device stability
+
+
+
+>show
+                chassis alarms
+
+
+>show chassis
+                routing engine
+
+
+
+
+>show
+                (chassis type)
+
+
+
+
+
+Interface stability
+
+
+
+>show
+                interface extensive
+
+
+>show
+                route detail protocol
+                direct
+
+
+>monitor interface
+                traffic
+
+
+
+
+>show
+                interface
+
+
+>show ip route
+                connected
+
+
+
+
+
+Protocol stability
+
+
+
+>show ospf
+                neighbor
+
+
+>show bgp
+                summary
+
+
+>show route detail
+                protocol ospf
+
+
+
+
+>show ip
+                ospf neighbor
+
+
+>show ip
+                route
+
+
+
+
+
+LSP stability
+
+
+
+>show rsvp
+                neighbor
+
+
+>show rsvp
+                interface
+
+
+>show mpls lsp
+                extensive
+
+
+
+
+>show mpls
+                interfaces
+
+
+>show ip
+                rsvp
+
+
+
+
+
+
+
+
+
+
+
+
+Phase 3: P router transition
+
+
+
+Once you have confirmed network and device stability, you can
+        remove P-router-1 and P-router-2 in a graceful manner. After
+        checking to make sure no transit traffic is crossing the old Provider
+        devices, bring down the secondary LSPs that transited P-router-1 and P-router-2 (Figure 16-8). Then bring
+        down RSVP and MPLS, and then the BGP and OSPF neighbor relationships.
+        Finally, shut down the interfaces.
+
+
+
+
+
+
+
+
+
+Figure 16-8. Phase 3: removal of LSPs from P-router-1 and
+          P-router-2
+
+
+Due to the labor involved in decommissioning or repurposing
+        chassis, some network administrators see this phase as another good
+        point to pause and confirm network and device stability. Nothing is
+        more frustrating than removing chassis from the network only to later
+        discover issues that mandate their return.
+
+
+
+
+
+Final state: P router transition
+
+
+
+In the final transition state, P-router-1 and P-router-2 have been completely removed from
+        (or, more likely, repurposed within) the network. Figure 16-9 shows the finished
+        topology, including the newly deployed P-routers.
+
+
+
+
+
+
+
+
+
+Figure 16-9. Case study 1: final state
+
+
+
+
+
+
+
+
+Case Study 2: Transitioning Provider Edge Devices
+
+
+
+Figure 16-9 serves as the starting point for case study 2. In this
+      case study, we replace the IOS-based PE devices serving Acme Site 2 with
+      JUNOS devices.
+
+
+
+
+Phase 1: PE router transition
+
+
+
+In phase 1 of the PE device transition, we added a new pair of
+        chassis (NEW PE-router-1 and
+        NEW PE-router-2). These devices
+        have been physically connected to adjacent P devices and to the PE routers
+        they are replacing. The NEW PE
+        routers are also connected to the existing CE routers at Acme Site 2.
+        Figure 16-10 shows the
+        devices and the new links.
+Existing LSPs are not modified in this phase. This allows time
+        to confirm stability and protocol peering relationships.
+
+
+
+
+
+
+
+
+
+Figure 16-10. Phase 1: standup of NEW PE-routers 1 and 2
+
+
+
+
+
+
+
+Phase 2: PE router transition
+
+
+
+In phase 2 of the transition, we add a new secondary LSP from
+        PE-router-1 to PE-router-3. An ERO is used to force the LSP
+        to transit NEW PE-router-1 before
+        continuing on to NEW P-router-1. In
+        Figure 16-11, you see the new
+        secondary LSP between these two NEW
+        routers. The new LSP is providing protection against link and
+        interface failure on the existing primary LSP but is not protecting
+        against more serious failures on the NEW
+        P-router-1. Fortunately, this is only a transitional state
+        as we prepare for phase 3.
+
+
+
+
+
+
+
+
+
+Figure 16-11. Phase 2 of PE router transition
+
+
+
+
+
+
+
+Phase 3: PE router transition
+
+
+
+In phase 3, we gracefully decommission PE-router-2 and replace it with NEW PE-router-2. As described in Table 16-2, you use
+        operational mode commands to confirm functionality and stability,
+        including functional establishment of the original secondary LSP
+        through NEW PE-router-2.
+Figure 16-12 shows phase
+        3. In this figure, PE-Router-2 has
+        been completely removed from the network (and the network diagram) and
+        replaced with NEW PE-router-2. The
+        NEW PE router has peering
+        relationships with the existing adjacent P, PE, and CE routers.
+
+
+
+
+
+
+
+
+
+Figure 16-12. Phase 3 of PE router transition
+
+
+
+
+
+
+
+Phase 4: PE router transition
+
+
+
+Figure 16-13 shows an
+        additional set of LSPs transiting between r2 and r4. These redundant LSPs emphasize the fact
+        that the other routers in the high availability pairs can be used to
+        support traffic transiting between the Acme sites temporarily while
+        you are replacing PE-router-1.
+        Notice that we have added an additional redundant LSP that transits
+        NEW PE-router-1. As with all steps
+        in this process, this added redundancy is intended to ensure that
+        there are as few single points of failure as possible in the network
+        during the device transition.
+
+
+
+
+
+
+
+
+
+Figure 16-13. Phase 4 of PE router transition
+
+
+
+
+
+
+
+Final state: PE router transition
+
+
+
+Once a viable secondary LSP transits the new PE router, it is
+        possible to decommission PE-router-1. Figure 16-14 shows the final
+        state of the devices after PE-router-1 has been decommissioned and
+        removed.
+
+
+
+
+
+
+
+
+
+Figure 16-14. Final result of PE router transition
+
+
+We have now successfully transitioned Provider and Provider Edge
+        chassis in the model topology. The transitions were made in a safe
+        manner with predictable results and adequate pauses along the way to
+        ensure functionality as predicted.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 17. Monitoring Multivendor Networks
+
+
+
+Assuming you haven't skipped too many chapters, if you have made it this far into the book
+  you have learned how to transition routing, switching, Multiprotocol Label
+  Switching (MPLS), and the related signaling protocols from a single-vendor
+  to a multivendor environment without risking the availability of the
+  network. A major part of the transition is retaining the ability to monitor
+  the performance and stability of the network. The primary purpose of network
+  monitoring is to protect the availability of the network from hardware
+  failure, configuration error, unauthorized access or activity, and
+  performance degradation—in short, making sure the network is capable of
+  providing performance and services as designed.
+This chapter describes configuration elements and gives tips to
+  support classic monitoring and management of fault, configuration,
+  accounting, performance, and security (FCAPS) in a network with high availability requirements. The
+  chapter describes both JUNOS and IOS configuration elements pertaining to
+  Simple Network Management Protocol (SNMP), system logging, remote access,
+  and simple traffic monitoring in relation to their ability to support high
+  availability.
+Network monitoring is built on the premise that deviation from a
+  defined norm can be detrimental to the network.
+  Therefore, it is critical to establish a baseline of what is normal for the
+  network. It is impossible to identify abnormal behavior
+  without an awareness and understanding of what normal
+  looks like. How can you accomplish this? Simple: deploy the monitoring
+  mechanisms described in this chapter before suspected
+  problems occur on the network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Are You In or Out?
+
+
+
+When you are developing a monitoring and management scheme, it is
+    important to consider the method that the tools use to access the chassis.
+    There are two distinct approaches to network management: in
+    band and Out of Band (OoB).
+
+
+
+
+In-Band Management
+
+
+
+With in-band management, management traffic shares interfaces, links, and other
+      resources with customer traffic. This method is more economical up front
+      because you do not need to purchase additional equipment to support the
+      management network. However, the risks associated with this form of
+      management make it inappropriate for most networks with high
+      availability requirements. The main issue is that when the network is
+      having problems, the router may become inaccessible to management
+      tools.
+
+
+
+
+
+Out-of-Band Management
+
+
+
+With OoB management, you independently provision interfaces and links for the
+      management traffic so that no links are shared with customer traffic.
+      This method requires a greater capital expense, but has a few advantages
+      over in-band management:
+
+
+
+Dedicated interfaces result in clean separation of management
+          traffic from other forms of traffic, and simplify
+          troubleshooting.
+
+
+Problems impacting the production network do not automatically
+          degrade the ability to manage the chassis, as is the case with
+          in-band management.
+
+
+
+OoB management essentially results in the creation of a second
+      network for the sole purpose of monitoring the production network. Most
+      administrators agree that this is by far the most reliable way to
+      effectively monitor a network; however, there is an associated cost.
+      Additional routers and switches are typically required, and the end
+      result is an additional series of cost calculations, as described in
+      Chapter 1.
+
+Note
+In-band/out-of-band management is a common hybrid in which some
+        resources are dedicated to management traffic, some are dedicated to
+        customer traffic, and some are shared between the two. This method is
+        used in some service provider topologies where the Provider Edge (PE)
+        devices use OoB management and the Provider (P) devices use in-band
+        management.
+
+
+
+
+
+OoB and fxp0
+
+
+
+By definition, OoB management requires a dedicated management interface on
+        the chassis. This interface can be a transit interface or, on
+        M, MX, and T Series chassis, the fxp0 interface. fxp0 is a permanent interface that ties
+        directly into the routing engine (RE) and effectively bypasses the Packet
+        Forwarding Engine (PFE). It exists specifically for OoB management of
+        the system. The fxp0 interface is a
+        Fast Ethernet interface with configuration options
+        similar to fe-n/n/n
+        interfaces on the chassis:
+
+[edit interface]
+lab@r5# show
+fxp0 {
+    unit 0 {
+         family inet {
+            address 172.16.99.56/24;
+         }
+    }
+}
+...
+
+
+
+
+
+Configuration groups for high availability
+
+
+
+Configuration groups in JUNOS allow you to define a collection of configuration
+        elements in one location that is then referenced, often repeatedly, in
+        other places in the configuration file. This configuration method
+        saves typing time and reduces the risk of configuration mistakes or
+        omissions.
+Another use of configuration groups—one that's extremely
+        important for chassis with redundant REs in networks with OoB management—is to place specific
+        configuration elements in a common configuration file, but to have
+        them be applicable to only one of the chassis' two REs. Note that any
+        interface configured under the [edit interfaces] level of hierarchy is
+        applied to both REs when you execute the commit synchronize
+        command. Without configuration groups, both REs would share the same
+        fxp0 IP address. If both REs are
+        connected to the OoB management network, as they should be, the result
+        would be an IP address conflict. To prevent this conflict and for
+        other benefits, JUNOS supports configuration groups specific to RE 0
+        and RE 1. Through the use of these special groups, you can define
+        specific elements such as chassis names and interface addresses for
+        individual REs. This example defines an fxp0 address for each RE, and also a
+        hostname that includes -RE0 and
+        -RE1. The special group names are
+        re0 and re1:
+
+[edit]
+lab@r5# show
+groups {
+    re0 {
+        system {
+            host-name M40E-1-RE0;
+        }
+        interfaces {
+            fxp0 {
+                unit 0 {
+                    family inet {
+                        address 172.16.99.56/24;
+                    }
+                }
+            }
+        }
+    }
+    re1 {
+        system {
+            host-name M40E-1-RE1;
+        }
+        interfaces {
+            fxp0 {
+                unit 0 {
+                    family inet {
+                        address 172.16.99.57/24;
+                    }
+                }
+            }
+        }
+    }
+}
+apply-groups [ re0 re1 ];
+...
+With this configuration in place, when you execute the commit synchronize command, re0 inherits the hostname M40E-1-RE0 and the
+        IP address 172.16.99.56. re1
+        inherits the hostname M40E-1-RE1 and the IP address 172.16.99.57. The
+        configuration groups allow both REs to have unique identities in the
+        OoB management network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SNMP Configuration
+
+
+
+SNMP is a topic covered by most books about networking, so we do not
+    discuss it here in detail. However, we can't write a chapter on network
+    monitoring without at least mentioning it. In a nutshell, SNMP helps you
+    monitor the state of devices in the network.
+The protocol supports both on-event and on-demand generation of
+    chassis state information. Event-triggered notices are called SNMP traps. Traps are triggered when
+    certain conditions, such as link failure, authentication failure, or
+    chassis restarts, occur on a managed chassis. The trap notifications are
+    sent to one or more defined host workstations or servers that have been
+    configured to receive the traps. Chassis state information can be obtained
+    on demand by using variations of Get
+    commands issued from host workstations or servers back to the managed
+    chassis.
+
+
+
+
+JUNOS SNMP Configuration
+
+
+
+In this configuration sample, SNMP is enabled on router r1. Some SNMP-driven management tools are able
+      to populate a GUI based on content within the Get responses and the trap notifications. For
+      this reason, the administrator chooses to define a system name, r1-J2350, and the location where the chassis
+      is physically sitting, Frederick_ MD
+      (arguably the friendliest city in the United States).
+The administrator also defines two community strings, public and private, to control SNMP access to the
+      chassis. A community string acts as a keyword of sorts, in that the host
+      systems must use it to run Get
+      commands on the managed device. Community public has been given read-only access, and community private has been given read-write.
+
+Note
+These community names, public
+        and private, were chosen for
+        illustrative purposes only. In a network with high availability
+        requirements, use more cryptic keywords, because some administrators
+        view the community string as a form of password.
+
+The clients statement, which
+      defines the IP addresses from which Get statements coming to the local chassis
+      must originate, further restricts access for both communities. The
+      configuration sample also shows that SNMP Gets are restricted to the fxp0 interface. SNMP Gets arriving on other interfaces are
+      discarded:
+
+[edit snmp]
+lab@r1# show
+location Frederick_MD;
+name r1-J2350;
+interface fxp0.0;
+community public {
+    authorization read-only;
+    clients {
+        172.16.99.0/24;
+    }
+}
+community private {
+    authorization read-write;
+    clients {
+        172.16.99.213/32;
+    }
+}
+...
+The next two configuration snippets define SNMP trap parameters
+      for the chassis. These snippets are actually continuations of the
+      previous configuration sample; we've split them out to allow you to
+      focus on specific elements.
+In the first sample, the administrator defines lo0 as the source address for all outbound
+      trap notifications. The result is that the primary lo0 address is the source IP for all traps
+      generated by the local chassis. This configuration element is important
+      from a high availability perspective because some SNMP management
+      applications filter traps based on source IP. In the absence of this
+      element, the source address would be the IP address on the interface
+      through which the traps notification leaves the router. Remember that
+      because of groups the address could
+      vary depending on which RE is master. In a high availability
+      environment, redundant REs host different fxp0 interface IP addresses:
+
+[edit snmp]
+lab@r1# show
+...
+trap-options {
+    source-address lo0
+    }
+In the second sample, the administrator defines which categories
+      of events should trigger a trap, as well as the destination IP addresses
+      to which the trap notifications should be sent. Here, trap notifications
+      are sent to host systems residing at 172.16.99.15 and
+      172.16.99.16:
+
+[edit snmp]
+lab@r1# show
+...
+trap-group watcher {
+    categories {
+        chassis;
+        link;
+        routing;
+        startup;
+        configuration;
+    }
+    targets {
+        172.16.99.15;
+        172.16.99.16;
+Trap-related and Get-related
+      configuration elements combine to allow SNMP management in JUNOS.
+
+
+
+
+
+IOS SNMP Configuration
+
+
+
+IOS configuration for SNMP is similar to JUNOS in many ways. In this configuration
+      sample, the communities public and
+      private are both defined. Community
+      public has read-only privileges, as
+      indicated by the ro keyword, and
+      community private has read-write
+      privileges, as indicated by the rw
+      keyword. Access to SNMP data is controlled through the use of access
+      lists. In this example, as in the JUNOS example, read-write access is
+      restricted to a specific IP address, 172.16.99.213, while read-only
+      access is restricted to the entire 172.16.99/24 subnet:
+
+r5(config)#access-list 10 permit 172.16.99.0 0.0.0.255
+r5(config)#access-list 20 permit 172.16.99.213 0.0.0.0
+
+r5(config)#snmp enable
+r5(config)#snmp-server community public ro 10
+r5(config)#snmp-server community private rw 20
+r5(config)#snmp-server contact Todd_Vaughn
+r5(config)#snmp-server location Frederick_MD
+The next configuration sample enables traps and defines the source
+      address for outbound trap notifications—in this example, lo0. Again, this configuration is imperative
+      for tools that filter inbound trap notices based on the source address
+      of the trap.
+
+r5(config)#snmp enable traps
+r5(config)#snmp trap-source lo0
+
+
+
+
+
+SNMP and MRTG
+
+
+
+The Multi Router Traffic Grapher (MRTG) is a vendor-agnostic
+      tool that is used in conjunction with SNMP to generate
+      pictures of interface utilization. MRTG uses an SNMP Get statement to pull information from the
+      managed devices. It then uses the data returned to populate an
+      HTML-based collection of graphs that show traffic transiting the device.
+      Figure 17-1 is an MRTG-generated view of
+      interface utilization.
+
+
+
+
+
+
+
+
+
+Figure 17-1. Sample MRTG diagram
+
+
+MRTG operates using SNMP. As a result, no additional router
+      configuration is necessary to support MRTG on either a JUNOS or an IOS
+      system.
+
+Note
+Many visualization tools are available that rely on SNMP to
+        provide the raw data streams needed to monitor conditions in the
+        network. MRTG is mentioned specifically because it is easy to install,
+        widely used, and currently available at no charge. You can download
+        MRTG for free from http://oss.oetiker.ch/mrtg/.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Syslog Configuration
+
+
+
+System logging, or syslog,
+    is a commonly implemented standard for managing and monitoring
+    devices in a network. In many ways, syslog behaves similarly to SNMP
+    traps. When specific events occur, syslog triggers messages that are
+    logged on the local chassis and that are typically also sent to a syslog
+    server. While syslog does have a number of recognized limitations, it is
+    appropriate for multivendor environments because it is standardized by the Internet Engineering Task Force (IETF) and is widely
+    supported among network hardware vendors.
+
+
+
+
+Syslog in JUNOS
+
+
+
+In a JUNOS system, logs can be stored on the local chassis, written to the
+      screen of an active user, or written to a remote device. In the
+      following configuration sample, user Pike_Vaughn sees syslog messages of facility
+      (category) any and severity info on his screen when he is logged into the
+      chassis. The host machine at 192.168.17.17 receives system log notices
+      sourced from IP address 10.0.0.5.
+As with SNMP, defining the source IP is critical because many
+      syslog servers filter entries based on their source. Definition of
+      source IP is also necessary if you use event correlation tools to parse
+      and analyze entries written to a syslog server. Without a specified
+      source-address, the outbound
+      interface is used as the source of the syslog send back to the server. Depending on what
+      form of management is used (in-band versus OoB), that OoB interface
+      could potentially change in times of network trouble:
+
+[edit system syslog]
+lab@r5# show
+user Pike_Vaughn {
+    any info;
+}
+host 192.168.17.17 {
+    daemon info;
+}
+source-address 10.0.0.5;
+...
+Logfiles can also be written to the local device instead of to a
+      remote server. The files are stored in the /var/log/ directory by filename. By default,
+      JUNOS creates up to 10 files using numbered suffixes of the defined
+      filename, and each file is up to 128 KB in size. In the following code,
+      the file whodunit uses the default
+      file settings, and the file messages allows the files to be up to 5 MB in
+      size:
+
+[edit system syslog]
+lab@r5# show
+...
+file messages {
+    any any;
+    archive size 5m files 10 no-world-readable;
+}
+file whodunit {
+    authorization info;
+    interactive-commands info;
+}
+Syslog messages can be rather cryptic, so use the JUNOS help function for interpreting syslog
+      messages. Here is a sample of a syslog message:
+
+May  4 10:47:39  r5 chassisd[2303]: CHASSISD_SNMP_TRAP6: SNMP trap: Power Sup
+ply failed: jnxContentsContainerIndex 2, jnxContentsL1Index 1,
+jnxContentsL2Index 0, jnxContentsL3Index 0,
+jnxContentsDescr Power Supply A, jnxOperatingState/Te
+mp 6
+---(more 0%)---[abort]
+The help command reveals further detail:
+
+lab@r5> help syslog CHASSISD_SNMP_TRAP6
+Name:        CHASSISD_SNMP_TRAP6
+Message:     SNMP trap generated: <trap-name> (<argument1> <value1>,
+             <argument2> <value2>, <argument3> <value3>, <argument4>
+             <value4>, <argument5> <value5>, <argument6> <value6>)
+Help:        chassisd generated SNMP trap
+Description: The chassis process (chassisd) generated a Simple Network
+             Management Protocol (SNMP) trap with the six indicated
+             argument-value pairs.
+Type:        Event: This message reports an event, not an error
+Severity:    unknown
+
+
+
+
+
+Syslog in IOS
+
+
+
+IOS syntax for enabling system logging is similar to JUNOS. In this
+      example, logging is enabled at the debug level. Because the syslog
+      function in both IOS and JUNOS catches everything at the defined
+      severity level, as well as anything more severe, logging at the debug
+      level essentially catches all events. This configuration snippet
+      forwards the logged events to IP address 192.168.17.17:
+
+r5(config)#logging trap debugging
+r5(config)#logging 192.168.17.17
+Some IOS versions have a known problem with the syslog
+      implementation that results in redundant timestamp information being prepended to the log entry.
+      Sometimes this problem is merely a nuisance and is easy to avoid using
+      the configuration elements in the following code. However, you want to
+      confirm that not all timestamp data is stripped from the syslog entries,
+      particularly when you use event correlation tools:
+
+r5(config)#no service timestamps debug uptime
+r5(config)#no service timestamps log uptime
+
+
+
+
+
+Syslog and Kiwi
+
+
+
+Kiwi is a vendor-agnostic tool that captures and stores syslog notifications from
+      multiple devices. The Kiwi tool also sorts stored syslog entries based
+      on multiple criteria. While it is an effective tool for capturing and
+      sorting, Kiwi has no event correlation capability, which is often
+      required in large multivendor networks. Figure 17-2 shows a Kiwi window.
+Because Kiwi operates using received syslog data, no additional
+      router configuration is necessary to support it in either JUNOS or IOS
+      systems. Kiwi is free for download at http://www.kiwisyslog.com/.
+Many visualization tools are available that rely on syslog to provide the raw data
+      streams needed to monitor network conditions. We mention the Kiwi tool
+      specifically because it is easy to install, widely used, and currently
+      available at no charge. As mentioned earlier, it is appropriate for
+      small to medium-size networks, but it lacks the true event correlation
+      functionality needed for large service provider environments.
+
+
+
+
+
+
+
+
+
+Figure 17-2. Kiwi syslog server
+
+
+
+Note
+This section made repeated references to the concept of
+        event correlation. Event correlation is the
+        process of trying to identify the root cause of a situation or
+        condition when massive amounts of data points, potentially related to
+        the situation, exist. To do this job, the event correlation tool
+        filters through the available data elements, commonly syslog and SNMP
+        data stores, to distinguish issue symptoms from the root cause. The
+        overall purpose of event correlation is to make sure you are resolving
+        the root cause of a problem, not just patching related symptoms.
+        Understanding the difference between symptoms and the root cause is an
+        important concept for high availability, because it can result in
+        reduced downtime.
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,1000 @@
+STP/RTP
+              overlapping
+
+
+
+
+DR election and
+              priority
+
+
+Auto-RP
+
+
+
+
+L3VPNs (PE with DR/RP in
+              VRF, pe, pd)
+
+
+BSR
+
+
+
+
+GRES
+
+
+Anycast RP
+
+
+
+
+
+
+
+Note
+Any security issue is a high availability issue. For instance,
+        from a security standpoint, spoofed messages with different Gen_IDs
+        could result in a DoS attack. To prevent these issues, JUNOS software
+        limits how quickly join and prune messages can be received.
+
+There are many different ways to deliver multicast traffic.
+      Choosing a particular approach depends on the mix of the network devices
+      being used in a particular network segment, the device control, customer
+      versus provider segmentation, and many other political issues. Since the
+      support for GR is not equally implemented across all equipment models, software versions, and
+      vendors, network designers must evaluate all the choices and feature
+      support before enabling GR PIM protocol extensions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Non-Stop Active Routing
+
+
+
+Having a highly available routing node in the middle of your network running
+    GRES with two REs is a great way to build a core
+    infrastructure supporting seven 9s network uptime. The problem is that
+    ensuring a zero-loss environment requires GRES to be supplemented with GR
+    protocol extensions on all running protocols on all surrounding routers.
+    This is easily done in the core network, where you have the control of
+    platform selection, protocol support, and software version. However, that
+    is not the case at the edge of the network, where you face
+    customer-controlled devices. More often than not, you do not know the
+    hardware type or software versions and protocol support of your customer
+    peering routers. Moreover, even if you do know, you cannot control their
+    hardware and software selection. Thus, you cannot rely on GR protocol
+    extensions to integrate seamlessly into your node redundancy design with
+    GRES.
+A provider also cannot always rely on network-based availability by
+    means of redundant network paths toward the customer. Often, the customer
+    is dual-homed to different service providers for better redundancy. It is
+    most likely that catastrophic events, such as a natural disaster, will not
+    affect different service providers in the same manner. While one ISP might
+    lose portions of its data center and upstream peerings, another ISP might
+    be located far away from the disaster site and will be able to preserve
+    all routing state with the rest of the Internet.
+Additionally, you do not want your customers to have any idea that
+    your router has gone through a failure event at all. You'd really prefer
+    to provide as little negative information about your network to your
+    customers as you possibly can.
+All of these reasons create a strong case for a different
+    implementation of high availability on edge devices. Non-Stop Active
+    Routing (NSR) is the perfect solution, not only for the edge of the
+    network, but also for the core. With its seamless work in the background,
+    NSR should be used wherever applicable. Figure 4-6 shows a network
+    design based on high availability tools.
+
+
+
+
+
+
+
+
+
+Figure 4-6. Network design based on high availability tools
+
+
+
+
+
+
+Implementation Details and Configs
+
+
+
+NSR is a relatively new software feature available in JUNOS,
+      included since the JUNOS 8.4 release on platforms with dual REs. The
+      basic concept of NSR is that the backup RE can maintain all peering
+      relationships with its neighbors during an RE switchover event, without
+      the help of protocol extensions such as GR. While NSR takes care of
+      routing protocols, forwarding redundancy is still built on the concept
+      of GRES. Therefore, to provide minimal traffic loss, GRES must be
+      supported and configured in addition to NSR.
+The backup RE provides support for NSR by actively running an
+      RPD process. The aim is that the RPD on the backup RE is
+      initially in sync with the primary RPD and in sync with the rest of the
+      network afterward. Figure 4-7
+      illustrates the NSR state replication process.
+
+
+
+
+
+
+
+
+
+Figure 4-7. NSR state replication process
+
+
+During the initial startup of the RPD process on the backup RE,
+      all routing state from the primary RE is copied by means of rtsock messages using TCP. The private routing
+      instance _private_instance is used as
+      a means of RPD replication, ensuring that the RPD on the backup RE does
+      not start routing from the null state. This routing instance also
+      prevents delays in updates, because the backup RPD might have to wait
+      for a long time for all neighbors' states to be refreshed. Certain
+      protocols never readvertise their routing information to neighbors
+      unless specifically requested, with the result that the backup RE
+      remains out of sync with the rest of the world.
+Once the RPD is up and running and all of its routing information
+      is populated in the relevant tables, it actively snoops on all incoming
+      and outgoing protocol messages. Moreover, it processes all incoming
+      messages, and adds routes to or removes routes from the backup routing
+      table as needed. During this process, the RPD resolves next hop
+      information as needed, just as the primary RPD does. The RPD also snoops
+      all locally generated messages from the primary RE to its neighbors.
+      Therefore, the backup RE does not keep its state up-to-date with the
+      primary RE. Rather, it keeps its state up-to-date with the rest of the
+      network.
+With NSR, the forwarding state and active kernel state are
+      replicated the same way they are replicated in GRES: using the ksyncd daemon, which provides Non-Stop
+      Forwarding (NSF) support.
+To configure NSR support, use the following command:
+
+[edit]
+lab@r1# set routing-options nonstop-routing
+As stated earlier, NSR is closely tied to GRES and uses GRES for
+      NSF support. Thus, you must configure GRES as well:
+
+[edit]
+lab@r1# show chassis 
+chassis {
+    redundancy {
+        routing-engine 0 master;
+        routing-engine 1 backup;
+        failover {
+            on-loss-of-keepalives;
+            on-disk-failure;
+        }
+        graceful-switchover;
+    }
+    routing-engine {
+        on-disk-failure reboot;
+    }
+}
+
+Because both of the REs have the same configuration, you do not
+      need to enable commit synchronization. In earlier releases, omitting
+      the commit synchronize
+      statement would generate a reminder to use the commit synchronize command for all commits. To
+      avoid potentially forgetting to use this command, you must include the
+      actual command in the router configuration file, and then each time you
+      execute a commit command, JUNOS executes the commit synchronize command:
+
+{master}[edit]
+lab@r1# set system commit ?   
+Possible completions:
+synchronize          Synchronize commit on both Routing Engines by default
+{master}[edit]
+lab@r1# set system commit synchronize 
+
+
+
+NSR and GR Helpers
+NSR and GR extensions are mutually exclusive, and you cannot configure them
+        together.
+The primary goal of NSR is to have the router rebuild its
+        routing and forwarding information without any impact on the actual
+        forwarding and routing. In an ideal scenario, no neighbors would
+        discover that the router has rebooted.
+The goal of NSR conflicts with the primary goal of the GR
+        extensions, which is to alert all the neighbors that the router is
+        restarting and needs help from the neighbors. It is a request to
+        neighbors not to drop protocol adjacency and to help rebuild the lost
+        routing table.
+If you attempt to configure both NSR and GR, JUNOS displays a
+        warning message:
+
+[edit]
+lab@r1# show routing-options
+##
+## Warning: Graceful restart and Nonstop routing may not be enabled simultaneously
+##
+graceful-restart;
+Even though you may imagine a scenario in which not all routers
+        can run NSR, but are capable of running GRES with GR, the fact is that
+        all protocols capable of GR are also capable of being GR helpers
+        without any extra configuration steps. As noted earlier in this
+        chapter, they are all helpers by default.
+
+To verify and troubleshoot NSR, use the following command:
+
+{master}[edit]
+lab@r1# run show task replication    
+        Stateful Replication: Enabled
+        RE mode: Master
+
+    Protocol                Synchronization Status
+    IS-IS                   Complete              
+
+{master}[edit]
+lab@r1# 
+
+Also execute show route, show bgp
+      neighbor, show ospf database, and similar
+      commands, and compare the output.
+The reason network engineers have jobs is that not everything
+      works as expected. Sometimes the problem is a deficiency in the system;
+      however, often the issue is that our expectations are not aligned with
+      the intended design goal of the JUNOS feature.
+
+Note
+"Unlike great literature, routing protocol functionality is not
+        subject to personal interpretation." — Matthew Shaul, 2001
+
+Because JUNOS supports traceoptions in many
+      portions of the configuration, you might expect to find something
+      similar for NSR support. In fact, you can turn on the nsr flag under traceoptions in all major protocols:
+
+[edit]
+lab@r1# set protocols isis traceoptions flag nsr-synchronization detail
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Non-Stop Bridging
+
+
+
+While most of the Juniper-deployed infrastructure on the Internet provides only routing
+    functionality, more and more networks are deploying Juniper gear for
+    switching purposes as well. Having a highly available switch is as
+    important as the router. The bottom line is that networks provide only a
+    medium for bits and bytes to move across. The failure of the forwarding
+    card or control plane on the switch or the router has the same, unpleasant
+    effect on the network. Therefore, it is necessary to provide some sort of
+    system resilience for switches as well. JUNOS does it with the concept of
+    Non-Stop Bridging (NSB), which, at the time of writing, is available only
+    on the MX platforms. NSB is equivalent to NSR in the bridging world. The
+    goal of NSB is to provide support for control plane failures while
+    maintaining the forwarding state and keeping all neighbors blissfully in
+    the dark about any failure. None of the Layer 2 control protocols should
+    be able to detect the failure of the neighboring switch. The
+    under-the-hood infrastructure of this concept is very similar to the NSR
+    infrastructure.
+
+
+
+
+Implementation Details and Configurations
+
+
+
+NSB relies heavily on GRES for its forwarding state maintenance. As described in
+      the previous section, kernel entries must be copied from the primary RE
+      to the secondary RE. However, in this case, kernel entries contain
+      Media Access Control (MAC) addresses and their respective
+      next hops. Nevertheless, the replication process is the same.
+      The ksyncd daemon is
+      responsible for this replication. Once you configure GRES on the router
+      in the chassis redundancy hierarchy, ksyncd is initialized on the backup RE and
+      syncs up all of its state, including next hops with the primary RE. This
+      replication takes care of keeping the forwarding state intact during the
+      switchover.
+However, to maintain the control plane replication, a different
+      daemon is used. In the MX Series, all Layer 2 functionality is managed by the l2cpd process.
+      Therefore, all the Layer 2 control protocols as well as the state
+      replication are managed similarly to the
+      way the RPD manages all routing management information and
+      replication between primary and secondary REs. This daemon ensures that
+      all Layer 2 protocol states stay intact during the switchover and
+      afterward. Figure 4-8 shows
+      the NSB state replication process.
+As mentioned earlier in this chapter, to configure NSB, you must
+      also configure GRES to ensure that the forwarding redundancy is
+      replicated and routing protocols stay active. Then configure NSB:
+
+{master}[edit]
+lab@r1# set protocols layer2-control nonstop-bridging
+As with everything in our network field, things don't always work
+      as expected. To verify the replication state and further troubleshoot
+      the problem, use the following command:
+
+lab@r1# run show l2cpd task replication
+        Stateful Replication: Disabled
+
+
+
+
+
+
+
+
+
+Figure 4-8. The NSB state replication process
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Choosing Your High Availability Control Plane Solution
+
+
+
+From the high availability perspective, among all the redundancy implementations
+    discussed in this chapter, NSR and NSB are the two best choices: they
+    provide full standalone routing, switching, and forwarding redundancy. In
+    the event of a control plane failure, traffic continues to flow, and no
+    neighbors observe any change in control protocol maintenance.
+However, because we all have multivendor network environments, and
+    not all features are supported on all platforms or software versions, we
+    have to assess each design separately to find the optimal redundancy
+    solution. Because of tight protocol interaction, we must analyze each
+    network requirement separately, and based on supported software and
+    platforms, use some or all of the available high availability. Table 4-3 lists the JUNOS
+    release support requirement information needed for you to make these
+    choices.
+
+
+Table 4-3. High availability redundancy implementations
+
+
+
+
+
+
+
+
+
+
+
+
+Platform
+
+
+GRES
+
+
+GR
+
+
+NSR
+
+
+NSB
+
+
+
+
+
+
+T640
+
+
+5.6
+
+
+5.6
+
+
+9.0
+
+
+N/A
+
+
+
+
+M320
+
+
+6.0
+
+
+6.0
+
+
+9.0
+
+
+N/A
+
+
+
+
+M120
+
+
+8.4
+
+
+8.4
+
+
+9.0
+
+
+N/A
+
+
+
+
+M10/7
+
+
+6.0
+
+
+6.0
+
+
+9.6
+
+
+N/A
+
+
+
+
+J Series
+
+
+8.4
+
+
+8.4
+
+
+10.0
+
+
+N/A
+
+
+
+
+MX Series
+
+
+8.4
+
+
+8.4
+
+
+9.2
+
+
+9.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 5. Virtualization for High Availability
+
+
+
+Picture this: you have just left a meeting with the CTO. During the
+  meeting, you were informed that, by order of the CFO, there is no more
+  money, but your customer support manager says the company must improve
+  customer satisfaction statistics by increasing, and most importantly
+  delivering, higher uptime levels in customer service-level agreements
+  (SLAs). Everyone is looking at you to deliver service improvements with
+  empty pockets.
+Regardless of your particular business, you have a single goal: to
+  provide reliable access to information. Whether you are in charge of a
+  purpose-built enterprise data center or collocation facilities selling data
+  access, specific uptime levels are defined in your customers' SLAs. While
+  99.9% uptime was an acceptable measure of reliability a decade ago, the
+  increased importance of mission-critical information demands even higher
+  availability. Many of today's network deployments require an uptime of
+  99.999%, commonly referred to as "five 9s" of availability. Some networks
+  have even more stringent requirements, approaching an uptime of 99.99999%,
+  or "seven 9s" of availability.
+This chapter discusses how the consolidation of resources can improve your network's high availability. Why
+  consolidate? The bottom line is that having fewer devices in your network
+  results in fewer opportunities for potential errors and hence in fewer
+  failures. Here are a few specific reasons for consolidation:
+
+
+
+Ease of management
+
+
+Reducing the number of devices that IT must manage lowers
+        network complexity, yielding increased availability through more
+        uptime and greater operational efficiency, as well as through
+        increased productivity. The result is a reduction in operational expenses (OPEX) and a decrease in Mean Time
+        Between Failure (MTBF) averages.
+
+
+Power and cooling efficiency
+
+
+Having fewer devices reduces the probability of power failure,
+        resulting in increased availability. The decrease in power consumption
+        is directly proportional to a decrease in cooling costs.
+
+
+Scalable growth
+
+
+Consolidating resources allows for future controlled network
+        growth that is both cost-effective and space-efficient.
+
+
+
+While there is ongoing discussion about the best consolidation technologies to use in the data
+  center—iSCSI, Fiber Channel (FC), FC over Ethernet, and InfiniBand
+  are examples of various technological concepts—they all have the same goal:
+  consolidation of operating resources.
+A key component to successful consolidation of IT resources
+  is virtualization, the combining of
+  multiple network functions and/or components into a single, usually software-based, administrative entity. All the
+  applications being delivered by next-generation data centers have only two needs:
+  access to CPU and I/O. Technology has evolved significantly such that the
+  old concept of a single data center server has been replaced with many
+  virtual entities that access portions of allocated resources. While most
+  virtualization focuses on servers, databases, email, storage, and even
+  end-user client components, we cannot
+  ignore the infrastructure component based around network resource virtualization.
+This chapter covers two different, but important, scenarios of network
+  resource virtualization: virtualization of the low-end switching control plane by EX Series switches that are used for host connectivity in data centers,
+  and virtualization of the high-end routing control plane by T Series routers that are used in the core routing domain and in remote
+  mega-Point of Presence (POP) locations. Both types of virtualization are part of the data
+  center infrastructure, but each operates at a different network
+  layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Virtual Chassis in the Switching Control Plane
+
+
+
+The Juniper EX Series is the newest addition to the Juniper routing and
+    switching portfolio. Lower-end models include the EX3200 and EX4200
+    series; the EX8200 series are larger switches. The EX3200 and EX4200 are
+    stackable switches targeted as a solution for data centers, campuses, and
+    branch office deployments. As we discussed in Chapter 2, each switch runs JUNOS software
+    and has a routing engine (RE). With these low-end switches, you can
+    create Virtual Chassis (VCs) of up to 10
+    switches to provide high availability of network resources. VC technology
+    allows the RE on one of the switches in the group to manage all the
+    other switches in the stack. The RE uses proven technologies, such as
+    Graceful Routing Engine Switchover (GRES), Non-Stop Active Routing (NSR), and Non-Stop Bridging
+    (NSB), to fully manage and operate the rest of the switches in
+    the stack. These other line card switches have their own Packet Forwarding
+    Engine (PFE) containing proprietary switching application-specific
+    integrated circuits (ASICs).
+Figure 5-1 illustrates a VC composed of stackable
+    switches.
+
+
+
+
+
+
+
+
+
+Figure 5-1. VC stack
+
+
+As you can see in Figure 5-1, five switches are
+    stacked together and joined by a VC backplane connection. This stack
+    provides the equivalent throughput of a 128 Gbps high-speed backplane. The
+    switches are connected using VC cables that can create a stack or ring
+    topology. We discuss different VC connectivity design methods later in
+    this chapter. VC cables can be up to 3 feet long. Member switches can also
+    interconnect through the switch's standard 1GE or 10GE uplink ports, which
+    increases the distance between the switches in a single chassis. Using
+    long-range (LR) optics with these uplinks, there can be up to 1 km between
+    individual switch chassis, so a single VC can span up to 10 km. Note that
+    1/10GE uplink ports that are dedicated to providing intermember chassis
+    connectivity can no longer be used as regular Ethernet ports because they
+    are running an internal JUNOS protocol, Trivial Network Protocol
+    (TNP). This is the same protocol used on other Juniper equipment
+    for communication between the RE and the PFE. In the VC, TNP carries all
+    the data along the interchassis links.
+Each switch in a VC is a member of that chassis. The methodology of
+    master and backup REs that is used on other Juniper equipment is also applied
+    in the VC world. Because each switch has its own built-in RE, any of the
+    10 switches is eligible to become a master RE through the election
+    process. From the switches that do not become the master, a single switch
+    is elected as the backup RE. The rest of the switches function like line
+    cards. The VC in Figure 5-1 has one master, one backup,
+    and three line cards. Using the JUNOS command-line interface (CLI), you
+    see that all switches appear as Flexible PIC Concentrators (FPCs),
+    starting with FPC 0. As you can see in
+    the following output, one of the FPCs (here, FPC 0) is the
+    master and the other (FPC 1) is the
+    backup. The remaining three switches are also listed in the output as
+    FPCs, starting with FPC 2, and
+    with the role of line card:
+
+lab@s1> show virtual-chassis status 
+
+Virtual Chassis ID: 0019.e257.3d80
+                                       Mastership           Neighbor List  
+Member ID Status Serial No    Model      priority  Role     ID  Interface
+0 (FPC 0) Prsnt  BQ0208138247 ex4200-48p      255  Master*   1  vcp-0      
+                                                             1  vcp-1      
+1 (FPC 1) Prsnt  BR0208211823 ex4200-24f      255  Backup    0  vcp-0      
+                                                             0  vcp-1 
+2 (FPC 2) Prsnt  BR0208211213 ex4200-24f      128  Linecard  0  vcp-0      
+                                                             0  vcp-1 
+3 (FPC 3) Prsnt  BR0208218363 ex4200-24f      128  Linecard  0  vcp-0      
+                                                             0  vcp-1
+4 (FPC 4) Prsnt  BR0208217183 ex4200-24f      128  Linecard  0  vcp-0      
+                                                             0  vcp-1 
+ 
+   
+Member ID for next new member: 5 (FPC 5)
+
+You can remotely manage the entire VC in two ways: either through the console of any of the
+    five VC members, or by using a single Ethernet management interface,
+    called a VME, which is manually assigned an IP address. Regardless of the
+    point of entry, console or Ethernet, all roads lead to the master RE. Once
+    you are connected to the VC, all the switch ports are accessible through
+    the CLI.
+The master RE manages all control plane protocols for the line
+    cards. The routing and forwarding tables created on the master RE are
+    pushed down to all the VC line cards by means of TNP updates, which is the
+    same method used by other Juniper chassis, as described in Chapter 4.
+VCs also support the same high availability control plane features
+    as other Juniper equipment. A VC can use GRES and NSR for control plane
+    failures. Then, if the master RE fails, a backup RE takes over and the
+    rest of the line cards continue to forward the traffic. VCs also support
+    In-Service Software Upgrade (ISSU), which allows each line
+    card to be upgraded during regular operating hours rather than during a
+    maintenance window. These features allow a properly designed and
+    configured EX Series VC to provide a reliability of five 9s.
+
+
+
+
+VC Roles
+
+
+
+A VC is created by connecting 2 or more (up to 10) switches and
+      then configuring them as though they were a single chassis. By default,
+      one switch in the VC takes the role of master switch, acting as the
+      brain for all other members of the chassis. This role is identical to
+      the role of master RE on other Juniper routing platforms. The master
+      switch runs all routing and switching daemons and runs chassisd to manage the
+      other VC members. Using its replication daemon, the kernel on the master
+      switch pushes its forwarding entries to the backup switch and to the
+      rest of the line cards as needed.
+The backup switch is "the sleeping brain," having the role of
+      backup RE. Depending on the high availability tool set you are using,
+      the backup can be totally asleep, as is the case with GRES and Graceful Restart (GR), or it can be actively listening, as
+      in the case of NSR and NSB. In both scenarios, the backup switch is waiting to
+      take over control of the entire VC if the master switch fails.
+The rest of the member switches are in line card mode, in which
+      they act as dumb devices and simply forward traffic based on routing and
+      forwarding table entries created on the master switch. If the master or
+      backup switch fails, one of the line card switches is elected as the
+      next backup switch.
+
+
+
+
+
+IDs for VCs
+
+
+
+Each set of switches connected in a VC has the same VC identifier (ID) value to signal
+      membership in that particular VC. The following CLI output shows how to
+      display the VC ID:
+
+lab@s1> show virtual-chassis status
+Virtual Chassis ID: 0000.e255.00e0
+Mastership Neighbor List
+Member ID Status Serial No Model Priority Role ID Interface
+0 (FPC 0) Prsnt abc123 ex4200-48p 255 Master* 1 vcp-0
+                             2 vcp-1
+1 (FPC 1) Prsnt def456 ex4200-24t 255 Backup 2 vcp-0
+                             0 vcp-1
+2 (FPC 2) Prsnt abd231 ex4200-24p 128 Linecard 0 vcp-0
+                             1 vcp-1
+Each switch also has a member ID, which is a unique identifier
+      within that VC. By default, a switch in standalone mode is assigned a
+      member ID of 0. When the switch joins a chassis group and is used in VC
+      mode, a nonzero member ID is assigned to the switch. The first switch to
+      join the VC has a member ID of 0, the second switch that joins is
+      assigned a member ID of 1, and so forth. The assigned member ID value is
+      sticky and is retained even after the switch leaves the VC group. For
+      example, if the member IDs in a three-switch VC are set in order, 0, 1,
+      and 2, if Switch 1 fails and is replaced with another switch, the new
+      switch is assigned a member ID of 4 and the ID of 1 remains unused. You
+      can clear the member ID manually with the following command:
+
+lab@s1> request virtual-chassis renumber member—id 4 new-member—id 1
+While you can leave the default member IDs unchanged, it is a good
+      practice to pay attention to the ID values and manually modify them as
+      necessary, because they play a significant role in the VC mastership
+      election process.
+
+
+
+
+
+Priorities and the Election Process
+
+
+
+While you can easily slap together and connect switches to create
+      a VC that works in your network, it is better to go the extra mile and
+      plan the VC configuration beforehand and check that the
+      configuration is working properly. As always, planning is better for
+      high availability than not planning.
+When you boot the switches in a VC, the following steps determine
+      the master RE:
+
+
+
+The member with the highest mastership priority value becomes
+          the master VC.
+
+
+If the mastership priority values are equal, the member that
+          was the master the last time the VC booted becomes the
+          master.
+
+
+If there is no record of a previous master, the member that
+          has been part of the VC the longest becomes the master.
+
+
+If several chassis have been part of the VC for the same
+          amount of time, the member with the lowest Media Access Control
+          (MAC) address becomes the master.
+
+
+
+
+
+
+
+How to rig an election
+
+
+
+Each switch is assigned a mastership priority value between 1 and 255,
+        and the switch with the highest value is elected master. By default,
+        all switches are assigned a value of 128. While you could configure
+        one switch with 200, configure another with 150, and leave the rest of
+        the switches to the default of 128, this setup is not recommended. The
+        mastership ownership is preemptive, so once the original master comes
+        back online after a failure, it takes back the VC mastership because
+        of its higher priority, which may disrupt VC operations.
+
+Note
+To prevent mastership preemption, it is best to configure both
+          master and backup REs with priorities of 255 and leave the rest of
+          the switches with the default value. Because membership uptime
+          within the VC is also relevant, you should power on the master
+          switch first and configure its priority; then power up and configure
+          the backup switch, and finally bring up the rest of the line card
+          switches.
+
+
+
+
+
+
+
+Basic VC Setup and Configuration
+
+
+
+Let's verify the most basic setup of a VC consisting of two member
+      switches. The members are connected using VC ports (VCPs) over proprietary Juniper cable, as shown in Figure 5-2.
+
+
+
+
+
+
+
+
+
+Figure 5-2. VC connection
+
+
+As recommended earlier, power on the intended master first because
+      this guarantees the default assigned priorities, therefore making the
+      switch a master. After the second switch is online, the VC should be
+      working with the correct mastership assignment, as you can check from
+      the CLI:
+
+lab@s1> show virtual-chassis status
+
+Virtual Chassis ID: 0019.e257.3d80
+                                          Mastership       Neighbor List
+Member ID  Status Serial No    Model      priority  Role   ID  Interface
+0 (FPC 0)  Prsnt  BQ0208138247 ex4200-48p      128  Master*  1  vcp-0
+                                                             1  vcp-1
+1 (FPC 1)  Prsnt  BR0208211823 ex4200-24f      128  Backup   0  vcp-0
+                                                             0  vcp-1
+
+Member ID for next new member: 2 (FPC 2)
+
+{master}
+lab@s1> show virtual-chassis vc-port all-members
+fpc0:
+---------------------------------------------------------------------
+Interface        Type             Status
+or
+PIC / Port
+vcp-0            Dedicated        Up
+vcp-1            Dedicated        Up
+
+fpc1:
+---------------------------------------------------------------------
+Interface        Type             Status
+or
+PIC / Port
+vcp-0            Dedicated        Up
+vcp-1            Dedicated        Up
+
+{master}
+lab@s1>
+You see that both switches are present and that Switch 0 has been
+      chosen to be the master of this VC. Because it was the first switch to
+      come online, its member ID is 0 and it is referred to as FPC 0. You also see that both VC cables are in
+      the "up" state and are being used for VC connectivity. In this case, you
+      need only one cable because the connection runs in full duplex (FD)
+      mode. However, using a second cable provides redundancy.
+To guarantee that Switch 0 is always the master switch, change its
+      priority to 255:
+
+lab@s1# set virtual-chassis member 0 mastership-priority 255
+To prevent mastership preemption after Switch 0 restarts or its
+      hardware is replaced, change the mastership priority of Switch 1 as
+      well:
+
+lab@s1# set virtual-chassis member 1 mastership-priority 255
+
+lab@s1# commit
+fpc0:
+configuration check succeeds
+fpc1:
+commit complete
+fpc0:
+commit complete
+To verify the changes, which ensures that the proper mastership
+      election occurs the next time the VC boots up, use the following
+      commands:
+
+lab@s1> show virtual-chassis member-config
+fpc0:
+---------------------------------------------------------------------
+
+  Member ID:           0
+  Mastership priority: 255
+
+fpc1:
+----------------------------------------------------------------------
+
+  Member ID:           1
+  Mastership priority: 255
+
+lab@s1> show virtual-chassis status
+
+Virtual Chassis ID: 0019.e257.3d80
+                                       Mastership          Neighbor List
+Member ID Status Serial No    Model      priority  Role    ID  Interface
+0 (FPC 0) Prsnt  BQ0208138247 ex4200-48p      255  Master*  1  vcp-0
+                                                            1  vcp-1
+1 (FPC 1) Prsnt  BR0208211823 ex4200-24f      255  Backup   0  vcp-0
+                                                              0  vcp-1
+
+Member ID for next new member: 2 (FPC 2)
+When you add more switches to the VC, they all have a line card
+      role and the default mastership priority of 128:
+
+lab@s1> show virtual-chassis status
+
+Virtual Chassis ID: 0019.e257.3d80
+                                     Mastership           Neighbor List
+Member ID Status Serial No    Model    priority  Role     ID  Interface
+0 (FPC 0) Prsnt  BQ0208138247 ex4200-48p    255  Master*   1  vcp-0
+                                                           1  vcp-1
+1 (FPC 1) Prsnt  BR0208211823 ex4200-24f    255  Backup    0  vcp-0
+                                                           0  vcp-1
+2 (FPC 2) Prsnt  BR0208211213 ex4200-24f    128  Linecard  0  vcp-0
+                                                           0  vcp-1
+3 (FPC 3) Prsnt  BR0208218363 ex4200-24f    128  Linecard  0  vcp-0
+                                                           0  vcp-1
+
+Member ID for next new member: 4 (FPC 4)
+
+
+
+
+
+Eliminating Loops Within the VC
+
+
+
+At this point, you may be wondering about potential loops across the VCP intermember
+      links. Since Juniper recommends creation of a VC ring topology, we are
+      in fact creating a loop by default. This is OK. For redundancy purposes,
+      you should be connecting VCPs in a ring topology as we described
+      earlier in this chapter. So, how do we solve the issue of looping within
+      the virtual backplane? Simply stated, this is not a problem the user has
+      to solve. EX switches use a proprietary modification of the Intermediate

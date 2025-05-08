@@ -1,0 +1,1000 @@
+
+
+
+SRX Series
+
+
+
+The SRX Series of security gateways possess separate REs and PFEs to
+          provide the same throughput and high availability as the rest of the
+          product line. To ensure that the stateful firewall and security
+          features also realize the same high availability posture, the SRX
+          Series uses SPCs to offload the processing. You can find more
+          information on the SRX Series
+          on the Juniper website.
+
+
+
+
+
+J Series
+
+
+
+In the J Series RE, the PFE components are not discrete pieces of hardware, but
+          are instead virtualized within software modules. These software
+          modules handle the Layer 2 header processing and longest-prefix
+          match lookups. Interfaces on the J Series are provided by either
+          Physical Interface Modules (PIMs) or Enhanced Physical Interface Modules (E-PIMs), which
+          can be interchanged with other J Series equipment or with the
+          Juniper Secure Services Gateway (SSG). The first-generation J Series equipment, including
+          the J4300 and J6300, accept the PIM cards, whereas the second
+          generation—the J2350, J4350, and J6350—support both the PIM and
+          E-PIM cards. For more information on card compatibility, see the
+          "Physical Interface Module Compatibility Matrix for J Series Routers
+          and Secure Services Gateways" at http://juniper.net/us/en/products-services/routing/j-series/.
+The design of the J Series provides high availability for
+          networks without incurring the higher expense or complexity of M
+          Series equipment. The simplicity of the J Series allows it to sit in
+          your network at branch offices or in smaller portions of the network
+          where full redundancy of connectivity is not available, and provides
+          the highest level of availability possible in this position.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Packet Flows
+
+
+
+From a high availability perspective, the divided architecture affects
+    how packets flow through the different equipment. As with the hardware,
+    the way packets flow through the network varies slightly across the
+    equipment lines. It is important to understand how packets are passed
+    through the components to fully realize what impact a component failure
+    might have on the high availability of an individual piece of equipment
+    and of the entire network.
+Packet flows throughout the Juniper equipment line are similar, with
+    differences that are primarily the result of hardware size and
+    scalability. At the enterprise routing level, J Series packets travel
+    through a virtualized environment mimicking the hardware of the larger
+    pieces of equipment. Beginning with the M Series (the M7i and M10i) and
+    extending into the entire Juniper router and switch product line, packet
+    flow depends on ASICs to perform very specialized tasks, such as Layer 2
+    processing, data buffering, and most importantly, longest-prefix match
+    lookup and packet header processing.
+In all Juniper architecture, packet processing is not performed on
+    the packet itself; instead, the routers use a copy of the key information
+    within the IP header. As each incoming packet is processed, the packet is
+    split into 64-byte J-cells, which are stored in the RAM of the forwarding
+    engine. The key information from the IP header, as well as local
+    information, such as the incoming interface, is copied into a
+    Juniper-specific cell of information. This notification cell is processed through
+    the entire array of hardware components and points to the location where
+    the rest of the packet contents are retained in storage. Through this
+    separation of control data from the IP header and actual data, the system
+    is not required to transfer whole packets to and from the Internet
+    Processor ASIC, allowing the bus systems to remain free to switch the
+    notification cells. This limited transfer of full data packets allows for
+    less writing to and reading from buffers, and leads to faster processing
+    of individual packets, which translates into higher availability of
+    bandwidth for users.
+
+
+
+
+M Series
+
+
+
+To better understand how the M Series architecture allows for high
+      availability, we will follow a packet through the system. Figure 2-2 is an example of the hardware layout
+      for the M Series routers.
+In the smaller boxes of the M Series, the M7i and M10i, the PFE is
+      contained within the cFEB.
+
+
+
+
+
+
+
+
+
+Figure 2-2. M Series packet flow
+
+
+When a packet first arrives at the PIC, ASICs on the card verify that the link layer
+      information is valid. If it is, the packet is forwarded to the
+      FPC, which validates the data link and network layer
+      information and copies the key information into a notification cell.
+      After the notification cell is pushed to the Internet Processor for
+      route lookup, the rest of the packet is segmented in 64-byte J-cells,
+      which are written into memory. By writing packets across all FPCs in the
+      system, the M Series routers prevent single sessions from being punished
+      during hardware failures. With the correction and control methods in
+      TCP/IP, the end user should never see any indication of a failure in the
+      system—which of course is the goal of high availability.
+The Internet Processor conducts a longest-prefix match lookup on
+      the notification header, and performs other functionality such as packet
+      filtering. After the packet is processed, the resulting cell, cleverly
+      called the result cell, is sent to the outgoing
+      FPC. It is the result cell that is queued at the FPC until the packet is
+      ready to be transmitted. Then, the first J-cell of the packet is called
+      from memory, any network layer header modifications are made, and the
+      packet is given a data link layer header. Pointers within the first
+      J-cell point to the next memory location, and each subsequent J-cell
+      points to the next in line; thus, the packet is rebuilt before
+      transmission.
+Figure 2-3 is an example of the
+      architecture in the M120 family. You can see that the architecture is
+      the same as that of the other M Series equipment. The only difference is
+      in the naming of the control board.
+
+
+
+
+
+
+
+
+
+Figure 2-3. M120 packet flow
+
+
+
+
+
+
+
+MX Series
+
+
+
+Following the original design of the M Series, the T Series and eventually the MX Series were
+      created with redundancy in the PFEs to ensure that high availability
+      would be maintained. Within the MX Series, the Switch Interface ASIC controls the flow of packets across
+      the midplane. Before packets are sent from the ingress PFE to the egress
+      PFE, the system requests the proper bandwidth for the transmission. This
+      interaction guarantees the efficient flow of packets. By deploying the
+      features of redundant PFEs and switch control boards, the MX Series is
+      scaled to handle the large packet throughputs necessary for the Metro
+      Ethernet realm while maintaining high availability. Figure 2-4 shows the packet flow of the MX
+      Series.
+
+
+
+
+
+
+
+
+
+Figure 2-4. MX Series packet flow
+
+
+
+
+
+
+
+T Series
+
+
+
+Figure 2-5 shows the components that make up the packet flow for the T Series
+      routers. As you can see, the T Series also uses redundant control boards
+      and PFEs to maintain the high level of throughput necessary in the core.
+      The Queuing and Management Interface ASIC is unique to the T Series; it performs the management
+      necessary to read and write the data packets from the buffer memory.
+      Through the use of the notification cell, the T Series also maintains
+      the integrity of the data across the chassis so that packets are not
+      lost in buffers.
+
+
+
+
+
+
+
+
+
+Figure 2-5. T Series packet flow
+
+
+
+
+
+
+
+EX Series
+
+
+
+The EX Series is Juniper's first venture into enterprise switching, and thus the packet
+      flow within the EX places more emphasis on Layer 2 addressing than the
+      other routers. The RE of the EX Series calculates both a forwarding
+      table and a bridging table and pushes both to the PFEs that support the
+      individual Ethernet ports. The RE builds the bridging table using the
+      Source Media Access Control (Source MAC or SMAC) addresses it receives from the
+      network. As packets are received, if the EX Series knows the Destination
+      MAC (DMAC) address, the packet is switched to the appropriate PFE and
+      forwarded. If the SMAC address of the packet is not known, a copy of the
+      header information is forwarded to the RE and the address is added to
+      the bridging table, which is then pushed to the PFE. For the packets
+      that arrive with an unknown DMAC address, the PFE automatically floods
+      the packet to all ports on the switch, except for the ingress port. When
+      the reply to the Address Resolution Protocol (ARP) call is received, the SMAC address from the reply is
+      copied and sent to the RE for inclusion in the bridging table. Figure 2-6 shows the EX Series packet
+      flow.
+
+
+
+
+
+
+
+
+
+Figure 2-6. EX Series packet flow
+
+
+
+
+
+
+
+SRX Series
+
+
+
+With the additional functionality of stateful firewalling, intrusion detection
+      and prevention, and VPNs, packets in the SRX Series have an extra step
+      of being processed by SPCs. The SPCs are designed to efficiently perform all the
+      security functions for the product line.
+
+
+
+
+
+J Series
+
+
+
+The J Series routers, which sit at the enterprise routing level of the Juniper product
+      line, have the same overall packet flow as the rest of the equipment we
+      have discussed. The major difference with the J Series is that the
+      specific hardware functionality, such as the PFE, the RE, and their
+      respective ASICs, has been virtualized into software processes to
+      provide the same stability and efficiency for networks that require less
+      overall throughput.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Redundancy and Resiliency
+
+
+
+While Juniper's divided architecture keeps networks stable during times of network
+    churn or high throughput, it is still possible that hardware failures may
+    decrease the high availability of the network. To counter the possible
+    downtime created by the rare occurrence of hardware failure, all the
+    carrier-class platforms include the availability of hardware redundancy
+    for key components, including the power supplies, REs, and SCBs. For other
+    components, such as PICs, FPCs, and fans, the system provides the ability
+    to swap parts while the network is operational, without affecting the
+    performance of the entire system.
+Each of these Field Replaceable Units (FRUs) can be categorized into one of two types:
+
+
+
+Hot-swappable/hot-insertable
+
+
+Can be removed and replaced without powering down the system
+          and without disrupting the routing function
+
+
+Hot-pluggable
+
+
+Can be removed and replaced without powering down the system, but routing
+          functions are disrupted if a redundant FRU is not available or is
+          not active
+
+
+
+
+Note
+Keeping spare FRUs that are compatible among chassis can
+      drastically reduce MTTR.
+
+
+
+
+
+M Series
+
+
+
+The M Series provides the option of power supply redundancy at all levels of the
+      system, and offers full redundancy of the RE and PFE beginning at the
+      M10i router. This redundancy in the system mitigates the threat of
+      hardware failures in your network reducing your high availability. The
+      ability to hot-swap or hot-plug the gear also ensures that a hardware
+      failure does not have to affect the packet processing being performed by
+      the entire system. Table 2-6
+      illustrates the resilient and redundant nature of the M Series.
+
+
+Table 2-6. M Series redundancy and resiliency
+
+
+
+
+
+
+
+
+
+
+
+
+FRU
+
+
+M7i
+
+
+M10i
+
+
+M120
+
+
+M320
+
+
+
+
+
+
+Fan tray
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+PIC
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+FPC
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Power supply
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+
+
+RE
+
+
+Hot-pluggable
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+
+
+PFE components
+
+
+Hot-pluggable
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+Hot-swappable (if redundant)
+
+
+
+
+
+
+
+
+
+
+
+MX Series
+
+
+
+The MX Series provides the option of full redundancy in all chassis.
+      Again, full redundancy mitigates hardware failures in the network.
+      However, as with the other series in the Juniper line, redundancy is
+      optional when budget constraints outweigh the need for the highest
+      levels of high availability. Table 2-7 highlights the FRUs for
+      the MX Series.
+
+
+Table 2-7. MX Series redundancy and resiliency
+
+
+
+
+
+
+
+
+
+
+
+FRU
+
+
+MX240
+
+
+M480
+
+
+M960
+
+
+
+
+
+
+Fan tray
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Power
+              supply
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+Backup SCB
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+Backup RE
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+DPC
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Master SCB
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+
+
+Master RE
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+
+
+
+
+
+
+
+
+
+T Series
+
+
+
+The T Series also provides the option of full redundancy in all
+      chassis. For the T640 and T1600, additional redundancy is provided by
+      the TX Matrix. As with the rest of the routers that offer full
+      redundancy, the T Series ensures high availability in the network
+      through the use of components that do not affect the packet forwarding
+      of the entire system if a hardware failure occurs. Also, if a component
+      does fail, the entire router does not have to be taken out of service to
+      replace it. Table 2-8
+      highlights the FRUs for the T Series.
+The T Series takes redundancy a step further, though, with the
+      concept of a routing node, or virtual routing chassis. In the core of
+      your network, the T Series can be connected to other T Series routers
+      through the TX Matrix to form a routing node with a single virtual
+      control plane. This additional redundancy ensures that the core networks
+      that it supports are always available.
+
+
+Table 2-8. T Series redundancy and resiliency
+
+
+
+
+
+
+
+
+
+
+
+FRU
+
+
+T320
+
+
+T640
+
+
+T1600
+
+
+
+
+
+
+Fan tray
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+PIC
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+FPC
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Power
+              supply
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+Switch Interface
+              Board
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+T640 Switch Interface
+              Board
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Backup T-Control
+              Board
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+Backup RE
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+Hot-swappable (if
+              redundant)
+
+
+
+
+Master T-Control
+              Board
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+
+
+Master RE
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+Hot-pluggable (if
+              redundant)
+
+
+
+
+
+
+
+
+
+
+
+J Series
+
+
+
+Because the J Series Enterprise Router is positioned for smaller networks, such as branch offices,
+      that normally do not have redundant links or the cooling and cabling
+      facilities for a larger routing platform, it does not provide for full
+      hardware redundancy. If you need high availability in a branch office,
+      the J Series does support VRRP to allow it to work in tandem with a
+      second J Series router, as well as full routing functionality to allow
+      it to be used to also multihome with separate ISPs for
+      redundancy.
+
+
+
+
+
+SRX Series
+
+
+
+With the SRX Series performing functions ranging from security SOHOs to
+      ISP-level data centers, redundancy of the systems varies greatly. At the
+      basic security gateway level, redundancy is available on a network level
+      with multiple gateways being able to work in either an active/active or
+      an active/standby configuration. Beginning with the SRX650 and up
+      through the SRX3400, SRX3600, SRX5600, and SRX5800, component and power
+      redundancy along with network redundancy is available.
+
+
+
+
+
+EX Series
+
+
+
+With the introduction of the EX Series, Juniper moves its high availability design
+      to the switching infrastructure. The chassis of the entry-level EX3200
+      switch does not provide for internal redundant power supplies, but it
+      can be attached to an external power supply that provides the redundancy
+      needed for high availability. At the current pinnacle of switches, the
+      EX8208, the hardware supports multiple redundancy designs and an
+      optional redundant Switching and Routing Engine (SRE) Module. Table 2-9 indicates the FRUs for
+      the EX Series.
+
+
+Table 2-9. EX Series redundancy and resiliency
+
+
+
+
+
+
+
+
+
+
+
+FRU
+
+
+EX3200
+
+
+EX4200
+
+
+EX8208
+
+
+
+
+
+
+Fan tray
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+Hot-swappable
+
+
+
+
+Power
+              supply
+
+
+Hot-swappable (when an
+              external redundant power supply is used)
+
+
+Hot-swappable (if redundant)
+
+110 V 3+3
+              redundancy110 V 5+1 redundancy220 V
+              3+3 redundancy 220 V 3+1 redundancy
+
+
+
+SRE
+
+N/A
+N/A
+
+Hot-swappable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

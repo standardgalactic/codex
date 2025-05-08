@@ -1,0 +1,1000 @@
+    you use BFD to manage link failure detection, leverage this information
+    within the desired protocols, and leave the protocols themselves to do
+    what they were built to do: determine the best path through the network to
+    a given destination.
+BFD also provides a specific solution for static routes. Because a
+    static route uses no routing protocol, it has no natural failure detection
+    mechanism. This means that a link can be down but the router will continue
+    sending traffic along that path indefinitely. BFD solves this issue by
+    providing a failure detection mechanism where there wasn't one
+    before.
+It may seem like BFD is a Layer 3 protocol, or a kind of routing
+    protocol, but it's not. While BFD is closely integrated with protocols (it
+    is configured within each protocol's configuration stanza), it stands
+    alone and is simply used for failure detection. When a failure does
+    happen, BFD immediately notifies the appropriate routing protocol, and
+    that protocol can take action from there, routing traffic around the
+    problem link.
+At the time of this writing, BFD works with the following protocols:
+
+
+
+IPv4:
+
+
+
+Routing Information Protocol (RIP)
+
+
+OSPF
+
+
+IS-IS
+
+
+Border Gateway Protocol (BGP): Internal BGP (IBGP) and
+            External BGP (EBGP)
+
+
+Static routes
+
+
+MPLS (RSVP)
+
+
+PIM
+
+
+
+
+
+IPv6:
+
+
+
+OSPFv3
+
+
+Static routes
+
+
+
+
+
+
+The BFD configuration stanza is as follows:
+
+[edit]
+lab@r1# set protocols bgp group ext-peers bfd-liveness-detection ?
+Possible completions:
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> detection-time       Detection-time options
+  holddown-interval    Time to hold the session-UP notification to the client
+  minimum-interval     Minimum transmit and receive interval (milliseconds)
+  minimum-receive-interval  Minimum receive interval (1..255000 milliseconds)
+  multiplier           Detection time multiplier (1..255)
+  no-adaptation        Disable adaptation
+> transmit-interval    Transmit-interval options
+  version              BFD protocol version number
+At a minimum, you must define the transmit and receive intervals.
+    You can set each parameter separately or specify both using the minimum-interval parameter:
+
+[edit]
+lab@r1# show protocols bgp
+group ext-peers {
+    bfd-liveness-detection {
+        minimum-interval 300;
+    }
+    neighbor 10.20.30.40 {
+        peer-as 54321;
+    }
+}
+In the preceding example, BFD control packets (Hellos) are sent
+    every 300 ms. The router also expects to receive a control packet from its
+    neighbor every 300 ms.
+
+Note
+Be sure to configure the transmit and receive intervals
+      identically between nodes.
+
+By default, BFD declares a link down when it fails to receive three
+    packets in a row from its neighbor. If this value is too aggressive, you
+    can modify it:
+
+[edit]
+lab@r1# show protocols bgp
+group ext-peers {
+    bfd-liveness-detection {
+        minimum-interval 300;
+        multiplier 5;
+    }
+    neighbor 10.20.30.40 {
+        peer-as 54321;
+    }
+}
+In the preceding example, BFD now waits for five missed control
+    packets from the neighboring router before declaring the link down and
+    informing BGP.
+
+
+
+
+Setting the Interval for BFD Control Packets
+
+
+
+Since BFD was first implemented, there has been debate over the "correct"
+      settings for BFD. And what quickly became apparent is that there is no
+      single right answer. Set the interval too high, and you don't get
+      especially fast failover. Set the interval too low, and even a slight
+      variance in the quality of the link could cause it to be declared down.
+      Worse yet, continuous flapping could occur as BFD repeatedly declares
+      the link up and then down.
+Having had a few years now to work with BFD, network
+      administrators and operators seem to have come to a general consensus
+      that 300 ms is an appropriate interval value, with a multiplier of 3
+      (that is, 900 ms to link failure detection). These values support a high
+      availability environment nicely, providing subsecond detection as well
+      as an allowance for small variances in link quality, and not causing
+      more harm than good.
+
+Note
+In JUNOS releases before 9.4, BFD Hello packets are generated
+        only by the RPD process running on the routing engine (RE), by
+        default. To alleviate the load placed on the RE, you can enable
+        periodic packet management (PPM). PPM directs the Packet Forwarding
+        Engine (PFE) to assist in handling the sending of BFD control packets,
+        allowing your JUNOS device to support a higher number of BFD-enabled
+        interfaces. It can be set using the command set
+        routing-options ppm delegate-processing. PPM is supported
+        only on the M120, M320, MX Series, T Series, and TX Matrix routing
+        platforms. Note that as of JUNOS 9.4, this feature is enabled by
+        default.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Virtual Router Redundancy Protocol
+
+
+
+The premise of high availability extends end to end in a network, right
+    down to an end user's workstation. A user's PC is
+    configured—statically—with a default gateway, making it a major exposure
+    point in maintaining high availability. Even with multiple routers as exit
+    points from the LAN, if the PC's configured gateway fails, traffic has
+    nowhere to go.
+Virtual Router Redundancy Protocol (VRRP) is designed to
+    specifically address this issue, as shown in Figure 14-3. All gateway routers
+    essentially become a single virtual router, sharing a common "virtual" IP
+    (and MAC) address. All hosts on the LAN still have a single static gateway
+    address, but the address is virtual, meaning it never
+    goes away. Thus, traffic always has a way out of the network.
+
+
+
+
+
+
+
+
+
+Figure 14-3. Typical VRRP setup: multiple gateway routers acting as a single
+      virtual router, and end-user PCs using the virtual address as their
+      default gateway
+
+
+
+Note
+VRRP is typically implemented to provide high availability for
+      Ethernet networks.
+
+Of the VRRP-configured routers, one is always the master. This master router is the
+    device that responds to and services traffic from inside the LAN destined
+    for external networks. The other VRRP-configured routers act as backups.
+    If the master fails, one of the backup routers takes over. This new master
+    router takes over responding to and servicing traffic destined for
+    external networks. The key point here is that the hosts on the LAN never
+    know that any failure has occurred. They simply send traffic to their
+    configured gateway (the virtual IP or VIP address) as usual, and the
+    VRRP-enabled routers take care of ensuring that traffic gets to its
+    destination.
+VRRP-enabled routers undergo an election process to determine which
+    one becomes the master router. By default, the router containing the
+    VRRP-enabled interface with the highest IP address becomes the master
+    router. Alternatively, the election can be based on a manually configured
+    priority value (1 to 255, default is 100). The router with the highest
+    priority value becomes the master router. If the master router fails,
+    another election takes place and the router with the next highest priority
+    value takes over as the new master router.
+You configure VRRP under the interface that acts as a gateway for
+    the LAN:
+
+[edit interfaces fe-0/0/0 unit 0]
+lab@r1# set family inet address 10.0.0.1/24 vrrp-group 1 ?
+Possible completions:
+  accept-data          Accept packets destined for virtual IP address
+  advertise-interval   Advertisement interval (1..255 seconds)
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+  authentication-key   Authentication key
+  authentication-type  Authentication type
+  fast-interval        Fast advertisement interval (100..999 milliseconds)
+  inet6-advertise-interval  Inet6 advertisement interval (milliseconds)
+  no-accept-data       Don't accept packets destined for virtual IP address
+  no-preempt           Don't allow preemption
+> preempt              Allow preemption
+  priority             Virtual router election priority (0..255)
+> track                Interfaces to track for VRRP group
++ virtual-address      One or more virtual IPv4 addresses
++ virtual-inet6-address  One or more virtual inet6 addresses
+  virtual-link-local-address  Virtual link-local addresses
+
+Note
+Juniper Networks routers also support VRRP for IPv6.
+
+The minimum configuration for VRRP includes a group ID to identify
+    the interfaces from the gateway routers that are to work together, a
+    priority number for master router elections, and the VIP address that is
+    shared across the VRRP-enabled interfaces:
+
+[edit interfaces fe-0/0/0 unit 0]
+lab@r1# show
+family inet {
+    address 10.0.0.1/24 {
+        vrrp-group 1 {
+            virtual-address 10.0.0.10;
+            priority 150;
+        }
+    }
+}
+The advertisement interval for the master router is also
+    configurable. By default, a master router sends out advertisement packets
+    each second to indicate that it is up and operating. When the backup
+    routers fail to receive three advertisements, the master router is
+    declared down and an election takes place. You can configure the
+    advertisement interval in seconds using the advertise-interval parameter, or in milliseconds
+    using the fast-interval
+    parameter:
+
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@r1# set vrrp-group 1 advertise-interval ?
+Possible completions:
+  <advertise-interval>  Advertisement interval (1..255 seconds)
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@r1# set vrrp-group 1 fast-interval ?
+Possible completions:
+  <fast-interval> Fast advertisement interval (100..999 milliseconds)
+
+Note
+Whether the default failover time (three seconds) is sufficient
+      depends entirely on your network environment and high availability
+      requirements. It may be sufficient if end users are performing tasks
+      that are not time-sensitive, such as using the Internet or sending
+      email. However, if users are running time-sensitive applications, or if
+      the network has devices such as VoIP phones, you likely want to reduce
+      the timers to ensure subsecond failover.
+
+When a master is declared down and a backup router takes over, there is still
+    an item that can hurt high availability. By default, backup routers listen
+    for traffic destined for the VIP address, but they don't retain Address
+    Resolution Protocol (ARP) information and they don't populate their
+    ARP cache. This means that when a backup router takes over
+    as master, it still has some learning to do. In an environment with many
+    hosts, this learning process can become burdensome. To combat this issue,
+    you can alter the backup router's behavior and allow it to learn and
+    retain ARP information. To enable this feature, use the passive-learning parameter under the arp stanza:
+
+[edit]
+lab@r1# set system arp passive-learning
+A subtler aspect of high availability involves basic connectivity.
+    For example, as an end user, you might be having trouble reaching a
+    network resource and so you want to confirm basic connectivity to your
+    default gateway. You try to ping the default gateway but receive no
+    response. You have a connectivity issue, right? Wrong. By default, VRRP
+    does not respond to traffic destined to the VIP address. If you wish to
+    receive responses from the VIP address, you must explicitly configure the
+    router to do so:
+
+[edit interfaces fe-0/0/0 unit 0]
+lab@r1# show
+family inet {
+    address 10.0.0.1/24 {
+        vrrp-group 1 {
+            virtual-address 10.0.0.10;
+            priority 150;
+            accept-data;
+        }
+    }
+}
+
+Note
+This feature is not part of the VRRP standard. However, it can be
+      very useful to help verify connectivity and reachability.
+
+VRRP's role is to detect and recover from a LAN-side failure in the
+    gateway devices. But what if the WAN side of the master router experiences
+    a failure? According to VRRP, there is no problem—so traffic flows to the
+    device, only to be dropped because it has nowhere to go. Fortunately,
+    there is a solution to this problem: tracking. Juniper Networks supports
+    two types of tracking: interface and
+    route tracking. With interface tracking, as shown in
+    Figure 14-4, VRRP can track up to 10
+    logical interfaces and automatically have VRRP fail over to the backup
+    router if the non-VRRP interface goes down. You can also configure VRRP
+    failover if a non-VRRP interface falls below a given speed threshold.
+    Route tracking works in much the same way, allowing the master router to
+    track reachability, and fail over to the backup router if a given route no
+    longer exists in the routing table.
+These features provide a great solution for high availability
+    environments. Traditional VRRP provides only LAN-side protection, but
+    traffic doesn't stop at the router; it flows through to some other
+    destination. Tracking provides a more complete solution by giving VRRP a
+    more complete view of the device's end-to-end monitoring solution.
+
+
+
+
+
+
+
+
+
+Figure 14-4. VRRP with interface tracking
+
+
+You configure tracking under the VRRP group, using the track statement:
+
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@r1# show vrrp-group 1 track ?
+Possible completions:
+  <[Enter]>            Execute this command
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> interface            Interface to track in VRRP group
+  priority-hold-time   Priority hold time (0..3600 seconds)
+> route                Route to track in VRRP group
+To configure interface tracking, identify the interface you wish to
+    track and specify the amount to subtract from the priority value when this
+    interface goes down:
+
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@r1# show
+vrrp-group 1 {
+    virtual-address 10.0.0.10;
+    priority 150;
+    accept-data;
+    track {
+        interface so-0/1/0 {
+            priority-cost 51;
+        }
+    }
+}
+Then, if desired, you can also configure a bandwidth threshold for
+    the tracked interface. You can configure up to five thresholds and define
+    how much to reduce the priority value as the bandwidth of the tracked
+    interface falls below each threshold:
+
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@r1# show
+vrrp-group 1 {
+    virtual-address 10.0.0.10;
+    priority 150;
+    accept-data;
+    track {
+        interface so-0/1/0 {
+            bandwidth-threshold 10m priority-cost 25;
+            bandwidth-threshold 20m priority-cost 25;
+            bandwidth-threshold 40m priority-cost 25;
+            priority-cost 51;
+        }
+    }
+}
+Route tracking works much like interface tracking except, of course,
+    you identify a route to track instead of an interface. You must also
+    define an amount to deduct from the priority value when the route goes
+    down:
+
+[edit interfaces fe-0/0/0 unit 0 family inet address 10.0.0.1/24]
+lab@Bangkok-re1# show
+vrrp-group 1 {
+    virtual-address 10.0.0.10;
+    priority 150;
+    accept-data;
+    track {
+        route 192.168.1.0/24 routing-instance default priority-cost 51;
+    }
+}
+In the preceding example, notice the routing-instance portion of the configuration.
+    When using interface tracking, you must identify the routing instance that
+    holds the route you wish to track. If you want to track a route in the
+    main routing instance (or if you aren't using routing instances at all),
+    specify the instance as default.
+After you commit the configuration, you can monitor VRRP using any
+    of the show VRRP commands. In the
+    following example, you can see that interface fe-0/0/0 belongs to VRRP Group 1 with a VIP
+    address of 10.0.0.10. You can also see that this router is the master
+    router for the group:
+
+lab@r1> show vrrp
+Interface     State    Group   VR state  Timer    Type   Address
+fe-0/0/0.0    up           1   master    N  0.278 lcl    10.0.0.1
+                                                  vip    10.0.0.10
+
+
+
+
+
+
+
+
+
+
+
+
+
+MPLS Path Protection
+
+
+
+There are several methods of protecting traffic when using MPLS,
+    including options to protect a single link, an entire node, or the entire
+    path.
+The Resource Reservation Protocol (RSVP) provides a way to define MPLS paths across a network.
+    RSVP includes mechanisms to specifically define which nodes the path
+    traverses. You can do this manually, specifying each hop, or you can
+    configure parameters such as bandwidth and link color, and let the router
+    dynamically define certain parts of the path based on resource
+    availability.
+
+
+
+
+Fast Reroute
+
+
+
+RSVP is responsible for signaling the MPLS path—that is,
+      establishing and setting it up. It is also responsible for monitoring
+      the path once it has been established. Traditional RSVP failure
+      detection mechanisms are quite slow, on the order of several seconds to
+      detect failures. However, additions to the original protocol provide a
+      detection mechanism that can offer subsecond failover. This feature is called fast reroute (FRR).
+
+Note
+Fast reroute provides failure detection and recovery in an
+        incredible 50 ms. That's the same failover time as APS for SONET
+        networks!
+
+FRR is a mechanism that establishes detour label-switched
+      paths (LSPs) at each router along the main MPLS LSP. If a node
+      or link fails, the upstream router immediately sends traffic to its
+      detour LSP. The router also notifies the ingress router for the path
+      that part of the main LSP has failed. The ingress router can then
+      redirect traffic along a new LSP as appropriate. This type of protection
+      is called one-to-one backup as the protecting
+      LSPs cannot be shared among active LSPs.
+
+Note
+In practice, administrators configure both primary and secondary
+        MPLS paths. In this case, FRR solves the short-term problem of
+        protecting traffic until the secondary LSP is established. Once
+        established, the ingress router sends traffic down the secondary LSP,
+        and the detour LSP provided by FRR is no longer needed. If there is no
+        secondary LSP, or if constraints don't allow the secondary LSP to be
+        formed, the detour LSP can be used until the failed link is
+        repaired.
+
+You configure FRR only on the ingress node for the MPLS LSP. When
+      RSVP signals the path downstream to the other nodes, it includes
+      information telling each node it should initiate a detour LSP for
+      protection. FRR is very easy to configure:
+
+[edit]
+lab@r1# show protocols mpls
+label-switched-path path-with-FRR {
+    to 10.0.5.1;
+    fast-reroute;
+    primary primary-path;
+    secondary secondary-path;
+}
+path primary-path {
+    10.0.1.1 loose;
+    10.0.2.1 loose;
+}
+path secondary-path {
+    10.0.3.1 loose;
+    10.0.4.1 loose;
+}
+FRR requires that you enable IGP traffic engineering on each node
+      in the MPLS network. IS-IS has traffic engineering enabled by default,
+      and you can enable it for OSPF with a simple command:
+
+[edit]
+lab@r1# set protocols ospf traffic-engineering
+You can configure additional parameters for FRR as desired, such
+      as bandwidth reservation and administrative groups (link coloring). You
+      can also define a hop count for the detour LSP, as shown here:
+
+[edit protocols mpls label-switched-path path-with-FRR]
+lab@r1# show fast-reroute ?
+Possible completions:
+  <[Enter]>            Execute this command
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+  bandwidth            Bandwidth to reserve (bps)
+  bandwidth-percent    Percentage of main path bandwidth to reserve (1..100)
++ exclude              Groups, all of which must be absent
+  hop-limit            Maximum allowed router hops (0..255)
++ include-all          Groups, all of which must be present
++ include-any          Groups, one or more of which must be present
+  no-exclude           Disable exclude checking
+  no-include-all       Disable include-all checking
+  no-include-any       Disable include-any checking
+
+Note
+The FRR feature in JUNOS Software is proprietary; therefore, it
+        is not a widely implemented solution. FRR also has the limitation that
+        it is, by design, an end-to-end solution, which means it doesn't scale
+        all that well. Full protection to each endpoint means a full mesh of
+        LSPs. A more common and efficient mechanism is link protection, which
+        we discuss in the next section.
+
+
+
+
+
+
+Node and Link Protection
+
+
+
+An alternate method to provide MPLS path protection is to use node
+      and link protection. Each feature functions as you might expect: link
+      protection provides an alternate LSP to reach a neighboring router in
+      case of a failure to a specific link, while node protection provides a
+      bypass LSP around a neighboring router in case the entire node
+      fails. This type of protection is called facility backup as the protecting
+      LSPs can be shared by active LSPs.
+
+Note
+Node and especially link protection are a more popular solution,
+        as these features are standardized and therefore interoperable with
+        other vendors.
+
+You must first enable IGP traffic engineering on each node in the
+      MPLS network. Since IS-IS has traffic engineering enabled by default,
+      you need to enable it only for OSPF:
+
+[edit]
+lab@r1# set protocols ospf traffic-engineering
+Next, enable protection for each LSP you want protected:
+
+[edit]
+lab@r1# show protocols mpls
+label-switched-path path-with-node-protection {
+    to 10.0.5.1;
+    node-link-protection;
+    primary primary-path;
+    secondary secondary-path;
+}
+path primary-path {
+    10.0.1.1 loose;
+    10.0.2.1 loose;
+}
+path secondary-path {
+    10.0.3.1 loose;
+    10.0.4.1 loose;
+}
+The preceding example shows node protection enabled. Note that you
+      could enable just link protection using the link-protection statement.
+
+Note
+Node protection requires that link protection also be
+        enabled.
+
+With protection enabled for the LSP at ingress, the final step is
+      to enable link protection at the RSVP level for every downstream
+      interface across the network that the LSP traverses. There are two ways
+      to configure this on each device: you can use a repetitive series of
+      commands to configure link protection on each interface, or you can
+      simplify things considerably and enter a single command per device,
+      using the all
+      parameter:
+
+lab@r2# set protocols rsvp interface all link-protection
+This statement enables link protection on all interfaces on the
+      device.
+You can optionally define additional parameters for bypass LSPs,
+      such as an explicit path for the bypass LSP:
+
+lab@r2# set protocols rsvp interface all link-protection ?
+Possible completions:
+  <[Enter]>            Execute this command
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> bandwidth            Bandwidth for each bypass (bps)
+> bypass               Bypass with specific constraints
+  class-of-service     Class of service for the bypass LSP (0..7)
+  disable              Disable link protection on this interface
+  hop-limit            Maximum allowed router hops for bypass (2..255)
+  max-bypasses         Max number of bypasses permitted for protecting this interface
+  no-cspf              Disable automatic path computation
+  no-node-protection   Disallow node protection on this interface
+  optimize-timer       Interval between bypass reoptimizations (seconds)
+> path                 Explicit route of bypass path
+  priority             Preemption priorities for the bypass LSP
+  subscription         Percent of bandwidth guaranteed when admitting protected
+LSPs into bypasses
+  |                    Pipe through a command
+
+Note
+In practice, link protection is a more effective high
+        availability mechanism than node protection. Node protection relies on
+        protocol timers to determine that a failure has occurred, while link
+        protection is able to declare a failure as soon as the physical link
+        (or interface on the neighboring router) goes down.
+
+It is critically important for network devices to know when
+      failure of another device or a link occurs—the availability of the
+      network depends on it. Protocols play a key role in communicating when
+      these failures occur. The faster devices can learn about, reconverge around, and recover from
+      failures, the higher the uptime for the network as a whole.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 15. Transitioning Routing and Switching to a Multivendor
+  Environment
+
+
+
+While most networks begin as single-vendor efforts, very few stay that
+  way. Mature networks, whether owned by an enterprise or by a service
+  provider, are a reflection of the need to reduce costs or expand
+  functionality by taking advantage of products from multiple vendors. Often
+  the transition from a single-vendor network to a multivendor network is
+  painful, involving frustration during the testing, implementation, and
+  support cycles. In this chapter, we give examples, advice, and
+  recommendations for a safe transition to a multivendor network that has no
+  visible impact/effect on the operation of the network.
+This chapter starts by explaining, at a high level, how transitioning
+  to (and in some cases through) a multivendor network can be accomplished in
+  the context of two common architectural models. Later sections show some of
+  the configuration elements needed to implement these high-level concepts and
+  describe a few of the more common problems encountered while doing
+  so.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Industry Standards
+
+
+
+While writing this book, we frequently shared thoughts with coworkers and
+    fellow network engineers as a sanity check and a way to gather other
+    perspectives. Of all the chapters we discussed, this one drew by far the
+    most queries. The most common question was, "How in the world are you
+    going to write that? Everyone knows that Juniper products don't support
+    EIGRP and HSRP."
+True statement. Juniper products do not support Cisco-proprietary
+    protocols. However, both Cisco and Juniper products support
+    implementations of industry-standard protocols such as Open Shortest Path
+    First (OSPF), Border Gateway Protocol (BGP), and Virtual Router Redundancy
+    Protocol (VRRP). Furthermore, while it is not considered a best practice,
+    proprietary protocols are commonly found in some places in multivendor networks.
+Actually, the "How?" question is rooted in a major misconception.
+    People, even very experienced engineers, assume that when the terms
+    system redundancy and
+    multivendor are used to describe a network, the
+    intention is to pair devices from different vendors within the
+    architecture. This is not the case.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Multivendor Architecture for High Availability
+
+
+
+In Chapter 1,
+    we described different redundancy models, including
+    component, system, and site redundancy. While the discussion in that
+    chapter implied that redundant pairs of devices should be identical, this
+    condition was not stated outright. For example, when deploying a pair of
+    switches to provide redundancy for a critical corporate local area network
+    (LAN), the switches should at least be from the same vendor, and at best
+    should be identical hardware running identical software. There are several
+    reasons for this recommendation:
+
+
+
+Paired production network devices are expected to perform
+        identically. Identical performance is best facilitated by identical
+        platforms.
+
+
+The sparing scheme is simplified. A single collection of
+        redundant components can be stored for the pair of devices.
+
+
+Interoperability testing burden is reduced. Identical devices
+        are by default interoperable.
+
+
+Network management can focus on a layer in the scheme rather
+        than devices within a layer.
+
+
+
+For these reasons, when deploying products from an additional
+    vendor, high availability is best protected by not mixing vendors'
+    products within a high availability pairing of devices.
+
+
+
+
+Two Sensible Approaches
+
+
+
+Since pairing devices from different vendors is not desirable,
+      what is the best approach to deploying devices from multiple vendors in
+      a production network? There are two sensible approaches.
+
+
+
+
+Layered approach to multivendor networks
+
+
+
+In the layered model, the network design team defines layers within the
+        network based on device purpose and function. The two most common
+        models used are Core-Distribution-Access (CDA) and Provider Edge-Customer Edge (PE-CE). Both models are well known and well documented, but
+        they do merit some discussion when applied to high availability
+        networks.
+
+
+
+
+CDA model
+
+
+
+This model implies that all devices in the architecture are part of a
+          single Autonomous System (AS) and are under one
+          administration. This model is commonly associated with small to
+          medium-size enterprise networks.
+Figure 15-1
+          shows redundant pairs of devices in a CDA model. With this model in
+          mind, network architects or administrators can choose to designate
+          routers from different vendors in different layers within the
+          architecture. For example, Juniper routers may be selected for the
+          core (C-router) and access
+          (A-switch) layers, while Cisco
+          products may be used to meet specific needs in the distribution
+          (D-router) layer.
+
+
+
+
+
+
+
+
+
+Figure 15-1. CDA model for high availability networks
+
+
+
+
+
+
+
+PE-CE model
+
+
+
+This model recognizes the existence of multiple ASs and the presence of multiple administrative
+          domains within the architectural model. The PE-CE model has
+          historically been associated with carrier and service provider
+          networks, but it is becoming more common in large enterprises and
+          campus networks.
+Figure 15-2 shows redundant pairs
+          of devices in a PE-CE architectural model. In a layered multivendor
+          approach for this model, the network's architects could select
+          Juniper routers for the provider edge (PE-router) role and devices from another
+          vendor for the core (P-router) or
+          data center roles.
+
+
+
+
+
+
+
+
+
+Figure 15-2. PE-CE layered model
+
+
+
+Note
+While both models can seldom fit within a single diagram,
+            large-scale network architecture requires both CDA and PE-CE model
+            characteristics. In Figure 15-2, for
+            example, each "CE router" would most likely also be a core device
+            within a CDA modeled topology.
+
+
+
+
+
+
+
+Site-based approach to multivendor networks
+
+
+
+Large-scale enterprises and service providers often create and maintain an approved
+        products list. This list identifies products that have been tested or
+        vetted for use in the production network. An "approved products" list
+        approach allows some flexibility in determining which vendor's
+        platforms to use within the network.
+This approach is often used in conjunction with a site-based
+        architecture. Site-based architectures allow specific decisions about
+        network devices, protocols, and connection types to be based, to some
+        extent, on factors unique to a deployment site. These factors can
+        include:
+
+
+
+Customer requests for specific vendor hardware in the PE
+            role.
+
+
+Presence of specific hardware in the CE role. Customers have
+            been known to deploy hardware in the CE role that does not "play
+            nicely" with equipment from other vendors. It is better for the
+            network's high availability posture to deploy PE devices from the
+            same vendor that provided the customer with the CE devices than to
+            deploy hardware that is known to have interoperability
+            issues.
+
+
+Vendor or platform competencies of the local support staff.
+            The notion here is that engineers tend to specialize in just a few
+            or possibly just one vendor's products. There is much less risk in
+            deploying products that the staff is comfortable with
+            supporting.
+
+
+Differing collections of functional requirements. Protocol,
+            interface, or other functional requirements, particularly when
+            they are proprietary and specific to a site, can mandate products
+            from a specific vendor. Examples include customer requirements for
+            Cisco CDP or EIGRP on the link between CE and PE devices.
+
+
+Price advantage. Product availability, discounts, and
+            shipping costs may make one vendor's products significantly less
+            expensive than another's in some geographic regions.
+
+
+
+Figure 15-3 shows
+        application of the PE-CE model to a site-based architecture.
+
+
+
+
+
+
+
+
+
+Figure 15-3. Site-based approach to multivendor networks
+
+
+Figure 15-3 shows
+        several defined sites, 1-4. For the reasons previously discussed, the
+        administrators may choose to deploy different pairs of vendors'
+        products in each site circle even though 1-3 are within the Provider
+        Edge Layer within the architecture. If the administrators had designed
+        a layered approach for multivendor deployment, sites 1-3 would be
+        required to use products from the same vendor.
+
+
+
+
+
+
+Multivendor As a Transition State
+
+
+
+In some situations, having the network in a multivendor state may simply be a
+      transitional phase that exists because the administrators have chosen to
+      switch hardware vendors. In this case, a multivendor state is more of a
+      temporary necessity, not the desired end result. Interestingly enough,
+      the layered and site-based approaches are also effective and safe ways
+      to transition from one vendor to another.
+
+
+
+
+Layered transitions
+
+
+
+User demands for network bandwidth and interface connectivity tend to
+        grow over time. When answering the call for additional bandwidth, CDA
+        networks tend to grow from the core toward the edge. When responding
+        for demands for additional connectivity, CDA networks often grow from
+        the edge back toward the core.
+In the layered transition model, you place additional devices at
+        specific layers in parallel to existing devices and they are
+        configured to peer with devices in adjacent layers. In Figure 15-4, the network
+        administrators have chosen to transition from an "all Ericsson" to an
+        "all Juniper" network. Figure 15-4 shows a pair of
+        Juniper routers being added into the core and peering with the
+        existing distribution layer devices.
+Once you have confirmed functionality, adjust metrics on the
+        links to the distribution layer routers (D-routers) to make the new core (C-router) devices more desirable than the
+        old ones.
+
+Note
+Chapter 6 provides an
+          extensive tool kit of configuration elements that manipulate metrics
+          and other protocol settings to make specific links more desirable
+          than others.
+
+Then, after confirming that traffic is flowing in a stable
+        manner over the new core, you can decommission the old core.
+Although the network that results from a layered transition is
+        not the desired end state, the network is now technically a
+        multivendor network. The core is Juniper and the distribution and edge
+        layers are Ericsson. To achieve the goal of once again having a
+        single-vendor network, you must repeat this process at the

@@ -1,0 +1,1000 @@
+
+Option
+
+
+
+
+seconds
+
+
+
+Amount of time the router retains the state of its RSVP
+              neighbors while they undergo a Graceful Restart. Range: 1-3,600.
+              Default: 180.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+maximum-helper-restart-time
+
+
+
+
+maximum-helper-restart-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols rsvp graceful-restart],
+
+
+[edit logical-systems logical-system-name protocols rsvp
+          graceful-restart]
+
+
+
+
+
+Description
+Specify the amount of time the router waits after it discovers
+        that a neighboring router has gone down before it declares the
+        neighbor down. This value is applied to all RSVP neighbor routers and
+        should be based on the time that the slowest RSVP neighbor requires
+        for restart.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+The time the router waits after it discovers that a
+              neighboring router has gone down before it declares the neighbor
+              down. Range: 1-1,800. Default: 60.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+maximum-neighbor-reconnect-time
+
+
+
+
+maximum-neighbor-reconnect-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols ldp graceful-restart]
+
+
+[edit logical-systems logical-system-name protocols ldp
+          graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols ldp
+          graceful-restart]
+
+
+
+
+
+Description
+Specify the maximum amount of time allowed to reestablish connection
+        from a restarting neighbor.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Maximum time allowed for reconnection. Range:
+              30-300.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+maximum-neighbor-recovery-time
+
+
+
+
+maximum-neighbor-recovery-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols ldp graceful-restart]
+
+
+[edit logical-systems logical-system-name protocols ldp
+          graceful-restart]
+
+
+[edit routing-instances instance-name protocols ldp
+          graceful-restart]
+
+
+
+
+
+Description
+Specify the amount of time the router retains the state of its Label
+        Distribution Protocol (LDP) neighbors while they undergo a Graceful
+        Restart.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time, in seconds, that the router retains the state of its
+              LDP neighbors while they undergo a Graceful Restart. Range:
+              140-1,900. Default: 240.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+no-strict-lsa-checking
+
+
+
+
+no-strict-lsa-checking;
+
+
+
+Hierarchy level
+
+
+[edit protocols (ospf | ospf3) graceful-restart]
+
+
+
+
+
+Description
+Disable strict OSPF link-state advertisement (LSA) checking to prevent
+        the termination of Graceful Restart by a helping router.
+
+
+
+Default
+By default, LSA checking is enabled.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+notify-duration
+
+
+
+
+notify-duration seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols (ospf | ospf3) graceful-restart]
+
+
+[edit logical-systems logical-system-name protocols (ospf |
+          ospf3) graceful-restart]
+
+
+[edit logical-systems logical-system-name routing-instances
+          instance-name protocols (ospf
+          | ospf3) graceful-restart]
+
+
+[edit routing-instances instance-name protocols (ospf |
+          ospf3) graceful-restart]
+
+
+
+
+
+Description
+Specify the length of time the router notifies helper OSPF routers
+        that it has completed Graceful Restart.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Amount of time the router notifies helper OSPF routers
+              that it has completed Graceful Restart. Range: 1-3,600. Default:
+              30.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+reconnect-time
+
+
+
+
+reconnect-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols ldp graceful-restart]
+
+
+[edit logical-systems logical-system-name protocols ldp
+          graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols ldp
+          graceful-restart]
+
+
+
+
+
+Description
+Specify the amount of time required to reestablish an LDP
+        session after Graceful Restart.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time required for reconnection. Range: 30-120.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+recovery-time
+
+
+
+
+recovery-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit logical-systems logical-system-name protocols ldp
+          graceful-restart]
+
+
+[edit logical-systems logical-system-name routing-instances
+          routing-instance-name protocols ldp graceful-restart]
+
+
+[edit protocols ldp graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols ldp
+          graceful-restart]
+
+
+
+
+
+Description
+Specify the amount of time a router waits for LDP neighbors to
+        assist it with a Graceful Restart.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time the router waits for LDP to restart gracefully.
+              Range: 120-1,800. Default: 160.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+restart-duration
+
+
+
+
+restart-duration seconds;
+
+
+
+Hierarchy level
+
+
+[edit logical-systems logical-system-name protocols (isis |
+          ospf | ospf3 | pim) graceful-restart]
+
+
+[edit logical-systems logical-system-name routing-instances
+          routing-instance-name protocols (ospf | ospf3 | pim)
+          graceful-restart]
+
+
+[edit protocols (esis | isis | ospf | ospf3 | pim)
+          graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols
+          (ospf | ospf3 | pim) graceful-restart]
+
+
+[edit routing-Options: graceful-restart]
+
+
+
+
+
+Description
+Configure the duration of the Graceful Restart period globally.
+        Additionally, you can individually configure the duration of the
+        Graceful Restart period for the End System-to-Intermediate System
+        (ES-IS), Intermediate System-to-Intermediate System (IS-IS), Open
+        Shortest Path First (OSPF), and OSPFv3 protocols and for
+        Protocol-Independent Multicast (PIM) sparse mode.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time for the Graceful Restart period.
+
+
+
+
+
+
+Range
+The range of values varies according to whether the Graceful
+        Restart period is being set globally or for a particular
+        protocol:
+
+
+
+[edit routing-options: graceful-restart] (global setting):
+            120-900
+
+
+ES-IS: 30-300
+
+
+IS-IS: 30-300
+
+
+OSPF/OSPFv3: 1-3,600
+
+
+PIM: 30-300
+
+
+
+
+
+
+Default
+The default value varies according to whether the Graceful
+        Restart period is being set globally or for a particular
+        protocol:
+
+
+
+[edit routing-options: graceful-restart] (global setting):
+            300
+
+
+ES-IS: 180
+
+
+IS-IS: 210
+
+
+OSPF/OSPFv3: 180
+
+
+PIM: 60
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+restart-time
+
+
+
+
+restart-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit protocols (bgp | rip | ripng)
+          graceful-restart]
+
+
+[edit logical-systems logical-system-name protocols (bgp |
+          rip | ripng) graceful-restart]
+
+
+[edit logical-systems logical-system-name routing-instances
+          routing-instance-name protocols bgp graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols bgp
+          graceful-restart]
+
+
+
+
+
+Description
+Configure the duration of the Border Gateway Protocol (BGP), Routing
+        Information Protocol (RIP), or next-generation RIP (RIPng) Graceful
+        Restart period.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Amount of time for the Graceful Restart period. Range:
+              1-600.
+
+
+
+
+
+
+Default
+The range of values varies according to the protocol:
+
+
+
+BGP: 120
+
+
+RIP/RIPng: 60
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+stale-routes-time
+
+
+
+
+stale-routes-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit logical-systems logical-routing-name protocols bgp
+          graceful-restart]
+
+
+[edit logical-systems logical-routing-name routing-instances
+          routing-instance-name protocols bgp graceful-restart]
+
+
+[edit protocols bgp graceful-restart]
+
+
+[edit routing-instances routing-instance-name protocols bgp
+          graceful-restart]
+
+
+
+
+
+Description
+Configure the amount of time the router waits to receive restart
+        messages from restarting BGP neighbors before declaring them
+        down.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time the router waits to receive messages from restarting
+              neighbors before declaring them
+              down. Range: 1-600. Default: 300.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+traceoptions
+
+
+
+
+traceOptions {
+file name <size size> <files number> <(world-readable | no-world-
+readable)>;
+  flag flag <flag-modifier> <disable>;
+}
+
+
+
+Hierarchy level
+
+
+[edit protocols isis]
+
+
+[edit protocols (ospf | ospf3)]
+
+
+
+
+
+Description
+Define tracing operations that gracefully restart functionality in the
+        router. To specify more than one tracing operation, include multiple
+        flag statements.
+
+
+
+Default
+If you do not include this statement, no global tracing
+        operations are performed.
+
+
+
+Options
+
+
+
+
+disable
+
+
+
+(Optional) Disable the tracing operation. You can use this
+              option to disable a single operation when you have defined a
+              broad group of tracing operations, such as all.
+
+
+
+file name
+
+
+
+Name of the file to receive the output of the tracing
+              operation. Enclose the name within quotation marks. All files
+              are placed in the directory /var/log. (It's recommended that you
+              place global routing protocol tracing output in the file
+              routing-log.)
+
+
+
+files number
+
+
+
+(Optional) Maximum number of trace files. When a trace
+              file named trace-file
+              reaches its maximum size, it is renamed trace-file.0, then trace-file.1, and so on, until the
+              maximum number of trace files is reached. Then the oldest trace
+              file is overwritten. Range: 2-1,000 files. Default: two
+              files.
+
+Note
+If you specify a maximum number of files, you also must
+                specify a maximum file size with the size option.
+
+
+
+
+flag flag
+
+
+
+Tracing operation to perform. To specify more than one
+              tracing operation, include multiple flag statements. The NSR
+              tracing option is:
+
+
+
+
+graceful-restart
+
+
+
+Tracing operations for NSR.
+
+
+
+
+
+
+size size
+
+
+
+(Optional) Maximum size of each trace file, in KB, MB, or
+              GB. When a trace file named trace-file reaches this size, it is
+              renamed trace-file.0. When
+              the trace-file again
+              reaches its maximum size, trace-file.0 is renamed trace-file.1 and trace-file is renamed trace-file.0. This renaming scheme
+              continues until the maximum number of trace files is reached.
+              Then the oldest trace file is overwritten. Syntax: xk to specify KB, xm to specify MB, or xg to specify GB. Range: 10 KB through
+              the maximum file size supported on your system. Default: 128 KB.
+
+
+
+
+Note
+If you specify a maximum file size, you also must specify a
+          maximum number of trace files with the files option.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VRRP
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+accept-data
+
+
+
+
+(accept-data | no-accept-data);
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family (inet | inet6) address
+          address (vrrp-group | vrrp-inet6-group) group-id]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family (inet | inet6)
+          address address (vrrp-group | vrrp-inet6-group) group-id]
+
+
+
+
+
+Description
+In a Virtual Router Redundancy Protocol (VRRP) configuration,
+        determine whether an interface
+        accepts packets destined for the virtual IP (VIP) address.
+
+
+
+Options
+
+
+
+
+accept-data
+
+
+
+Enable the interface to accept packets destined for the
+              VIP address.
+
+
+
+no-accept-data
+
+
+
+Prevent the interface from accepting packets destined for
+              the VIP address.
+
+
+
+
+
+
+Default
+If the accept-data statement
+        is not configured, the master router responds to ICMP message requests
+        only.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+advertise-interval
+
+
+
+
+advertise-interval seconds;
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet address address
+          vrrp-group group-id]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet address address
+          vrrp-group group-id]
+
+
+
+
+
+Description
+Configure the interval between VRRP IPv4 advertisement packets. All routers in
+        the VRRP group must use the same advertisement interval.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Interval between advertisement packets. Range: 1-255

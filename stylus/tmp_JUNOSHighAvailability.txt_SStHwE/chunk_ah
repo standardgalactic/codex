@@ -1,0 +1,1000 @@
+
+This value signals how long a helper should help the router
+            in question. When this period expires, the helper brings down the
+            adjacency with the restarting router, flushes its LSAs from the
+            database, and floods new LSAs to the rest of the network informing
+            the other routers that it has lost its adjacency to the
+            neighbor.
+
+
+Restart reason
+
+
+This is a required field. Four different values are
+            defined:
+
+
+
+0 (unknown)
+
+
+1 (software restart)
+
+
+2 (software upgrade)
+
+
+3 (control plane switchover)
+
+
+
+
+
+Interface IP address
+
+
+This is the IP address of the interface sending an
+            update.
+
+
+
+RFC 3623 suggests that three modes of operation should be
+      supported, and JUNOS supports all three:
+
+
+
+Possible helper
+
+
+By default, every router running JUNOS is in this mode,
+            without any configuration. If no network activity exists, all
+            routers stay in this mode forever.
+
+
+Helper
+
+
+Upon receiving a Grace-LSA from the neighboring router, a
+            possible helper is promoted to the helper role. It maintains the
+            adjacency, marks all neighbors' routes as stale, and continues to
+            forward traffic toward the restarting router for a limited period
+            of time. Once the neighbor finishes its restart event, or after
+            the restart timer expires, the helper router flushes the old
+            routes from its routing table. If the neighbor does not recover
+            before the restart timer expires, the adjacencies are also brought
+            down.
+
+
+Restart candidate
+
+
+The router that has undergone a restart event, or is about
+            to undergo one, marks all its routes as stale, in a form of kernel
+            route, and sends a Grace-LSA to its neighbors requesting the help
+            until its control plane is fully recovered.
+
+
+
+Let's analyze two different types of failures and the steps OSPF
+      takes to signal the failures. In the case of software restart, OSPF
+      sends a Grace-LSA prior to the restart event. This message ensures that
+      all neighbors keep the adjacency in the "full" state until the router
+      recovers its control plane. In the case of a hardware failure or a GRES
+      event, OSPF sends a Grace-LSA after the control plane has recovered,
+      even before it generated the first Hello message. This order of messages
+      is critical. If the Hello message is received before the Grace-LSA, the
+      original adjacency is destroyed and OSPF attempts to establish a new
+      one.
+In either of these two failure cases, after an OSPF adjacency has
+      been established, the restarting router requests help from its neighbors
+      to rebuild its link-state database. All neighbors flood back the
+      original LSAs advertised by the restarting router. After the restarting
+      router receives all LSAs and has updated its LSA database, the GR event
+      is complete and all kernel routes are removed from the routing and
+      forwarding entries.
+
+
+
+
+Configuration
+
+
+
+Because JUNOS supports GR for all major routing protocols, there is a
+        single configuration statement that enables it for all of the
+        protocols at once. However, in some network topologies, because of the
+        different GR capabilities of particular routers, you might want to
+        enable GR for some protocols and disable it for others. The following
+        set of commands gives us the ability to do just that.
+In the routing-options hierarchy, turning on GR enables it for
+        all running protocols that support it:
+
+[edit]
+lab@r1# set routing-options graceful-restart
+In the protocol hierarchy, you can disable GR specifically for
+        OSPF, and you can modify any of the GR parameters for OSPF:
+
+[edit]
+lab@r1# set protocols ospf graceful-restart ?
+Possible completions:
+disable            Disable OSPF graceful restart capability
+  helper-disable     Disable graceful restart helper capability
+  notify-duration    Time to send all max-aged grace LSAs (1..3600 seconds)
+  restart-duration   Time for all neighbors to become full (1..3600 seconds)
+The disable statement
+        disables GR for OSPF. As mentioned earlier, helper mode is enabled by
+        default; use the helper-disable
+        statement to disable this mode. The remaining two statements, notify-duration and restart-duration, allow you to modify the
+        default values of OSPF GR timers.
+
+
+
+
+
+Immunizing against topology change
+
+
+
+There is one additional requirement for GR protocol extensions.
+        Once all the neighbors enter into GR helper mode, any subsequent
+        topology change forces the neighbor to terminate the helper state and
+        bring down OSPF adjacencies. However, certain network designs can
+        safely ignore the fact that the network topology has changed.
+        Depending on how network traffic flows, flaps on out-of-the-way
+        interfaces do not impact network traffic flowing through the failed
+        router. So, in this scenario, you want to prevent GR from terminating
+        and bring down OSPF adjacencies. To work around unnecessary GR
+        termination, configure OSPF to ignore any topology changes and to
+        ignore new LSA updates by configuring the no-strict-lsa-checking statement:
+
+[edit]
+lab@r1# set protocols ospf graceful restart no-strict-lsa-checking
+All the tools provided in JUNOS allow you to implement a
+        complete model of high availability in OSPF networks by combining a
+        GRES design with GR and BFD in periodic packet management (PPM)
+        mode.
+
+
+
+
+
+
+Graceful Restart in IS-IS
+
+
+
+To understand how GR is implemented in IS-IS, we'll again start by analyzing the
+      basics of IS-IS protocol communications. Neighbor adjacencies between
+      two IS-IS routers are formed through the exchange of IS-IS Hello
+      messages. After this, IS-IS goes through several states and eventually
+      establishes full neighbor adjacencies. IS-IS advertises its routing
+      information using link-state update messages called link-state Protocol
+      Data Units (PDUs), or LSPs. After routers establish adjacency, they send
+      out Complete Sequence Number PDUs (CSNPs) containing a summary of the link-state information
+      available for advertisement. The neighbors receiving the CSNPs check
+      them against their own database; if there is any discrepancy, the
+      neighbors send a Partial Sequence Number PDU (PSNP) requesting a specific subset of the information that is
+      out of sync with its database. The response to the PSNP is an LSA in the form of either a PSNP on P2P links or a CSPN on
+      broadcast links. Eventually, all routers in the same area synchronize
+      their link-state databases.
+IS-IS provides GR support through use of the GR TLV, type code 221, which is carried in the Hello PDU. Two
+      important bits in this message are the request restart (RR) bit and the
+      restart acknowledgment (RA) bit. Under normal conditions, both bits are
+      clear and are set to 0. When a router restarts, it requests support from
+      its neighbors by sending a type 221 TLV with the RR bit "on" (set to 1).
+      Helpers capable of helping acknowledge this PDU with a response that
+      clears the RR bit, setting it back to 0 and setting the RA bit to 1.
+      Additionally, the PDU response also contains the default hold-time value
+      of 90 seconds. This time is how long the neighbor will keep the
+      adjacency up and will keep all entries in the link-state database
+      intact.
+RFC 3847 suggests that three modes of operation be supported, and
+      JUNOS supports all three:
+
+
+
+Possible helper
+
+
+By default, every router running JUNOS is in this mode,
+            without any configuration. If no network activity exists, all
+            routers stay in this mode forever.
+
+
+Helper
+
+
+Upon receiving a Grace-TLV (type 221) from the neighboring
+            router, a possible helper will be promoted into this role. It will
+            maintain the adjacency, mark all neighbors' routes as stale, and
+            continue to forward the traffic toward the restarting router for a
+            limited period of time. Once the neighbor finishes its restart
+            event, or after the restart timer expires, the old routes are
+            flushed from the routing table. If the neighbor does not recover
+            before the restart timer expires, the adjacencies are also brought
+            down.
+
+
+Restart candidate
+
+
+The router that has or is about to undergo the restart event
+            marks all of its routes as stale, in a form of kernel route, and
+            sends the Grace-TLV to its neighbors requesting help until its
+            control plane is fully recovered.
+
+
+
+
+
+
+
+Configuration
+
+
+
+As we mentioned in the section about OSPF and GR, you configure GR globally,
+        for all routing protocols, in the routing-options hierarchy or in the
+        IS-IS configuration hierarchy, you can disable it just for IS-IS, and
+        you can set GR timers specific to IS-IS:
+
+[edit]
+lab@r1# set protocols isis graceful-restart ?
+Possible completions:
+  disable           Disable graceful restart
+  helper-disable    Disable graceful restart helper capability
+  restart-duration  Maximum time for graceful restart to finish (seconds)
+
+Note
+Currently, IS-IS does not support an "ignore topology change"
+          statement similar to that supported by OSPF.
+
+
+
+
+
+
+
+Graceful Restart in BGP
+
+
+
+The Internet is where we can see the real advantage of GR protocol
+      extensions. At the time of this writing, the Internet routing table contains approximately 276,000 BGP routes,
+      as shown in Figure 4-5 (and as graphed at http://bgp.potaroo.net). Consider a peering router at a
+      major ISP peering point with three or four or five copies of this
+      Internet table. Now imagine a control plane going down on this router
+      and then recovering within a matter of one or two minutes. With
+      incremental route update processing, that's at least 550,000 (276,000
+      routes × 2 copies of the table) or more routes that need to be
+      recalculated. Events such as this can have a drastic effect on the
+      stability of the global Internet, but implementing GR in BGP can be a
+      large component in helping to solve the instability problem.
+
+
+
+
+
+
+
+
+
+Figure 4-5. BGP routes
+
+
+As we did with OSPF and IS-IS, let's start by looking at how BGP
+      manages its peering sessions. A BGP neighbor session is established
+      through BGP open messages, and is maintained by BGP keepalive messages.
+      Routing information is advertised with BGP update messages, and a
+      neighbor session is torn down with BGP notification messages. To
+      finalize the routine update process, the peer sends an end-of-RIB marker
+      message (EOR), which is a simple BGP update message with no prefixes.
+      The session itself is maintained through BGP keepalives sent at periodic
+      intervals. Loss of keepalives for the period of the dead interval
+      results in a BGP session being torn down.
+A capability announcement for the BGP GR is signaled using special
+      bits. A restart bit (RS) signals that the router is going through the
+      restart event, while a forwarding bit (FS) signals that the router is
+      capable of retaining the forwarding state during a restart event. During
+      initial GR negotiation, both bits are set to 0. In contrast to the OSPF
+      implementation, the restarting router signals the restart event after
+      the restart procedure has begun.
+Additionally, GR for BGP is negotiated for each BGP family.
+      Different vendors, and even different JUNOS versions, may support a
+      limited set of families. Therefore, the actual negotiation comes in
+      handy. You can check what is being proposed and what is negotiated by
+      displaying information about the BGP neighbor:
+
+lab@r1> show bgp neighbor
+
+Peer: 192.168.36.1+3098 AS 65010 Local: 192.168.24.1+179 AS 65010
+Type: Internal State: Established Flags: <>
+Last State: OpenConfirm Last Event: RecvKeepAlive
+Last Error: None
+Options: <Preference LocalAddress HoldTime GracefulRestart Refresh>
+Local Address: 192.168.24.1 Holdtime: 90 Preference: 170
+Number of flaps: 2
+Error: 'Cease' Sent: 2 Recv: 0
+Peer ID: 192.168.36.1 Local ID: 192.168.24.1 Active Holdtime: 90
+Keepalive Interval: 30
+NLRI for restart configured on peer: inet-unicast
+NLRI advertised by peer: inet-unicast
+NLRI for this session: inet-unicast
+Peer supports Refresh capability (2)
+Restart time configured on the peer: 120
+Stale routes from peer are kept for: 300
+Restart time requested by this peer: 120
+NLRI that peer supports restart for: inet-unicast
+NLRI peer can save forwarding state: inet-unicast
+NLRI that peer saved forwarding for: inet-unicast
+NLRI that restart is negotiated for: inet-unicast
+NLRI of received end-of-rib markers: inet-unicast
+NLRI of all end-of-rib markers sent: inet-unicast
+Table inet.0 Bit: 10000
+To understand the BGP GR process, let's examine the signaling
+      involved in a single restart event.
+
+
+
+
+Restarting the node
+
+
+
+Let's assume that both GR and GRES are enabled on the restarting
+        router. During the GRES event, all existing routing entries are saved
+        in the router's forwarding table. As soon as the RPD on the newly
+        restarted control plane comes up, it sends an open message to all its
+        neighbors with the RS and FS bits set to 1, requesting continuation of
+        forwarding based on existing routing entries and requesting help in
+        building a new routing table. The RPD marks all previous entries as
+        stale routes and continues processing update messages received from
+        its neighbors. After all the neighbors finish sending their routing
+        update messages, they send end-of-RIB markers to actually mark the
+        successful completion of the update process. The restarting router
+        waits until IGP convergence is complete. Only then does it run the BGP
+        route selection algorithm and activate the received routes. The active
+        routes are pushed to the forwarding table on the PFE complex. Stale
+        routes expire in three minutes, after which they are flushed from the
+        forwarding table. The presence of duplicate routes during this time is
+        not an issue because the stale routes are marked with the preference
+        of 255, and BGP routes have a default preference of 170.
+
+
+
+
+
+Peers
+
+
+
+When a peer receives a new BGP open message with the RS and FS
+        bits set to 1, it closes the TCP session belonging to the old BGP
+        peering session. It then marks all the old BGP routes as stale routes
+        and retains them for three minutes while it continues forwarding based
+        on old routes. When the new BGP session is established and the new
+        update message with the end-of-RIB marker is received, the peer uses
+        the new routes and flushes all the stale routes.
+
+
+
+
+
+Configuration
+
+
+
+For BGP, you configure GR globally for all BGP groups and neighbors,
+        or selectively for individual groups or neighbors. The following code
+        snippet highlights the supported features for BGP GR:
+
+[edit]
+lab@r1# set protocols bgp graceful-restart ?
+Possible completions:
+  <[Enter]>            Execute this command
+  disable              Disable graceful restart
+  restart-time         Restart time used when negotiating with a peer (1..600)
+  stale-routes-time    Maximum time for which stale routes are kept (1..600)
+  |                    Pipe through a command
+You verify the configuration with the bgp neighbor command. The truncated output
+        should be similar to the following:
+
+NLRI for restart configured on peer: inet-unicast
+NLRI advertised by peer: inet-unicast
+NLRI for this session: inet-unicast
+Peer supports Refresh capability (2)
+Restart time configured on the peer: 120
+Stale routes from peer are kept for: 300
+Restart time requested by this peer: 120
+NLRI that peer supports restart for: inet-unicast
+NLRI peer can save forwarding state: inet-unicast
+NLRI that peer saved forwarding for: inet-unicast
+NLRI that restart is negotiated for: inet-unicast
+NLRI of received end-of-rib markers: inet-unicast
+NLRI of all end-of-rib markers sent: inet-unicast
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MPLS Support for Graceful Restart
+
+
+
+Many large network deployments use MPLS as an underlying encapsulation
+    technology on top of the Layer 2 frames. While this concept adds some
+    complexity to the design of a GR deployment, it is perfectly doable.
+    Network designers need to look for support for GR protocol extensions
+    among the signaling protocols intended for use with MPLS. For an LDP-based
+    network, support of GR within LDP is necessary. For Resource Reservation
+    Protocol (RSVP)-signaled point to multipoint (P2MP) LSPs, GR must be
+    supported for those LSPs.
+
+
+
+
+Graceful Restart in RSVP
+
+
+
+RSVP advertises its ability to support GR protocol extensions during the
+      initial process of establishing adjacencies. The RSVP Hello message
+      contains an additional object, the Restart Capability Object
+      (ResCapObj), which is used to signal both the capability and the
+      desire for GR support.
+In addition, ResCapObj contains values for two important
+      timers: the restart timer and the
+      recovery timer. The restart timer advertises how
+      long a neighbor should wait to receive a Hello from the restarting
+      router before it declares it dead. The JUNOS default value is 60
+      seconds. The recovery timer defines the maximum time allocated for GR
+      support. During this time, all supporting neighbors (helpers) send Path
+      messages to the failed router containing either the Recover Label Object
+      or the list of labels previously advertised by the restarting
+      router.
+If the node sends the RSVP Hello message with both restart and recovery timers
+      set to 0, it means the node is capable of acting only as a helper and of
+      supporting the failed router with the Recovery Label Object. If the two
+      timers have nonzero values, it means that the router is capable of
+      forwarding while its control plane is down, and is basically a request
+      for help when it is needed.
+
+
+
+
+Configuration
+
+
+
+You configure individual RSVP parameters for GR under the RSVP
+        protocol stanza:
+
+[edit]
+lab@r1# set protocols rsvp graceful-restart ?
+Possible completions:
+disable             Disable RSVP graceful restart capability
+ helper-disable       Disable graceful restart helper capability
+ maximum-helper-recovery-time  Maximum time restarting neighbor states are kept
+ maximum-helper-restart-time  Maximum wait time from down event to neighbor dead
+To verify what capabilities RSVP is advertising or has
+        negotiated, use the following command:
+
+lab@r1> show rsvp version
+Resource ReSerVation Protocol, version 1. rfc2205
+   RSVP protocol       = Enabled
+   R(refresh timer)    = 30 seconds
+   K(keep multiplier)  = 3
+   Preemption          = Normal
+   Graceful restart    = Enabled
+   Restart helper mode = Enabled
+   Restart time        = 60000 msec
+Check on a restarting MPLS-enabled router to see how much
+        recovery time is left:
+
+lab@r1> show rsvp version
+Resource ReSerVation Protocol, version 1. rfc2205
+   RSVP protocol       = Enabled [Restarting]
+   R(refresh timer)    = 30 seconds
+   K(keep multiplier)  = 3
+   Preemption          = Normal
+   Graceful restart    = Enabled
+   Restart helper mode = Enabled
+   Restart time        = 60000 msec
+   Recovery time       = 116000 msec
+Use the show rsvp neighbor
+        detail command to see information about an RSVP neighbor's
+        restart capabilities. If the neighbor is not able to restart, no
+        additional information is displayed; otherwise, the following output
+        shows the restart time and recovery time advertised by a neighbor:
+
+lab@r1> show rsvp neighbor detail
+RSVP neighbor: 2 learned
+Address: 192.168.207.61   via: t3-0/3/3.0    status: Up
+  Last changed time: 2:04, Idle: 5 sec, Up cnt: 2, Down cnt: 1
+  Message received: 0
+  Hello: sent 294, received: 294, interval: 9 sec
+  Remote instance: 0x6432682e, Local instance: 0x643ee9dc
+  Refresh reduction:  not operational
+  Link protection:  disabled
+    Bypass LSP: does not exist,  Backup routes: 0,  Backup LSPs: 0
+  Restart time: 60000 msec, Recovery time: 0 msec
+
+Address: 192.168.207.65   via: t3-0/3/2.0    status: Up
+  Last changed time: 2:05, Idle: 10 sec, Up cnt: 2, Down cnt: 1
+  Message received: 139
+  Hello: sent 299, received: 299, interval: 9 sec
+  Remote instance: 0x3271a074, Local instance: 0x3275e3d8
+  Refresh reduction:  not operational
+  Link protection:  disabled
+    Bypass LSP: does not exist,  Backup routes: 0,  Backup LSPs: 0
+  Restart time: 60000 msec, Recovery time: 0 msec
+
+Note
+Note that the recovery time may be nonzero if the neighbor is
+          in the process of a GR.
+
+
+
+
+
+
+
+Graceful Restart in LDP
+
+
+
+The implementation of GR in LDP is very similar to the OSPF implementation, explained
+      earlier in this chapter. GR capabilities are advertised when the LDP
+      session is established, and three different protocol timers directly
+      reflect the GR behavior of LDP:
+
+
+
+Reconnect time
+
+
+This is how long the restarting router wants its peers to
+            wait for the session to be reestablished, from the time the
+            neighbors realized the session had failed. The reconnect time is
+            60 seconds, and it cannot be changed.
+
+
+Recovery time
+
+
+This is the time during which both restarting and helper routers
+            should preserve their MPLS LDP-based forwarding entries with old
+            label values.
+
+
+Maximum recovery time
+
+
+A router can send an update with the recovery time set to
+            infinity and force the restarting router to keep its old database
+            forever. This could be a security threat in a form of denial-of-service (DoS) attack on router resources,
+            because the number of label mapping entries is a finite number.
+            Therefore, the restarting router keeps the state intact for the
+            lesser of the two time values—the recovery time sent by its
+            neighbor or the maximum recovery time configured on the router
+            itself.
+
+
+
+During the restart, all involved routers—the restarting router and
+      its neighbors—keep the stale routes intact. Once the session is
+      reestablished, new entries are created based on new labels. JUNOS
+      software keeps forwarding entries for both old and new labels. As
+      specified earlier, old labels are removed based on the values of the
+      restart and recovery timers. To keep the forwarding state intact, a
+      helper must receive a nonzero recovery time value in the Hello message.
+      When the router receives the message with a value of 0 in the recovery
+      time field, it means the router was not able to preserve its forwarding
+      state. The result is that the router signals its neighbors to delete
+      their forwarding states for the failed router.
+
+
+
+
+Configuration
+
+
+
+As with the other protocols, if you enable the GR under the
+        routing options configuration, you enable it for all supporting
+        protocols, including LDP. The router helper role is enabled by default. You
+        configure LDP-specific parameters for GR in the LDP protocol
+        stanza:
+
+[edit]
+lab@r1# set protocols ldp graceful-restart ?
+Possible completions:
+disable              Disable RSVP graceful restart capability
+helper-disable       Disable graceful restart helper capability
+maximum-helper-recovery-time  Maximum time restarting neighbor states are kept
+maximum-helper-restart-time  Maximum wait time from down event to neighbor dead
+recovery-time         Time required for recovery (120..1800 seconds)
+
+Look at the output of the show ldp session
+        detail command to verify the GR values that LDP has
+        negotiated:
+
+lab@r1> show ldp session detail 
+Address: 10.168.66.2, State: Operational, Connection: Open, Hold time: 20
+  Session ID: 10.168.66.1:0--10.168.66.2:0
+  Next keepalive in 0 seconds
+  Passive, Maximum PDU: 4096, Hold time: 30, Neighbor count: 1
+  Keepalive interval: 10, Connect retry interval: 5
+  Local address: 10.168.66.1, Remote address: 10.168.66.2
+  Up for 00:00:49
+  Local - Restart: enabled, Helper mode: enabled, Reconnect time: 60000
+  Remote - Restart: enabled, Helper mode: enabled, Reconnect time: 60000
+  Local maximum recovery time: 140000 msec
+  Next-hop addresses received:
+    10.0.1.2
+    10.0.2.2
+
+Here is sample output showing a neighbor that does not support
+        GR:
+
+lab@r1> show ldp session detail    
+Address: 10.168.66.2, State: Operational, Connection: Open, Hold time: 28
+  Session ID: 10.168.66.1:0--10.168.66.2:0
+  Next keepalive in 8 seconds
+  Passive, Maximum PDU: 4096, Hold time: 30, Neighbor count: 1
+  Keepalive interval: 10, Connect retry interval: 5
+  Local address: 10.168.66.1, Remote address: 10.168.66.2
+  Up for 00:00:11
+  Local - Restart: enabled, Helper mode: enabled, Reconnect time: 60000
+  Remote - Restart: disabled, Helper mode: disabled
+  Local maximum recovery time: 140000 msec
+  Next-hop addresses received:
+    10.0.1.2
+    10.0.2.2
+
+If the restart is in process, this command displays no
+        information:
+
+lab@r1> show ldp session detail    
+Address: 10.168.66.3, State: Operational, Connection: Open, Hold time: 29
+  Session ID: 10.168.66.2:0--10.168.66.3:0
+  Next keepalive in 9 seconds
+  Passive, Maximum PDU: 4096, Hold time: 30, Neighbor count: 1
+  Keepalive interval: 10, Connect retry interval: 5
+  Local address: 10.168.66.2, Remote address: 10.168.66.3
+  Up for 00:00:01
+  Restarting, recovery time: 174000 msec
+  Local - Restart: enabled, Helper mode: enabled, Reconnect time: 60000
+  Remote - Restart: enabled, Helper mode: enabled, Reconnect time: 60000
+  Local maximum recovery time: 140000 msec
+  Next-hop addresses received:
+    10.0.2.3
+    10.0.3.3
+
+When displaying the LDP database for the neighbor of a
+        restarting MPLS-enabled router, the bindings learned from the
+        restarting neighbor are displayed as (Stale). If they are not refreshed within
+        the recovery time, these bindings are deleted (as specified in the
+        draft):
+
+lab@r1# run show ldp database    
+Input label database, 10.168.66.1:0--10.168.66.2:0
+  Label     Prefix
+ 100000     10.168.66.3/32 (Stale)
+      3     10.168.66.2/32 (Stale)
+ 100001     10.168.66.4/32 (Stale)
+ 100002     10.168.66.1/32 (Stale)
+
+Output label database, 10.168.66.1:0--10.168.66.2:0
+  Label     Prefix
+ 100008     10.168.66.4/32
+ 100006     10.168.66.2/32
+ 100007     10.168.66.3/32
+      3     10.168.66.1/32
+
+
+
+
+
+
+
+Graceful Restart in MPLS-Based VPNs
+
+
+
+The most frequently used MPLS application is a Layer 3 VPN service provided by
+      the carriers, usually referred to as 2547bis or L3VPNs. While the
+      customer sees only a basic routing update at its customer premises
+      equipment, the actual routing of information through the provider
+      network is quite complex. It not only involves IGP routing to support
+      BGP routes, but also integrates MPLS-based signaling using RSVP, LDP, or
+      both. Every single route sent to the customer depends on correct routing
+      information and stable routing adjacencies for all of the protocols.
+      Therefore, the GR support for a Layer 3 VPN environment is built on many
+      contingencies, and is naturally a little more complex than what we've
+      discussed so far.
+The goal is to preserve all uninterrupted services for all sides
+      benefiting from the VPN environment. This means that all involved
+      parties and protocols must support GR protocol extensions, as must all
+      provider BGP sessions. Moreover, the BGP families involved in the VPN
+      services must be configured and supported, such as family L3VPN, family
+      L2VPN/VPLS, and family MVPN. Additionally, all IGPs and the respective
+      MPLS signaling protocols have to be configured and supported. This holds
+      true for both sides—the provider's
+      core network, commonly referred to as the P network, as well as the
+      customer-facing side, or the C network.
+When all protocols are supported and GR is configured
+      appropriately, the keys to providing uninterrupted services are the
+      actual dependencies and the order of operations. The PE router first
+      waits until all P-based BGP and IGP states have been stabilized and
+      reconverged, and until all forwarding states related to MPLS tunnels are
+      reconverged and stabilized. This means that all previously advertised
+      labels and label mappings are still found in the forwarding tables, as
+      are the new label values and mappings. Additionally, all BGP and IGP
+      neighbors and the adjacencies in all Virtual Routing and Forwarding
+      (VRF) tables to the C side of the network must be stabilized.
+      Only then can the GR process be marked as completed and the old routing
+      and forwarding entries be flushed.
+
+
+
+
+Configuration
+
+
+
+In addition to the configuration requirements on the P side of the network,
+        you must also configure GR support within all routing instances. For
+        Layer 3 VPNs, use the following syntax and help file:
+
+[edit]
+lab@r1# set routing-instances vpn-junos-ha routing-options 
+graceful-restart
+[edit routing-instance vpn-green routing-options]
+        graceful restart {
+            ...
+        }
+
+
+Note
+In each GR section in the preceding code, you can configure
+          instance-specific GR parameters. You can also move
+          configuration-specific or protocol-specific parameters in the
+          respective protocol hierarchy in that instance.
+
+To verify the GR state on either the provider or the customer
+        side, use the following set of commands. Check the restart completion
+        status for all protocols in each instance; you can see in the
+        following code that some protocols have not completed their restart:
+
+lab@r1> show route instance detail         
+master:
+  Router ID: 192.168.1.111
+  Type: forwarding        State: Active        
+  Restart State: Pending  Path selection timeout: 300           
+  Tables:
+    inet.0                 : 11 routes (10 active, 0 holddown, 1 hidden)
+    Restart Pending: LDP
+    inet.3                 : 2 routes (2 active, 0 holddown, 0 hidden)
+    Restart Pending: LDP
+    mpls.0                 : 8 routes (8 active, 0 holddown, 0 hidden)
+    Restart Pending: LDP VPN
+    bgp.l3vpn.0            : 2 routes (2 active, 0 holddown, 0 hidden)
+    Restart Pending: BGP VPN
+__juniper_private1__:
+  Router ID: 0.0.0.0
+  Type: forwarding        State: Active        
+vpn-green:
+  Router ID: 11.156.0.5
+  Type: vrf               State: Active        
+  Restart State: Pending  Path selection timeout: 300           
+  Interfaces:
+    fxp2.0
+  Route-distinguisher: 11.156.0.5:506
+  Vrf-import: [ vpn-green-import ]
+  Vrf-export: [ vpn-green-export ]
+  Tables:
+    vpn-green.inet.0       : 8 routes (7 active, 0 holddown, 0 hidden)
+    Restart Pending: VPN
+
+To check BGP restart status in the master instance (for
+        inetvpn/L2VPN peers), use the following command:
+
+lab@r1> show bgp summary 
+Groups: 2 Peers: 2 Down peers: 0
+Table          Tot Paths  Act Paths Suppressed    History Damp State    Pending
+bgp.l3vpn.0            2          2          0          0          0          0
+Peer               AS      InPkt     OutPkt    OutQ   Flaps Last Up/Dwn State|
+#Active/Received/Damped...
+4.4.4.4         10045         39         43       0       0       18:02 Establ
+  bgp.l3vpn.0: 2/2/0
+  vpn-green.inet.0: 2/2/0
+11.156.0.6         26         42         43       0       0       19:12 Establ
+  vpn-green.inet.0: 3/4/0
+
+lab@r1> show bgp neighbor
+Peer: 4.4.4.4+179     AS 10045 Local: 5.5.5.5+1214    AS 10045
+  
+... output suppressed...
+
+  NLRI for restart configured on peer: inet-vpn-unicast
+  NLRI advertised by peer: inet-vpn-unicast
+  NLRI for this session: inet-vpn-unicast
+  Peer supports Refresh capability (2)
+  Restart time configured on the peer: 120
+  Stale routes from peer are kept for: 300
+  Restart time requested by this peer: 120
+
+  NLRI that peer supports restart for: inet-vpn-unicast
+  NLRI peer can save forwarding state: inet-vpn-unicast
+  NLRI that peer saved forwarding for: inet-vpn-unicast
+  NLRI that restart is negotiated for: inet-vpn-unicast
+  NLRI of received end-of-rib markers: inet-vpn-unicast
+  NLRI of all end-of-rib markers sent: inet-vpn-unicast
+  Table bgp.l3vpn.0 Bit: 10000
+    RIB State: BGP restart is complete
+    RIB State: VPN restart is complete
+    Send state: in sync
+    Active prefixes:            2
+    Received prefixes:          2
+    Suppressed due to damping:  0
+  Table vpn-green.inet.0 Bit: 20001
+    RIB State: BGP restart is complete
+    RIB State: VPN restart is complete
+    
+
+Peer: 11.156.0.6+179  AS 26    Local: 11.156.0.5+1210 AS 10045
+  NLRI for restart configured on peer: inet-unicast
+  NLRI advertised by peer: inet-unicast
+  NLRI for this session: inet-unicast
+  Peer supports Refresh capability (2)
+  Restart time configured on the peer: 120
+  Stale routes from peer are kept for: 300
+  Restart time requested by this peer: 120
+
+  NLRI that peer supports restart for: inet-unicast
+  NLRI peer can save forwarding state: inet-unicast
+  NLRI that peer saved forwarding for: inet-unicast
+  NLRI that restart is negotiated for: inet-unicast
+  NLRI of received end-of-rib markers: inet-unicast
+  NLRI of all end-of-rib markers sent: inet-unicast
+  Table vpn-green.inet.0 Bit: 20000
+
+    RIB State: BGP restart is complete
+    RIB State: VPN restart is complete
+    Send state: in sync
+    Active prefixes:            3
+    Received prefixes:          4
+    Suppressed due to damping:  0
+
+
+
+
+
+
+
+Graceful Restart in Multicast Protocols, PIM, and MSDP
+
+
+
+As multicast technology has evolved, the protocols supporting it have
+      evolved as well. From many original multicast protocols, industry has
+      settled to build multicast technology based on Protocol-Independent
+      Multicast (PIM) for single-domain communication and MSDP for any
+      large-scale inter-Autonomous System (AS) multicast delivery. Therefore, we
+      focus on the GR support of these two multicast protocols.
+GR in the JUNOS PIM implementation is a proprietary solution that
+      has not yet become a standard. However, the fact that the solution is
+      still not an RFC but a retired draft means only that not all parties in
+      the Internet Engineering Task Force (IETF) can agree that it
+      is the best solution. Of course, not having an alternative means it
+      consequently becomes the de facto solution.
+To understand the GR implementation, let's analyze the process of
+      establishing and maintaining the neighbor relationship in PIM. PIM sends
+      Hello messages to all PIM speakers every so often. As long as a message
+      is received before the dead timer expires, the PIM neighbor state is
+      maintained. Only after the neighbor state is established can PIM join
+      and prune messages be received and processed. The value that allows GR
+      implementation in PIM is the 32-bit number called the Generation_ID
+      (GEN_ID). It is a number that stays the same in all PIM messages
+      throughout the neighbor session. It is reset only when either the
+      routing process or the entire router has been restarted.
+The receipt of a new Gen_ID value in a PIM Hello message signals
+      to the recipient that the neighbor has restarted. This new Gen_ID value
+      is the signal to all helpers to help rebuild previously known PIM states
+      in the form of PIM join messages. All original entries in multicast
+      cache are marked as stale and are maintained in the forwarding table for
+      three minutes as kernel routes. If the new PIM join messages signal the
+      same (S,G) or (*,G) entries, the forwarding state stays unchanged even
+      after three minutes. However, if there is any discrepancy, all old
+      entries are deleted afterward.
+As long as a new Hello message is received before the dead
+      interval, GR saves the multicast forwarding cache, resulting in zero
+      traffic loss.
+One fact that guarantees the stability of the forwarding cache is
+      that neither new groups nor sources are supported during a GR
+      event.
+To modify any of the GR parameters within PIM, use any of the
+      following statements:
+
+[edit]
+lab@r1# set protocols pim graceful-restart ?
+Possible completions:
+disable              Disable PIM graceful restart capability
+  restart-duration     Maximum time for graceful restart to finish (seconds)
+
+
+Note
+As with most of the link-state protocols, topology changes
+        negatively affect the GR process and the outcome within the PIM
+        environment. Specifically, unicast routing instability and topology
+        changes will most likely result in failure of RPF checks. While the GR
+        process is not affected, the actual multicast routing will be.
+
+Table 4-2 describes the JUNOS software
+      support for GR in other PIM mechanisms.
+
+
+Table 4-2. GR support in PIM
+
+
+
+
+
+
+
+
+
+Supported
+
+
+Not
+              supported
+
+
+
+
+
+
+RP functionality (PIM
+              Registers, *,G, pd)
+
+
+RP
+              advertisements
+
+
+
+
+Source DR functionality
+              (pe)
+
+
+IGMP (relearned during
+              restart)
+
+
+
+
+RPF based on inet.2
+
+
+MSDP (relearned during
+              restart)
+
+
+
+
+PIM Hello
+
+

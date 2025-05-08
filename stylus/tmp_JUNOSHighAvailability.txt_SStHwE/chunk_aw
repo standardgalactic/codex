@@ -1,0 +1,1000 @@
+        configuration samples, not only did the authors change the TTL, but we
+        also changed the peering points for the confederated BGP relationship
+        from interface addresses to loopback addresses. Changing to loopback-based peering
+        strengthens the availability scheme by allowing the routers to
+        forward/direct traffic around interface failures toward the peer. For
+        example, if the direct link between r3 and r5
+        were to fail, r3 would maintain its
+        peering relationship to r5 because
+        the relationship would be able to transit r4.
+
+
+
+
+
+How does multihop affect my routing table?
+
+
+
+The stated purpose of the TTL change is redundancy. However, during times
+        of link, interface, or node failure, this configuration tweak often
+        results in routing table content that does not accurately reflect the
+        network's physical topology, which can prolong troubleshooting, delay
+        problem resolution, and, in short, be extremely detrimental to high
+        availability.
+
+
+
+
+
+
+Common High Availability Routing Policies
+
+
+
+Routing policies are the primary mechanisms available in JUNOS for
+      blocking, modifying, or marking the routes that are advertised into and
+      out of the local AS. Earlier in this chapter, we showed how to configure
+      a next hop self policy, NHS, to
+      overcome the BGP next hop reachability issue. The NHS policy modified routes as they were coming
+      into the local routing table.
+NHS is one example of how you
+      can define policies to provide routing table content and stability
+      control to support network high availability. We now look at several
+      other common high availability-focused policies, including local address
+      filtering, prefix length enforcement, default route blocking, and route
+      flap damping.
+
+
+
+
+Local address filters
+
+
+
+Every administrator, particularly those interested in
+        supporting high availability of the local network, should implement
+        routing policies that prevent locally used prefixes from being
+        advertised by external peers. While this "spoofing" is typically
+        described as an attack, it is more often the result of a faulty
+        configuration in a neighboring network. Figure 13-8 shows the IP
+        addressing scheme of AS 22.
+To protect the integrity of the local network, you can block the
+        prefixes used in the network from being advertised by external sources
+        into the network, as shown in this configuration sample from router
+        r2. The policy is defined under the
+        policy-options level of hierarchy:
+
+[edit policy-options]
+lab@r2# show
+policy-statement LOCAL-ADDRESS {
+    term 1 {
+        from {
+            protocol bgp;
+            neighbor 7.6.5.3;
+            route-filter 10.0.0.0/23 orlonger;
+            route-filter 172.16.0.0/12 orlonger;
+            route-filter 8.7.6.0/24 orlonger;
+        }
+        then reject;
+    }
+}
+
+
+
+
+
+
+
+
+
+Figure 13-8. AS 22, a small enterprise network
+
+
+After the policy is configured, apply it on the import direction
+        of the EBGP relationship between r2 and r7:
+
+[edit protocols bgp group EBGP]
+lab@r2# show
+type external;
+import LOCAL-ADDRESS;
+peer-as 1;
+neighbor 7.6.5.3;
+
+
+
+
+
+Prefix-length enforcement
+
+
+
+Controlling the prefix length of routes advertised into the local
+        AS allows you to effectively control the size of the
+        local routing table by forcing external routes to be summarized before
+        the routes are advertised to the local router. This not only supports
+        high availability by keeping the local table as small as possible, but
+        it also has an added benefit of displaying "good netizen" behavior,
+        because of the reduction of the overall number of routes propagated by
+        the local AS.
+You enforce prefix-length restrictions on inbound advertisements
+        with an import policy on EBGP groups that permits prefixes up to a set size and
+        rejects anything longer. The policy is configured under the
+        policy-options level of hierarchy. In this example, term 1 defines the source protocol bgp and the source neighbor 7.6.5.3 of the route. The route-filter statement in term 1 allows any route with a subnet mask
+        up to 24 bits long to continue to be processed by the policy chain.
+        Any route with a subnet mask longer than 24 bits is explicitly
+        rejected by the reject term in this
+        policy:
+
+[edit policy-options policy-statement PREFIX-LENGTH-LIMIT]
+lab@r2# show
+term 1 {
+    from {
+        protocol bgp;
+        neighbor 7.6.5.3;
+        route-filter 0.0.0.0/0 upto /24;
+    }
+    then next policy;
+}
+term reject {
+    then reject;
+}
+After configuring the policy, you must apply it to have it take
+        effect:
+
+[edit protocols bgp group EBGP]
+lab@r2# show
+type external;
+import [ LOCAL-ADDRESS PREFIX-LENGTH-LIMIT ];
+peer-as 1;
+neighbor 7.6.5.3;
+
+
+
+
+
+Default routes: To block or not to block?
+
+
+
+Depending on circumstances, the inbound advertisement of a
+        default route may be desirable. For example, a small enterprise may
+        depend on receipt of a default route from a service provider to reach
+        external destinations. The beauty of this scheme is that when
+        connectivity to the service provider is lost, the default route is automatically removed from
+        the local routing table.
+
+Note
+Referring back to Figure 13-1, a default
+          route could have been configured on r4 and advertised by OSPF to r3 to provide reachability to AS external
+          destinations. While this scheme does provide the benefit noted,
+          there is a serious implication. Router r3 must form an OSPF neighbor relationship
+          with r4. Typically, an IGP,
+          particularly one as promiscuous as OSPF, is confined within an AS
+          for security reasons.
+
+However, in some situations when a default route is required,
+        you configure it locally. This method is common in small networks and
+        also in some medium-size enterprise networks that, for redundancy
+        reasons, have EBGP connectivity to multiple providers. In this
+        situation, you may choose to block or at least modify the metrics of a
+        default route received from one of your providers.
+Because of the need to maintain full and accurate Internet
+        routing table content and to protect customers, service providers also
+        have a need to prevent default routes from being advertised into the
+        local network.
+JUNOS policy options can permit the blocking of inbound
+        advertisement of default routes regardless of prefix length. This
+        blocking is useful because, whether through malice or accidental
+        misconfiguration, default routes often arrive with a subnet mask
+        longer than the zero-length subnet mask commonly associated with
+        default routing.
+To block inbound advertisement of default routes regardless of
+        subnet mask length, use the through
+        option in conjunction with a route-filter statement. In this
+        configuration example, all default routes are rejected by the filter
+        in term 1:
+
+[edit policy-options policy-statement DEFAULTS]
+lab@r2# show
+term 1 {
+    from {
+        protocol bgp;
+        neighbor 7.6.5.3;
+        route-filter 0.0.0.0/0 through 0.0.0.0/32;
+    }
+    then reject;
+}
+Then apply the filter as an import policy on the EBGP peering
+        point to block the defaults as they are received,
+        before they are added to the local routing
+        table:
+
+[edit protocols bgp group EBGP]
+lab@r2# show
+type external;
+import [ LOCAL-ADDRESS PREFIX-LENGTH-LIMIT DEFAULTS ];
+peer-as 1;
+neighbor 7.6.5.3 {
+    family inet {
+        unicast {
+            prefix-limit {
+                maximum 2000;
+                teardown 80 idle-timeout forever;
+            }
+        }
+    }
+}
+
+Note
+Notice that in the previous series of configuration samples,
+          we tacked on additional policies rather than replace the previous
+          policy. The last sample includes three
+          policies—LOCAL-ADDRESS,
+          PREFIX-LENGTH-LIMIT, and DEFAULTS—in the processing chain that are
+          evaluated in sequence.
+
+
+
+
+
+
+Route damping
+
+
+
+Route damping is a way to reward stable EBGP neighbors while penalizing unstable ones. Route
+        damping significantly helps stability in the network, but may have
+        negative implications for high availability, depending on one's
+        perspective.
+In Figure 13-9, r3 maintains an EBGP relationship with
+        r5 and is responsible for sharing
+        routes learned from r5 with all
+        other routers in AS 22. The other routers in AS 22 are themselves responsible for sharing the routes
+        learned from r5 with their EBGP
+        peers. Considering that BGP is an event-driven protocol, repeated
+        advertisements and withdrawals of routing information
+        (flapping) would result in a flood of
+        advertisements both within AS 22 and to all EBGP neighbors of AS
+        22.
+Fortunately, BGP supports damping, a method of preventing flapping
+        routes from being repeatedly propagated to EBGP peers. BGP assigns
+        a figure of merit (FoM) to all
+        received routes, and increments the FoM based on withdrawals,
+        readvertisements, and changes in attributes of the BGP route. The FoM
+        is tracked for each route, and if the FoM exceeds a predefined
+        threshold, the route is no longer advertised to peers. If the route
+        stabilizes, the FoM decays (is reduced over time)
+        and the route is eventually readvertised.
+All vendor implementations of damping permit modification to the
+        settings that control penalization, FoM at which a route is withdrawn,
+        rate of decay, and FoM at which a route is readvertised. What is
+        important to remember is that in both JUNOS and Cisco IOS, damping is
+        disabled by default and must be explicitly enabled. In JUNOS, you
+        enable it with policy.
+
+
+
+
+
+
+
+
+
+Figure 13-9. Route flap damping
+
+
+
+
+
+
+
+A "damp" policy
+
+
+
+This policy effectively implements stability requirements on routes
+        advertised from AS 302 and harshly penalizes any instability. This
+        example configures a route filter that specifies both the protocol and
+        the neighbor and applies damping parameters defined in D1 to all routes received from the
+        neighbor:
+
+[edit policy-options]
+lab@r3# show
+policy-statement DAMP-302 {
+    term 1 {
+        from {
+            protocol bgp;
+            neighbor 172.16.5.2;
+            route-filter 0.0.0.0/0 upto /32 damping D1;
+        }
+    }
+}
+The damping parameters associated with D1 suppress the route from advertisement
+        when the FoM for the route exceeds 3,000. D1 readvertises the route when the FoM falls
+        below 1,000. D1 reduces the FoM for
+        the route by 50% every five minutes, but readvertises a route
+        regardless of FoM after 20 minutes of suppression.
+
+[edit policy-options]
+lab@r3# show damping D1
+half-life 5;
+reuse 1000;
+suppress 3000;
+max-suppress 20;
+To have the desired effect, you apply this policy in the import
+        direction on the EBGP peering relationship to AS 302:
+
+[edit protocols bgp]
+lab@r3# show group AS302
+type external;
+import DAMP-302;
+peer-as 302;
+neighbor 172.16.5.2;
+
+
+
+
+
+Implications of damping
+
+
+
+Administrators responsible for high availability on a production
+        network should pay careful attention to route damping implications.
+        When damping is enabled, the local routing table and peer networks are
+        protected from flapping updates, but any route that gets damped
+        becomes unreachable until the FoM drops below the reuse threshold or
+        the maximum suppression timer expires. For commercial routes, this
+        behavior may be desirable, but for critical routes, as defined by
+        purpose or volume of traffic, it may be completely unacceptable.
+
+Note
+Because service providers commonly apply damping to customer
+          peering points, administrators responsible for high availability on
+          networks peering to service providers have a powerful incentive to
+          keep their local routing tables stable. Be stable or be
+          damped!
+
+
+
+
+
+
+
+BGP Tweak: Prefix Limit
+
+
+
+BGP itself provides optional features that, when used correctly, can increase
+      network availability. BGP supports the prefix limit option, which offers
+      the ability to restrict the total number of routes being advertised into
+      the local AS. This option supports high availability by preventing an
+      EBGP neighbor from advertising an undesirably large number
+      of routes into the local AS. You configure a prefix limit for each EBGP
+      neighbor, under the protocols BGP level of hierarchy. In this
+      configuration sample, r2 allows no
+      more than 2,000 prefixes to be advertised by neighbor 7.6.5.3. When the
+      inbound advertisements reach 80% of this threshold, warning messages are
+      logged. When the maximum is reached, the EBGP relationship is torn down
+      for one hour (60 minutes):
+
+[edit protocols bgp group EBGP]
+lab@r2# show
+type external;
+import [ LOCAL-ADDRESS PREFIX-LENGTH-LIMIT ];
+peer-as 1;
+neighbor 7.6.5.3 {
+    family inet {
+        unicast {
+            prefix-limit {
+                maximum 2000;
+                teardown 80 idle-timeout 60;
+            }
+        }
+    }
+}
+
+
+
+
+Implications of route and prefix limits
+
+
+
+Administrators concerned with SLA requirements should pay special attention to
+        optional elements of the prefix limit configuration. Once the limit is reached,
+        the BGP relationship is torn down for a configurable duration, which
+        stops routing across the domain boundary. This is "downtime," as
+        defined in any SLA.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Part III. Network Availability
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 14. Fast High Availability Protocols
+
+
+
+Quick failure recovery within a device is critical to maintaining high
+  availability. In a network, it is equally important for the device to be
+  able to determine what is going on around it. Protocols play a very
+  important role in detecting and recovering from link and neighboring node
+  failures. This chapter discusses several protocols that can help minimize
+  downtime and keep the network running smoothly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Protocols for Optical Networks
+
+
+
+Optical networks provide the highest-speed links in existence today.
+    With that speed comes a requirement for extremely fast failover
+    mechanisms, to ensure that the massive amounts of traffic flowing through
+    these pipes are disrupted for only a minimal amount of time.
+
+
+
+
+Ethernet Operations, Administration, and Maintenance
+      (OAM)
+
+
+
+Despite the massive popularity of Ethernet networks, one of
+      Ethernet's greatest shortcomings has been its lack of network management
+      tools. For years, network administrators have wished for a way to
+      monitor and manage Ethernet networks in the same way they can monitor
+      SONET/SDH, ATM, and Multiprotocol Label Switching (MPLS) networks. This
+      need has become more urgent as Ethernet continues to move beyond the
+      local area network (LAN) and into metro area networks.
+
+
+
+
+IEEE 802.1ah and 802.1ag
+
+
+
+After years of waiting, a solution is now available to properly monitor
+        Ethernet networks. Ethernet Operation, Administration, and Maintenance
+        (OAM) provides a set of tools that you can use to monitor and manage
+        the state of Ethernet links. The IEEE has defined two standards for
+        Ethernet OAM: 802.1ah and 802.1ag. The 802.1ah standard, also known as
+        link fault management (LFM), provides fault management for a single directly
+        connected link. The 802.1ag standard, also known as connectivity fault
+        management (CFM), provides OAM across multiple nodes.
+Ethernet OAM provides three general features: fault monitoring, path discovery, and fault isolation.
+        High availability is provided by the fault monitoring feature. An
+        OAM-enabled node sends periodic OAM Protocol Data Units
+        (PDUs) to the neighboring device to monitor the link. If the
+        receiving device stops receiving PDUs, it declares the link down,
+        which alerts upper-layer protocols that a failure has occurred.
+
+Note
+The high availability component of Ethernet OAM is similar in
+          functionality to Bidirectional Forwarding Detection (BFD), covered
+          later in this chapter.
+
+You configure Ethernet OAM as a protocol:
+
+[edit]
+lab@r1# set protocols oam ethernet ?
+Possible completions:
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> connectivity-fault-management  Configurations related to 802.1ag ethernet oam
+> link-fault-management  802.3ah Ethernet OAM configuration
+
+Note
+At the time of this writing, CFM is supported on MX Series, T
+          Series, and M120 and M320 devices. LFM is supported on 100 Mbps or
+          faster Ethernet interfaces on MX Series, T Series, M Series (except
+          M10 and M7 routers), and EX Series devices.
+
+Configuring link fault management to perform basic link-level fault
+        detection and management requires a simple one-line command on each
+        neighboring device:
+
+[edit]
+lab@r1# set protocols oam ethernet link-fault-management interface ge-0/0/1
+As shown in the preceding code, you simply specify link-fault-management as the desired OAM
+        method, and then add each interface you wish to monitor and manage.
+        You can optionally modify the default settings used to send PDUs and
+        determine when a neighbor is considered lost:
+
+[edit protocols oam ethernet link-fault-management]
+lab@r1# set interface ge-0/0/1 pdu-?
+Possible completions:
+  pdu-interval    Periodic OAM protocol data unit interval (milliseconds)
+  pdu-threshold   Number of PDUs missed before declaring peer lost (3..10)
+The default PDU interval is 1,000 ms, while the default PDU
+        threshold is 3.
+Once committed, you can confirm that LFM is working properly by entering the
+        following command:
+
+lab@r1> show oam ethernet link-fault-management
+Interface: ge-0/0/1.0
+Status: Running, Discovery state: Send Any
+Peer address: 00:19:e2:50:3b:e1
+Flags:Remote-Stable Remote-State-Valid Local-Stable 0x50
+Remote entity information:
+Remote MUX action: forwarding, Remote parser action: forwarding
+Discovery mode: active, Unidirectional mode: unsupported
+Remote loopback mode: supported, Link events: supported
+Variable requests: unsupported
+OAM LFM is configured properly if the output displays the peer
+        Media Access Control (MAC) address and the discover
+        state is Send Any.
+CFM provides many of the same general capabilities as LFM, but
+        on a broader level. Because of CFM's end-to-end nature, it is ideal
+        for service providers who need to manage Ethernet wide area network
+        (WAN) and access service offerings, as well as monitor service-level
+        agreements (SLAs). Because the scope of monitoring and management is
+        greater with CFM, so is the configuration:
+
+[edit protocols oam ethernet]
+lab@r1# show
+connectivity-fault-management {
+    maintenance-domain Provider {
+        level 0;
+        maintenance-association Provider-ma {
+            continuity-check {
+                interval 1s;
+                loss-threshold 4;
+            }
+            mep 100 {
+                interface ge-0/0/1;
+                direction down;
+                auto-discovery;
+            }
+        }
+    }
+}
+As you can see, CFM is not a one-command configuration. Detailed
+        discussion of CFM configuration is beyond the scope of this book. But
+        in short, you can configure administrative and maintenance domains to
+        allow various parties, such as providers, partners, and customers, to
+        perform their own monitoring and management while keeping everyone
+        segregated. Within each maintenance domain, you include the desired
+        interfaces and define timer and threshold values.
+
+Note
+Ethernet OAM concepts and configuration are large and detailed
+          topics that could easily take up an entire chapter on their own.
+          Despite being a comparatively new technology, vast amounts of
+          background information on IEEE 802.1ah and 802.1ag are available on
+          the Internet. For detailed information on configuring Ethernet OAM
+          on devices running JUNOS Software, see the "Network Interfaces
+          Configuration Guide" at http://www.juniper.net/techpubs/software/junos/index.html.
+
+
+
+
+
+
+
+SONET/SDH Automatic Protection Switching
+
+
+
+SONET equipment uses automatic protection switching (APS) to detect and
+      recover from circuit failures. SDH equipment has a similar mechanism,
+      called multiplex section protection (MSP). Both APS and MSP can detect a failed link and recover in
+      50 milliseconds—perfect for a five 9s environment!
+APS and MSP require dual-circuit configurations, with traffic
+      flowing over an active working circuit and a second
+      protect circuit standing by at all times. If the
+      working circuit fails, traffic is redirected through the protect
+      circuit, effectively making it the active circuit.
+JUNOS Software supports 1 + 1 protection switching and can be
+      configured as revertive or
+      nonrevertive. Protection switching helps with two
+      general scenarios: link failure and device failure. The example in Figure 14-1 shows a single
+      router connected to an optical add-drop multiplexer (ADM). This scenario
+      provides protection against link failure, as well as failure of the
+      physical interface on the router.
+
+
+
+
+
+
+
+
+
+Figure 14-1. APS/MSP protection for link and interface hardware
+
+
+In Figure 14-2,
+      two separate routers are connected to the ADM, providing protection
+      against failure of the router itself.
+
+
+
+
+
+
+
+
+
+Figure 14-2. APS/MSP protection for link, interface hardware, and overall
+        routing platform
+
+
+You configure APS and MSP under the sonet-options for
+      an interface:
+
+[edit]
+lab@r1# set interfaces so-0/1/0 sonet-options aps ?
+Possible completions:
+  advertise-interval   Advertise interval (1..65534 milliseconds)
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> authentication-key   Authentication parameters
+  force                Force circuit state
+  hold-time            Hold time (1..65534 milliseconds)
+  lockout              Lockout protection
+  neighbor             Neighbor address
+  paired-group         Name of paired APS group
+  preserve-interface   Preserve interface state for fast failover
+  protect-circuit      Protect circuit group name
+  request              Request circuit state
+  revert-time          Circuit revert time (seconds)
+  switching-mode       APS switching mode
+  working-circuit      Working circuit group name
+
+Note
+You configure MSP and APS using the same command-line interface
+        (CLI) commands.
+
+First, configure two interfaces: one as the working circuit and
+      the second as the protect circuit. You must also associate the
+      interfaces to an APS group and specify an authentication key:
+
+[edit]
+lab@r1# show interfaces so-0/1/0
+sonet-options {
+    aps {
+        working-circuit apsgroup1;
+        authentication-key "$9$CivTA0IEhrKvLIR-VY2aJ"; ## SECRET-DATA
+    }
+}
+unit 0 {
+    family inet {
+        address 10.0.1.1/24;
+    }
+}
+
+[edit]
+lab@r1# show interfaces so-0/1/1
+sonet-options {
+    aps {
+        protect-circuit apsgroup1;
+        authentication-key "$9$aTJDk.mTF39kquOREyr"; ## SECRET-DATA
+    }
+}
+unit 0 {
+    family inet {
+        address 10.0.2.1/24;
+    }
+}
+If the circuits are on different routers, you must also add the IP
+      address of the neighboring router:
+
+[edit]
+lab@r1# show interfaces so-0/1/0
+sonet-options {
+    aps {
+        working-circuit apsgroup1;
+        neighbor 192.168.1.2;
+        authentication-key "$9$CivTA0IEhrKvLIR-VY2aJ"; ## SECRET-DATA
+    }
+}
+unit 0 {
+    family inet {
+        address 10.0.1.1/24;
+    }
+}
+
+Warning
+The "neighbor" is not the device at the other end of the
+        APS-protected link; in this case, the neighbors are the two routers
+        benefiting from APS protection. For example, in Figure 14-2, r1 and r2
+        are neighbors. The two routers should be directly connected together,
+        and the neighbor parameter should
+        be the IP address of the neighbor's interface connected to this link.
+        Traffic between neighbors should never travel along the APS-protected
+        links.
+
+A key high availability element that makes APS and MSP "fast" is the amount of time it takes for a link to be
+      declared down and to then fail over. By default, Juniper Networks
+      routers send advertisements every second, and failover occurs after
+      three missed advertisements. You can change these values:
+
+[edit]
+lab@r1# set interfaces so-0/1/0 sonet-options aps advertise-interval ?
+Possible completions:
+  <advertise-interval>  Advertise interval (1..65534 milliseconds)
+[edit]
+lab@r1# set interfaces so-0/1/0 sonet-options aps hold-time ?
+Possible completions:
+  <hold-time>          Hold time (1..65534 milliseconds)
+
+Note
+The default APS failover settings aren't especially fast for
+        SONET/SDH links. However, you can see from the CLI output that you can
+        modify these parameters to support the SONET standard APS failover
+        time of 50 ms.
+
+By default, APS is nonrevertive, meaning that
+      when a working circuit has failed and then recovers, traffic continues
+      to use the protect circuit and does not automatically revert to the
+      working circuit. If you want traffic to move back to the working circuit
+      after it recovers, you can manually force traffic back to the working
+      circuit by using the request or
+      force statement, or you can
+      configure it to happen automatically using the revert-time statement, as shown here:
+
+[edit]
+lab@r1# set interfaces so-0/1/1 sonet-options aps revert-time ?
+Possible completions:
+  <revert-time>        Circuit revert time (seconds)
+
+Note
+Whether you use this feature depends entirely on your
+        requirements: do you need to have traffic revert back to the working
+        circuit as soon as possible, or is it fine to keep it on the protect
+        circuit as long as traffic is flowing smoothly? Either way, don't set
+        the revert-time too low. You are
+        better off with traffic flowing reliably over the protect circuit than
+        having traffic revert to the working circuit before it is fully
+        stable.
+
+Once you have committed the configuration, you can monitor link
+      status using any of the various show
+      aps commands. Here is an example of the output from
+      the show aps extensive
+      command:
+
+lab@r1> show aps extensive
+Interface    Group                           Circuit  Intf state
+so-0/1/0     apsgroup1                       Working  enabled, up
+  Neighbor 0.0.0.0, adj up, neighbor interface disabled, dead 2.788
+  Channel state Working
+  Protect circuit is on interface so-0/1/1
+  Local-mode bidirectional(5), neighbor-mode bidirectional(5)
+  Req K1 0x00, rcv K1 0x00, xmit K1 0x00, nbr K1 0x00, nbr paired req 0
+  Revert time 0, neighbor revert time 0
+  Hello due in 0.663
+so-0/1/1     apsgroup1                       Protect  disabled, up
+  Neighbor 0.0.0.0, adj up, neighbor interface enabled, dead 2.747
+  Channel state Working
+  Working circuit is on interface so-0/1/0
+  Local-mode bidirectional(5), neighbor-mode bidirectional(5)
+  Req K1 0x00, rcv K1 0x00, xmit K1 0x00, nbr K1 0x00, nbr paired req 0
+  Revert time 0, neighbor revert time 0
+  Hello due in 0.669
+This example shows two interfaces on the same router that are
+      running APS. Notice that interface so-0/1/0 is enabled as the working circuit,
+      and so-0/1/1 is the protect circuit.
+      Also, notice how each circuit knows about the other, making extremely
+      fast failover possible.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Rapid Spanning Tree Protocol
+
+
+
+Spanning tree protocols provide loop prevention for Layer 2 networks with multiple
+    paths. The original Spanning Tree Protocol (STP) does this well; however,
+    it is not up to the requirements of today's high availability networks.
+    Specifically, failure detection takes too long (several seconds) and
+    reconvergence involves several stages, lasting almost a minute, during
+    which time traffic does not flow.
+
+
+Spanning Tree Fundamentals
+This book assumes you have good knowledge of routing and switching
+      protocols. Should you want or need more information on the various
+      spanning tree protocols, you can find a wide range of material on the
+      Internet. You can also learn more about the protocol and its
+      implementation on JUNOS devices by attending Juniper Networks training
+      courses.
+For more information on Juniper Networks training, see http://www.juniper.net/training.
+
+As the requirement for minimal downtime has increased, so has the
+    need for an improved protocol. Rapid Spanning Tree Protocol (RSTP) is one
+    of the answers to this requirement. RSTP eliminates the STP phases that
+    require the switch to "listen and learn" after a topology change. Instead,
+    a switch running RSTP knows its alternate path options before the failure
+    occurs. When a failure occurs on a device, this increased "intelligence"
+    allows the switch to provide subsecond failover—talk about a huge improvement for high
+    availability environments!
+MX Series and EX Series devices support switching along with Layer 2 protocols such
+    as RSTP. You configure RSTP much like a routing protocol:
+
+[edit]
+lab@r1# set protocols rstp ?
+Possible completions:
+  <[Enter]>            Execute this command
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+  bpdu-block-on-edge   Block BPDU on all interfaces configured as edge (BPDU Protect)
+  bridge-priority      Priority of the bridge (in increments of 4k - 0,4k,8k,..60k)
+  disable              Disable STP
+  forward-delay        Time spent in listening or learning state (4..30 seconds)
+  hello-time           Time interval between configuration BPDUs (1..10 seconds)
+> interface
+  max-age              Maximum age of received protocol bpdu (6..40 seconds)
+> traceoptions         Tracing options for debugging protocol operation
+Enable the protocol and add the interfaces you wish to include in
+    the spanning tree environment:
+
+[edit]
+lab@r1# show protocols
+rstp {
+    interface fe-0/0/0.0;
+    interface fe-0/0/1.0;
+}
+To achieve subsecond reconvergence, you must configure the RSTP
+    interfaces as point-to-point:
+
+[edit]
+root# show protocols
+rstp {
+    interface fe-0/0/0.0 {
+        mode point-to-point;
+    }
+    interface fe-0/0/1.0 {
+        mode point-to-point;
+    }
+}
+
+Note
+Interfaces operating in full-duplex (FD) mode are set as RSTP
+      point-to-point links by default.
+
+You can then set any other RSTP parameters that are relevant for
+    your environment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Interior Gateway Protocols
+
+
+
+IGPs are historically considered to be slow in detecting and
+    recovering from failures in the network. However, this no longer has to be
+    the case. Sure, the default timers for Open Shortest Path First (OSPF) can cause a router to take up to 40 seconds to
+    declare a link down, but did you know that for OSPF and Intermediate System to Intermediate System (IS-IS) you can
+    reduce the dead interval to as low as one second?
+
+[edit]
+lab@r1# set protocols ospf area 0 interface so-0/1/0 dead-interval ?
+Possible completions:
+  <dead-interval>      Dead interval (seconds) (1..65535)
+This capability has the potential to completely change the way
+    networks are designed in relation to protocol failover strategies. Where
+    previously an IGP timer might have been a hindrance, requiring reliance on
+    other mechanisms for fast failure detection and failover, the fast timers
+    for these IGP protocols mean they can now arguably provide high
+    availability capabilities all on their own.
+
+Warning
+Just because you can configure extremely low
+      IGP timers doesn't mean you should. While the low
+      timer settings for IGPs on JUNOS devices provide the option to use these
+      protocols to maintain high availability networks, in practice routing
+      protocols are no longer used as a primary means of quick failure
+      detection and recovery. This is true to such an extent that these days
+      it is not recommended to use extremely low timers at all. With the
+      introduction of newer mechanisms that are purpose-built to provide
+      extremely fast failure detection, such as BFD (discussed in the next
+      section), protocol timers can be left at their default settings. In
+      fact, because BFD essentially relieves IGP timers of their high
+      availability duties entirely, some network administrators are even going
+      the other way and increasing protocol timers above
+      their default settings, to minimize the load placed on the control plane
+      of network devices due to protocol communication exchanges.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bidirectional Forwarding Detection
+
+
+
+Lowering the timers of OSPF and IS-IS can be a reasonable solution to contain
+    network failures, but it comes at a cost. It is possible to lower the
+    timers to the point that they cause problems for the router. Imagine a
+    scenario in which you have hundreds of interfaces all announcing subsecond
+    OSPF Hellos—that's a lot of work for a router! Now, of course, the amount
+    of hardship the router incurs depends on the size and capacity of the
+    router, how many interfaces are in play, and how exactly you configure the
+    timers. But suffice it to say, there comes a point when IGP timers are not
+    the solution to fast link failure detection. And beyond these two IGPs,
+    what about the other protocols that don't have fast failure detection
+    mechanisms? Or what if there is no protocol at all?
+BFD is a simple protocol designed to perform one function: link
+    failure detection. BFD provides a mechanism to directly monitor a link and
+    to notify the device if it stops receiving messages from a neighbor on the
+    other end of that link. BFD relieves the IGP of having to provide fast
+    failure detection; in fact, it can alleviate the load that Hello messages
+    can place on a router. With BFD, it is no longer necessary to lower
+    timers, or even to have them run at the default settings. In fact, you can
+    configure higher timer values, virtually eliminating load issues on the
+    router that result from generating Hello messages.
+Another benefit of BFD is that it provides a centralized, common,
+    and scalable way to perform fast link failure detection. Instead of
+    modifying and managing timers so each protocol can monitor link status,

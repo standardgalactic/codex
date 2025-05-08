@@ -1,0 +1,1000 @@
+  separation between control and forwarding not been suitable for other
+  purposes.
+Network engineers are, by nature, power-hungry control freaks bent on
+  dominating the traffic that transits their domain. Therefore, the notion of
+  being able to configure paths through the network that allow selected
+  streams of traffic to deviate from the Interior Gateway Protocol
+  (IGP)-dictated "best path" is highly appealing. MPLS—when it is configured
+  statically or deployed with a signaling protocol that supports traffic
+  engineering—provides this functionality.
+MPLS and the associated signaling protocols can also provide a means
+  of separating selected traffic streams from other traffic transiting a
+  network to create virtual private networks (VPNs). From a service-provider
+  perspective, VPNs can be used to secure customer traffic streams, create
+  multiservice infrastructures, and promote efficient use of limited
+  resources. From a small-to-medium-enterprise perspective, VPNs enable secure
+  communications across a shared medium and, in some cases, allow legacy and
+  proprietary protocols to communicate across the regular Internet.
+Traffic engineering and VPN support are the two primary reasons MPLS
+  has become so pervasive, despite the fact that it is not faster than IP
+  routing. This chapter acknowledges the ubiquity and importance of MPLS, and
+  builds on the considerations described in the previous chapter to show you
+  how to make a safe MPLS transition from a single-vendor to a multivendor
+  network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Multivendor Reality Check
+
+
+
+Before launching into this chapter, we need to pause for a brief reality check. Realistically
+    speaking, network administrators concerned with high availability are not
+    eager to replace a device that is functioning acceptably unless there's a
+    good reason to do so. While achieving a multivendor state may in some
+    cases be viewed as a good reason, it seldom stands as a sole valid
+    justification for a massive undertaking like replacing devices in a
+    network. That being said, here are some valid reasons—reasons that may
+    justify the labor involved in replacing a device in a high availability
+    network:
+
+
+
+Improved performance and stability
+
+
+Demands for throughput increase over time, and at a certain
+          point the deployed platforms are unable to keep up. Platforms tend
+          to become less stable as they age. Both situations are unacceptable
+          for a high availability network.
+
+
+Legacy platform replacement
+
+
+Platforms that are no longer supported by the manufacturer or
+          are nearing end of life (EoL) are not appropriate for a production
+          network with high availability requirements.
+
+
+Change in functional requirements
+
+
+As time passes, new services emerge and can result in
+          functional requirements that equipment from the incumbent vendor is
+          unable to provide. Though this might not impact high availability
+          for existing customers, the startup of a new service has revenue
+          implications that can't be ignored.
+
+
+Better network manageability and reduction in support
+        costs
+
+
+These two go hand in hand. As a rule, businesses must
+          constantly strive to automate processes and improve efficiency.
+          Management of the network is no exception.
+
+
+Dissatisfaction with a specific vendor
+
+
+All vendors are responsive and eager to interact with
+          customers before and during the sales process. It's what the vendors
+          do after the sale that separates the wheat from the chaff. Over
+          time, the incumbent may become complacent in service or discount
+          provided (or both). Bringing in an additional vendor is a way to get
+          the relationship back on desirable ground.
+
+
+
+In most cases, the administrators who choose to move from a
+    single-vendor to a multivendor network do so for a combination of
+    the aforementioned reasons.
+
+
+
+
+Cost Concerns
+
+
+
+Chapter 1
+      introduced the concept of relative costing, and offered it as
+      a method of estimating and comparing the cost of different redundancy
+      schemes in relation to the protection each provides. Although this
+      method is still applicable in a multivendor environment, a few
+      additional considerations need to be included in the equation:
+
+
+
+Training for design, implementation, and support staff is
+          necessary if equipment from a different vendor is being introduced
+          to the network for the first time.
+
+
+Vendor-specific network management tools may need to be
+          replaced with tools capable of supporting products from multiple
+          vendors.
+
+
+Generally speaking, device components are not interchangeable
+          among vendors, so shelf spare schemes may need to be adjusted.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MPLS Signaling for High Availability
+
+
+
+As previously mentioned, MPLS is unable to function at scale without the assistance
+    of a signaling protocol. Signaling protocols come in many flavors,
+    including standards-based and vendor-proprietary. Table 16-1 compares Juniper and
+    Cisco support for various MPLS signaling protocols.
+
+
+Table 16-1. Juniper and Cisco support for MPLS signaling protocols
+
+
+
+
+
+
+
+
+
+
+
+Signaling protocol
+
+
+Juniper support
+
+
+Cisco support
+
+
+Notes
+
+
+
+
+
+
+Tag Distribution Protocol (TDP)
+
+
+No
+
+
+Yes
+
+
+TDP is a Cisco-proprietary protocol.
+
+
+
+
+Label Distribution
+            Protocol (LDP)
+
+
+Yes
+
+
+Yes
+
+
+Both Cisco and Juniper
+            support LDP.
+
+
+
+
+Resource Reservation Protocol (RSVP)
+
+
+Yes
+
+
+Yes
+
+
+Supported by both Juniper
+            and Cisco.
+
+
+
+
+Resource Reservation Protocol with Traffic Engineering
+            (RSVP-TE)
+
+
+Yes
+
+
+Yes
+
+
+Functionality is supported
+            by both Juniper and Cisco. The Juniper protocol naming convention
+            does not draw a distinction between RSVP and
+            RSVP-TE.
+
+
+
+
+Static
+
+
+Yes
+
+
+No
+
+
+Supported on Juniper
+            platforms, though seldom used in high availability
+            environments.
+
+
+
+
+Constraint-Based Routing
+            Label Distribution Protocol (CR-LDP)
+
+
+No
+
+
+No
+
+
+This signaling protocol is
+            supported by neither Juniper nor Cisco. It was deprecated by the
+            Internet Engineering Task Force (IETF) in 2003.
+
+
+
+
+
+
+With these considerations in mind, the only realistic choice of MPLS
+    signaling protocols for label-switched paths (LSPs) that can cross between
+    Juniper and Cisco routers is LDP for nontraffic-engineered applications,
+    and RSVP for situations where traffic engineering is desirable. These are
+    the only two signaling methods supported by both vendors.
+
+
+Static MPLS and High Availability
+Although wholly unscalable and nearly unmanageable, it is worth
+      mentioning that in some vendor implementations, MPLS is capable of
+      functioning in the absence of a dynamic path signaling protocol. Some
+      federal agencies prohibit dynamic protocols from being enabled in
+      production networks, yet at the same time need MPLS functionality
+      without compromising high availability to meet specific service
+      requirements. Some large enterprise networks have the same requirements
+      and follow the same restrictions.
+      Therefore, static MPLS, as troublesome as it may be, does have a
+      place. Static LSP configuration is supported by Juniper products, but
+      not by Cisco.
+
+
+
+
+
+A Simple Multivendor Topology
+
+
+
+Figure 16-1 shows
+      a simple topology that we use to look at the configuration
+      elements relevant to MPLS, RSVP, and LDP between Juniper and Cisco
+      routers. In Figure 16-1,
+      r4 and r5 are Provider Edge (PE) devices that each
+      serve as ingress and egress points for an LSP. Router r4 runs JUNOS and r5 is running IOS. Routers r2
+      and r6 are provider routers in this
+      topology, and they serve as LSP transit points. Router r6 is a Cisco router, and r2 is a Juniper router.
+
+
+
+
+
+
+
+
+
+Figure 16-1. Simple multivendor topology for MPLS
+
+
+To show configuration syntax, we look at two ways to signal setup
+      of LSPs: first with RSVP, then with LDP as the signaling
+      protocol.
+
+
+
+
+
+RSVP Signaling
+
+
+
+RSVP allows a router to act on behalf of an application or
+      another protocol, in this case MPLS, to signal a path through the
+      network. The paths are established and maintained by PATH messages initiated from the ingress
+      router and sent toward the egress, and by RESV messages that are initiated by the egress
+      router and sent toward the ingress. RSVP requires each router in the
+      path to maintain resource reservations for the path. The path adheres to
+      administratively defined characteristics, thereby enabling traffic
+      engineering.
+
+
+
+
+Traffic engineering
+
+
+
+Traffic engineering is the ability to cause LSPs to be established contrary to the
+        IGP-dictated best path through the network. Deviation from the IGP
+        could be desirable for any number of reasons, including bandwidth
+        management, service-level agreement (SLA) enforcement, and, most commonly, Quality of Service
+        (QoS).
+To deviate from the IGP-dictated best path, the administrator defines
+        attributes, known as path constraints, for the path.
+        Administratively defined constraints include:
+
+
+
+Explicit Route Objects (EROs)
+
+
+EROs permit the definition of IP addresses that must be transited by the LSP. IP
+              addresses used for EROs take two forms:
+              strict and loose. A
+              strict IP address must be the immediate next hop in LSP
+              construction. A loose IP address must be transited by the LSP
+              prior to egress, but is not required to be the immediate next
+              hop.
+
+
+Bandwidth
+
+
+Administrators have the option of placing a bandwidth requirement on the establishment of the
+              LSP.
+
+
+Hop count
+
+
+Hop count for LSP path selection can be limited to prevent scenic routing
+              of the path. This is most often used for fast reroute (FRR) optimization.
+
+
+Administrative groups
+
+
+RSVP allows administrators to assign "colors" to links
+              within their network. These colors can be referenced in the LSP
+              configuration syntax to describe collections of links that can
+              be transited by the path, and also collections of links that
+              should be avoided by the path.
+
+
+Priority
+
+
+Administrators can assign a priority to LSPs that has
+              meaning in relation to the priority assigned to other LSPs in
+              the network. This is critical in situations where there may be
+              insufficient bandwidth to support all LSPs that may transit the
+              network.
+
+
+
+MPLS is IGP-agnostic, but traffic engineering in a multivendor
+        environment requires use of Intermediate System to Intermediate System (IS-IS) or
+        Open Shortest Path First (OSPF) as the IGP. This is necessary to build the traffic engineering
+        database (TED). The TED is initially populated from—and, in truth, is
+        comparable in many ways to—the link-state database maintained by both
+        IGPs. The TED is used exclusively for calculating LSPs through the network.
+        Figure 16-2 maps out a
+        traffic engineering computation
+        and the relationships among the link-state database, the TED, and the
+        Constrained Shortest Path First
+        (CSPF) protocol.
+
+
+
+
+
+
+
+
+
+Figure 16-2. Flow of JUNOS traffic engineering computation
+
+
+
+
+
+
+
+Juniper-Cisco RSVP
+
+
+
+Figure 16-3
+        shows that r4 is the
+        ingress point for an LSP named r4-to-r5. Router r5 is the ingress point for an LSP named
+        r5-to-r4. Traffic engineering
+        configuration elements to establish the LSP are added to r4 and are shown in the JUNOS command-line
+        interface (CLI) examples provided.
+
+Note
+This chapter does not cover MPLS or the associated signaling
+          protocols in depth at the theoretical level. Nor does it describe
+          the full range of configuration statements available in IOS or
+          JUNOS. The purpose of this chapter is to provide enough theory and
+          enough configuration and process recommendations to allow you to
+          safely transition MPLS from a single-vendor to a multivendor
+          environment. Numerous books exist about protocol theory, and both
+          Juniper and Cisco provide technical documentation covering the range
+          of configuration options.
+
+
+
+
+
+
+
+
+
+
+Figure 16-3. RSVP-signaled LSPs with traffic engineering
+
+
+
+
+
+
+
+Router r5 configuration
+
+
+
+Router r5 is a Cisco router
+        serving as a PE device in AS 64512. This router is the ingress point
+        for an RSVP-signaled LSP to r4.
+        Router r5 also serves as the egress
+        point for an RSVP-signaled LSP from r4. Interface configuration elements on
+        r5 include mpls-ip statements on all interfaces that
+        must support MPLS. Interface Serial0/0 does not require an mpls-ip statement, as the requirements do
+        not call for an LSP to r1:
+
+!
+interface Tunnel0
+ ip unnumbered Loopback0
+ tunnel destination 10.0.0.4
+ tunnel mode mpls traffic-eng
+ tunnel mpls traffic-eng autoroute announce
+ no routing dynamic
+!
+interface Loopback0
+ ip address 10.0.0.5 255.255.255.255
+ ip ospf 10 area 0
+!
+interface FastEthernet0/0
+ ip address 10.0.1.5 255.255.255.252
+ ip ospf 10 area 0
+ duplex auto
+ speed auto
+ mpls ip
+ mpls traffic-eng tunnels
+ ip rsvp bandwidth 7500 7500
+ ip rsvp resource-provider none
+!
+interface Serial0/0
+ bandwidth 1544
+ ip address 172.16.5.1 255.255.255.252
+ no ip directed-broadcast
+!
+interface FastEthernet0/1
+ ip address 10.0.1.21 255.255.255.252
+ ip ospf 10 area 0
+ duplex auto
+ speed auto
+ mpls ip
+ mpls traffic-eng tunnels
+ ip rsvp bandwidth 7500 7500
+ ip rsvp resource-provider none
+!
+On router r5, the OSPF
+        protocol configuration includes mpls-traffic-eng statements to support
+        traffic engineering:
+
+router ospf 10
+ network 10.0.0.5 0.0.0.0 area 0
+ network 10.0.1.5 0.0.0.0 area 0
+ network 10.0.1.17 0.0.0.0 area 0
+ network 10.0.1.21 0.0.0.0 area 0
+ network 172.16.5.1 0.0.0.0 area 0
+ mpls traffic-eng router-id Loopback0
+ mpls traffic-eng area 0
+ log-adjacency-changes
+!
+Router r4 is a Juniper router
+        serving as a PE device in AS 64512. This router is the ingress point
+        for an RSVP-signaled LSP to r5.
+        Router r4 also serves as the egress
+        point for an RSVP-signaled LSP from r5. Interface configuration elements on
+        r4 include family mpls statements on all interfaces
+        that must support MPLS. The family
+        mpls statement is not necessary on interface fe-0/0/0 because there is no requirement to
+        build an LSP to r3:
+
+edit interfaces]
+lab@r4# show
+fe-0/0/0 {
+  unit 0 {
+    family inet {
+    address 172.16.4.1/30;
+    }
+  }
+}
+t1-0/0/2 {
+  unit 0 {
+    family inet {
+    address 10.0.1.10/30;
+    }
+    family mpls;
+  }
+}
+t1-0/0/3 {
+  encapsulation cisco-hdlc;
+  unit 0 {
+    family inet {
+    address 10.0.1.2/30;
+    }
+    family mpls;
+  }
+}
+lo0 {
+  unit 0 {
+    family inet {
+    address 10.0.0.4/32;
+    }
+  }
+}
+
+Note
+Older versions of JUNOS allowed users to configure family mpls on the lo0 interface without generating an error
+          message. However, this configuration element never appeared in the
+          configuration file and was in fact completely unnecessary.
+
+The traffic-engineering
+        statement in router r4's OSPF
+        configuration allows the creation of the TED and CSPF
+        calculation:
+
+[edit protocols]
+lab@r4# show ospf
+traffic-engineering;
+area 0.0.0.0 {
+  interface lo0.0 {
+    passive;
+  }
+  interface t1-0/0/3.0;
+  interface t1-0/0/2.0;
+}
+Router r4 makes use of a
+        next hop self policy (named NHS in this case) to overcome the Border
+        Gateway Protocol (BGP) reachability issue described in detail in Chapter 15. This is
+        important because using r4's
+        loopback address as the BGP protocol next hop allows the LSP to be used for Autonomous System (AS) transit traffic:
+
+[edit protocols]
+lab@r4# show bgp
+group IBGP {
+  type internal;
+  local-address 10.0.0.4;
+  export NHS;
+  neighbor 10.0.0.3;
+  neighbor 10.0.0.2;
+  neighbor 10.0.0.5;
+}
+[edit protocols]
+lab@r4# top edit policy-options
+
+[edit policy-options]
+lab@r4# show
+policy-statement NHS {
+  term 1 {
+    from {
+    protocol bgp;
+    neighbor 172.16.4.2;
+    }
+    then {
+    next-hop self;
+    }
+  }
+}
+Router r4 includes MPLS and
+        RSVP configuration elements to support the LSPs detailed in Figure 16-3. CLI output
+        shows that label-switched-path
+        r4-to-r5 uses a path named SCENIC-ROUTE, which has EROs configured to
+        cross IP addresses 10.0.1.1, 10.0.0.2, and 10.0.1.21. This LSP is
+        configured to use r5's loopback address as the egress point:
+
+[edit protocols]
+lab@r4# show mpls
+label-switched-path r4-to-r5 {
+  to 10.0.0.5;
+  primary SCENIC-ROUTE;
+}
+path SCENIC-ROUTE {
+  10.0.1.1 strict;
+  10.0.0.2 loose;
+  10.0.1.21 strict;
+}
+interface t1-0/0/2.0;
+interface t1-0/0/3.0;
+interface lo0.0;
+
+[edit protocols]
+lab@r4# show rsvp
+interface lo0.0;
+interface t1-0/0/2.0;
+interface t1-0/0/3.0;
+You can use the show command
+        at various points along the path to confirm RSVP neighbor
+        relationships and LSP establishment. From r4, the show mpls lsp detail
+        command confirms that r4 is an
+        ingress and an egress point and shows the path being taken by the
+        LSP:
+
+[edit interfaces]
+lab@r4# run show mpls lsp detail
+Ingress LSP: 1 sessions
+
+10.0.0.5
+  From: 10.0.0.4, State: Up, ActiveRoute: 0, LSPname: r4-to-r5
+  ActivePath: SCENIC-ROUTE (primary)
+  LoadBalance: Random
+  Encoding type: Packet, Switching type: Packet, GPID: IPv4
+ *Primary SCENIC-ROUTE   State: Up
+  SmartOptimizeTimer: 180
+  Computed ERO (S [L] denotes strict [loose] hops): (CSPF metric: 66)
+ 10.0.1.1 S 10.0.1.25 S 10.0.1.21 S
+  Received RRO (ProtectionFlag 1=Available 2=InUse
+  4=B/W 8=Node 10=SoftPreempt):
+    10.0.1.1 10.0.1.25 10.0.1.21
+Total 1 displayed, Up 1, Down 0
+
+Egress LSP: 1 sessions
+
+10.0.0.4
+  From: 10.0.0.5, LSPstate: Up, ActiveRoute: 0
+  LSPname: r5-to-r4, LSPpath: Primary
+  Suggested label received: -, Suggested label sent: -
+  Recovery label received: -, Recovery label sent: -
+  Resv style: 1 FF, Label in: 3, Label out: -
+  Time left:  144, Since: Thu Apr 16 20:18:13 2009
+  Tspec: rate 0bps size 0bps peak Infbps m 20 M 1500
+  Port number: sender 1 receiver 33755 protocol 0
+  PATH rcvfrom: 10.0.1.1 (t1-0/0/3.0) 6 pkts
+  Adspec: received MTU 1500
+  PATH sentto: localclient
+  RESV rcvfrom: localclient
+  Record route: 10.0.1.21 10.0.1.25 10.0.1.1 <self>
+Total 1 displayed, Up 1, Down 0
+
+Transit LSP: 0 sessions
+Total 0 displayed, Up 0, Down 0
+You can also confirm the establishment and proper path selection
+        from r2 using the show mpls lsp detail command. As expected,
+        no LSPs are using r2 as an ingress
+        or egress point, but two LSPs are transiting the router. The output
+        also reflects the EROs that were used to dictate the path through the
+        network:
+
+[edit]
+lab@r2# run show mpls lsp detail
+Ingress LSP: 0 sessions
+Total 0 displayed, Up 0, Down 0
+
+Egress LSP: 0 sessions
+Total 0 displayed, Up 0, Down 0
+
+Transit LSP: 2 sessions
+
+10.0.0.4
+  From: 10.0.0.5, LSPstate: Up, ActiveRoute: 1
+  LSPname: r5-to-r4, LSPpath: Primary
+  Suggested label received: -, Suggested label sent: -
+  Recovery label received: -, Recovery label sent: 100048
+  Resv style: 1 FF, Label in: 100048, Label out: 100048
+  Time left:  137, Since: Thu Apr 16 08:15:08 2009
+  Tspec: rate 0bps size 0bps peak Infbps m 20 M 1500
+  Port number: sender 1 receiver 33755 protocol 0
+  PATH rcvfrom: 10.0.1.21 (fe-0/0/1.0) 10 pkts
+  Adspec: received MTU 1500 sent MTU 1500
+  PATH sentto: 10.0.1.26 (fe-0/0/0.0) 11 pkts
+  RESV rcvfrom: 10.0.1.26 (fe-0/0/0.0) 10 pkts
+  Explct route: 10.0.1.26 10.0.1.2
+  Record route: 10.0.1.21 <self> 10.0.1.26 10.0.1.2
+
+10.0.0.5
+  From: 10.0.0.4, LSPstate: Up, ActiveRoute: 1
+  LSPname: r4-to-r5, LSPpath: Primary
+  Suggested label received: -, Suggested label sent: -
+  Recovery label received: -, Recovery label sent: 3
+  Resv style: 1 FF, Label in: 100032, Label out: 3
+  Time left:  138, Since: Thu Apr 16 08:12:55 2009
+  Tspec: rate 0bps size 0bps peak Infbps m 20 M 1500
+  Port number: sender 12 receiver 64894 protocol 0
+  PATH rcvfrom: 10.0.1.26 (fe-0/0/0.0) 13 pkts
+  Adspec: received MTU 1500 sent MTU 1500
+  PATH sentto: 10.0.1.21 (fe-0/0/1.0) 14 pkts
+  RESV rcvfrom: 10.0.1.21 (fe-0/0/1.0) 13 pkts
+  Explct route: 10.0.1.21
+  Record route: 10.0.1.2 10.0.1.26 <self> 10.0.1.21
+Total 2 displayed, Up 2, Down 0
+
+
+
+
+
+
+LDP Signaling
+
+
+
+Like RSVP, LDP is a method of distributing labels in an MPLS domain. Unlike
+      RSVP, LDP is not capable of deviation from the underlying IGP's dictated
+      best path through the network. When LDP is enabled on a router, it uses
+      the local router's Forwarding Information Base (FIB) to "auto-magically" create LSPs to all reachable host IPs
+      (/32 subnet mask). These characteristics limit LDP's functionality as a
+      QoS mechanism, but they dramatically simplify configuration and make LDP
+      a more scalable protocol than RSVP.
+Figure 16-4 shows the
+      resulting LSPs created if LDP is enabled on the devices in the
+      network.
+As mentioned, LDP configuration syntax is simpler than RSVP. A
+      sample from r4 is shown. Note that
+      the entire RSVP configuration has been removed. The only LDP elements
+      required are those to identify the interfaces over which the protocol
+      should run:
+
+[edit protocols]
+lab@r4# show ldp
+interface t1-0/0/2.0;
+interface t1-0/0/3.0;
+interface lo0.0;
+
+
+
+
+
+
+
+
+
+Figure 16-4. LDP-signaled LSPs in the network
+
+
+The contents of the routing table confirm the presence of usable
+      LSPs to all other routers in the network:
+
+[edit protocols]
+lab@r4# run show route protocol ldp
+
+inet.0: 14 destinations, 16 routes (14 active, 0 holddown, 0 hidden)
+
+inet.3: 3 destinations, 3 routes (3 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.0.2/32        *[LDP/9] 00:03:17, metric 1
+                    > via t1-0/0/2.0
+10.0.0.3/32        *[LDP/9] 00:03:17, metric 1
+                    > via t1-0/0/3.0
+10.0.0.5/32        *[LDP/9] 00:03:17, metric 1
+                      via t1-0/0/2.0, Push 100096
+                    > via t1-0/0/3.0, Push 100096
+
+
+
+
+A few LDP implementation differences
+
+
+
+By default, the IOS LDP session hold time is 180 seconds and the
+        keepalive is 60 seconds. In Juniper, the default hold time is 30
+        seconds and the keepalive is 10 seconds. LDP protocol standards
+        dictate that LDP neighbors negotiate to the lowest value. Therefore,
+        IOS devices, by default, accept the JUNOS hold time and keepalive. If
+        this behavior is undesirable (it can potentially result in LDP
+        neighbor flaps), you can override the defaults to match the IOS
+        defaults:
+
+[edit protocols ldp]
+lab@r4# show
+keepalive-interval 60;
+keepalive-timeout 180;
+interface t1-0/0/0.0 {
+    hello-interval 60;
+    hold-time 180;
+}
+By default, JUNOS advertises loopback addresses only into the inet3.0 table. And by default, IOS announces
+        every known route using LDP. If this situation is undesirable, you can
+        filter routes on the IOS platforms to prevent advertisement of
+        nonloopback addresses:
+
+!
+tag-switching advertise-tags for ldp-filter
+!
+!
+ip access-list standard ldp-filter
+remark - IP range for Figure 16-4 loop-back addresses --
+permit 10.0.0.0 0.0.0.255
+!
+To further simplify the LDP configuration, newer versions of
+        Cisco IOS support the automatic enabling of LDP on interfaces on which
+        OSPF is enabled, as opposed to having to manually configure LDP on
+        each interface. Although there are notable security concerns with
+        running LDP on customer-facing interfaces on a PE router, when used on
+        provider (P) devices, the automatic configuration feature simplifies
+        LDP configuration without adding
+        security risks. The mpls autoconfig ldp [area
+        number] configuration
+        command enables LDP on all interfaces running OSPF.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MPLS Transition Case Studies
+
+
+
+Now that we have looked at vendor-specific configuration characteristics of
+    MPLS and the associated signaling protocols, let's examine how a network
+    can safely transition from a single-vendor to a multivendor MPLS
+    implementation without risking availability. For MPLS transitions, devices
+    that come into play include Provider (P) and Provider Edge (PE). The Provider devices
+    typically serve as transit points for LSPs established
+    between the Provider Edge devices.
+This section offers two MPLS transition case studies. Case study 1
+    demonstrates one alternative for high availability equipment transitions:
+    standing up a redundant pair, bringing up connectivity, transiting
+    traffic, and bringing down the legacy pair. You confirm and monitor
+    stability for a set time at each phase. Case study 2 provides another
+    alternative: replacing devices within a high availability pair one at a
+    time.
+Both case studies in this chapter are based on the network shown in
+    Figure 16-5. This topology
+    features redundant P and PE routers that support a primary and secondary
+    pair of LSPs. These LSPs are being used to engineer traffic
+    bidirectionally between PE-router-1 and PE-router-3 to support control of the path used
+    for traffic between Customer Edge (CE) devices at Acme Site 1 and Site 2.
+    The P and PE routers are all in AS 64512 and are fully meshed using BGP.
+    OSPF is used as the IGP, and RSVP is used to signal LSP setup. At this
+    point, we assume that all devices in the network are running Cisco
+    IOS.
+
+
+
+
+
+
+
+
+
+Figure 16-5. Basic topology for transition case studies 1 and 2
+
+
+To support high availability in this topology, you could configure
+    additional LSPs between PE-router-2 and
+    PE-router-4. However, including them in
+    Figure 16-5 would clutter
+    the diagram and potentially obscure the purpose of the study.
+
+
+
+
+Case Study 1: Transitioning Provider Devices
+
+
+
+This case study shows a transition case where you set up a redundant pair,
+      establishing conductivity between them. Then you bring
+      down the legacy pair.
+
+
+
+
+Phase 1: P router transition
+
+
+
+In the first case study, the network administrators have decided
+        to replace the IOS-based Provider devices in the network (P-router-1 and P-router-2) with JUNOS platforms. Figure 16-6 shows
+        NEW P-router-1 and NEW
+        P-router-2 being added to the network. You first establish
+        connectivity between the NEW P
+        routers and the existing PE routers. After confirming the OSPF and BGP
+        peering relationships, configure additional pairs of secondary LSPs
+        between PE-router-1 and PE-router-3 and engineer them to transit the
+        new Provider devices, as shown.
+
+
+
+
+
+
+
+
+
+Figure 16-6. Phase 1: addition of NEW P-routers to topology and setup of
+          additional secondary LSPs
+
+
+Configuration elements on NEW
+        P-router-1 and NEW
+        P-router-2 are similar in many ways and include the native
+        IGP, BGP, and RSVP, because this case study requires some traffic
+        engineering. You configure EROs on the PE-routers to force LSPs to be established
+        across the NEW P-routers.
+
+
+
+
+
+Phase 2: P router transition
+
+
+
+In phase 2 of the transition, you make configuration changes on
+        PE-router-1 and PE-router-3 to force
+        the LSPs transiting through NEW
+        P-router-1 to become the primary LSPs. You retain all other
+        secondary LSPs for redundancy purposes and, as needed, for fallback.
+        RSVP LSP configuration syntax allows configuration of multiple
+        secondary paths. Use this option to support the transition phase shown
+        in Figure 16-7.

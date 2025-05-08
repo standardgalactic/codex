@@ -1,0 +1,1000 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+JUNOS High Availability
+
+
+
+
+James  Sonderegger
+
+
+
+
+
+
+Orin Blomberg
+
+
+
+
+
+
+Kieran Milne
+
+
+
+
+
+
+Senad Palislamovic
+
+
+
+
+
+
+
+
+
+Beijing • Cambridge • Farnham • Köln • Sebastopol • Tokyo
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Special Upgrade Offer
+
+
+
+If you purchased this ebook directly from oreilly.com, you have the following benefits:
+
+
+
+DRM-free ebooks—use your ebooks across devices without restrictions or limitations
+
+
+Multiple formats—use on your laptop, tablet, or phone
+
+
+Lifetime access, with free updates
+
+
+Dropbox syncing—your files, anywhere
+
+
+
+If you purchased this ebook from another retailer, you can upgrade your ebook to take advantage of all these benefits for just $4.99. Click here to access your ebook upgrade.
+
+
+
+Please note that upgrade offers are not available from sample content.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Preface
+
+
+
+At a recent meeting of network admins, the talk turned to uptime, and
+  some bragged about the high availability of services in their network; they
+  had 100% uptime. Wow, this normally is unthinkable. After more discussion,
+  the truth came out. This figure is based on the fact that the service
+  provider did not take into account outages in the network that made their
+  service unavailable, because their service was still "up," though totally
+  unreachable. The same admins also admitted that they really didn't keep
+  records of actual outages. In their opinion, they had no reliability issues,
+  but their customers would disagree with that.
+This book is not about reliability theory. Theory addresses the full
+  range of possibilities. This book is for those of us who have to keep the
+  network working. It is a guide for students of the art of creating
+  self-sustaining continuous systems.
+As such, we fought to keep the book grounded not necessarily in what
+  you can do, but more importantly, in what you
+  should do as an administrator to protect availability
+  and to keep the customers, internal or external, connected and happy. Most
+  of the chapters include case studies that show you how things work and
+  provide pointers on where you might investigate if your results differ. The
+  topologies included are realistic and in many cases reflective of actual
+  networks that we, the authoring team, have worked with at some point in our
+  careers.
+There are four authors on this book, and while we tried to homogenize
+  the writing, you will see different styles and different approaches.
+  Ultimately, we think that's a good thing. It's like working with your peers
+  who are also maintaining the same network and who have different methods of
+  working. The team shares a common goal and the variation in approaches
+  brings strength through diversity.
+Ultimately, this book is about Juniper Networks JUNOS Software and
+  Juniper Networks boxes. You need to design a continuous system, and you need
+  the right mix of equipment placed ideally on your topology, but eventually
+  you come back to the network OS. And our chapters all come back to roost
+  with JUNOS.
+
+
+
+
+
+
+
+
+
+
+
+
+
+What Is High Availability?
+
+
+
+How often in your life have you picked up a phone and not
+    heard a dial tone? Not very often, right? Every time you did it was
+    certainly a cause for concern. This is a classic example of the definition
+    of availability. People do not expect the network to
+    be in use constantly, 365 days a year, but they do expect the network to
+    be available for use every time they try to use it. With a high number of
+    users expecting availability as needed, we begin to approach the point of
+    constant availability. But is that realistic? Statistically speaking, no;
+    over a long enough timeline every system eventually fails. So, what is a
+    realistic solution for systems whose purpose means they can't be allowed
+    to fail?
+A classic concern with high availability was the difficulty in
+    measurement. The notion was that any measurement tool had to be more
+    available than the system being measured. Otherwise, the tool would
+    potentially fail before the system being measured. These days the most
+    highly available systems are processing constant and ever-increasing volumes of user traffic, such as
+    credit card transactions, calls connected, and web page hits. Any
+    disruption in service would immediately be noticed and felt by end users.
+    The users themselves have become the most effective availability
+    monitoring tool.
+Five 9s is easily dismissed as a marketing term, but the math behind the term
+    is sound and wholly nonmarketing. The 9s concept is a measure of
+    availability over a span of a year. It is a percentage of time during the
+    year that the system is guaranteed to be functional. The following table
+    is often drawn to describe the concept:
+
+
+
+
+
+
+
+
+
+Availability
+
+
+Downtime in one
+            year
+
+
+
+
+
+
+90%
+
+
+876 hours
+
+
+
+
+99%
+
+
+87.6 hours
+
+
+
+
+99.9%
+
+
+8.76 hours
+
+
+
+
+99.99%
+
+
+52.6 minutes
+
+
+
+
+99.999%
+
+
+5.26 minutes
+
+
+
+
+99.9999%
+
+
+31.5 seconds
+
+
+
+
+
+
+Note
+In this book we cite five 9s as a concept rather than as the
+      recommended target. In financial enterprises, five 9s could be
+      unacceptable and the target may instead be seven 9s, or eight 9s.
+      Whenever you see "9s" in this book, whether your target is five, seven,
+      or even nine 9s, please read it as a measurement of a continuous system
+      rather than as a figurative number we recommend for all networks.
+
+The table about 9s gets the message across, but it doesn't really
+    tell the story of where availability should be
+    measured. Chapter 1 of
+    this book talks about dependencies within redundancy schemes: redundant
+    components protect chassis, redundant chassis protect systems, redundant
+    systems protect services, and redundant services protect the enterprise.
+    Some vendors would have you believe that availability should be measured
+    at the chassis level. Others tout the availability of specific components
+    in their chassis.
+User experience is reality. This reality means that neither
+    component nor system levels are appropriate points to measure
+    availability. Relying on hardware availability as a measure of system,
+    service, and enterprise availability ignores the importance of network
+    architecture planning and site design, effective monitoring, and a highly
+    trained and proactive support staff. In the modern world of constant
+    transactions, it is the services and the enterprise that must be available
+    99.999999% of the time. This is the approach we've taken in this
+    book.
+So, are we saying that the component and chassis availability are
+    irrelevant? Hardly. The strength and resilience of components are critical
+    to the chassis. The availability of chassis is critical to the
+    availability of services. The point is that even with best-in-class
+    components and chassis it is possible to make poor design and
+    configuration decisions. The fact that you have chosen to buy Juniper
+    means that you have already secured best-in-class components and chassis.
+    The purpose of this book is to help you make the most of this investment
+    and build truly continuous systems and services.
+
+
+
+
+
+
+
+
+
+
+
+
+
+How to Use This Book
+
+
+
+We are assuming a certain level of knowledge from the reader. This
+    is important. If you are not familiar with any of the assumptions in the
+    following list, this book will occasionally veer over your head. The
+    JUNOS documentation
+    site is a great place to start. It's thorough, well written, and
+    free.
+
+
+
+OSI model
+
+
+The Open Systems Interconnection (OSI) model defines seven
+          different layers of technology: Physical, Data Link, Network, Transport, Session,
+          Presentation, and Application. This model allows network engineers
+          and network vendors to easily discuss and apply technology to a
+          specific OSI level. This segmentation allows engineers to divide the
+          overall problem of getting one application to talk to another into
+          discrete parts and more manageable sections. Each level has certain
+          attributes that describe it, and each level interacts with its
+          neighboring levels in a very well-defined manner.
+
+
+Switches
+
+
+These devices operate at Layer 2 of the OSI model and use
+          logical local addressing to move frames across a network. Devices in
+          this category include Ethernet, ATM, and Frame Relay
+          switches.
+
+
+Routers
+
+
+These devices operate at Layer 3 of the OSI model and connect IP
+          subnets to each other. Routers move packets across a network in a
+          hop-by-hop fashion.
+
+
+Ethernet
+
+
+These broadcast domains connect multiple hosts together on a
+          common infrastructure. Hosts communicate with each other using Layer
+          2 Media Access Control (MAC) addresses.
+
+
+Point-to-point links
+
+
+These network segments are often thought of as wide area network (WAN) links in that they do not
+          contain any end users. Often these links are used to connect routers
+          together in disparate geographical areas. Possible encapsulations
+          used on these links include ATM, Frame Relay, Point to Point Protocol (PPP), and HDLC.
+
+
+IP addressing and subnetting
+
+
+Hosts using IP to communicate with each other use 32-bit
+          addresses. Humans often use a dotted decimal format to represent this address. This
+          address notation includes a network portion and a host portion that
+          is normally displayed as 192.168.1.1/24.
+
+
+TCP and UDP
+
+
+These Layer 4 protocols define methods for communicating between hosts. TCP
+          provides for connection-oriented communications while UDP uses a
+          connectionless paradigm. Other benefits of using TCP include flow
+          control, windowing/buffering,
+          and explicit acknowledgments.
+
+
+ICMP
+
+
+This protocol is used by network engineers to troubleshoot and operate
+          a network, as it is the core protocol used by the ping and
+          traceroute (on some platforms) programs. In addition, ICMP is used
+          to signal error and other messages between hosts in an IP-based
+          network.
+
+
+JUNOS CLI
+
+
+This is the command-line interface used by Juniper Networks routers, and is the primary method
+          for configuring, managing, and troubleshooting the router. JUNOS documentation covers the CLI in
+          detail and is freely available on the Juniper Networks
+          website.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What's in This Book?
+
+
+
+The ultimate purpose of this book is to be the single, most complete
+    source for working knowledge related to providing high availability with
+    Juniper Networks equipment. Though you may not find detailed
+    configurations for all protocols and interfaces, you will find those
+    tweaks and knobs that will provide high availability.
+This book is divided into four parts, with a total of 25 chapters,
+    and some general reference items put into the appendixes. The chapters are
+    written by four different authors, although all of us tended to review
+    each other's work. You'll be able to tell different voices in the writing
+    styles, and we hope that is generally refreshing rather than a hindrance.
+    Here is a detailed account of what's in this book.
+
+
+
+
+
+
+Part I
+
+
+
+
+
+
+
+
+Chapter 1, High Availability Network Design
+  Considerations
+
+
+
+This chapter provides real-world perspective on the relative
+            cost associated with making a network highly available and is the
+            only nontechnical chapter in the book. It opens by describing a
+            very simple, small enterprise network and then adds layers of
+            redundancy, each designed to protect against a wider range of
+            threats to continuity. The chapter concludes with a chart
+            comparing the relative cost of the cumulative layers.
+
+
+
+Chapter 2, Hardware High Availability
+
+
+
+This chapter focuses on the foundation of Juniper Networks
+            high availability: the hardware. It starts by discussing the
+            divided architecture available on all systems and expands to the
+            specific hardware redundancy features of the Juniper product
+            lines.
+
+
+
+Chapter 3, Software High Availability
+
+
+
+This chapter builds on the hardware knowledge gained in
+            Chapter 2 to highlight the
+            features of the Juniper software that ensure high availability.
+            The chapter looks at the stable operating system on which the
+            system is built and the divided software architecture that keeps
+            the network running.
+
+
+
+Chapter 4, Control Plane High Availability
+
+
+
+This chapter provides in-depth understanding of control
+            plane and forwarding plane interactions. Then it covers details of
+            the different high availability features: Graceful Routing Engine
+            Switchover (GRES), Graceful Restart (GR), Non-Stop Active Routing
+            (NSR), and Non-Stop Bridging (NSB). The chapter concludes with a
+            list of protocol and platform support for different high
+            availability tools.
+
+
+
+Chapter 5, Virtualization for High Availability
+
+
+
+This chapter provides an overview of advanced applications
+            of the control plane in a data center environment. The chapter
+            also discusses the latest developments in control plane
+            scalability and provides solutions to control plane scaling
+            problems present at large service providers.
+
+
+
+
+
+
+
+
+
+
+Part II
+
+
+
+
+
+
+
+
+Chapter 6, JUNOS Pre-Upgrade Procedures
+
+
+
+This chapter provides an overview of the things a user needs
+            to keep in mind when preparing to upgrade JUNOS. Then it dives
+            into configuration and use of unified In-Service Software Upgrade
+            (ISSU). The chapter concludes with a handy collection of protocol
+            mechanisms that can be used to divert traffic around a non-ISSU
+            chassis that is being upgraded.
+
+
+
+Chapter 7, Painless Software Upgrades
+
+
+
+This chapter is the second of a three-chapter series on
+            software upgrades. It covers the syntax and options available for
+            upgrading software on JUNOS platforms and describes the importance
+            of a fallback procedure and fallback authority. The chapter
+            concludes with special considerations for Juniper Networks J
+            Series chassis, including rescue configurations.
+
+
+
+Chapter 8, JUNOS Post-Upgrade Verifications
+
+
+
+This chapter provides an overview of JUNOS commands used to
+            verify network device state after an OS upgrade. The chapter then
+            describes how to gracefully undo the traffic diversion techniques
+            described in Chapter 6, and
+            is an important companion to that chapter.
+
+
+
+Chapter 9, Monitoring for High Availability
+
+
+
+This chapter provides an overview of JUNOS features and
+            industry standards that can be used to monitor network equipment
+            to ensure network uptime. Juniper-specific features, such as
+            JUNOScript, are introduced.
+
+
+
+Chapter 10, Management Interfaces
+
+
+
+This chapter details the different interfaces, including the
+            command-line interface (CLI), GUIs, and application programming
+            interfaces (APIs), that are used to manage Juniper Networks
+            equipment to ensure high availability.
+
+
+
+Chapter 11, Management Tools
+
+
+
+This chapter builds on the previous two chapters by
+            discussing tools available for managing network equipment. The
+            chapter discusses both Juniper Network tools as well as open
+            source tools that can interact with the APIs in JUNOS
+            Software.
+
+
+
+Chapter 12, Managing Intradomain Routing Table
+  Growth
+
+
+
+This chapter opens with a discussion of intelligent IP
+            address allocation for networks with a high availability focus.
+            The chapter then looks at the configuration options available for
+            controlling the size of the intradomain routing table while at the
+            same time protecting the availability of the network.
+
+
+
+Chapter 13, Managing an Interdomain Routing
+  Table
+
+
+
+A companion to Chapter 12, this
+            chapter looks at configuration elements that an administrator
+            would use to control the locally received content of the
+            interdomain routing table. Border Gateway Protocol (BGP)-related
+            policy and configuration options are the focal point in this
+            chapter, and it is one of several that discuss how BGP scalability
+            mechanisms can be used to manage the local network.
+
+
+
+
+
+
+
+
+
+
+Part III
+
+
+
+
+
+
+
+
+Chapter 14, Fast High Availability Protocols
+
+
+
+This chapter provides an overview of several protocols that
+            support high availability by providing fast failure detection and
+            recovery. It discusses protocols for optical and Ethernet
+            networks, and then dives into options for lowering Interior
+            Gateway Protocol (IGP) timers and using Bidirectional Forwarding
+            Detection (BFD). The chapter finishes by covering redundancy
+            protocols, including Virtual Router Redundancy Protocol (VRRP),
+            and several options for Multiprotocol Label Switching (MPLS) path
+            protection.
+
+
+
+Chapter 15, Transitioning Routing and Switching to a Multivendor
+  Environment
+
+
+
+This is the first in a series of chapters that look at how
+            products from Juniper can be added into a single-vendor network to
+            improve the availability of the network. The chapter uses a
+            layered strategy that first compares interface characteristics,
+            then IGPs, and then BGP configuration syntax between JUNOS and IOS
+            devices.
+
+
+
+Chapter 16, Transitioning MPLS to a Multivendor
+  Environment
+
+
+
+This chapter builds on the successes of the previous chapter
+            by adding Resource Reservation Protocol (RSVP) and Label
+            Distribution Protocol (LDP)-signaled MPLS to the multivendor BGP
+            topology. The chapter includes discussion of MPLS interoperability
+            "gotchas" between JUNOS and IOS, and concludes with two case
+            studies that show layered transition and site-based transition to
+            a multivendor state.
+
+
+
+Chapter 17, Monitoring Multivendor Networks
+
+
+
+In this chapter, the authors compare Simple Network
+            Management Protocol (SNMP) and syslog configuration syntax between
+            JUNOS and IOS platforms, and look at best practices for use of the
+            tools to monitor multivendor networks. The chapter concludes with
+            a brief look at the J-Web GUI as a device monitoring tool.
+
+
+
+Chapter 18, Network Scalability
+
+
+
+This chapter opens with a comparison of throughput
+            capabilities of the different product families that run JUNOS. The
+            chapter then looks at additional configuration tweaks that allow
+            the network to grow or shrink as needed to meet changing demands
+            from the user base. A key feature of this chapter is high
+            availability zoning for BGP route reflector schemes. The chapter
+            closes with a look at how traffic engineering can help a network
+            scale while meeting customer availability and bandwidth
+            requirements.
+
+
+
+Chapter 19, Choosing, Migrating, and Merging Interior Gateway Protocols
+
+
+
+This chapter discusses the two most commonly used
+            industry-standard IGPs: Open Shortest Path First (OSPF) and
+            Intermediate System to Intermediate System (IS-IS). The first section examines
+            the advantages and disadvantages of each protocol, and looks at
+            how each one supports high availability. The next section examines
+            what is involved in migrating from one of these IGPs to the other.
+            The chapter finishes with considerations and recommendations for
+            merging separate networks that run the same IGP.
+
+
+
+Chapter 20, Merging BGP Autonomous Systems
+
+
+
+This chapter discusses features of JUNOS and best common
+            practices that can be used to merge Autonomous Systems (ASs) while
+            preserving network uptime. Issues that occur in large-scale BGP
+            deployments are also raised.
+
+
+
+Chapter 21, Making Configuration Audits Painless
+
+
+
+This chapter provides information on using JUNOS Software
+            features to audit network configurations to ensure that human
+            error or misconfiguration does not cause network downtime.
+
+
+
+Chapter 22, Securing Your Network Equipment Against Security Breaches
+
+
+
+This chapter provides an overview of options to provide
+            strong security for your device. It discusses authentication
+            methods, and then lists a series of features you can implement to
+            harden the device. The chapter then dives into firewall filters,
+            discussing how they are configured and implemented. It ends with
+            several examples using filters to protect the network as well as
+            the device itself.
+
+
+
+Chapter 23, Monitoring and Containing DoS Attacks in Your Network
+
+
+
+Building on the previous chapter, this chapter discusses
+            strategies for attack detection, as well as steps you can take to
+            lessen the impact of the attack while it is in progress. It then
+            covers strategies for proactively reducing the impact of
+            denial-of-service (DoS) attacks on your network. The chapter
+            concludes by discussing several methods you can use to gather
+            evidence of the attack.
+
+
+
+Chapter 24, Goals of Configuration Automation
+
+
+
+This chapter discusses how configuration automation can be
+            used to prevent human errors that cause network downtime.
+
+
+
+Chapter 25, Automated Configuration Strategies
+
+
+
+This chapter provides an overview of how to use the JUNOS
+            tools to conduct configuration automation for various network
+            settings and architectures.
+
+
+
+
+
+
+
+
+
+
+Part IV
+
+
+
+
+We include a few items for your perusal: a sample checklist for
+      getting new JUNOS devices operational, a sample audit list, and a JUNOS
+      configuration statement review for high availability operations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Conventions Used in This Book
+
+
+
+The following typographical conventions are used in this
+    book:
+
+
+
+
+
+Italic
+
+
+
+
+Indicates new terms, URLs, email addresses, filenames, file
+          extensions, pathnames, directories, and Unix utilities.
+
+
+
+Constant width
+
+
+
+Indicates commands, options, switches, variables, attributes,
+          keys, functions, types, classes, namespaces, methods, modules,
+          properties, parameters, values, objects, events, event handlers, XML
+          tags, HTML tags, macros, the contents of files, and the output from
+          commands.
+
+
+
+
+Constant width
+        bold
+
+
+
+
+Shows commands or other text that should be typed literally by
+          the user.
+
+
+
+
+Constant width italic
+
+
+
+
+Shows text that should be replaced with user-supplied
+          values.
+
+
+
+
+Note
+This icon signifies a tip, suggestion, or general note.
+
+
+Warning
+This icon indicates a warning or caution.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Using Code Examples
+
+
+
+This book is here to help you get your job done. In general, you may
+    use the code in this book in your own configurations and documentation.
+    You do not need to contact us for permission unless you're reproducing a
+    significant portion of the material. For example, deploying a network
+    based on actual configurations from this book does not require permission.
+    Selling or distributing a CD-ROM of examples from O'Reilly books does
+    require permission. Answering a question by citing this book and quoting
+    example code does not require permission. Incorporating a significant
+    number of sample configurations or operational output from this book into
+    your product's documentation does require permission.
+We appreciate, but do not require, attribution. An attribution
+    usually includes the title, author, publisher, and ISBN. For example:
+    "JUNOS High Availability, by James Sonderegger, Orin Blomberg, Kieran Milne,
+    and Senad Palislamovic. Copyright 2009 James
+    Sonderegger, Orin Blomberg, Kieran Milne, and Senad Palislamovic,
+    978-0-596-52304-6."
+If you feel your use of code examples falls outside fair use or the
+    permission given here, feel free to contact us at
+    permissions@oreilly.com.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Safari® Books Online
+
+
+
+
+Note
+Safari Books Online is an on-demand digital library that lets you
+      easily search over 7,500 technology and creative reference books and
+      videos to find the answers you need quickly.
+
+With a subscription, you can read any page and watch any video from
+    our library online. Read books on your cell phone and mobile devices.
+    Access new titles before they are available for print, and get exclusive
+    access to manuscripts in development and post feedback for the authors.
+    Copy and paste code samples, organize your favorites, download chapters,
+    bookmark key sections, create notes, print out pages, and benefit from
+    tons of other time-saving features.
+O'Reilly Media has uploaded this book to the Safari Books Online
+    service. To have full digital access to this book and others on similar
+    topics from O'Reilly and other publishers, sign up for free at http://my.safaribooksonline.com.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Comments and Questions
+
+
+
+Please address comments and questions concerning this book to the
+    publisher:
+
+
+O'Reilly Media, Inc.
+
+
+1005 Gravenstein Highway North
+
+
+Sebastopol, CA 95472
+
+

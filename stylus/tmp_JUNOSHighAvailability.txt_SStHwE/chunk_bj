@@ -1,0 +1,1000 @@
+                source-address {
+                    192.168.1.0/24;
+                }
+                protocol tcp;
+                destination-port 80;
+            }
+            then accept;
+        }
+    }
+}
+In this case, traffic from a host with a source address of
+        192.168.1.1 that is destined for a web server (using the standard HTTP
+        port 80) matches the conditions. Traffic from the same host destined
+        for an FTP server does not match the conditions, and would be
+        dropped.
+
+Note
+Multiple conditions within a term create an "and" scenario.
+          All conditions must match for the packet to be considered a match
+          against the term.
+
+There is one exception to the rule that a packet must match all
+        conditions within a term to be considered a match. Consider the
+        following example:
+
+[edit]
+lab@r1# show firewall family inet filter anotherfilter
+term A {
+    from {
+        address {
+            20.20.20.0/24;
+            30.30.30.0/24;
+            40.40.40.0/24;
+        }
+    }
+    then accept;
+}
+In this example, it is clearly impossible for a packet to match
+        all the address conditions. When address filters are used, the term is
+        considered a match when any of the addresses matches the
+        packet.
+When there are multiple terms, each term is evaluated
+        sequentially. If the packet matches the first term, it takes the
+        corresponding action. If the packet does not match the first term, the
+        router evaluates it against the second term.
+Consider the following variation on the previous example:
+
+[edit]
+lab@r1# show firewall family inet filter samplefilter2
+term A {
+    from {
+        source-address {
+            192.168.1.0/24;
+        }
+    }
+    then accept;
+}
+term B {
+    from {
+        protocol tcp;
+        destination-port 80;
+    }
+    then accept;
+}
+In this example, an incoming packet is evaluated against term
+        A. If the packet does not match the
+        condition, it moves on to term B.
+        So, where the previous example required the traffic to come from a
+        specific subnet and be destined for a specific
+        port, this example separates the two parameters. A host with a source
+        address of 192.168.1.1 is a match, regardless of which port the
+        traffic is destined to. And likewise, any traffic toward port 80 is a
+        match, regardless of where it came from.
+
+Note
+Multiple terms create an "or" scenario. Conditions within a
+          term are evaluated separately from conditions within another
+          term.
+
+
+
+
+
+
+Implicit discard
+
+
+
+By default, there is an implicit discard all at the end of a filter. Traffic
+        that does not match any term is dropped.
+
+Note
+In general, you want to explicitly configure the traffic you
+          want to accept. This causes all other traffic to be automatically
+          discarded.
+
+There may be rare situations where you want an implicit accept
+        as the final rule. This can be achieved as follows:
+
+[edit]
+lab@r1# show firewall family inet filter samplefilter3
+term A {
+    from {
+        source-address {
+            192.168.1.0/24;
+        }
+    }
+    then {
+        discard;
+    }
+}
+term B {
+    from {
+        protocol tcp;
+        destination-port 80;
+    }
+    then {
+        discard;
+    }
+}
+term C {
+    then accept;
+}
+In this case, the match conditions in terms A and B
+        cause packets to be discarded. The last term, term C, has no from statement, which means it matches all
+        other traffic. This creates an implicit accept as the final match
+        condition.
+
+
+
+
+
+
+Applying Firewall Filters
+
+
+
+A firewall filter can be well planned and designed, but it doesn't actually
+      do anything until you apply it to an interface on the device. You can
+      apply two filters (or filter lists) to each interface, one inbound and
+      one outbound:
+
+[edit]
+lab@r1# show interfaces ge-0/0/2 unit 0
+family inet {
+    filter {
+        input samplefilter;
+        output anotherfilter;
+    }
+    address 192.168.1.100/24;
+}
+As the preceding example shows, firewall filters have been applied
+      to the ge-0/0/2 interface, one in
+      each direction.
+
+Note
+The benefit of creating a filter and then applying it as a
+        separate step is that you can apply a filter to more than one
+        interface. In fact, you can reuse filters on as many interfaces as you
+        wish.
+
+
+
+
+
+
+Using Firewall Filters to Protect the Network
+
+
+
+There are countless ways you can use and apply firewall filters to control traffic
+      flowing into and out of your network. This section shows some examples
+      of how to apply filters to protect the network. The network diagram in
+      Figure 22-1 serves as a
+      reference for the examples that follow.
+
+
+
+
+
+
+
+
+
+Figure 22-1. Reference diagram for following scenarios
+
+
+
+
+
+
+Spoof prevention
+
+
+
+In this scenario, you want to deny inbound traffic that is using your own
+        address space as its source address. For example, if your public
+        address space is 100.100.100.0/24, your filter would look like
+        this:
+
+[edit]
+lab@r1# show firewall family inet filter no-spoof
+term A {
+    from {
+        source-address {
+            0.0.0.0/0;
+            100.100.100.0/24 except;
+        }
+    }
+    then accept;
+}
+term B {
+    then {
+        count no-spoof-counter;
+        log;
+        discard;
+    }
+}
+This example makes use of a very convenient feature,
+        the except command. Term
+        A matches all traffic
+        except your public address space. Traffic with a
+        source address of your address space moves on to term B. Normally you wouldn't need term B, since all filters end with an implicit
+        discard condition. However, when you let the implicit discard rule
+        drop the traffic, you get no additional information about how much of
+        this type of traffic you are receiving. This example shows how you can
+        implement the implicit discard while also logging and counting traffic
+        that matches your addressing space.
+Remember that this filter doesn't actually do anything until you
+        apply it to an interface. Since this filter is designed to block
+        traffic inbound to your network, it should be applied to the wide area
+        network (WAN)-side interface, in the inbound direction:
+
+[edit]
+lab@r1# show interfaces ge-0/0/2
+unit 0 {
+    family inet {
+        filter {
+            input no-spoof;
+        }
+        address 200.200.200.200/24;
+    }
+}
+Your network is now protected from traffic that is illegally
+        using your public addressing.
+
+Note
+You can extend this scenario by applying another inbound
+          filter to the ge-0/0/1 interface
+          that allows only traffic with a source address of your public
+          address space. This would ensure that no outbound traffic is being
+          spoofed.
+
+
+
+
+
+
+Securing a web/FTP server
+
+
+
+In this scenario, you want to control traffic destined to a specific server on your
+        network. External traffic should access the server using only FTP and
+        HTTP. If the server has an IP address of
+        100.100.100.100, your filter would look like this:
+
+[edit]
+lab@r1# show firewall family inet filter control-server-access
+term allow-FTP_HTTP-access {
+    from {
+        destination-address {
+            100.100.100.100/32;
+        }
+        protocol tcp;
+        destination-port [ ftp ftp-data http ];
+    }
+    then accept;
+}
+term deny-server-access {
+    from {
+        destination-address {
+            100.100.100.100/32;
+        }
+    }
+    then {
+        count no-server-access;
+        log;
+        discard;
+    }
+}
+term all-else {
+    then accept;
+}
+Several things are going on in this filter. The first term,
+        allow-FTP_HTTP-access, accepts FTP
+        and HTTP traffic destined for the server. Note that JUNOS does not
+        require that you enter port numbers for commonly known services;
+        instead, you can enter the protocol names. Something else to note
+        is a slight quirk in the terminology used to construct filters. As you read the first
+        term, it appears to say "traffic from destination address 100.100.100.100," which sounds
+        rather contradictory. Traffic comes from a source; it doesn't come
+        from a destination. When analyzing firewall filters, it can be helpful
+        to replace the word from with
+        matches, as that is the actual intent of that
+        section. It makes more logical sense to say, "Traffic that matches
+        destination address 100.100.100.100," and it certainly reduces
+        confusion!
+The second term, deny-server-access, denies all other traffic
+        to the server. It also counts and logs packets that match this term.
+        This is the term that actually protects the server from unwanted
+        traffic.
+The third term is simple but critical. So far this filter allows
+        traffic only to specific ports on a specific host. With only two
+        terms, the implicit discard at the end of the filter will block all
+        other traffic! So, you need to add the third term to allow other
+        traffic through to your network.
+As always, firewall filters don't do anything until you apply
+        them. This filter can be applied inbound on the WAN-facing interface
+        of the device:
+
+[edit]
+lab@r1# show interfaces ge-0/0/2
+unit 0 {
+    family inet {
+        filter {
+            input control-server-access;
+        }
+        address 192.168.1.100/24;
+    }
+}
+
+Note
+It is important to carefully consider where you apply your
+          filter on the device. In the previous examples, there is only one
+          inbound interface, so applying filters to the WAN-side interface
+          inbound works just fine. However, if you have multiple inbound
+          interfaces, it is simpler to apply these filters as output filters
+          on the LAN-side interface of the device to ensure that all inbound
+          traffic gets examined.
+
+
+
+
+
+
+The options are endless
+
+
+
+As you can imagine, there are countless possibilities when using
+        firewall filters, and full coverage of all aspects and options of
+        filters is beyond the scope of this book. You can find detailed
+        information on firewall filters in JUNOS Software technical
+        publications, which are freely available at http://www.juniper.net/techpubs/software/junos/index.html.
+
+
+
+
+
+
+Using Firewall Filters to Protect the Routing Engine
+
+
+
+When you use firewall filters, you generally think of accepting and
+      denying traffic that passes through the device. However, you can also
+      use filters to protect the device itself—specifically, the routing engine
+      (RE). Protecting and securing the RE from attacks and unwanted traffic
+      is a key component of maintaining five 9s availability.
+You implement RE filters in much the same way you would when
+      filtering transit traffic. You can create filters using all the same
+      capabilities you saw earlier. The only difference to the process is
+      where you apply the filter. To protect the RE, you apply filters to
+      the lo0 interface. Filters
+      applied to this interface (in the inbound direction) analyze only
+      traffic destined for the device itself.
+A firewall filter for the RE might look something like
+      this:
+
+[edit]
+lab@r1# show firewall family inet filter protect-RE
+term A {
+    from {
+        destination-port ssh;
+    }
+    then accept;
+}
+
+[edit]
+lab@r1# show interfaces lo0
+unit 0 {
+    family inet {
+        filter {
+            input protect-RE;
+        }
+        address 10.0.0.1/32;
+    }
+}
+The upper part of the example displays a filter called protect-RE, with a single term that
+      accepts SSH connections. The lower part of the example shows that
+      the filter is applied inbound on the lo0 interface. As with all firewall filters,
+      there is an implicit discard condition at the end of the filter.
+However, there is a major problem with this example—a problem
+      that, if not corrected, will cause even bigger problems and will work
+      directly against your efforts to maintain high availability for the
+      network. While it is easy to get caught up in adding all the necessary
+      rules to protect your device, is it critically important to remember a
+      key detail: an input filter on the lo0 interface affects all
+      traffic destined to the device. This includes management access, but
+      also includes protocol communications such as routing updates, as well
+      as other management communication protocols, such as Simple Network Management Protocol (SNMP). If you commit
+      the previous configuration, you will actually "break" your network—not a
+      good thing when the goal is constant uptime! Routing protocols will be
+      blocked, causing other devices to think that this device has failed.
+      This will cause reconvergence in the network, and traffic to be
+      rerouted. Management systems will also think the device has stopped
+      responding because communications have been blocked. Another side effect
+      of this situation is that ICMP traffic will be discarded. This means that as you
+      begin to realize there is a problem, any tests you perform using ping to
+      the lo0 interface will only reinforce
+      the impression that the device, or at least the RE, has failed!
+Proper implementation of a filter on the lo0 interface requires that you include terms
+      and match conditions for all traffic that needs to
+      be able to reach the device. It's perfectly fine to add security to
+      harden the device; however, be very certain you are still allowing
+      required traffic through to the RE.
+Here is a more complete version of the protect-RE filter:
+
+[edit firewall family inet]
+lab@r1# show filter protect-RE
+term mgmt-access-in {
+    from {
+        protocol tcp;
+        destination-port [ ssh https ];
+    }
+    then accept;
+}
+term mgmt-access-out {
+    from {
+        address {
+            10.0.0.1/32;
+        }
+        protocol tcp;
+        port ssh;
+        tcp-established;
+    }
+    then accept;
+}
+term ospf {
+    from {
+        protocol ospf;
+    }
+    then accept;
+}
+term bgp {
+    from {
+        protocol tcp;
+        port bgp;
+    }
+    then accept;
+}
+term ping {
+    from {
+        protocol icmp;
+        icmp-type [ echo-request echo-reply ];
+    }
+    then accept;
+}
+term discard-all-else {
+    then {
+        count dropped-RE-traffic-inbound;
+        log;
+        discard;
+    }
+}
+This improved filter now contains terms that allow inbound and
+      outbound management traffic, as well as OSPF and Border Gateway Protocol (BGP) traffic. Ping testing will also work properly now.
+      Of course, this filter is still just an example. There are countless
+      options you may need to include, depending on the requirements of your
+      network.
+
+Note
+When committing a configuration that includes a filter on the
+        lo0 interface, it is
+        strongly recommended that you use the commit confirmed command. This command
+        temporarily activates the configuration on the device, but requires
+        you to enter commit again within 10
+        minutes (by default) to permanently implement the new configuration.
+        This feature provides a safety mechanism in case you accidentally lock
+        yourself out of the device you are configuring. If you don't confirm
+        the commit within the allotted time, the device rolls back to the
+        previous committed configuration. If you had blocked your own access
+        to the device, you will now be able to access the device again.
+
+With careful planning, applying a firewall filter to the lo0 interface can be an excellent way to
+      secure and harden the device, and support your goal of five 9s
+      availability.
+
+
+
+
+
+Stateful Firewalls
+
+
+
+The filtering we described in the preceding section uses a
+      stateless firewall. Stateless firewalls have their
+      place, and JUNOS devices provide a wealth of excellent options for
+      controlling traffic and protecting the device itself. That being said,
+      stateless firewalls have limitations, the most significant of which is
+      the inability to track a given flow bidirectionally. The packet filter
+      processes each packet as it enters (or leaves) the interface, but it
+      does not keep a record of that transaction beyond the single assessment
+      of the packet. A stateful firewall's primary advantage is that it can
+      keep track of traffic flows. If a JUNOS device assesses a packet and
+      determines that the traffic should be accepted, the device adds an entry
+      to its flow table. Now any traffic belonging to this same flow is
+      automatically accepted, without having to be assessed again by the
+      firewall's filters. This reduces the load on the device's resources and
+      increases throughput.
+Stateful firewalls are featured on SRX Series devices and J Series devices using flow-based JUNOS Software. You can
+      also use a stateful firewall on M Series and MX Series devices by installing a services card.
+Stateful firewalls are beyond the scope of this book. Although the
+      concepts and general capabilities between stateless and stateful
+      firewalls are the same, the implementation of stateful firewalls is more
+      complex.
+You can get complete information on using stateful firewalls on JUNOS devices at http://www.juniper.net/techpubs/software/junos/index.html.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 23. Monitoring and Containing DoS Attacks in Your Network
+
+
+
+Denial-of-service (DoS) attacks can have a devastating effect on end hosts as well as the
+  networks that service them. Devices can become slow to respond or even crash
+  completely, creating network downtime. DoS attacks are almost impossible to
+  stop at their source, so the focus must be on detecting the attacks and
+  taking steps to limit their impact on the devices in your network. This
+  chapter discusses strategies for attack detection, as well as steps you can
+  take to lessen the impact of an attack while it is in progress. It also
+  covers strategies for proactively reducing the impact of DoS attacks on your
+  network, and concludes by showing you some ways you can gather evidence of
+  the attack.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Attack Detection
+
+
+
+You must have mechanisms in place to detect DoS attacks. You can use
+    packet filters to help monitor and detect when an attack is
+    occurring.
+
+
+
+
+Using Filtering to Detect Ping Attacks
+
+
+
+A variety of attacks use ICMP traffic. These attacks are designed to either
+      overwhelm the resources of the target device, or fill the bandwidth of
+      the link leading to the target device. In either case, the goal is to
+      make the target device unreachable.
+To detect these attacks, you can create firewall filters—not to
+      block traffic, but to count and log it. The filter can be quite simple
+      to create:
+
+[edit]
+lab@r1# show firewall family inet filter check-for-icmp
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol icmp;
+    }
+    then {
+        count icmp-counter;
+        log;
+        accept;
+    }
+}
+term B {
+    then accept;
+}
+In this example, there is a server, 192.168.28.1, which could be a
+      target for attack. Notice that at this point there is no protection in
+      place; traffic is accepted. However, ICMP traffic destined for the
+      server is counted and logged. This filter, once applied outbound to the
+      JUNOS device's server-facing interface, allows you to view statistics on
+      how much ICMP traffic is being sent toward the server.
+Once you have committed the configuration, use the show firewall command
+      to monitor ICMP traffic toward the server:
+
+[edit]
+lab@r1> show firewall
+Filter: __default_bpdu_filter__
+Filter: check-for-icmp
+Counters:
+Name                                      Bytes           Packets
+icmp-counter                                  0                 0
+In the preceding example, you can see the filter, check-for-icmp, and its related counters,
+      specifically the one named icmp-counter. When monitoring for ICMP
+      attacks, you can reissue the show
+      firewall command a few times and check how quickly the
+      icmp-counter counter is increasing.
+      If the counter values are increasing rapidly, you may be experiencing a
+      DoS attack.
+
+
+
+
+
+Using Filtering to Detect TCP SYN Attacks
+
+
+
+Another type of DoS attack involves a host initiating many TCP sessions to a device.
+      The device responds to the initiating device, but the initiating device
+      doesn't complete the session setup, leaving the session in a partially
+      connected but useless state. This isn't a problem in itself, as the
+      receiving device will eventually tear down the TCP session. However, a
+      TCP SYN attack involves initiating thousands of sessions, none of which
+      are actually used. Eventually, the receiving device becomes overwhelmed
+      and can no longer function properly.
+A good way to monitor TCP SYN packets is to create a firewall filter that compares TCP SYN packets to overall
+      TCP traffic:
+
+[edit]
+lab@r1# show firewall family inet filter check-for-TCP-SYN
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+        tcp-flags syn;
+    }
+    then {
+        count syn-counter;
+        log;
+        accept;
+    }
+}
+term B {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+    }
+    then {
+        count tcp-counter;
+        accept;
+    }
+}
+term C {
+    then accept;
+}
+Notice how this filter accepts all traffic, but counts both TCP
+      SYN packets and general TCP packets destined for the server. Like the
+      ICMP filter, once you apply this filter outbound to the device's
+      server-facing interface and commit the configuration, you can again use
+      the show firewall command
+      to view statistics on how much TCP traffic is being sent toward the
+      server:
+
+[edit]
+lab@r1> show firewall
+Filter: __default_bpdu_filter__
+Filter: check-for-icmp
+Counters:
+Name                                    Bytes            Packets
+icmp-counter                             1596                 19
+Filter: check-for-TCP-SYN
+Counters:
+Name                                    Bytes            Packets
+syn-counter                                 0                  0
+tcp-counter                                 0                  0
+When the network is in a normal state, the tcp-counter value should be much higher than
+      the syn-counter value; that is, there
+      should generally be more TCP packets than TCP SYN packets. If you see
+      the statistics change such that the counters show there are more TCP SYN
+      packets than general TCP packets, you are likely experiencing a
+      DoS attack.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Taking Action When a DoS Attack Occurs
+
+
+
+When you determine that a DoS attack is occurring, there is very
+    little chance that you can do much to stop the attack itself. But there
+    are a few ways you can block the traffic from getting to the target
+    device.
+
+
+
+
+Using Filtering to Block DoS Attacks
+
+
+
+The most obvious step you can take to block the attack is to use firewall
+      filters. The exact solution will depend on the type and scope of the
+      attack, but a good general approach is to use filters similar to the
+      ones you used to detect the attack in the first place.
+Here is a filter similar to the ICMP filter shown earlier, but with a slight
+      variation:
+
+[edit]
+lab@r1# show firewall family inet filter discard-icmp
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol icmp;
+    }
+    then {
+        count icmp-counter;
+        log;
+        discard;
+    }
+}
+term B {
+    then accept;
+}
+In the preceding example, a filter called discard-icmp has many of the same parameters
+      as the check-for-icmp filter, but
+      with a key difference: ICMP traffic destined for the server is now
+      dropped. Once you apply this filter outbound on the server-facing
+      interface, the attack will be blocked.
+
+Note
+Do not deny traffic with the reject command. Rejecting traffic causes the
+        JUNOS device to respond with an ICMP message of its own for each
+        packet that matches the filter. This means the device generates as
+        much traffic as it receives during the attack, which doesn't help the
+        situation!
+
+You can implement the same solution for TCP SYN attacks, using a variation of the filter shown
+      earlier:
+
+[edit]
+lab@r1# show firewall family inet filter discard-TCP-SYN
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+        tcp-flags syn;
+    }
+    then {
+        count syn-counter;
+        log;
+        discard;
+    }
+}
+term B {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+    }
+    then {
+        count tcp-counter;
+        accept;
+    }
+}
+term C {
+    then accept;
+}
+In this example, the discard-TCP-SYN filter is very similar to the
+      check-for-TCP-SYN filter, with a key
+      difference: term A discards matching
+      traffic. Once you apply this filter outbound on the server-facing
+      interface, the attack will be blocked.
+
+Note
+It's a best practice to keep in mind that when an attack occurs,
+        time is critical. A good way to minimize downtime resulting from a DoS
+        attack is to create as many of the filters as you can
+        before the attack occurs. For example, in the
+        preceding scenarios, you could create the filters in advance. Then,
+        when the attack occurs, you can simply apply the desired filters to
+        the appropriate interfaces and commit the configuration.
+
+
+
+
+
+Filter some, filter all
+
+
+
+Filtering can be an excellent way to block traffic when an
+        attack occurs. However, it comes with a certain cost. When you block
+        traffic to prevent an attack, you block all
+        traffic that matches the conditions, including legitimate traffic. For
+        example, if you implement the discard-TCP-SYN filter, you block the attack
+        traffic, but you also block any legitimate connections that happen to
+        be trying to establish a session while the attack is going on.
+While the issue of blocking legitimate traffic can appear to be
+        significant, in practice it isn't a big issue at all. Why? First, the
+        benefit of blocking the attacking traffic usually far outweighs the
+        issue of blocked legitimate sessions. Second, the reality of the
+        situation is that if you didn't implement the filter, the attack would
+        bring down the device, or at least degrade performance significantly,
+        so the legitimate TCP connection wouldn't be able to connect
+        regardless.
+
+
+
+
+
+
+Request Help from Your Upstream Provider
+
+
+
+When it becomes clear that your network is under attack, a logical step to take
+      is to contact your service provider for help in blocking the attack (if
+      you have multiple upstream providers, you must determine which direction
+      the attack is coming from). Contact your upstream provider and provide
+      information about the attack, including what you have learned based on
+      the steps discussed previously. Your service provider should be able to
+      help block the attack traffic by using the same filtering mechanisms you
+      have implemented, or they may use routing techniques to black-hole the
+      traffic.
+
+Note
+Some service providers are now charging for this additional
+        "protection."
+
+
+
+An Alternative Way to Discard DoS Traffic
+Firewall filters are an excellent tool for controlling and blocking DoS
+        attacks. However, in larger-scale environments this may not be a
+        manageable solution. Service providers should consider implementing
+        black hole routing to stop DoS attacks as close to their source as
+        possible. You can preconfigure black hole routing using static routing
+        with a discard next hop or using the discard
+        interface. With the main components configured, you can implement
+        black holing easily and at a moment's notice using Border Gateway
+        Protocol (BGP) route advertisements or community strings.
+For more information on using black hole routing as a method for
+        controlling DoS attacks, see the presentation by
+        Joe Soricelli and Wayne Gustavus at http://www.nanog.org/meetings/nanog32/presentations/soricelli.pdf.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Attack Prevention
+
+
+
+It is extremely difficult to actually prevent a DoS attack, since you
+    usually don't own the network from which the attack is originating. That
+    being said, there are some steps you can take to help prevent attacks from
+    bringing down your network and devices.
+
+
+
+
+Eliminate Unused Services
+
+
+
+Disabling or removing services that the device is not using gives you a good
+      start toward defeating attacks. Every active service is listening on an
+      open port. Certain attacks, such as TCP SYN floods, rely on this fact.
+      For example, a TCP SYN flood to TCP port 21 will not succeed if the FTP
+      service on the target device is disabled. Of course, you can't disable
+      all services—devices legitimately need some in order to function
+      properly and interact with other devices on the network. But there is no
+      good reason to leave unused services running, and leave the device any
+      more open to attack than it needs to be.
+
+
+
+
+
+Enable Reverse Path Forwarding
+
+
+
+Unicast Reverse Path Forwarding (RPF)
+      is a kind of security tool that confirms that traffic is
+      coming from where it's supposed to be coming from. When a packet arrives
+      at a JUNOS device that is configured to use unicast RPF, the device does
+      a route lookup to determine which path it should use to send return
+      traffic to the originating device. If the packet's incoming interface
+      matches the interface the router would use to send return traffic, the
+      packet is considered valid; otherwise, the packet is dropped.
+Some attacks use IP spoofing as part of their attack, meaning part
+      of the IP address isn't genuine. You can find an example of this within
+      the mechanics of a smurf attack, an attack in which
+      the originating device sends out a large number of pings. To avoid
+      having the ICMP replies come back and bombard the originating device,
+      it sends the pings using a source IP address other than its own. This
+      causes another device to suffer as it receives all the ICMP reply
+      messages.
+Unicast RPF can be a great help in stopping this attack without
+      having to perform any action at all. As the packet arrives at the JUNOS
+      device, it is analyzed to see whether it is coming in on the correct
+      interface relative to its source address. Since the source address has
+      been spoofed, there is a reasonable chance the packet will be deemed to
+      be entering on the wrong interface. The packets will be dropped and the
+      attack will end then and there. A simple feature such as unicast RPF can
+      play a significant role in attack prevention.
+Unicast RPF is easy to configure; simply add it to each desired interface, as shown here:
+
+[edit]
+lab@r1# set interfaces so-0/1/1 unit 0 family inet rpf-check
+
+
+
+
+
+Use Firewall Filters
+
+
+
+We have covered this topic in some detail at this point, but with
+      good reason. You certainly don't want to put filters in place that will
+      block legitimate traffic from getting through to its destination. But
+      you also shouldn't leave the network any more open to attack than
+      necessary. If you know of a common attack that uses, for example,
+      UDP port 12345, and you don't use that port for any
+      service within your network, of course you want to block that
+      port!
+In practice, you should use the "less is more" approach. Start
+      with all traffic blocked and allow only what you need to in order to let
+      legitimate traffic through. By following this approach, you are
+      automatically protecting your network from many attacks.
+
+
+
+
+
+Use Rate Limiting
+
+
+
+Firewall filters provide good protection from DoS attacks, but they have a
+      shortcoming: the filter either accepts or denies traffic; there is no
+      middle ground. You can protect against an attack, but at the expense of

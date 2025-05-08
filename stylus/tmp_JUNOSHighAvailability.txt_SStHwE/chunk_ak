@@ -1,0 +1,1000 @@
+
+jinstall-
+
+
+
+M and T Series
+
+
+
+
+
+jinstall-ex-
+
+
+
+EX Series
+
+
+
+
+
+junos-jseries-
+
+
+
+J Series
+
+
+
+
+
+junos-jsr-
+
+
+
+J Series with enhanced
+              services
+
+
+
+
+
+
+As an example, let's take a look at a currently available software
+      package:
+
+
+
+jbundle-9.1R3.5-domestic-signed.tgz
+
+
+
+
+
+
+
+jbundle
+
+
+
+Indicates that this is a JUNOS release appropriate for M and
+            T Series routers.
+
+
+
+9.1
+
+
+
+The major release number.
+
+
+
+R
+
+
+
+Indicates that this is a general release rather than an
+            alpha, beta, or experimental release.
+
+
+
+3.5
+
+
+
+The revision number (or minor release number).
+
+
+-domestic
+
+
+Indicates that this release includes strong encryption
+            components that are appropriate for use in the United
+            States and Canada, but whose export must be controlled.
+
+
+-signed
+
+
+Indicates that an MD5 hash of the operating system image is
+            available and can be used to confirm the integrity of the image.
+
+
+
+
+
+
+
+
+When to Upgrade JUNOS in a High Availability Environment
+
+
+
+As we mentioned, upgrading JUNOS is an easy task that you can complete with
+      a single simple command. So, "How do I upgrade?" is not the first
+      question an administrator needs to ask. The important question is,
+      "When should I upgrade?" Software upgrades should
+      be performed for a reason, preferably for several. Valid reasons for a
+      software upgrade include the following:
+
+
+
+The current release of code being used in production is
+          approaching end of life (EOL) and will no longer be supported by the Juniper Technical Assistance Center (JTAC). JTAC
+          service agreements usually require the devices under contract to run
+          a supported version of JUNOS to qualify for support.
+
+
+The current release of code being used in production does not
+          support a necessary feature. Networks tend to grow over time, and as
+          the number of users increases, the demands placed on the network
+          increase. Requirements evolve over time as well. High availability
+          requirements are a perfect example. High concentrations of users or
+          growth of business-critical services may make unified In-Service Software Upgrade (ISSU) a
+          requirement. So, it might become necessary to upgrade devices in the
+          network to a newer release capable of supporting ISSU
+          functionality.
+
+
+The current release of code being used in production is found
+          to have a bug or vulnerability. Compared to offerings from other
+          vendors, JUNOS is an incredibly stable and resilient operating
+          system. However, bugs and vulnerabilities are occasionally
+          discovered. In a few cases, the bugs and vulnerabilities may be so
+          severe or threatening to the availability of the network that a
+          JUNOS upgrade is needed.
+
+
+All Juniper devices in a network are being moved to a common
+          code release. JUNOS is common
+          across all platforms. As new platforms are released, however, they
+          are not always compatible with older revisions of JUNOS. Therefore,
+          to maintain a single revision of JUNOS across all platforms in the
+          network, it may be necessary to upgrade to a newer software
+          revision.
+
+
+
+
+
+
+
+
+The Right Target Release for a High Availability
+      Environment
+
+
+
+Once you have identified a definite need for an upgrade, the next step is to choose a
+      software revision. In some cases, when a business requirement demands a
+      specific new feature, you may have little choice. In other situations,
+      such as EOL of the currently deployed production release, you have a
+      choice of many options. Given a selection among a number of possible
+      releases, the administrator of a high availability network should
+      consider the following:
+
+
+
+Review release documentation
+
+
+Each release of JUNOS has an accompanying "feature guide"
+            and "release notes" publication. The feature guide describes the
+            configuration of all new and notable features in the release. The
+            release notes document describes any changes in default behavior
+            as well as all known bugs and issues present in the
+            release.
+
+
+Talk to the experts
+
+
+The account and support staffs have a vested interest in
+            helping customers maintain network availability. Consult a Juniper
+            sales representative or JTAC engineer about release options well
+            in advance of the upgrade date.
+
+
+Remember that higher R numbers are usually better than lower R
+          numbers
+
+
+While Juniper makes every effort to eliminate bugs from the
+            operating system, statistically speaking an R1 version of the
+            operating system probably has more issues than a later release.
+            For high availability networks, we recommend R3 and later
+            revisions of JUNOS because the release has had enough time in the
+            field so that most major issues have been identified and
+            resolved.
+
+
+Extended end of life (EEOL)
+
+
+In 2007, Juniper began an EEOL program that features an extended life
+            span revision of the JUNOS software version released in Q4 of
+            every year. Whereas most revisions of JUNOS are supported for only
+            13 months, EEOL releases are supported by JTAC for 37
+            months.
+
+
+
+
+
+
+
+
+High Availability Upgrade Strategy
+
+
+
+It is important to choose an upgrade strategy that minimizes risk. Furthermore, you
+      should document that strategy and thoroughly test it in a lab
+      environment that includes the same devices currently in the production
+      network. These devices should be arranged, as much as possible, to match
+      the neighbor relationships currently in use in production.
+
+
+
+
+Conduct a lab trial
+
+
+
+Once you determine that a JUNOS release is a candidate for the production
+        network, you should install the release in a lab that mimics the
+        devices, protocols, and topology that is used in the production
+        network, and then test it thoroughly. The testing should include all
+        protocols and services currently in use in the production network, as
+        well as any functions or protocols planned for future addition. Appendix A includes a sample lab test plan. Your
+        actual plan should be based on protocols and platforms found in the
+        production network.
+
+
+
+
+
+Choose the device to upgrade
+
+
+
+The choice of target device for an upgrade is based on several
+        factors, including network design, device redundancy schemes, traffic
+        patterns, need, and perhaps even politics. For a detailed explanation
+        of redundancy scheme considerations when planning an upgrade, see
+        Chapter 1.
+
+
+
+
+
+Ensure router steady state
+
+
+
+We cannot overemphasize the importance of making a backup copy of
+        the known good working configuration before beginning a JUNOS upgrade.
+        Of even greater importance is keeping that copy easily accessible
+        during the software upgrade. Occasionally, problems arise during an
+        upgrade that mandate a fallback to the pre-upgrade state of the
+        network. You may need to quickly undo any configuration changes that
+        were made to accommodate the upgrade. You can accomplish this easily
+        by reloading the known good working configuration.
+
+
+
+
+Save the working configuration
+
+
+
+The save command does not require a lot of explanation, but it bears
+          mentioning that this command is relative to the position from which
+          it is executed. To make a complete backup copy
+          of the configuration, you must run the save command from the top-tier
+          hierarchy.
+In this example, the existing working configuration is saved
+          on both the local chassis and an administrative workstation using an
+          FTP command. This save command
+          ensures that the device configuration is readily available should
+          anything go wrong during the upgrade process, and also makes
+          returning to a steady state much easier if you need to back out of a
+          software upgrade:
+
+[edit]
+lab@r5# save r5-backup-20-october-2008
+Wrote 869 lines of configuration to 'r5-backup-20-october-2008'
+
+
+
+
+
+System-archive a copy of the working configuration
+
+
+
+The system archive
+          command has two options that have the chassis create an
+          archive copy of the working configuration. The archive-on-commit option creates a copy of
+          the configuration each time the commit command is executed. The interval option creates a copy of the
+          configuration at specific user-configurable intervals, typically
+          every 24 hours. Both handle the configuration (send it somewhere)
+          based on additional configuration settings at the system level of
+          the hierarchy. This configuration example shows that a copy of the
+          configuration is sent using FTP to the identified hosts each time a
+          configuration change is made:
+
+lab@r5> show configuration system archival
+configuration {
+    transfer-on-commit;
+    archive-sites {
+        "ftp://james:password@199.98.97.217:21";
+        "ftp://backup:password@202.45.45.12:21";
+    }
+}
+
+Note
+While a backup configuration from a regularly scheduled run
+            of a configuration archive
+            may be available, it is always best to create an additional backup
+            immediately before a router upgrade. This backup captures any
+            configuration changes that were made since the last archive
+            run.
+
+
+
+
+
+
+
+Establish a quarantine period
+
+
+
+The idea of a quarantine period is common among network
+        administrators, but the implementation details vary. Some
+        administrators view the predeployment lab testing as part of the
+        quarantine period. The majority of network administrators, however, do
+        not, and selectively upgrade chassis to minimize risk to the
+        production network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Pre-Upgrade Verifications
+
+
+
+Before performing a software upgrade, a competent network administrator checks
+    the state of the chassis, including hardware integrity, peering
+    relationships with adjacent devices, and stability of the routing tables.
+    You do this beforehand, because there are often problems confirming
+    stability after a software upgrade. If you have not performed a
+    pre-upgrade check, it is impossible to know whether any problems are
+    related to the software upgrade or whether they existed prior to the
+    software upgrade. Commands to use and results to expect will vary by
+    platform and by network topology.
+
+Note
+Pre-upgrade and post-upgrade verifications should be nearly
+      identical, as it is necessary to know what normal behavior is in order
+      to spot the abnormal behavior. Appendix B
+      provides a checklist that you can use for both pre-upgrade and
+      post-upgrade verification.
+
+
+
+
+
+Filesystems and Logs
+
+
+
+Network problems tend to be intermittent. As a result, you may not be able
+      to directly observe device or network problems when performing a
+      pre-upgrade verification. This situation is where logfiles come in very
+      handy. A few searches through selected files can show recent past
+      problems that could potentially return. Again, failure to identify a
+      preexisting problem could result in the problem being mistakenly
+      attributed to the software upgrade, which wastes valuable
+      troubleshooting time.
+Logfile information is commonly stored in the messages file.
+      Additional logfiles to look at depend on syslog settings for the
+      chassis. Here is selected content from the messages file on r1. Notice that there appears to be a link
+      flapping issue. This type of event is one that could be mistakenly
+      attributed to a software upgrade if it is not noted and hopefully
+      resolved beforehand:
+
+[edit]
+lab@r1# run show log messages | match down
+Nov 15 19:01:23  r1:[2649]: EVENT <Bandwidth UpDown>
+index 128 <Broadcast Multicast> address #0 0.2.b3.10.af.1e
+Nov 15 19:01:23  r1:[2648]: EVENT <UpDown> ge-0/1/0.0
+index 85 <Broadcast Multicast> address #0 0.2.b3.10.af.1e
+Nov 15 19:01:23  r1:[2648]: EVENT UpDown ge-0/1/0.0
+index 85 7.6.5.1/24 -> 7.6.5.255 <Broadcast Multicast Localup>
+Nov 15 19:01:23  r1:[2648]: EVENT UpDown ge-0/1/0.0
+index 85 <Broadcast Multicast>
+Nov 15 19:01:23  r1:[2648]: EVENT UpDown ge-0/1/0.0
+index 85 <Broadcast Multicast>
+Nov 15 19:01:23  r1:[2648]: EVENT <Bandwidth UpDown>
+index 128 <Broadcast Multicast> address #0 0.2.b3.10.af.1e
+Nov 15 19:01:23  r1:[2648]: EVENT <UpDown> ge-0/0/1.0
+index 86 <Broadcast Multicast> address #0 0.2.b3.24.25.f4
+Nov 15 19:01:23  r1:[2648]: EVENT UpDown ge-0/0/1.0
+index 86 172.17.0.5/30 -> 172.17.0.7 <Broadcast Multicast Localup>
+After reviewing syslog settings, look in the /var/log directory for content of
+      interest:
+
+[edit system syslog]
+lab@r5# show
+file cli {
+    interactive-commands any;
+}
+file messages {
+    any info;
+}
+ file proc {
+    daemon error;
+    kernel error;
+    pfe error;
+}
+
+
+lab@r5-main# run file list /var/log
+
+/var/log:
+access.aprobed
+access.dcd
+access.sampled
+amsterdam/
+aprobed
+apsd
+auditd
+bfdd
+bfdd.0.gz
+bfdd.1.gz
+chassisd
+cli
+cli.0.gz
+cli.1.gz
+cli.2.gz
+cli.3.gz
+cli.4.gz
+
+<output truncated>
+
+
+
+
+
+Checklist
+
+
+
+Creating a procedural checklist is an important part of preparing to
+      upgrade software in a high availability network. The checklist should
+      include methods of confirming the successful upgrade and stability of
+      the network, along with the commands required to perform the upgrade and
+      those required to back out of the upgrade if necessary.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Moving Services Away from a Router
+
+
+
+High availability requirements are so common these days that pretty much all
+    network hardware manufacturers have developed ways to support software
+    upgrades without interrupting service. One method of doing this is to move
+    traffic away from a router prior to a software upgrade. This way, any
+    device downtime associated with the software upgrade is invisible to the
+    end user. In this section, we describe configuration tweaks appropriate
+    for redirecting traffic in a high availability network.
+
+
+
+
+Interface Configuration
+
+
+
+In some situations, simply disabling an interface is the most efficient and
+      desirable way to force traffic onto an alternative path through the
+      network. In Figure 6-1
+      (shown later), both r3 and r4 support connections to r5. Disabling ge-0/0/0 on r4 by using set disable would
+      effectively force all traffic destined for r5 (and r6)
+      to transit r3:
+
+[edit interfaces ge-0/0/0]
+lab@r4# set disable
+
+[edit interfaces ge-0/0/0]
+lab@r4# commit
+commit complete
+
+[edit interfaces ge-0/0/0]
+lab@r4# show
+description "r4 ge-0/0/0 to r5 ge-0/0/0";
+disable;
+unit 0 {
+    family inet {
+        address 10.0.1.14/30;
+    }
+    family mpls;
+}
+
+[edit interfaces ge-0/0/0]
+lab@r4# run show interfaces terse ge-0/0/0
+Interface               Admin Link Proto Local                 Remote
+ge-0/0/0                down  up
+ge-0/0/0.0              up    down inet  10.0.1.14/30
+                                   mpls
+If you choose to use the set
+      disable command remember to change the interface description accordingly:
+
+[edit interfaces ge-0/0/0]
+lab@r4# show
+description "r4 ge-0/0/0 to r5 ge-0/0/0 DISABLED for JUNOS 9.4 UPGRADE";
+disable;
+unit 0 {
+    family inet {
+        address 10.0.1.14/30;
+    }
+    family mpls;
+}
+It is equally important to remember to resume traffic flow on the
+      interface by deleting the disable tag
+      once the software upgrade is completed:
+
+[edit interfaces ge-0/0/0]
+lab@r4# delete disable
+
+[edit interfaces ge-0/0/0]
+lab@r4# set description "r4 ge-0/0/0 to r5 ge-0/0/0"
+
+[edit interfaces ge-0/0/0]
+lab@r4# commit
+commit complete
+
+[edit interfaces ge-0/0/0]
+lab@r4# run show interfaces terse ge-0/0/0
+Interface               Admin Link Proto Local                 Remote
+ge-0/0/0                up    up
+ge-0/0/0.0              up    up   inet  10.0.1.14/30
+                                   mpls
+
+
+
+
+
+Switching Ownership of a VRRP Virtual IP
+
+
+
+Virtual Router Redundancy Protocol (VRRP), discussed in detail in Chapter 12, allows multiple
+      routers to serve as redundant default gateways off a local area network
+      (LAN) segment. These redundant gateways support high
+      availability by preventing the default gateway router from being a
+      single point of failure in the network. The redundant design also allows
+      software upgrades on the routers without loss of connectivity to the
+      protected LAN. In Figure 6-1, r1 and r2
+      are serving as redundant gateways for the Bastion Server LAN.
+The relevant configuration elements from r1 and r2
+      show that both routers are participating in a VRRP group that provides
+      redundancy for the Bastion Server LAN.
+
+
+
+
+
+
+
+
+
+Figure 6-1. Redundant gateways for Bastion Server LAN
+
+
+On r1 we see:
+
+[edit interfaces]
+lab@r1# show ge-0/2/0
+ unit 0 {
+     description "Bastion Server LAN";
+     family inet {
+         address 8.7.6.2/24 {
+             vrrp-group 1 {
+                 virtual-address 8.7.6.1;
+                 priority 101;
+                 preempt;
+                 accept-data;
+                 track {
+                     interface ge-0/1/0 priority-cost 5;
+                     interface ge-0/1/1 priority-cost 5;
+                 }
+             }
+         }
+     }
+}
+On r2 we see:
+
+[edit interfaces]
+lab@r2# show ge-0/2/0
+ unit 0 {
+     description "Bastion Server LAN";
+     family inet {
+         address 8.7.6.3/24 {
+             vrrp-group 1 {
+                 virtual-address 8.7.6.1;
+                 preempt;
+                 accept-data;
+                 track {
+                     interface ge-0/1/0 priority-cost 5;
+                     interface ge-0/1/1 priority-cost 5;
+                 }
+             }
+         }
+     }
+}
+The run show route command
+      confirms that r1 is the current owner
+      of the virtual IP (VIP), 8.7.6.1. Router r1 owns the VIP because its priority is set at
+      101, which is higher than the default priority of 100:
+
+[edit]
+lab@r1# run show route 8.7.6/24
+
+inet.0: 32 destinations, 32 routes (32 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+8.7.6.0/24         *[Direct/0] 00:27:44
+                    > via ge-0/2/0
+8.7.6.1/32         *[Local/0] 00:27:37
+                      Local via ge-0/2/0
+8.7.6.2/32         *[Local/0] 00:27:44
+                      Local via ge-0/2/0
+
+[edit]
+lab@r2# run show route 8.7.6/24
+
+inet.0: 31 destinations, 31 routes (31 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+8.7.6.0/24         *[Direct/0] 00:27:49
+                    > via ge-0/2/0
+8.7.6.3/32         *[Local/0] 00:27:49
+                      Local via ge-0/2/0
+Assuming that all host systems on the LAN are configured
+      correctly, having r1 own the VIP
+      allows a software upgrade to occur on r2 with no impact to traffic leaving the
+      protected Bastion Server LAN. However, notice that although the r1 configuration has a priority of 101, it is
+      penalized 5 points for the loss of a link on ge-0/1/0 or ge-0/1/1. With the current priority setting on
+      r2, failure of a link on r1 could trigger a VIP switch to r2. So, for added security, make a slight
+      change to the VRRP configuration on r2:
+
+[edit interfaces ge-0/2/0 unit 0]
+lab@r5-main# set unit 0 family inet address 8.7.6.3/24 vrrp-group 1 priority 50
+
+[edit interfaces ge-0/2/0 unit 0]
+lab@r2# show
+description "Bastion Server LAN";
+family inet {
+    address 8.7.6.3/24 {
+        vrrp-group 1 {
+            virtual-address 8.7.6.1;
+            preempt;
+            priority 50;
+            accept-data;
+            track {
+                interface ge-0/1/0 priority-cost 5;
+                interface ge-0/1/1 priority-cost 5;
+            }
+        }
+    }
+}
+This change permits r1 to
+      retain the VIP in the event that the ge-0/1/0 or ge-0/1/1 interface fails.
+
+
+
+
+
+IGP Traffic Control Tweaks
+
+
+
+The previous section showed how to configure VRRP to "encourage" traffic
+      leaving the Bastion Server LAN to use r1 as the exit point. In this section, we
+      modify Open Shortest Path First (OSPF) and Intermediate System to
+      Intermediate System (IS-IS) configuration elements to make traffic
+      destined for the LAN, as well as other traffic transiting other
+      interfaces on r2, prefer to use
+      r1 as a transit point.
+
+
+
+
+OSPF and the overload bit
+
+
+
+An OSPF tweak known as the overload bit allows us to
+        effectively make r2 appear
+        unattractive to transit traffic. A textbook explanation of what is
+        accomplished by setting the overload bit can be found using
+        the help topic option in
+        the command-line interface (CLI):
+
+[edit protocols ospf]
+lab@r2# help topic ospf overload
+Configuring the Router to Appear Overloaded
+
+ If the time elapsed after the OSPF instance is enabled is less than the
+ specified timeout, overload mode is set.
+
+ You can configure the local router so that it appears to be overloaded.
+ You might do this when you want the router to participate in OSPF routing,
+ but do not want it to be used for transit traffic. (Traffic to directly
+ attached interfaces continues to transit the router.)
+
+ You configure or disable overload mode in OSPF with or without a timeout.
+ Without a timeout, overload mode is set until it is explicitly deleted
+ from the configuration. With a timeout, overload mode is set if the time
+ elapsed since the OSPF instance started is less than the specified
+ timeout.
+
+ A timer is started for the difference between the timeout and the time
+ elapsed since the instance started. When the timer expires, overload mode
+ is cleared. In overload mode, the router LSA is originated with all the
+ transit router links (except stub) set to a metric of 0xFFFF. The stub
+ router links are advertised with the actual cost of the interfaces
+ corresponding to the stub. This causes the transit traffic to avoid the
+ overloaded router and take paths around the router. However, the
+ overloaded router's own links are still accessible.
+
+ To mark the router as overloaded, include the overload statement:
+   [edit protocols (ospf | ospf3)]
+   overload;
+You can observe the result of this configuration change on
+        r2 directly by comparing the output
+        of a show route
+        command before the overload bit is set to the content of the
+        routing table after the bit is set. Notice the route metrics before
+        the bit is set:
+
+[edit protocols ospf]
+lab@r2# run show route protocol ospf
+
+inet.0: 31 destinations, 31 routes (31 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.0.1/32        *[OSPF/10] 00:14:36, metric 1
+                    > to 10.0.1.25 via ge-0/0/0
+10.0.0.3/32        *[OSPF/10] 00:14:25, metric 2
+                    > to 10.0.1.29 via ge-0/1/1
+                      to 10.0.1.25 via ge-0/0/0
+10.0.0.4/32        *[OSPF/10] 00:14:36, metric 1
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.0.5/32        *[OSPF/10] 00:14:30, metric 2
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.0.6/32        *[OSPF/10] 00:14:30, metric 3
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.0/30        *[OSPF/10] 00:14:30, metric 3
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.4/30        *[OSPF/10] 00:14:30, metric 3
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.8/30        *[OSPF/10] 00:14:20, metric 3
+                    > to 10.0.1.29 via ge-0/1/1
+                      to 10.0.1.25 via ge-0/0/0
+
+(output truncated)
+Now let's set the overload bit and take a look at the impact to
+        the local routing table. Notice the dramatic change in OSPF metrics in
+        the r2 local database:
+
+[edit protocols ospf]
+lab@r2# set overload
+
+[edit protocols ospf]
+lab@r2# commit
+commit complete
+
+[edit protocols ospf]
+lab@r2# run show route protocol ospf
+
+inet.0: 31 destinations, 31 routes (31 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.0.1/32        *[OSPF/10] 00:00:06, metric 65535
+                    > to 10.0.1.25 via ge-0/0/0
+10.0.0.3/32        *[OSPF/10] 00:00:06, metric 65536
+                    > to 10.0.1.29 via ge-0/1/1
+                      to 10.0.1.25 via ge-0/0/0
+10.0.0.4/32        *[OSPF/10] 00:00:06, metric 65535
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.0.5/32        *[OSPF/10] 00:00:06, metric 65536
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.0.6/32        *[OSPF/10] 00:00:06, metric 65537
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.0/30        *[OSPF/10] 00:00:06, metric 65537
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.4/30        *[OSPF/10] 00:00:06, metric 65537
+                    > to 10.0.1.29 via ge-0/1/1
+10.0.1.8/30        *[OSPF/10] 00:00:06, metric 65537
+                    > to 10.0.1.29 via ge-0/1/1
+                      to 10.0.1.25 via ge-0/0/0
+(output truncated)
+You see the real impact of this change in the routing tables of
+        the other routers in the network—in this case, r1, r3, and
+        r4:
+
+[edit]
+lab@r1# run show ospf database router detail advertising-router  10.0.0.2
+
+    OSPF link state database, area 0.0.0.0
+ Type       ID             Adv Rtr      Seq      Age  Opt  Cksum  Len
+Router   10.0.0.2       10.0.0.2    0x80000009   276  0x2  0x3226  96
+  bits 0x0, link count 6
+  id 10.0.1.29, data 10.0.1.30, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 10.0.1.26, data 10.0.1.26, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 8.7.6.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 172.17.0.0, data 255.255.255.252, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 7.6.5.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 10.0.0.2, data 255.255.255.255, Type Stub (3)
+  TOS count 0, TOS 0 metric 0
+
+[edit]
+lab@r3# run show ospf database router detail advertising-router  10.0.0.2
+
+    OSPF link state database, area 0.0.0.0
+ Type       ID            Adv Rtr       Seq      Age  Opt  Cksum  Len
+Router   10.0.0.2      10.0.0.2     0x80000009   288  0x2  0x3226  96
+  bits 0x0, link count 6
+  id 10.0.1.29, data 10.0.1.30, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 10.0.1.26, data 10.0.1.26, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 8.7.6.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 172.17.0.0, data 255.255.255.252, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 7.6.5.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 10.0.0.2, data 255.255.255.255, Type Stub (3)
+  TOS count 0, TOS 0 metric 0
+
+[edit]
+lab@r4# run show ospf database router detail advertising-router  10.0.0.2
+
+    OSPF link state database, area 0.0.0.0
+ Type       ID             Adv Rtr      Seq      Age  Opt  Cksum  Len
+Router   10.0.0.2       10.0.0.2    0x80000009   292  0x2  0x3226  96
+  bits 0x0, link count 6
+  id 10.0.1.29, data 10.0.1.30, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 10.0.1.26, data 10.0.1.26, Type Transit (2)
+  TOS count 0, TOS 0 metric 65535
+  id 8.7.6.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 172.17.0.0, data 255.255.255.252, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 7.6.5.0, data 255.255.255.0, Type Stub (3)
+  TOS count 0, TOS 0 metric 1
+  id 10.0.0.2, data 255.255.255.255, Type Stub (3)
+  TOS count 0, TOS 0 metric 0
+Notice that all traffic will avoid r2 because the metrics have been set to the
+        protocol maximum. This configuration effectively urges traffic
+        entering the Bastion Server LAN, as well as all other traffic that
+        would normally transit r2, to pass
+        instead through r1. By encouraging
+        traffic to avoid the local router, r2 minimizes the impact of the software
+        upgrade on the availability of the network.
+
+Note
+For added assurance, always run the monitor interface traffic command to
+          confirm that the overload bit setting has had the desired effect and
+          that no traffic is transiting local router interfaces. The monitor interface traffic command paints a
+          near-real-time picture of interface input and output statistics that
+          is refreshed at two-second intervals. Don't assume success when you
+          can confirm it!
+
+
+
+
+
+
+Moving the designated router
+
+
+
+For multiaccess segments with a significant number of gateway routers running OSPF,
+        a designated router (DR) and backup designated router
+        (BDR) are often configured to serve as the "spokesmen" for
+        the segment. To support high availability, the DR and BDR
+        responsibility should be shifted among routers in the group so that
+        all routers can be upgraded without taking the DR offline. Moving the
+        DR among routers may result in less than optimal placement of the DR,
+        but the condition is temporary and is outweighed by the
+        benefits.
+DR status is controlled to some extent by the priority setting
+        at the protocol OSPF level of hierarchy. To transfer DR status to the
+        BDR, simply adjust the priority numbers and trigger the transfer. In
+        Figure 6-2, r3
+        and r4 share ownership for subnet
+        10.0.1.16/30.
+Router r4 is currently the DR
+        for the subnet, and r3 is serving
+        as the BDR, as confirmed by the show ospf interface
+        command on r3:
+
+[edit protocols ospf area 0.0.0.0]
+lab@r3# run show ospf interface
+Interface       State     Area          DR ID         BDR ID    Nbrs
+ge-0/1/0.0      BDR      0.0.0.0       10.0.0.4      10.0.0.3     1
+ge-0/2/0.0      DR       0.0.0.0       10.0.0.3      0.0.0.0      0
+ge-0/0/0.0      BDR      0.0.0.0       10.0.0.5      10.0.0.3     1
+ge-0/1/1.0      DR       0.0.0.0       10.0.0.3      10.0.0.1     1
+ge-0/0/1.301    DR       0.0.0.0       10.0.0.3      0.0.0.0      0
+ge-0/0/1.302    DR       0.0.0.0       10.0.0.3      0.0.0.0      0
+lo0.0           DRother  0.0.0.0       0.0.0.0       0.0.0.0      0
+
+
+
+
+
+
+
+
+
+Figure 6-2. DR ownership
+
+
+Priority settings in the protocol OSPF configuration on both
+        r3 and r4 help explain why r4 is the current DR for the subnet. Router
+        r4's OSPF configuration shows a
+        priority of 255 for the r4
+        interface onto the 10.0.1.16/30 subnet. Router r3's priority setting for that interface is
+        only 100. The higher priority number currently holds the DR
+        state:
+
+[edit protocols ospf area 0.0.0.0]
+lab@r3# show
+interface ge-0/1/0.0 {
+    priority 255;
+}
+interface ge-0/2/0.0 {
+    passive;
+}
+interface ge-0/1/1.0;
+interface ge-0/0/1.301 {
+    passive;
+}

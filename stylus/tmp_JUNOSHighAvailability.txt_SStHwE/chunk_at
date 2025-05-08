@@ -1,0 +1,1000 @@
+
+255.255.255.248
+
+
+6
+
+
+
+
+/30
+
+
+255.255.255.252
+
+
+2
+
+
+
+
+
+
+Though the number of hosts present on a subnet has an impact on
+        the amount of bandwidth required, keep in mind that this type of
+        planning is in addition to, not a substitute for, capacity planning
+        and trend analysis.
+
+
+Capacity Planning and Trend Analysis
+While diving deep into bandwidth capacity planning
+          and network trend analysis is beyond
+          the scope of this book, both topics merit some mention as they are
+          related to high availability.
+Capacity planning is a greenfield
+          activity that includes elements of both science and art. The
+          scientific piece involves anticipating the number of users, the
+          types of applications they will run, and the times of day they will
+          run them. Once all elements are taken into consideration, network
+          devices, interfaces, and a design (the art piece) can be created. A
+          general rule of thumb is to provision bandwidth (interfaces) for
+          what you expect utilization requirements to be in two years and to
+          select network devices that can support what you expect the network
+          to be in five years. These are merely suggested guidelines. For a
+          more comprehensive method, a great resource is OPNET (http://www.opnet.com/solutions/network_planning_operations/itguru_net_planner.html).
+Determining the distribution of traffic across devices and links within a network at
+          specific intervals throughout the day and identifying which services
+          or applications are responsible for the traffic is the core of
+          trend analysis. In this analysis you go back
+          and see whether the variables factored into the calculations during
+          the capacity planning stage were correct.
+Both capacity planning and trend analysis have an impact on
+          high availability. Network architects must accurately predict how
+          much bandwidth will be needed and plan accordingly; otherwise,
+          bottlenecks could cause major service and performance problems. Once
+          the network is operational, it is necessary to examine how it is
+          being used to predict future bandwidth demands and plan
+          accordingly.
+
+
+
+
+
+
+
+Infrastructure Routes
+
+
+
+We have described infrastructure routes
+as subnets used for connectivity between routers and
+      security devices within the confines of an AS, but the term also
+      includes any IP addresses that are used to give network-reachable
+      identities to routers and security devices for management
+      purposes.
+When allocating infrastructure routes, the first thing a good
+      engineer wants to do is be thrifty—don't waste IP addresses in places
+      where they will never be used. For example, do not waste a few hundred
+      IPs by using a 24-bit subnet mask on a point-to-point link. Instead, use
+      a 30-bit subnet mask. There are several reasons for this
+      thrift:
+
+
+
+It makes efficient use of a finite resource.
+
+
+It helps (to a small degree) in securing the network; for
+          example, when a promiscuous routing protocol such as Open Shortest
+          Path First (OSPF) is used. Using Figure 12-1 as a
+          reference, the addressing scheme on the link between r2 and r4 won't prevent a passive monitoring
+          exploit, but it could undermine an unauthorized attempt to bring up
+          an additional OSPF neighbor on the link and sabotaging network
+          routing.
+
+
+It can speed up troubleshooting by making infrastructure
+          routes even more clearly distinguishable from customer routes. Rapid
+          troubleshooting is a friend of high availability.
+
+
+
+The JUNOS operating system supports a variety of options for
+      the show route command,
+      including the ability to filter output based on prefix length. Here is a
+      way to pull up a report of routes with a /30 subnet mask, which are our
+      infrastructure routes:
+
+[edit]
+lab@r5# run show route | match /30
+10.0.1.0/30        *[Direct/0] 12:58:48
+10.0.1.4/30        *[Direct/0] 12:58:48
+10.0.1.8/30        *[Direct/0] 12:58:48
+10.0.1.12/30       *[Direct/0] 12:58:48
+10.0.1.16/30       *[OSPF/10] 12:57:53, metric 2
+10.0.1.20/30       *[OSPF/10] 12:57:53, metric 2
+10.0.1.24/30       *[OSPF/10] 12:57:53, metric 3
+10.0.1.28/30       *[OSPF/10] 12:57:58, metric 2
+172.17.0.0/30      *[OSPF/10] 12:57:58, metric 3
+172.17.0.4/30      *[OSPF/10] 12:57:53, metric 3
+Notice that while the command did produce a thorough list of
+      infrastructure routes known by r5, it
+      also listed the kiosk routes configured on r1 and r2.
+      The network administrator chose to configure the mask this way because
+      each LAN currently has only one kiosk system. The mask can be changed to
+      permit more IP addresses as the number of kiosk systems grows.
+
+Note
+Very few networks are built with products from a single vendor.
+        While JUNOS supports the use of a 31-bit subnet mask for
+        point-to-point links, not all vendors support this functionality on
+        all product lines, so we recommend using a 30-bit mask for
+        point-to-point (infrastructure) links. Use of a 31-bit subnet mask is
+        formalized in RFC 3021 (http://www.faqs.org/rfcs/rfc3021.html).
+
+
+
+
+
+
+Customer Routes
+
+
+
+In enterprise environments, almost every subnet within the domain that
+      is not classified as an infrastructure route can be classified as a
+      customer route. Customer routes include user
+      LANs, server LANs, and storage LANs (Network Access
+      Servers or NASs), and they are collections of users and tools,
+      represented by IP addresses, for which the network infrastructure
+      exists. In Figure 12-1,
+      these are identified as the Corp LANs.
+In a service provider topology, the term customer
+      LANs implies the same thing. Again, it is the collection of
+      tools and users for which a service is being provided by the
+      infrastructure. An important distinction between enterprise and service
+      provider topologies is that with a service provider, most commonly the
+      customer routes lay outside the service provider's domain. For this
+      reason, we cover management of these types of routes from a service
+      provider perspective separately, in Chapter 11.
+All infrastructure routes mapped in Figure 12-1 were drawn from
+      the 10/8 address space. Likewise, all host LANs, our customer LANs, will
+      be drawn from the 172.16/16 address space. This address allocation
+      scheme allows quick and accurate distinction between host and
+      infrastructure routes. This promotes high availability by effectively
+      reducing the amount of time spent troubleshooting an issue.
+
+Note
+The astute reader should also note that all router interfaces on
+        host LANs were configured with the .1 address of the host LAN subnet.
+        While the address does not always have to be the .1 IP, to promote
+        rapid troubleshooting—and therefore high availability—a competent
+        network administrator should standardize configuration of the router
+        interface on a host LAN. This
+        simplifies configuration of the default gateway on all host systems in the
+        network.
+
+In Figure 12-1,
+      kiosk routes have also been allocated a block of addresses, 172.17/16.
+      This differentiation further simplifies troubleshooting by making kiosk
+      routing easily distinguishable from other types of customer LANs. In
+      Figure 12-1, kiosk LANs
+      are currently using a /30 mask because there is only one kiosk system
+      and one router interface on each
+      subnet. Using what we learned in Table 12-1, this subnet mask
+      could be changed to permit more IP addresses as the number of kiosk
+      systems grows.
+
+
+
+
+Virtual Router Redundancy Protocol
+
+
+
+Virtual Router Redundancy Protocol (VRRP) should be used on business-critical LANs to support high
+        availability because it allows multiple routers to share ownership of
+        an interface IP address. This interface IP address is then used by
+        host systems as a default gateway off the LAN. Because two or more
+        routers share ownership of the IP address, failure of a single router
+        would not result in loss of connectivity to the LAN. Additionally,
+        JUNOS allows configuration of interface tracking,
+        which can effectively trigger gateway failover when upstream links
+        drop.
+In Figure 12-1,
+        VRRP is being used for the 172.16.7/24 LAN. We have chosen to describe
+        this LAN as critical to the operation of the business and have
+        provided it with additional high availability mechanisms. The LAN has
+        connectivity to the rest of the network through both r3 and r4. Routers r3 and r4
+        share a virtual IP (VIP) address, 172.16.7.1, used by hosts on the LAN as a
+        default gateway. This design is reflected in the ge-0/2/0 interface configuration on r3. The use of the .1 address on the LAN is
+        in keeping with the scheme used in host LANs in the network. Use of
+        the .1 address supports high availability by keeping default gateway
+        configuration consistent. Here's a sample configuration:
+
+[edit interfaces]
+lab@r3# show ge-0/2/0
+ unit 0 {
+     family inet {
+         address 172.16.7.2/24 {
+             vrrp-group 1 {
+                 virtual-address 172.16.7.1;
+                 priority 101;
+                 preempt;
+                 accept-data;
+                 track {
+                     interface ge-0/0/0 priority-cost 5;
+                     interface ge-0/1/1 priority-cost 5;
+                 }
+             }
+         }
+     }
+}
+In this configuration sample, the priority for ownership of the
+        VIP address is set to 101. This is one point higher than the default
+        of 100, which is what the r4
+        configuration has been left at. Also notice that both r3 and r4
+        are tracking the state of interfaces ge-0/0/0 and ge-0/1/1. Both links have been assigned a
+        priority cost value, which is deducted from the total priority number
+        in the event of a link failure.
+If one or both of these interfaces fail, ownership of the VIP
+        transfers from r3 to r4, allowing the host systems on the LAN to
+        continue to communicate with the rest of the network. So, here is the
+        interface configuration on r4:
+
+[edit interfaces]
+lab@r4# show ge-0/2/0
+ unit 0 {
+     family inet {
+         address 172.16.7.3/24 {
+             vrrp-group 1 {
+                 virtual-address 172.16.7.1;
+                 preempt;
+                 accept-data;
+                 track {
+                     interface ge-0/0/0 priority-cost 5;
+                     interface ge-0/1/1 priority-cost 5;
+                 }
+             }
+         }
+     }
+}
+Router r4 now has
+        complementary VRRP configuration elements for Group 1. Notice that no
+        priority has been set for r4. This
+        configuration allows r4 to assume
+        the default VIP ownership priority of 100, which means that, by
+        default, it is serving as a backup gateway for the LAN, with r3 being the primary gateway.
+
+Note
+These configuration samples show two routers serving as
+          primary and backup gateways for the 172.16.7/24 LAN. Additional
+          routers can be configured for added redundancy by configuring them
+          to be in the same VRRP group for the subnet.
+
+
+
+
+
+
+
+Network Virtualization and Service Overlays
+
+
+
+One of this book's premises is that in the real world, network design is no
+      longer a greenfield event that occurs only once in the life of a
+      network. These days, all major router and security device OEMs offer
+      products that feature the ability to run multiple logical instances of
+      components of the operating system. These virtual machines are best
+      described as "lots of little routers inside one chassis." In JUNOS
+      software, virtual machines take several forms, including
+      routing instances (sometimes referred to as virtual routers or VRs) and logical
+      routers.
+Logical routers and routing instances are important because they
+      are the mechanisms used to configure the additional logical networks and
+      service overlays discussed at the beginning of this chapter. As we said
+      earlier, these logical abstractions are used to separate and control
+      services for customer billing, or to limit the exposure of the network
+      to services that are not needed everywhere in the domain. If properly
+      configured, they contribute to high availability by partitioning what
+      would be a single large routing table into multiple smaller routing
+      tables that are themselves service-focused.
+
+
+
+
+Routing instances
+
+
+
+Routing instances are a means of separating routing information
+        and traffic within the JUNOS operating system. Routing instances come
+        in many flavors, but all share a few common characteristics:
+
+
+
+All routing instances create routing and forwarding tables
+            that feed the same instance of the Routing Protocol Daemon (RPD).
+
+
+Routes are not propagated to other routing tables unless
+            explicitly configured to do so.
+
+
+Routing instances are used to create nearly all flavors of
+            virtual private networks (VPNs) in common use
+            today.
+
+
+Multiple routing instances can be grouped within a single
+            logical router.
+
+
+
+
+Note
+When routing instances are configured on a chassis, the
+          configuration elements that are not placed
+          under a routing-instance are said
+          to be in the primary routing instance.
+
+You can always use the help topic routing-instances
+        instance-type command to provide an excellent online
+        description of the purpose of the different flavors of routing
+        instances that you can use:
+
+[edit routing-options]
+lab@main# help topic routing-instances instance-type
+Configuring an Instance Type
+
+   You can configure six routing instance types at the [edit
+   routing-instances routing-instance-name instance-type] and [edit
+   logical-routers logical-router-name routing-instances
+   routing-instance-name instance-type] hierarchy levels:
+     * Forwarding--Use this routing instance type for filter-based forwarding
+       applications. For this instance type, there is no one-to-one mapping
+       between an interface and a routing instance. All interfaces belong to
+       the default instance inet.0.
+
+     * Layer 2 VPN--Use this routing instance type for Layer 2 VPN
+       implementations.
+
+     * Nonforwarding--Use this routing instance type when a separation of
+       routing table information is required. There is no corresponding
+       forwarding table. All routes are installed into the default forwarding
+       table. IS-IS instances are strictly nonforwarding instance types.
+
+     * Virtual router--Similar to a VPN routing and forwarding instance type,
+       but used for non-VPN-related applications. There are no VRF import,
+       VRF export, VRF target, or route distinguisher requirements for this
+       instance type.
+
+     * VPLS--Use this routing instance type for point-to-multipoint LAN
+       implementations between a set of sites in a VPN.
+
+     * VRF--Use this routing instance type for Layer 3 VPN implementations.
+       For this instance type, there is a one-to-one mapping between an
+       interface and a routing instance. Each VRF instance corresponds with a
+       forwarding table. Routes on an interface go into the corresponding
+       forwarding table.
+
+Note
+Although routing instances do generate separate routing
+          tables, all the tables generated still rely on a single RPD and a
+          single collection of routing policies. This means that even though
+          the tables are separate, they are still somewhat related to each
+          other.
+For example, policies can be created that permit routes to be
+          shared among the tables created by multiple routing instances within
+          a single logical router. Routing instances do not separate logical
+          elements as cleanly as logical routers, but routing instances do
+          provide functionality beyond that available from a logical
+          router.
+
+
+
+
+
+
+Logical routers
+
+
+
+Unlike a routing instance, a logical router maintains its own independent RPD that
+        generates an independent set of routing tables. A logical router also
+        maintains its own routing policies and interfaces, and can support
+        multiple routing instances (as described in the previous section). A
+        JUNOS router can support up to 15 logical routers.
+These features are important because logical routers are a way
+        to control the content and size of JUNOS routing tables. The features
+        allow the logical separation of configuration elements, control
+        traffic, and user data traffic that would otherwise increase the size
+        and complexity of the primary logical network. In many ways, logical
+        routers result in a cleaner separation of logical elements than a
+        routing instance and are therefore easier to troubleshoot.
+Figure 12-2 shows some of
+        the same physical devices used in Figure 12-1, but with an
+        independent IPv4-based service overlay on top of a subset of the
+        existing links. The router icons in Figure 12-2 represent logical routers,
+        hence the -lr suffix. In this
+        example, logical routers are
+        configured on r1, r2,
+        r3, and r4 to
+        provide a complete separation of routing protocol and interface
+        information from the primary IPv4 logical network. This configuration
+        allows any troubleshooting necessary on the primary logical network to
+        be performed without digging through the additional configuration
+        elements made necessary by stand-up of the new service overlay.
+
+
+
+
+
+
+
+
+
+Figure 12-2. Limited IPv4 service overlay
+
+
+
+Note
+The logical elements present in Figure 12-1 have not gone
+          away. Figures 12-1 and 12-2 are each simply one of many
+          possible virtual networks that ride on top of the same physical
+          infrastructure.
+
+
+
+
+
+
+Enable VLAN tagging in the primary logical router
+
+
+
+Before creating the service overlay, we must first enable VLAN tagging and
+        assign our existing logical interfaces to VLANs that will be used in the primary logical router.
+        Figure 12-3 shows that
+        VLAN 100 will be used for interfaces in the primary logical router.
+        Notice that the only real difference between Figures 12-1 and 12-3 is the addition of VLAN tags to the
+        four infrastructure links among r1,
+        r2, r3, and r4—a very small price to pay for the high
+        availability benefits of service-based route table separation.
+
+
+
+
+
+
+
+
+
+Figure 12-3. Addition of VLAN tags to selected infrastructure
+          links
+
+
+Begin by changing the configuration on the infrastructure links
+        and on the kiosk LAN on r1 to
+        support vlan-tagging:
+
+[edit interfaces]
+lab@r1# set ge-0/0/0 vlan-tagging
+
+[edit interfaces]
+lab@r1# set ge-0/0/1 vlan-tagging
+
+[edit interfaces]
+lab@r1# set ge-0/1/1 vlan-tagging
+
+[edit interfaces]
+lab@r1# show
+ge-0/0/0 {
+    description "link to r2";
+    vlan-tagging;
+    unit 0 {
+        family inet {
+            address 10.0.1.25/30;
+        }
+    }
+}
+ge-0/0/1 {
+    description "Link to Kiosk 1";
+    vlan-tagging;
+    unit 0 {
+        family inet {
+            address 172.17.0.5/30;
+        }
+    }
+}
+ge-0/1/1 {
+    description "Link to r3";
+    vlan-tagging;
+    unit 0 {
+        family inet {
+            address 10.0.1.22/30;
+        }
+    }
+}
+Use the JUNOS rename function to
+        change unit 0 to unit 100 to match the logical identity to
+        the VLAN tag. After this step is complete, add a VLAN tag to the
+        logical unit on each interface and review the changes:
+
+[edit interfaces]
+lab@r1# rename ge-0/0/0 unit 0 to unit 100
+
+[edit interfaces]
+lab@r1# rename ge-0/0/1 unit 0 to unit 100
+
+[edit interfaces]
+lab@r1# rename ge-0/1/1 unit 0 to unit 100
+
+[edit interfaces]
+lab@r1# set ge-0/0/0 unit 100 vlan-id 100
+
+[edit interfaces]
+lab@r1# set ge-0/0/1 unit 100 vlan-id 100
+
+[edit interfaces]
+lab@r1# set ge-0/1/1 unit 100 vlan-id 100
+
+Note
+Routers running JUNOS can support multiple IPv4 addresses on
+          the same logical interfaces at the same time. The logical separation
+          shown in Figure 12-2 simply
+          demonstrates one possible use of virtual network configuration
+          elements.
+
+We could confirm our work by using the show command.
+        However, in this example we use show |
+        compare to compare the candidate configuration to the active
+        configuration. All of the expected VLAN changes are present; however,
+        notice that another change has been made since the last commit. User
+        james has been deleted from the
+        system login hierarchy. A commit now could have unintended
+        consequences if another administrator is actively adjusting user
+        permission on this chassis. Had we not checked the configuration using
+        the compare option, we could have
+        accidentally locked someone out of the box:
+
+[edit]
+lab@r1# show | compare
+[edit system login]
+-    user james {
+-        uid 2001;
+-        class superuser;
+-        authentication {
+-            encrypted-password "$1$tAbi_r0seCV5e6irKOFfQmee7mqj.";
+-        }
+-    }
+[edit interfaces ge-0/0/0]
++   vlan-tagging;
+[edit interfaces ge-0/0/0]
+-    unit 0 {
+-        family inet {
+-            address 10.0.1.25/30;
+-        }
+-    }
++    unit 100 {
++        vlan-id 100;
++        family inet {
++            address 10.0.1.25/30;
++        }
++    }
+[edit interfaces ge-0/0/1]
++   vlan-tagging;
+[edit interfaces ge-0/0/1]
+-    unit 0 {
+-        family inet {
+-            address 172.17.0.5/30;
+-        }
+-    }
++    unit 100 {
++        vlan-id 100;
++        family inet {
++            address 172.17.0.5/30;
++        }
++    }
+[edit interfaces ge-0/1/1]
++   vlan-tagging;
+[edit interfaces ge-0/1/1]
+-    unit 0 {
+-        family inet {
+-            address 10.0.1.22/30;
+-        }
+-    }
++    unit 100 {
++        vlan-id 100;
++        family inet {
++            address 10.0.1.22/30;
++        }
++    }
+VLAN tagging is now enabled in the main logical router, and VLAN
+        tags have been assigned to our infrastructure interfaces that continue
+        to be present in the main logical router. Before committing this
+        configuration change, be sure to update the interface names throughout
+        the configuration file. This will include the VRRP and OSPF
+        configuration stanzas. Using r3 as
+        an example, the end result should include the following change to
+        interface ge-0/2/0 to protect the
+        172.16.7/24 LAN:
+
+[edit interfaces]
+lab@r3# show ge-0/2/0
+ unit 0 {
+     family inet {
+         address 172.16.7.2/24 {
+             vrrp-group 1 {
+                 virtual-address 172.16.7.1;
+                 priority 101;
+                 preempt;
+                 accept-data;
+                 track {
+                     interface ge-0/0/0.100 priority-cost 5;
+                     interface ge-0/1/1.100 priority-cost 5;
+                 }
+             }
+         }
+     }
+}
+The OSPF stanza of r3
+        should also be updated to allow the protocol to continue to function
+        across the new logical interfaces:
+
+[edit protocols ospf]
+lab@r3# show
+area 0.0.0.0 {
+    interface ge-0/0/0.0;
+    interface ge-0/1/0.100;
+    interface ge-0/1/1.100;
+    interface ge-0/2/0.0{
+        passive;
+    }
+    interface lo0.0 {
+        passive;
+    }
+}
+Similar configuration changes should be made on
+        r1, r2, and r4 before adding the overlay. One can
+        briefly look at the configuration options available under the logical-router level of the JUNOS
+        hierarchy to see how much functionality is available through logical-routers:
+
+[edit logical-routers r1-lr1]
+lab@r1# set ?
+Possible completions:
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> interfaces           Interface configuration
+> policy-options       Routing policy option configuration
+> protocols            Routing protocol configuration
+> routing-instances    Routing instance configuration
+> routing-options      Protocol-independent routing option configuration
+Notice that it is possible to configure interfaces, protocols,
+        and policies from within the logical router, just like within the
+        primary logical router. This separation, and the independent tables it
+        creates, controls the size and content of the primary routing table
+        without affecting the ability to support new services—simply by
+        breaking the routing information into smaller, more manageable
+        chunks.
+
+
+
+
+
+Configuring the service overlay
+
+
+
+Referring back to the topology in Figure 12-2, we see a limited deployment
+        of an IPv4-based service to support testing of an application
+        involving two corporate LANs and two kiosk LANs. Notice that the
+        router names have an -lr# suffix to
+        indicate that they are logical routers. Additional VLANs can now be
+        added to r1, r2,
+        r3, and r4, but
+        they are not configured in the main logical router. Instead, they are
+        configured in lr1 on each of the
+        four chassis.
+
+Note
+When logical routers are configured on a chassis, the
+          configuration elements that are not placed
+          under a logical router are said to be in the main logical
+          router or primary logical
+          router.
+
+Using the VLAN tag and interface addressing scheme shown in
+        Figure 12-2, create the necessary
+        interfaces in logical-router r1-lr1
+        on r1 and assign addresses
+        accordingly. Output from the show command
+        confirms that the configuration changes were accurate:
+
+[edit logical-routers r1-lr1 interfaces]
+lab@r1# show
+ge-0/0/0 {
+    unit 110 {
+        description "logical router 1 link to r2";
+        vlan-id 110;
+        family inet {
+            address 10.1.1.25/30;
+        }
+    }
+}
+ge-0/0/1 {
+    unit 110 {
+        description "logical router 1 link to kiosk 3";
+        vlan-id 110;
+        family inet {
+            address 172.18.1.1/24;
+        }
+    }
+}
+ge-0/1/1 {
+    unit 110 {
+        description "logical router 1 link to r3";
+        vlan-id 110;
+        family inet {
+            address 10.1.1.22/30;
+        }
+    }
+}
+lo0 {
+    unit 1 {
+        family inet {
+            address 10.1.0.1/32;
+        }
+    }
+}
+Using the logical topology in Figure 12-2, make similar interface
+        changes on r2, r3, and r4. Once interfaces are configured, you need
+        to enable only a routing protocol within the logical-router on each chassis to complete
+        the task:
+
+[edit logical-routers r1-lr1]
+lab@r1# edit protocols ospf area 0
+
+[edit logical-routers r1-lr1 protocols ospf area 0.0.0.0]
+lab@r1# set interface ge-0/1/1.110
+
+[edit logical-routers r1-lr1 protocols ospf area 0.0.0.0]
+lab@r1# set interface ge-0/0/0.110
+
+[edit logical-routers r1-lr1 protocols ospf area 0.0.0.0]
+lab@r1# set interface ge-0/0/1.110 passive
+
+[edit logical-routers r1-lr1 protocols ospf area 0.0.0.0]
+lab@r1# set interface lo0.1 passive
+
+[edit logical-routers r1-lr1 protocols ospf area 0.0.0.0]
+lab@r1# show
+interface ge-0/1/1.110;
+interface ge-0/0/0.110;
+interface ge-0/0/1.110 {
+    passive;
+}
+interface lo0.1 {
+    passive;
+}
+By comparing the output from show
+        route with the output from show route logical-router
+        r1-lr1, you can see the clean separation of routing
+        information. This separation allows fast and effective troubleshooting
+        of both logical networks, contributing to high availability in
+        both:
+
+lab@r1> show route
+
+inet.0: 33 destinations, 34 routes (33 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+0.0.0.0/0          *[Static/5] 00:02:22
+                    > to 7.6.5.3 via ge-0/1/0.0
+                    [OSPF/150] 00:02:22, metric 0, tag 0
+                    > to 10.0.1.26 via ge-0/0/0.100
+7.6.5.0/24         *[Direct/0] 00:02:23
+                    > via ge-0/1/0.0
+7.6.5.1/32         *[Local/0] 00:02:23
+                      Local via ge-0/1/0.0
+8.7.6.0/24         *[Direct/0] 00:02:23
+                    > via ge-0/2/0.0
+8.7.6.1/32         *[Local/0] 00:02:14
+                      Local via ge-0/2/0.0
+8.7.6.2/32         *[Local/0] 00:02:23
+                      Local via ge-0/2/0.0
+10.0.0.1/32        *[Direct/0] 00:48:25
+                    > via lo0.0
+10.0.0.2/32        *[OSPF/10] 00:47:35, metric 1
+                    > to 10.0.1.26 via ge-0/0/0.100
+10.0.0.3/32        *[OSPF/10] 00:47:35, metric 1
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.0.4/32        *[OSPF/10] 00:47:25, metric 2
+                    > to 10.0.1.21 via ge-0/1/1.100
+                      to 10.0.1.26 via ge-0/0/0.100
+10.0.0.5/32        *[OSPF/10] 00:01:18, metric 2
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.0.6/32        *[OSPF/10] 00:01:18, metric 3
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.1.0/30        *[OSPF/10] 00:01:18, metric 3
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.1.4/30        *[OSPF/10] 00:01:18, metric 3
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.1.8/30        *[OSPF/10] 00:01:18, metric 2
+                    > to 10.0.1.21 via ge-0/1/1.100
+10.0.1.12/30       *[OSPF/10] 00:01:26, metric 3
+                      to 10.0.1.21 via ge-0/1/1.100
+                    > to 10.0.1.26 via ge-0/0/0.100
+---(more)---
+
+lab@r1> show route logical-router r1-lr1
+
+inet.0: 16 destinations, 16 routes (16 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.1.0.1/32        *[Direct/0] 01:06:16
+                    > via lo0.1
+10.1.0.2/32        *[OSPF/10] 00:00:07, metric 1
+                    > to 10.1.1.26 via ge-0/0/0.110
+10.1.0.3/32        *[OSPF/10] 00:02:01, metric 1
+                    > to 10.1.1.21 via ge-0/1/1.110
+10.1.0.4/32        *[OSPF/10] 00:00:07, metric 2
+                    > to 10.1.1.21 via ge-0/1/1.110
+                      to 10.1.1.26 via ge-0/0/0.110
+10.1.1.16/30       *[OSPF/10] 00:02:01, metric 2
+                    > to 10.1.1.21 via ge-0/1/1.110
+10.1.1.20/30       *[Direct/0] 00:02:41
+                    > via ge-0/1/1.110
+10.1.1.22/32       *[Local/0] 00:02:41
+                      Local via ge-0/1/1.110
+10.1.1.24/30       *[Direct/0] 00:02:41
+                    > via ge-0/0/0.110
+10.1.1.25/32       *[Local/0] 00:02:41
+                      Local via ge-0/0/0.110
+10.1.1.28/30       *[OSPF/10] 00:00:07, metric 2
+                    > to 10.1.1.26 via ge-0/0/0.110
+172.18.1.0/24      *[Direct/0] 00:02:41
+                    > via ge-0/0/1.110
+172.18.1.1/32      *[Local/0] 00:02:41
+                      Local via ge-0/0/1.110
+172.18.2.0/24      *[OSPF/10] 00:00:07, metric 2
+                    > to 10.1.1.26 via ge-0/0/0.110
+172.18.3.0/24      *[OSPF/10] 00:02:01, metric 2
+                    > to 10.1.1.21 via ge-0/1/1.110
+172.18.4.0/24      *[OSPF/10] 00:00:07, metric 3
+                    > to 10.1.1.21 via ge-0/1/1.110
+                      to 10.1.1.26 via ge-0/0/0.110
+224.0.0.5/32       *[OSPF/10] 01:06:17, metric 1
+                      MultiRecv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Address Aggregation
+
+
+
+A second task in allocating infrastructure routes for subnets is to make sure
+    your address assignment will support either a protocol-driven aggregation
+    scheme or a manual route aggregation scheme. This allows control of the
+    size of the routing table inside the network and yields efficiency when
+    advertising subnets outside the local domain.
+
+Note
+Aggregation may not be necessary at the start of a small network
+      deployment because there just aren't enough subnets to aggregate.
+      However, it does come into play in larger networks and quite commonly in
+      service overlays.
+
+
+
+
+
+What Is Aggregation?
+
+
+
+Aggregation is an address allocation goal for any network
+      requiring high availability. Aggregation,
+      or supernetting as it is described in
+      Cisco and Microsoft textbooks, is a less specific way to refer to a
+      collection of more specific routes. The ability to aggregate a
+      collection of more specific routes into fewer, less specific routes is
+      based on binary bit patterns in the subnets themselves. Table 12-2 shows a collection of multiaccess
+      subnets that can be aggregated into a single route advertisement,
+      thereby reducing the number of routes that would need to
+      be advertised.
+
+
+Table 12-2. Route aggregation example
+
+
+
+
+
+
+
+
+
+IP
+              address
+
+
+Binary
+              breakout
+
+
+
+
+
+
+192.168.0.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0000. 0000 0000
+
+
+
+
+192.168.1.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0001. 0000 0000
+
+
+
+
+192.168.2.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0010. 0000 0000
+
+
+
+
+192.168.3.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0011. 0000 0000
+
+
+
+
+192.168.4.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0100. 0000 0000
+
+
+
+
+192.168.5.0/24
+
+
+1100 0000. 1010
+              0100. 0000 0101. 0000 0000
+
+
+
+
+192.168.6.0/24
+
+
+1100 0000. 1010

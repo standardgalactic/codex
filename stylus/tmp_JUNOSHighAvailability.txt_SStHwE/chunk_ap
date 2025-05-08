@@ -1,0 +1,1000 @@
+        There is also a file to be created called
+        engineering that will be used to gather daemon,
+        kernel, and PFE information in the RFC draft structured format to be
+        used by the senior engineers for deep dives into hardware and software
+        process performance. With this kind of syslog design, it is much
+        easier for individual groups to parse and use syslog files to ensure
+        network uptime. The previous syslog configuration allows for the
+        following:
+
+
+
+All warnings either concerning authentication attempts
+            against the device or flagged by the firewall processes will be
+            sent to the syslog server
+            security.example.com.
+
+
+Any syslog message at the emergency level, or any message at
+            the alert level that relates to system processes and daemons, will
+            be sent to the syslog server noc.example.com.
+
+
+The syslog server netad.example.com
+            will receive any messages regarding authentication attempts
+            against the device and any critical messages concerning the
+            software processes.
+
+
+The senior engineering syslog server at
+            engineering.example.com will receive warnings
+            concerning the software processes on the device, as well as any
+            messages concerning
+            configuration changes and commands used on the device.
+
+
+The syslog server at
+            archive.example.com receives all messages
+            from the device for storage.
+
+
+
+
+
+
+
+
+Monitoring syslog
+
+
+
+Even with the carefully developed structure of logging in place, it is
+        nearly impossible to use syslog as the one and only source of network
+        management. To ensure high availability in your network, syslog must
+        be used in conjunction with other management tools.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Simple Network Management Protocol
+
+
+
+When logging is a passive endeavor, the collection stations
+    merely sit, waiting for messages to be forwarded by the network devices.
+    Simple Network Management Protocol (SNMP) provides an active
+    exchange of information between network management stations and the
+    network equipment. Building on the foundation of basic well-planned syslog
+    architecture, SNMP can be used to gather and monitor information
+    concerning high availability.
+
+
+
+
+SNMP Overview
+
+
+
+If you read RFC 1157, "A Simple Network Management Protocol (SNMP),"
+      you might wonder why it's considered a "simple" network management
+      protocol. However, a closer look at the actual implementation and use of
+      SNMP reveals that it is a fairly simple protocol. The protocol relies on
+      the use of SNMP agents within the networking equipment; these agents
+      understand a common data set and report it to a collection or Network
+      Management Station (NMS). Within SNMP, the agent can both receive and transmit
+      data, thus allowing the NMS to actively pull information from the
+      devices throughout the network. To ensure that equipment from multiple
+      vendors can work with an NMS, the data for managing network equipment is
+      designed into a standardized hierarchy called the Management Information
+      Base (MIB). The MIB uses a tree-based structure: similar data
+      objects are grouped together, and each leaf of the tree is labeled with
+      an Object Identifier (OID).
+Using OIDs to identify the information to be processed, SNMP
+      communicates between the agents in one of the following methods:
+
+
+
+Get Request
+
+
+Used by the management station to request specific
+            information from the networking device. One of three types of
+            "gets" may be used:
+
+
+
+
+Get
+
+
+
+Gets a single piece of data related to a single OID;
+                  the simplest read function
+
+
+
+Get-Next
+
+
+
+Gets an iterative series of data based on multiple
+                  OIDs
+
+
+
+Get-Bulk
+
+
+
+A faster version of Get-Next
+                  included in Version 2 of SNMP
+
+
+
+
+
+Set Request
+
+
+The basic write command; used to change information on a
+            network device based on a specific OID.
+
+
+Notification
+
+
+Asymmetric message sent from the agent to the Network
+            Management Station. Two forms of notification exist within
+            SNMP:
+
+
+
+Trap
+
+
+The best-known notification, and does not require
+                  acknowledgment from the NMS
+
+
+Inform
+
+
+Notifies the NMS of an issue and requires
+                  acknowledgment from the NMS
+
+
+
+
+
+
+To provide a basic form of security, SNMPv2 uses community strings, or passwords, to
+      identify which NMS can request information from or write information to
+      a network device. The issue is that this community string is passed as
+      plain text, allowing it to be easily sniffed. SNMPv3 is built on a
+      secure architecture with data integrity and authentication built in, to
+      solve some of the issues with SNMPv2.
+To prevent network downtime caused by someone sniffing SNMP
+      communities and using them to do network reconnaissance or make changes
+      to network devices, any network concerned with high availability should
+      use SNMPv3, if SNMP is used at all.
+
+Note
+Not only does SNMPv3 provide encryption and authentication, but
+        it also moves away from the community string concept. Hopefully, the
+        additional configuration will allow people to move away from the
+        public/private community strings
+        that are the default on so many pieces of equipment.
+
+SNMPv3 not only supports authentication and encryption, but also
+      uses a user-based security model (USM) for message security and a view-based access control
+      model (VACM) for controlling access to individual MIB strings. Within
+      the SNMPv3 architecture, the USM
+      specifies the authentication and encryption methods used for
+      transporting the data from the agent to the NSM, and vice versa. The
+      VACM is an access-control model that allows you to apply highly granular
+      security policies on which groups can view and change particular MIBs;
+      it can also be used to determine which groups receive
+      notifications.
+
+
+
+
+Notification categories
+
+
+
+The simplest form of filtering notifications within the SNMP architecture is
+        through the use of the category. Similar to
+        facilities in syslog, categories divide the notifications from a piece
+        of network equipment into functional areas. Using categories can
+        ensure that only NMS devices that require certain information receive
+        that information. Table 9-5 lists the
+        categories that can be used in the SNMP configuration to filter trap
+        messages.
+
+
+Table 9-5. JUNOS SNMP categories
+
+
+
+
+
+
+
+
+
+
+Category
+
+
+Description
+
+
+Potential high
+                availability issues avoided
+
+
+
+
+
+
+Authentication
+
+
+Authentication
+                failures
+
+
+Attempts at
+                unauthorized access
+
+
+
+
+Chassis
+
+
+Chassis or
+                environmental notifications
+
+
+Hardware issues causing
+                network downtime
+
+
+
+
+Configuration
+
+
+Configuration
+                changes
+
+
+Intentional or
+                accidental issues causing network downtime
+
+
+
+
+Link
+
+
+Link-related
+                notifications (such as up/down transitions)
+
+
+Network device links
+                causing network downtime
+
+
+
+
+Remote operations
+
+
+Notification concerning
+                remote operations
+
+ 
+
+
+
+Rmon-alarms
+
+
+Alarms for RMON
+                events
+
+
+Unexpected or unusual
+                traffic peaks that could indicate other issues in the
+                network
+
+
+
+
+Routing
+
+
+Routing protocol
+                notifications
+
+
+Intentional or
+                accidental protocol changes, events, or peerings that could
+                lead to network downtime
+
+
+
+
+SONET-alarms
+
+
+SONET/SDH
+                notifications
+
+
+Link outages on SONET
+                networks
+
+
+
+
+Start-up
+
+
+Cold/warm start
+                notifications
+
+
+Indications of network
+                reboots
+
+
+
+
+VRRP
+
+
+Notifications
+                concerning VRRP
+
+
+Errors with VRRP that
+                could lead to routing issues and network
+                downtime
+
+
+
+
+
+
+
+
+
+
+
+RMON alarms
+
+
+
+In addition to the standard SNMP capabilities, JUNOS uses SNMP in
+        conjunction with Remote Monitoring (RMON) to allow for protocol and traffic analysis. Using MIBs
+        and SNMP as a transport mechanism, you can provide specific traffic
+        data on interfaces, hosts, or specific protocols. Using the RMON
+        alarms, network managers can set thresholds for traffic and be alerted
+        when they are exceeded; alarms can be set for routing, network, or
+        security issues that may affect high availability.
+
+
+
+
+
+Health monitoring
+
+
+
+One of the major factors that contribute to downtime occurs when hardware
+        failure compromises the network devices. Normally, it is possible to
+        diagnose and prevent hardware, and possibly software, errors by
+        monitoring the health of the system. In the past, network health
+        monitoring was performed with the NMS, which polled each network device for system health
+        parameters, such as CPU usage. However, given the size and complexity
+        of current networks, it is now easier for the network devices to alert
+        the NMS of an issue. The JUNOS software monitors the values that are
+        important for maintaining system health and can be configured to alert
+        your network managers when specific thresholds are met. Table 9-6 lists the MIB objects used by
+        the JUNOS health monitoring process.
+
+
+Table 9-6. Health monitoring objects
+
+
+
+
+
+
+
+
+
+Monitored
+                objects
+
+
+Description
+
+
+
+
+
+
+
+jnxHrStoragePercentUsed.1
+
+
+
+Gives the percent of the root filesystem on /dev/ad0s1a in use
+
+
+
+
+
+jnxHrStoragePercentUsed.2
+
+
+
+Gives the percent of
+                the /config filesystem on
+                /dev/ad0s1e in
+                use
+
+
+
+
+
+jnxOperatingCPU(RE0)
+
+
+
+Monitors the CPU usage
+                for RE0
+
+
+
+
+
+jnxOperatingCPU(RE1)
+
+
+
+Monitors the CPU usage
+                for RE1
+
+
+
+
+
+jnxOperatingBuffer(RE0)
+
+
+
+Monitors the amount of
+                memory available on RE0
+
+
+
+
+
+jnxOperatingBuffer(RE1)
+
+
+
+Monitors the amount of
+                memory available on RE1
+
+
+
+
+
+sysApplElmtRunCPU
+
+
+
+Monitors the memory
+                usage for each JUNOS process
+
+
+
+
+
+
+
+
+
+
+
+
+SNMP Planning
+
+
+
+Just as with syslog, it is best to divide the data received from the network and
+      send it to only the groups that are responsible for a particular area.
+      Because SNMP allows an agent to both send and receive data, it is
+      necessary to do more planning to ensure that notifications are filtered
+      and that get and set requests are secured into functional areas. Table 9-7 provides basic planning necessary to
+      ensure that SNMP functions securely. It also takes into consideration
+      that not all divisions have software that supports SNMPv3.
+
+
+Table 9-7. SNMP planning
+
+
+
+
+
+
+
+
+
+
+
+
+Category
+
+
+NOC
+
+
+Security
+
+
+Network
+              admin
+
+
+Senior
+              engineers
+
+
+
+
+
+
+Authentication
+
+ 
+SNMPv3 VACM
+
+SNMPv2
+              traps
+
+SNMPv3 VACM
+
+
+
+Chassis
+
+
+SNMPv2
+              traps
+
+ 
+
+
+
+Configuration
+
+ 
+
+SNMPv2
+              traps
+
+
+
+
+Link
+
+
+SNMPv2
+              traps
+
+ 
+
+
+
+Remote
+              operations
+
+ 
+ 
+
+
+
+Rmon-alarm
+
+ 
+ 
+
+
+
+Routing
+
+
+SNMPv2
+              traps
+
+ 
+
+
+
+SONET-alarms
+
+
+SNMPv2
+              traps
+
+ 
+
+
+
+Start-up
+
+
+SNMPv2
+              traps
+
+
+SNMPv2
+              traps
+
+
+
+
+VRRP
+
+
+SNMPv2
+              traps
+
+ 
+
+
+
+RMON
+
+
+SNMPv2
+              traps
+
+
+SNMPv2
+              traps
+
+
+
+
+Health
+              monitoring
+
+
+SNMPv2
+              traps
+
+
+SNMPv2
+              traps
+
+
+
+
+
+
+
+
+
+
+
+Implementing SNMP
+
+
+
+Though JUNOS software supports all versions of SNMP, it is best to use
+      SNMPv3 because of its security features. In some networks, though, some
+      of the monitoring tools do not operate using SNMPv3. When implementing
+      SNMP in a network, the systems that support SNMPv3 should be configured
+      for that, and SNMPv2c should be used only for traps.
+
+
+
+
+SNMPv3
+
+
+
+The following sample configuration uses SNMPv3 to provide security for
+        network management traffic, but also divides the traffic from the
+        network devices to the appropriate work locations. Using both
+        USM and VACM, it is possible to provide granular filtering of
+        SNMP access. Using the view commands, it is also much easier to create
+        a filtered view of the MIB tree for each user or group:
+
+[edit snmp]
+
+description "Example.com Router";
+location "Example.com Headquarters, WA";
+contact "Mr. Example, 555-555-5555";
+interface fxp0.0;
+filter-duplicates;
+v3 {
+    usm {
+        local-engine {
+            user engineering {
+                authentication-sha {
+                    authentication-key "$9$Nj-VYUj
+"; ## SECRET-DATA
+                }
+                privacy-aes128 {
+                    privacy-key "$9$XoIxwYaJ
+"; ## SECRET-DATA
+                }
+            }
+            user security {
+                authentication-sha {
+                    authentication-key "$9$6ljZAO1
+"; ## SECRET-DATA
+                }
+                privacy-aes128 {
+                    privacy-key "$9$GNUqmn/
+"; ## SECRET-DATA
+                }
+            }
+        }
+    }
+    vacm {
+        security-to-group {
+            security-model usm {
+                security-name engineering {
+                    group engineering;
+                }
+                security-name seucurity {
+                    group security;
+                }
+            }
+        }
+        access {
+            group engineering {
+                default-context-prefix {
+                    security-model usm {
+                        security-level privacy {
+                            read-view engineering;
+                            write-view engineering;
+                            notify-view engineering;
+                        }
+                    }
+                }
+            }
+            group security {
+                default-context-prefix {
+                    security-model usm {
+                        security-level privacy {
+                            read-view security;
+                            write-view security;
+                            notify-view security;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    target-address engineering {
+        address 10.0.0.1;
+        timeout 10;
+        retry-count 3;
+        tag-list "noc engineering";
+        address-mask 255.255.255.0;
+        target-parameters engineering;
+    }
+    target-address noc {
+        address 10.0.0.2;
+        tag-list noc;
+        address-mask 255.255.255.0;
+        target-parameters noc;
+    }
+    notify engineering {
+        type inform;
+        tag engineering;
+    }
+    notify noc {
+        type inform;
+        tag noc;
+    }
+}
+engine-id {
+    use-mac-address;
+}
+view noc {
+    /* INTERFACE MIBS */
+    oid 1.3.6.1.2.1.2 include;
+    /* OSPF MIBS */
+    oid 1.3.6.1.2.1.14 include;
+    /* BGP MIBS */
+    oid 1.3.6.1.2.1.15 include;
+}
+view engineering {
+    /* IP MIBS */
+    oid 1.3.6.1.2.1.4 include;
+    /* OSPF MIBS */
+    oid 1.3.6.1.2.1.14 include;
+    /* BGP MIBS */
+    oid 1.3.6.1.2.1.15 include;
+}
+view security {
+    /* IANA Secuirty MIBS */
+    oid 1.3.6.1.5 include;
+}
+community networkcomm {
+    view noc;
+    authorization read-only;
+}
+trap-group noc {
+    version v2;
+    categories {
+        chassis;
+        link;
+        routing;
+        rmon-alarm;
+        vrrp-events;
+        sonet-alarms;
+    }
+    targets {
+        10.0.0.2;
+    }
+}
+trap-group network-admin {
+    version v2;
+    categories {
+        authentication;
+        startup;
+        rmon-alarm;
+        configuration;
+    }
+    targets {
+        10.0.0.33;
+    }
+Though the configuration of SNMPv3 looks rather daunting in this
+        example, it provides a much more secure and efficient use of SNMP in
+        your network. The use of commands that limit the interfaces on which
+        SNMP is accepted and transmitted allows for the creation of a secured
+        management network. For organizations that have not yet embraced
+        SNMPv3, JUNOS supports all versions of SNMP simultaneously. Other
+        notable features of this configuration that allow for increased
+        visibility into high availability issues include the following:
+
+
+
+Though very basic, the configuration of location and contact
+            in SNMP is invaluable when it comes to troubleshooting and monitoring network
+            uptime.
+
+
+Using views, the networking equipment will restrict the use
+            of MIBs to certain groups, thus allowing the division of tasks and
+            resources.
+
+
+Using trap groups for SNMPv2, it is possible to restrict the
+            categories of SNMP traps sent to specific workstations.
+
+
+As you can see in the example, VACM can be used with the
+            view to further defend the SNMP architecture and provide access to
+            MIBs that are necessary for personnel to monitor network high
+            availability.
+
+
+
+
+
+
+
+
+RMON
+
+
+
+With basic SNMP configured, it is possible to add RMON events to ensure
+        that any large changes in network traffic flows will be alerted to the
+        appropriate network management personnel. Because RMON works with SNMP
+        to alert management stations to changes in network traffic, it is
+        configured under the SNMP hierarchy. In addition to the basic RMON
+        thresholds and monitoring, the event must be configured to alert the
+        network management stations. The following configuration is a basic
+        monitoring of traffic flowing into the fxp0 interface of the RE:
+
+[edit snmp]
+
+community networkcomm {
+    view noc;
+    authorization read-only;
+}
+rmon {
+    alarm 300 {
+        description "Input Traffic on fxp0";
+        interval 10;
+        /* OID for Interface Input Octets for fxp0 */
+        variable .1.3.6.1.2.1.2.2.1.10.1;
+        sample-type delta-value;
+        startup-alarm rising-or-falling-alarm;
+        rising-threshold 2000;
+        falling-threshold 15000;
+        rising-event-index 400;
+        falling-event-index 300;
+    }
+    event 400 {
+        type log-and-trap;
+        community networkcomm;
+    }
+    event 300 {
+        type log-and-trap;
+        community networkcomm;
+    }
+}
+In this configuration, we have set up a community name to which
+        the trap will be sent, and the OID that reads input octets on an
+        interface is used. The monitoring for this example is to be run at an
+        interval of 10 seconds and will take a delta of the sample for its
+        calculations. When the octet input increases by more than 2,000 within
+        the interval, the RMON process will write a message to syslog and send
+        a trap.
+
+
+
+
+
+Health monitoring
+
+
+
+The configuration of health monitoring within JUNOS is not nearly as complex
+        as that of RMON, because the OIDs are already configured for the
+        purpose. In the following example, notice that only the interval, the
+        time between samples, and the rising and falling thresholds (in
+        percentages) need to be configured. Events have already been defined
+        for health monitoring, so they are also not necessary in the
+        configuration.
+
+[edit snmp]
+health-monitor {
+    interval 600;
+    rising-threshold 75;
+    falling-threshold 85;
+}
+In this example, the health-monitor MIBs are queried every 10 minutes and an alarm is set to
+        go off if the usage of a device increases by 75% or drops by 85%. By
+        monitoring these swings in usage, network engineers are able to
+        diagnose network device issues early.
+
+
+
+
+
+Pitfalls
+
+
+
+To avoid degradation to your network's high availability, it is necessary to
+        avoid the following pitfalls when configuring SNMP, RMON, and health
+        monitoring:

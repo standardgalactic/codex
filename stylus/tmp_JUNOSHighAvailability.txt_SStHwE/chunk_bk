@@ -1,0 +1,1000 @@
+      blocking other legitimate traffic that also happens to match the
+      filter.
+Rate limiting is an excellent solution to
+      this problem. Rate limiting works in conjunction with filtering to
+      provide an additional layer of control over traffic that matches the
+      filter conditions. For example, instead of a strict accept or deny
+      action, a rate limiter allows you to configure a threshold. As long as a
+      given type of traffic is below the threshold, it passes through the
+      device; however, as soon as the volume of that traffic exceeds the
+      threshold, the device can drop it.
+This is an excellent solution for attack scenarios. As you saw
+      earlier, you could monitor TCP SYN packets using one firewall filter,
+      but when the attack occurs, you need to change to a different filter.
+      Using rate limiting, you can incorporate these features into one
+      filter.
+Rate limiting is performed in JUNOS using a policer. Policers are configured
+      under the firewall section of the command-line interface (CLI):
+
+[edit]
+lab@r1# show firewall policer SYN-policer
+if-exceeding {
+    bandwidth-limit 100k;
+    burst-size-limit 10k;
+}
+then discard;
+This policer, called SYN-policer, has two parameters of note. The
+      bandwidth-limit setting determines
+      the rate (in bits per second) at which traffic can pass through this
+      policer. The burst-size-limit setting
+      determines the maximum amount of data (in bytes) that can burst above
+      the bandwidth limit before rate limiting begins. Any data that exceeds
+      these parameters is discarded.
+Once you create a policer, you can reference it from within a filter, as shown
+      here:
+
+[edit]
+lab@r1# show firewall family inet filter police-TCP-SYN
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+        tcp-flags syn;
+    }
+    then {
+        policer SYN-policer;
+        count syn-counter;
+        log;
+    }
+}
+term B {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol tcp;
+    }
+    then {
+        count tcp-counter;
+        accept;
+    }
+}
+term C {
+    then accept;
+}
+This example is identical to the check-for-TCP-SYN filter used earlier in this
+      chapter, with one exception. For term
+      A, instead of a match action of accept, the filter now sends
+      matching traffic to a policer called SYN-policer. Once this filter is applied
+      outbound to the server-facing interface on the JUNOS device, an
+      excellent mechanism is in place to detect and dynamically control TCP
+      SYN attacks on the server. And of course, this approach applies to any
+      situation; you can create a filter to match traffic of interest, and use
+      a policer to control the resulting matching action.
+
+
+Firewall Filters: More Than Meets the Eye
+You have seen by now that stateless firewall filters have
+        excellent capabilities when it comes to accepting, denying, and
+        policing traffic. But did you know that traditional firewalling is
+        just one aspect of these filters' capabilities? Filtering is a way to
+        isolate specific types of traffic for any number of specific purposes:
+        applying Quality of Service (QoS) markings, performing filter-based
+        forwarding (also known as source-based routing), traffic mirroring,
+        and sampling, just to name a few.
+For more information on the capabilities of firewall filters, see the "Policy Framework
+        Configuration Guide" at http://www.juniper.net/techpubs/software/junos/index.html.
+
+
+
+
+
+
+Deploy Products Specifically to Address DoS Attacks
+
+
+
+This chapter covers DoS monitoring and prevention techniques that
+      are available across all JUNOS devices. However, some devices include
+      additional specialized capabilities for detecting and preventing a wide
+      range of attacks. SRX Series and ISG Series devices provide deep packet
+      inspection using flow-based stateful firewalls, which can manage traffic on a broader
+      level than packet-based filters. They also have intrusion detection and
+      prevention capabilities.
+
+Note
+Juniper Networks IDP Series devices provide inline protection
+        that stops network and application-level attacks before they inflict
+        any damage to the network.
+
+These devices are purpose-built to secure the network against
+      attacks. While they involve additional cost, they are often worth it
+      when measured against the cost of a loss in productivity due to a
+      network outage as a result of a DoS attack.
+
+Note
+These features are also available on MX Series devices when
+        installed with a multiservice edge card.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gathering Evidence
+
+
+
+Sometimes you may want to collect information about an attack that has
+    occurred. You might want to analyze the attack further, or perhaps you
+    want to provide data to a law enforcement agency. In either case, there
+    are several tools you can use to gather the appropriate data.
+
+
+
+
+Firewall Logs and Counters
+
+
+
+We discussed firewall logs and counters throughout this chapter. They provide direct
+      information about which traffic is being accepted and denied, and how
+      much traffic matches each filter. Using these tools, you can get a good
+      indication of whether attacks are occurring, and capture data to use as
+      evidence of the existence of the attack.
+
+
+
+
+
+Port Mirroring
+
+
+
+You can use port mirroring to capture entire packets and send a copy
+      of them to another device. This can be very useful to gather evidence of
+      an attack.
+To configure port mirroring, you must first define parameters for how much data to
+      capture and where to send it:
+
+[edit]
+lab@r1# show forwarding-options
+port-mirroring {
+    family inet {
+        input {
+            rate 100;
+            run-length 3;
+        }
+        output {
+            interface fe-0/0/1.0 {
+                next-hop 10.10.1.1;
+            }
+        }
+    }
+}
+In this example, you can see that port mirroring parameters are
+      configured under the forwarding-options section of the CLI. You
+      must define two input parameters: the rate, which is the capture sampling rate, and
+      the run-length, which is how many
+      packets are captured each time a capture is performed; for example, a
+      rate of 100 means a capture will be triggered for each 100 eligible
+      packets. A run-length of 3 means that
+      each time a capture is triggered, three packets will be captured. You
+      must also define output parameters, including an interface out of which
+      to send the captured packets, and a next hop.
+Once the parameters are configured, you can create a filter that matches traffic
+      of interest, and apply that filter
+      to an interface:
+
+[edit]
+lab@r1# show firewall family inet filter mirror
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol icmp;
+    }
+    then port-mirror;
+}
+
+[edit]
+lab@r1# set interfaces so-0/1/1 unit 0 family inet filter input mirror
+In this example, notice that the filter's matching action is set
+      to port-mirror. When you commit the
+      configuration, the device will capture three packets for every 100 ICMP
+      packets destined for the server at 192.168.28.1, and send a copy of
+      these captured packets out interface fe-0/0/1 to a device at 10.10.1.1.
+
+Note
+If you use port mirroring to capture evidence of an attack, be
+        very conservative with the capture rate setting. A device under attack
+        is likely already under heavy stress—the last thing you want to do is
+        to stress it further. Use port mirroring only if the device can handle
+        the additional resource requirements, and keep the capture ratio high
+        (i.e., capture only a few packets per large number of offending
+        packets).
+
+
+
+
+
+
+Sampling
+
+
+
+If you have a Monitoring Services or Adaptive Services card installed in
+      your JUNOS device, you can sample traffic passing through the routing
+      platform.
+
+Note
+Traffic sampling doesn't capture entire packets. It captures
+        only enough information from the headers of matching packets to
+        identify packets belonging to the same flow.
+
+You configure sampling in much the same way as port mirroring.
+      First, configure global sampling parameters, this time under the
+      sampling stanza of the forwarding-options section of the CLI:
+
+[edit]
+lab@r1# show forwarding-options
+sampling {
+    input {
+        family inet {
+            rate 100;
+            run-length 3;
+        }
+    }
+    output {
+        file filename icmp-sample;
+    }
+}
+Notice that the output location is a file on the device. Once the
+      parameters are configured, you can create a filter that matches traffic
+      of interest, and apply that filter to an interface:
+
+[edit]
+lab@r1# show firewall family inet filter sample
+term A {
+    from {
+        destination-address {
+            192.168.28.1/32;
+        }
+        protocol icmp;
+    }
+    then sample;
+}
+
+[edit]
+lab@r1# set interfaces so-0/1/1 unit 0 family inet filter input sample
+
+Note
+As with port mirroring, if you want to use sampling, be sure the
+        device can handle the resource requirements despite the ongoing
+        attack, and be very conservative with the capture rate setting.
+
+
+
+
+
+
+cflowd
+
+
+
+Sampled traffic can also be exported to a server running cflowd. This can be an excellent way to capture header
+      information about attack traffic and export it to an external device for
+      storage.
+cflowd uses the same configuration as sampling, with the addition
+      of cflowd export parameters:
+
+[edit]
+lab@r1# show forwarding-options
+sampling {
+    input {
+        family inet {
+            rate 100;
+            run-length 3;
+        }
+    }
+    output {
+        file filename icmp-sample;
+        cflowd 10.0.1.1 {
+            port 12345;
+            version 8;
+        }
+    }
+}
+As you can see in this example, the sampling configuration has
+      additional parameters for cflowd. Note that Version 5 flow records are
+      also supported.
+DoS attacks can bring entire networks to a halt. Detecting,
+      controlling, and minimizing the effects of these attacks is a very
+      important component in maintaining high availability. You can find more
+      resources and information about protecting your network at http://www.juniper.net.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 24. Goals of Configuration Automation
+
+
+
+In the past few years, the size of networks has exploded and the
+  complexity of the protocols on which they are based has had to keep pace.
+  The problem for modern networks is that the number of highly technical
+  engineers has not grown adequately to match this expansion. Engineers have
+  less time to plan, review, and monitor the configuration of devices, and
+  many of these tasks are falling to junior-level engineers who may not have
+  the breadth of experience, but rather have a deep technical understanding of
+  only one or two components of network topology.
+With senior engineers spread so thinly and junior technicians possibly
+  dealing with network components outside their area of expertise, it is
+  necessary to prevent human error from causing network downtime. JUNOS
+  Software has specific features that provide automated configuration and
+  validation for network devices that can help a great deal in this area, and
+  tools to better protect against human error for necessary manual
+  configuration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+CLI Configuration Automation
+
+
+
+In the realm of network engineers and technicians, it is a badge of honor
+    to be a "CLI guy," someone who is never seen to use a GUI. With some of
+    the legacy operating systems on network devices, this virtue can quickly
+    become a pitfall. Because the operating systems of many network devices
+    apply changes to their active, or running, configuration, simple typos or
+    poorly planned configuration sequences can lead to network downtime.
+    Because these operating systems use instant activation, they lack a way to
+    validate the full command sequence to ensure that all requirements for the
+    configuration are met; instead, they validate only the syntax of
+    individual lines as entered.
+Senior network engineers have developed all forms of voodoo rituals,
+    ranging from copying and pasting complete configurations at once to having
+    possibly insecure back doors into equipment, to mitigate the ramifications
+    of errors introduced into the configuration. Although these tricks are
+    often effective, sometimes they themselves cause network downtime or force
+    the engineer to take a trip across the city to reboot a device that is not
+    responding.
+
+Note
+In some networks, the engineers believe the only way to ensure
+      that a major configuration change is implemented properly is to erase
+      the startup configuration, reboot the device, and then cut and paste the
+      whole configuration in one fell swoop. Although this process may ensure
+      that the whole new configuration is applied in order, it results in
+      network downtime during the reload, as well as errors caused by changes
+      introduced after the configuration is pulled from the device and before
+      it is edited and reapplied.
+
+JUNOS Software has many features that have been specifically
+    developed to prevent human error from causing network downtime. These
+    tools not only better protect the device configuration, but also allow for
+    automated configuration checking to ensure that the
+    configuration changes that are made do not disrupt the network.
+
+
+
+
+Hierarchical Configuration
+
+
+
+Automated configuration makes no difference in a network if the
+      configuration files and structure are too convoluted to make sense to
+      the operator or to the tools used to automate the configuration. To
+      simplify both manual and automated configuration of network devices
+      running JUNOS, use a well-organized hierarchy to ensure consistency
+      within the configuration:
+
+
+
+Syntax
+
+
+A common syntax structure for commands and configuration
+            makes automated validation and creation of scripts for
+            configuration checking simpler and more efficient.
+
+
+Strings
+
+
+The parsing of strings at the hierarchy level allows you to
+            use the Tab key to complete strings, thus preventing mistyped
+            strings when referencing user-created objects. It also allows for
+            strings to be called in the various commit scripts developed for
+            the hierarchy level.
+
+
+Modularity
+
+
+You can edit, save, and load configuration components in
+            small, manageable sections, thus allowing subject-matter experts
+            to focus on their own portions of the configuration. The
+            modularity is useful not only for the initial configuration by the
+            experts, but also for having a modular structure that commit
+            scripts can be written against.
+
+
+
+This hierarchical configuration, in concert with XML storage and
+      parsing, lends itself directly to scripted configuration automation and
+      checking. This scripted checking can be used to enforce network policies
+      or designs to ensure that simple errors are not the root cause of major
+      outages.
+
+
+
+
+
+Protections for Manual Configuration
+
+
+
+Though the goal of any network operator should be to automate as many
+      configuration processes as possible, it is necessary to also have
+      protections in place to prevent human errors from appearing during
+      manual configurations. JUNOS Software includes features to restrict
+      access to certain portions of the configuration hierarchy, allow
+      exclusive configuration of the device, and allow multiple users to
+      configure and commit portions of the configuration.
+
+
+
+
+User access
+
+
+
+One way in which JUNOS ensures that human errors are kept to a
+        minimum is by restricting the hierarchy levels or commands a user may
+        access. Through the use of a login class, each
+        user can be assigned a list of commands or functional areas that are
+        explicitly allowed or denied. In the following example, a user has
+        been created that is allowed to only configure and view interface
+        settings:
+
+[edit system]
+  login {
+        class interface {
+            permissions [ configure interface ];
+            allow-commands "show interfaces";
+            allow-configuration interfaces;
+        }
+            user inteng {
+            uid 2002;
+            class interface;
+            authentication {
+                encrypted-password "$1$v5CQbbw.$l8MYWw "; ## SECRET-DATA
+            }
+        }
+    }
+}
+With this example, network engineers can be cordoned off into
+        their functional area to guarantee that any errors they make do not
+        affect the entire system. The login
+        class's permissions can either be configured directly on the JUNOS
+        command-line interface (CLI) or be configured within a Remote Authentication Dial-in User Service (RADIUS)
+        server and passed to the device.
+
+
+
+
+
+Exclusive configuration
+
+
+
+Sometimes it is necessary for a single user to make changes to a
+        JUNOS device without other users simultaneously making changes to the
+        candidate configuration. The configure
+        exclusive command is used to lock the global candidate
+        configuration to one user until the configuration is committed. The
+        command ensures that only a single user makes configuration changes to
+        the device and that the user's changes are discarded if they are not
+        committed:
+
+user@host> configure exclusive
+warning: uncommitted changes will be discarded on exit
+Entering configuration mode
+[edit]
+user@host# set system host-name R1
+[edit]
+user@host# quit
+The configuration has been changed but not committed
+warning: Auto rollback on exiting 'configure exclusive'
+Discard uncommitted changes? [yes,no] (yes)
+warning: discarding uncommitted changes
+load complete
+Exiting configuration
+When other users attempt to move into configuration mode, the
+        user is notified that the configuration is currently locked and is
+        told which user has it locked:
+
+user@host> configure
+Entering configuration mode
+Users currently editing the configuration:
+root terminal p3 (pid 1078) on since 2000-02-30 19:47:58 EDT, idle 00:00:44
+exclusive [edit interfaces ge-3/1/1 unit 0 family inet]
+The only way to take over the configuration mode is to make the
+        user who has the configuration locked log off.
+
+
+
+
+
+Private configuration
+
+
+
+The configure private command
+        enables multiple users to edit different parts of the
+        configuration at the same time and to commit only their own changes,
+        or to roll back without interfering with changes being made by others.
+        When the command is issued, a private candidate configuration is
+        created from the most recently created configuration and is used for
+        editing:
+
+root@host> configure private
+warning: uncommitted changes will be discarded on exit
+Entering configuration mode
+
+[edit]
+root@host# set system host-name R1
+
+[edit]
+root@host# exit
+The configuration has been changed but not committed
+Discard uncommitted changes? [yes,no] (yes)
+If a second user attempts to configure the device normally, she
+        will be able to view the configuration, but will be unable to make any
+        changes:
+
+user@host> configure
+Entering configuration mode
+Users currently editing the configuration:
+  root terminal d0 (pid 5259) on since 2009-05-15 20:26:03 UTC, idle 00:01:59
+      private [edit]
+user@host# set system host-name test
+error: private edits in use. Try 'configure private' or 'configure exclusive'.
+
+[edit]
+user@host#
+At any time when a user is working with her private candidate
+        configurations, other users may commit their private configurations.
+        For the user to ensure that she has the latest candidate
+        configuration, she uses the update command to
+        merge the committed changes into her private candidate configuration.
+
+
+
+
+
+
+Transaction-Based Provisioning
+
+
+
+Not all errors in the network occur because of a mistake; some occur as a
+      result of the way changes are applied to a device. For example, when
+      applying access rules to a device, the rules are written in such a way
+      that they block certain access, but grant access lower in the
+      configuration. If this configuration is entered into the device and
+      applied immediately, you may lose access, and it will not be possible to
+      enter the lines that would have allowed you access to the device.
+To minimize the immediate effect of human errors on the network,
+      JUNOS uses transaction-based provisioning, in which configuration
+      changes are not made until you manually commit the whole configuration
+      piece at once. In addition, the provisioning tool provides a simplified
+      method of fallback to previous configurations, either manually or
+      automatically.
+
+
+
+
+Standard commits
+
+
+
+The basic method of preventing human error during the process of
+        configuring a device is to automate the validation of the
+        configuration before it is applied to the device. This validation
+        process of the entire set of configuration changes prevents single
+        typos and badly designed command sequences from locking the
+        administrator out of a network device or causing protocol or interface
+        errors that could lead to routing loops or black holes.
+In JUNOS, even the most basic form of configuration creation and
+        deployment provides automated processes to prevent network downtime
+        caused by configuration issues. Figure 24-1 demonstrates automated features of
+        manual configuration.
+
+
+
+
+
+
+
+
+
+Figure 24-1. Configuration handling
+
+
+As shown in Figure 24-1, each
+        configuration change passes through at least one automated check
+        before it is allowed to become the active configuration. During a
+        standard commit process, the candidate configuration, which can be
+        created from a text file or CLI configuration or can be pulled from
+        the configuration archive, is copied to the checkout configuration,
+        where it is validated by the management daemon (mgd). The commit confirmed
+        command adds an additional automated step that copies the checkout
+        configuration to an interim configuration. This interim configuration
+        is not copied to the active configuration until a second commit command is entered. If the mgd does not receive the additional commit command, the interim configuration is
+        placed in the configuration archive and the previous active
+        configuration is automatically copied to the candidate configuration,
+        committed, validated, and copied to the active configuration, thus
+        restoring the device to the state of operation before the commit confirmed command was entered:
+
+root@host# commit | display detail
+2009-03-11 20:03:26 UTC: exporting juniper.conf
+2009-03-11 20:03:26 UTC: expanding groups
+2009-03-11 20:03:26 UTC: finished expanding groups
+2009-03-11 20:03:26 UTC: setup foreign files
+2009-03-11 20:03:26 UTC: propagating foreign files
+2009-03-11 20:03:26 UTC: complete foreign files
+2009-03-11 20:03:26 UTC: dropping unchanged foreign files
+2009-03-11 20:03:26 UTC: executing 'ffp propagate'
+2009-03-11 20:03:26 UTC: daemons checking new configuration
+2009-03-11 20:03:26 UTC: commit wrapup...
+2009-03-11 20:03:26 UTC: updating '/var/etc/filters/filter-define.conf'
+2009-03-11 20:03:26 UTC: activating '/var/etc/certs'
+2009-03-11 20:03:26 UTC: executing foreign_commands
+2009-03-11 20:03:26 UTC: /bin/sh /etc/rc.ui ui_setup_users (sh)
+2009-03-11 20:03:26 UTC: executing ui_commit in rc.ui
+2009-03-11 20:03:26 UTC: executing 'ffp activate'
+2009-03-11 20:03:26 UTC: copying configuration to juniper.save
+2009-03-11 20:03:27 UTC: activating '/var/run/db/juniper.data'
+2009-03-11 20:03:27 UTC: notifying daemons of new configuration
+commit complete
+This output shows the process of a standard commit with the
+        creation of files for the configuration validation and the inspection
+        of the configuration changes to determine their effect on system
+        daemons. The checkout configuration is made active, and the daemons
+        are notified of any changes.
+
+
+
+
+
+Commit with scripts
+
+
+
+The use of commit scripts adds a layer of complexity to the
+        processing of configuration files, but also adds layers of automation
+        to prevent errors. Within the commit script processing, the mgd will make changes to the configuration.
+        These changes are of one of two change types:
+        persistent or
+        transient.
+
+
+
+
+Persistent changes
+
+
+
+Changes that are not defined as transient in the commit script are
+          considered persistent and are placed directly
+          into the candidate configuration. As a result, these changes appear
+          as standard configuration lines in the active configuration when you
+          issue a show
+          configuration command and you can edit these lines in the
+          configuration after the commit:
+
+[edit]
+root@host# commit | display detail
+2009-03-11 20:23:21 UTC: reading commit script configuration
+2009-03-11 20:23:21 UTC: testing commit script configuration
+2009-03-11 20:23:21 UTC: opening commit script '/var/db/scripts/commit/base.xsl'
+2009-03-11 20:23:21 UTC: reading commit script 'base.xsl'
+2009-03-11 20:23:21 UTC: running commit script 'base.xsl'
+2009-03-11 20:23:21 UTC: processing commit script 'base.xsl'
+[edit interfaces interface ge-0/0/0 unit 0]
+  warning: Adding 'family mpls' to GE interface.
+2009-03-11 20:23:21 UTC: no errors from base.xsl
+2009-03-11 20:23:21 UTC: saving commit script changes for script base.xsl
+2009-03-11 20:23:21 UTC: summary of script base.xsl: changes 1, transients 0, syslog 0
+2009-03-11 20:23:21 UTC: loading commit script changes
+2009-03-11 20:23:21 UTC: finished loading commit script changes
+2009-03-11 20:23:21 UTC: exporting juniper.conf
+2009-03-11 20:23:21 UTC: expanding groups
+2009-03-11 20:23:21 UTC: finished expanding groups
+2009-03-11 20:23:21 UTC: setup foreign files
+2009-03-11 20:23:21 UTC: propagating foreign files
+2009-03-11 20:23:21 UTC: complete foreign files
+2009-03-11 20:23:21 UTC: dropping unchanged foreign files
+2009-03-11 20:23:21 UTC: executing 'ffp propagate'
+2009-03-11 20:23:21 UTC: daemons checking new configuration
+2009-03-11 20:23:21 UTC: Routing protocols process checking new configuration
+2009-03-11 20:23:21 UTC: Firewall process checking new configuration
+2009-03-11 20:23:21 UTC: Interface control process checking new configuration
+2009-03-11 20:23:21 UTC: Management Information Base II process checking new
+status 0 with notification errors enabled
+(domain notifications omitted)..
+commit complete
+As this code output demonstrates, the persistent changes are
+          loaded into the configuration before the checkout configuration is
+          created. Through this process, the persistent changes are written
+          into the candidate configuration, and they remain in the
+          configuration after the commit process. Because persistent changes
+          are applied directly to the candidate configuration, you can edit or
+          delete them.
+
+
+
+
+
+Transient changes
+
+
+
+The changes marked as transient are added to
+          the checkout configuration before the final validation, but they are
+          not added to the candidate configuration. Here is code output of a
+          commit that uses transient changes:
+
+root@host# commit | display detail
+2009-03-11 21:20:35 UTC: reading commit script configuration
+2009-03-11 21:20:35 UTC: testing commit script configuration
+2009-03-11 21:20:35 UTC: opening commit script '/var/db/scripts/commit/mtu.xsl'
+2009-03-11 21:20:35 UTC: reading commit script 'mtu.xsl'
+2009-03-11 21:20:35 UTC: running commit script 'mtu.xsl'
+2009-03-11 21:20:35 UTC: processing commit script 'mtu.xsl'
+2009-03-11 21:20:35 UTC: no errors from mtu.xsl
+2009-03-11 21:20:35 UTC: saving commit script changes for script mtu.xsl
+2009-03-11 21:20:35 UTC: summary of script mtu.xsl: changes 0,
+transients 1 (allowed), syslog 0
+2009-03-11 21:20:35 UTC: no commit script changes
+2009-03-11 21:20:35 UTC: finished loading commit script changes
+2009-03-11 21:20:35 UTC: exporting juniper.conf
+2009-03-11 21:20:35 UTC: loading transient changes
+2009-03-11 21:20:35 UTC: loading commit script changes (transient)
+2009-03-11 21:20:35 UTC: updating transient change flags
+2009-03-11 21:20:35 UTC: no commit script changes from previous commit
+2009-03-11 21:20:35 UTC: finished loading commit script changes
+2009-03-11 21:20:35 UTC: expanding groups
+2009-03-11 21:20:35 UTC: finished expanding groups
+2009-03-11 21:20:35 UTC: setup foreign files
+2009-03-11 21:20:35 UTC: propagating foreign files
+2009-03-11 21:20:35 UTC: complete foreign files
+2009-03-11 21:20:35 UTC: dropping unchanged foreign files
+2009-03-11 21:20:35 UTC: executing 'ffp propagate'
+2009-03-11 21:20:35 UTC: daemons checking new configuration
+2009-03-11 21:20:35 UTC: Routing protocols process checking new configuration
+2009-03-11 21:20:36 UTC: Init daemon checking new configuration
+2009-03-11 21:20:36 UTC: Chassis control process checking new configuration
+2009-03-11 21:20:36 UTC: Booting daemon checking new configuration
+2009-03-11 21:20:36 UTC: Firewall process checking new configuration
+2009-03-11 21:20:36 UTC: Interface control process checking new configuration
+Because the changes are applied to the checkout configuration,
+          you cannot edit or delete them. In fact, you must use the show configuration | display
+          commit-scripts command to even see the transient changes
+          in the configuration.
+
+
+
+
+
+
+Script processing
+
+
+
+Because of the additional steps involved with commit scripts, the process of
+        committing a configuration is slightly more complex. Figure 24-2 illustrates the
+        process of adding script checking to the configuration process.
+
+
+
+
+
+
+
+
+
+Figure 24-2. Handling configuration with scripts
+
+
+As with a standard commit, mgd validates all changes before they become part of the
+        active configuration. The additional processing of the commit scripts
+        is performed before the final validation takes place. In the process,
+        once the commit command is used on
+        the candidate configuration, mgd
+        creates an XML-formatted copy of the configuration file. The script
+        driver, using the onboard processor, parses the configuration changes
+        against the scripts that are configured on the system. Depending on
+        the commit scripts, various actions can be sent to mgd to perform, including the
+        following:
+
+
+
+Error message
+
+
+mgd sends an error
+              message to the syslog, CLI, or JUNOScript client, and the commit is
+              rejected.
+
+
+Persistent changes
+
+
+mgd adds to the
+              configuration any change that the commit script
+              makes.
+
+
+Transient changes
+
+
+After all changes have been made to the candidate and the
+              candidate configuration is copied to the checkout configuration,
+              mgd adds to the checkout
+              configuration any changes defined as transient.
+
+
+
+When you know the timing and process differences between
+        transient and persistent changes, you can ensure that the commit
+        script's automation process inserts data into the configuration in
+        such a way that errors cannot be introduced later. For example, using
+        transient changes, it is possible to enforce mandatory configuration
+        items that technicians cannot view or change.
+
+
+
+
+
+
+Archives and Rollback
+
+
+
+Even with automation in place to validate candidate configurations and scrub
+      them against scripts, and even if the JUNOS syntax in the configuration
+      is perfect, it is possible that an error might occur as a result of
+      flawed configuration logic. JUNOS provides archived configuration files
+      and the rollback command to
+      ensure that these errors do not lead to extended network
+      downtime.
+
+
+
+
+Configuration stores
+
+
+
+As each configuration is committed, the active configuration is copied to the
+        archive before the new checkout configuration is activated. The active
+        configuration and the last three active configurations are stored in
+        the flash of the JUNOS device. The following output displays a list of
+        the current active configuration and the last three configurations on
+        the flash drive in the /config directory:
+
+user@host> file list /config/
+
+/config/:
+.snap/
+juniper.conf.1.gz
+juniper.conf.2.gz
+juniper.conf.3.gz
+juniper.conf.gz
+As more commits are made to the systems, the configurations are
+        shifted until they are placed onto the hard drive, where up to 47 more
+        configurations can be saved. This example output shows an abbreviated
+        list of files:
+
+user@host> file list /var/db/config/
+
+/var/db/config/:
+juniper.conf.10.gz
+juniper.conf.11.gz
+juniper.conf.12.gz
+juniper.conf.13.gz
+juniper.conf.14.gz
+juniper.conf.15.gz
+juniper.conf.16.gz
+juniper.conf.17.gz
+juniper.conf.18.gz
+Using the CLI, you can not only roll back to the previous configurations, but also
+        examine the deltas in the configuration files:
+
+user@host> show configuration | compare rollback 4
+[edit system scripts commit]
++     file mtu.xsl;
+-     file encap.xsl;
+[edit interfaces]
+-   so-0/1/0 {
+-       unit 0;
+-   }
+When the configuration is restored from the archive either
+        manually using the rollback command or automatically using
+        a remote tool or the commit confirmed
+        command, the specified configuration file is loaded and only the
+        objects that differ from the active configuration are marked as
+        changed. The configuration is then validated and activated. This
+        automated rollback process ensures that human error is not introduced
+        in the return to the previous configuration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Automating Remote Configuration
+
+
+
+Although JUNOS contains many features to automate configuration on a
+    device-by-device basis, human error can be introduced when configurations
+    on devices differ in ways that cause unexpected effects in the network.
+    Using the aforementioned strategies in conjunction with the tools for
+    remote administration of the configuration, such as the JUNOScript APIs,
+    it is possible to build systems to make configuration consistent not only
+    across a single device, but also across the entire network. You can find a
+    detailed explanation on using these tools in Chapters 10 and
+    11.
+
+
+
+
+
+
+

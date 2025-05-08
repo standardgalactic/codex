@@ -1,0 +1,1000 @@
+
+
+
+Default community strings in SNMPv1 and SNMPv2 exist in many
+            networks, even though we all know better. These default strings
+            can be used to perform reconnaissance on networks with ease, which
+            could result in the worst kind of network downtime.
+
+
+In-band management of networking equipment not only allows
+            the less secure SNMP traps to traverse equipment that could be
+            sniffed, but also allows an entrance point for people looking to
+            scout out your network.
+
+
+Insane thresholds are one of the most damaging aspects of
+            network monitoring. Deploying thresholds that are activated at
+            small changes in traffic can lead to storms of events being
+            reported, and eventually to network managers ignoring those
+            events, even if one of them is an event leading to network
+            downtime.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Traffic Monitoring
+
+
+
+Besides monitoring the hardware and software itself to determine the
+    health of the network, it is also possible to use the traffic flowing
+    through the network and the routing updates received by the network
+    equipment to not only determine the current state of the network, but also
+    create a baseline that can be used to determine issues that in the future
+    could lead to network outages. It is possible to deploy JUNOS or
+    software-based tools to monitor the traffic flows and routing updates and
+    deliver them in a fashion that is usable to network engineers.
+
+
+
+
+Traffic Monitoring Overview
+
+
+
+When it comes to the high availability of your network, the purpose of
+      traffic monitoring is twofold:
+
+
+
+To ensure that throughput levels are known and a baseline is
+          created to ensure that anomalies in traffic flow, which could
+          indicate network outages or degradation, are detected as quickly as
+          possible
+
+
+To ensure that routing protocols are behaving correctly
+          internally to the network, as well as ensure that neighboring
+          Autonomous Systems (ASs) are not affecting your high availability by sending
+          bogus routing announcements
+
+
+
+Though some network engineers never worry about how their daemons
+      are coupled or how their operating system works, it's common to have
+      software installed on machines that seems to steal resources from all
+      the other software—locking up the computer and forcing a reboot. You
+      don't want a mistake in your SNMP process stealing resources from
+      Border Gateway Protocol (BGP) and possibly crashing the
+      router.
+
+Note
+Though political requirements may necessitate proprietary
+        software because it can be supported, the open source community has
+        many traffic and routing monitoring tools that can be used at least
+        for research, if not as the core of your network's traffic
+        monitoring.
+
+When focusing on high availability, you want the tools you
+      introduce into your network to not only be functional, but also provide
+      useful information. Many of the traffic monitoring and routing
+      monitoring tools require secondary software to make the information
+      usable. In developing the traffic monitoring stance for your network,
+      the following protocols are available:
+
+
+
+Traffic sampling and aggregation can be used to provide
+          traffic and protocol analysis across network devices. JUNOS can
+          provide the aggregated sampling information to any system running
+          the cflowd application provided by the Cooperative Association for
+          Internet Data Analysis (CAIDA; http://www.caida.org).
+          The data from cflowd can be fed to various open source and
+          proprietary software that can analyze the data and produce graphical
+          representations of it.
+
+
+JUNOS supports various counters to monitor and analyze
+          throughput of links and traffic flows. Firewall filters within JUNOS can be configured to
+          count or sample specific flows of traffic.
+
+
+Route monitoring can be introduced into the network in many
+          ways. The simplest introduction of monitoring routing protocols
+          includes the use of syslog and SNMP to alert network managers of
+          events, such as adjacency changes.
+
+
+
+
+
+
+
+
+Traffic Monitoring Planning
+
+
+
+The tools used in monitoring traffic in your network are determined
+      by the type of analysis that is to take place. JUNOS supports traffic
+      flow sampling and aggregation, as well as firewall and class usage counters. Syslog, as well as
+      routing monitoring software, can be used to provide a view of
+      the routing health in the network. Table 9-8 shows an example of traffic flow
+      planning.
+
+
+Table 9-8. Traffic flow planning
+
+
+
+
+
+
+
+
+
+
+Category
+
+
+Description
+
+
+Potential high
+              availability issues avoided
+
+
+
+
+
+
+cflowd
+
+
+Analyze protocol and traffic
+
+
+Anomalies affecting
+              equipment throughput or symptoms of other
+              errors
+
+
+
+
+Class
+              usage
+
+
+Count traffic based on
+              source or destination
+              addresses
+
+
+Anomalies in customer
+              networks indicating errors that could lead to network
+              outages
+
+
+
+
+Syslog and
+              SNMP
+
+
+Monitor routing protocols
+              for changes or errors
+
+
+Routing outages causing
+              network downtime
+
+
+
+
+Routing software
+
+
+Monitor advertisements
+              and overall routing
+
+
+Prefix hijacking by other
+              ASs
+
+
+
+
+
+
+
+
+
+
+
+Implementing Traffic Monitoring
+
+
+
+One important way to ensure high availability in the network is to monitor
+      traffic and traffic types flowing through the network. JUNOS software
+      supports standard traffic monitoring features.
+
+
+
+
+Packet sampling
+
+
+
+Packet sampling is a technique for analyzing and characterizing flows of
+        traffic in your network by recording the IP headers of a small
+        percentage of packets that flow through the network device. These
+        sampled packets are then used to create a generalized view of the
+        protocol and traffic types traversing the system. The results of the
+        packet sampling can be viewed using open source software from either
+        http://www.splintered.net/sw/flow-tools/ or
+        http://www.caida.org/.
+In the following code snippet, the device is configured to
+        sample traffic and send it in a format that is readable by the
+        cflowd software. The sampling is configured within JUNOS
+        by creating a firewall filter to sample the traffic, applying it to an
+        interface, and setting up forwarding options to set sampling style and
+        aggregation options:
+
+[edit forwarding-options]
+sampling {
+    input {
+        family inet {
+            rate 1000;
+            run-length 20;
+            max-packets-per-second 100;
+        }
+    }
+    output {
+        cflowd 10.0.0.1 {
+            port 2055;
+            source-address 10.0.0.200;
+            version 8;
+            local-dump;
+        }
+        flow-inactive-timeout 50;
+        flow-active-timeout 60;
+}
+[edit firewall]
+family inet {
+    filter sampling {
+        term sample {
+            then {
+                sample;
+                accept;
+           }
+        }
+    }
+}
+[edit interfaces]
+ge-0/1/0 {
+    unit 0 {
+        family inet {
+            filter {
+                input sampling;
+            }
+        }
+    }
+}
+In the configuration sample for packet sampling, the filter is
+        designed to sample and accept all traffic that is being input on the
+        Gigabit Ethernet interface. The sampling is set up to
+        trigger on the first packet out of every 1,000 that match the filter
+        and then collect the 20 packets after that. The information from the
+        aggregated packets is sent to a system running cflowd at the address
+        10.0.0.1. On the system running cflowd, software such as ntop can be
+        loaded to graph the data to make protocol analysis easier for network
+        managers.
+
+
+
+
+
+Port mirroring
+
+
+
+Unlike packet sampling—which records only key IP header
+        information—port mirroring forwards a copy of the entire packet. With
+        the entire packet being forwarded, very detailed analysis of traffic
+        flows and protocol usage can be performed. Port mirroring is
+        configured in a similar fashion to packet sampling, as you can see
+        here:
+
+[edit forwarding-options]
+port-mirroring {
+    input {
+        family inet {
+            rate 1000;
+            run-length 20;
+        }
+    }
+    output {
+        interface ge-1/0/3 {
+            next-hop 10.0.0.1;
+        }
+}
+[edit firewall]
+family inet {
+    filter mirror {
+        term mirror {
+            then {
+                mirror;
+                accept;
+            }
+         }
+     }
+}
+
+[edit interfaces]
+ge-0/1/0 {
+    unit 0 {
+        family inet {
+            filter {
+                input mirror;
+            }
+        }
+    }
+}
+The preceding port mirroring configuration also triggers on the
+        first of every 1,000 packets and forwards the following 20 packets.
+        The major difference is that the entire packet is copied and not just
+        the header information. A packet capture tool, such as Wireshark, can be used to collect the packets.
+
+
+
+
+
+Counters
+
+
+
+One way to ensure high availability is to maintain packet counts based on
+        the entry and exit points for traffic traversing your network. By
+        monitoring network throughputs, anomalies in traffic flows can be
+        revealed and preventive maintenance or reconfiguration can be
+        performed. JUNOS software allows you to introduce both source class
+        usage (SCU) and destination class usage (DCU) to perform accounting on specific source and
+        destination addresses. Configuration of SCUs and DCUs requires
+        configuration of policies,
+        accounting options, and routing options, and they need to be applied
+        to an interface:
+
+[edit accounting-options]
+file Cust1-usage {
+    size 1000k;
+    files 50;
+    transfer-interval 10;
+}
+class-usage-profile Customer1 {
+    file Cust1-usage;
+    interval 30;
+    source-classes {
+        customer-SCU;
+    }
+}
+
+[edit policy-options]
+policy-statement Customer-SCU {
+    term DMZ {
+        from {
+            route-filter 192.168.2.0/24 orlonger;
+        }
+        then source-class customer-SCU;
+    }
+}
+
+[edit routing-options]
+forwarding-table {
+    export Customer-SCU;
+}
+
+[edit interface ge-1/0/0]
+unit 0 {
+    family inet {
+        accounting {
+            source-class-usage {
+                input;
+            }
+        }
+    }
+}
+In this example, a Source Class Usage report has been created
+        for packets entering the ge-1/0/0
+        interface with a source address of 192.168.2.0. The accounting
+        information will be written to a file named
+        Cust1-usage, which can be sent to an archive
+        server.
+
+
+
+
+
+
+Route Monitoring
+
+
+
+High availability is an all-encompassing task, which is affected not only by
+      local hardware or software, but also by the Internet at large and your
+      network peering connections. In February 2008, ISPs in Pakistan began
+      advertising the addresses for YouTube and stopped traffic from reaching the services
+      offered by them. Now, though YouTube had nothing to do with this outage,
+      it is YouTube's high availability stance that was damaged. Many times,
+      network operators do not consider the effects of others' configuration
+      errors, intentional or accidental, on their high availability, but
+      because of the interconnected nature of the Internet, they
+      should.
+
+
+
+
+Route Views
+
+
+
+Though JUNOS has many internal tools to ensure that high
+        availability is maintained, there is a great brain pool of network
+        operators in the world who have developed software and scripts for
+        monitoring networks. Many of these tools are open source and are free,
+        as in beer and speech, and can be used as just a single facet of
+        network monitoring. One source for these tools is the Route Views
+        project, which is provided by the University of Oregon.
+
+
+
+
+
+Cyclops
+
+
+
+The University of California at Los Angeles offers the
+        Cyclops network auditing tool which allows ISPs and
+        enterprises to monitor the behavior of their routes advertised into
+        the Internet routing tables. The tool can be used to monitor against
+        hijacking of an AS number or prefix to ensure that traffic is routed
+        properly to your network. Cyclops can be found at http://cyclops.cs.ucla.edu/.
+
+
+
+
+
+BGPlayer
+
+
+
+BGPlayer is a monitoring tool for BGP route advertisements that
+        would have been helpful during the YouTube incident. It provides a
+        graphical representation of how routes are being learned in a network.
+        Based out of Roma Tre University in Rome, the tool is designed to peer with an internal
+        BGP neighbor to receive all the BGP updates from the device. Once a
+        database of routes is built, the routes can be displayed in a matrix
+        showing from where the advertisement was received and how it is
+        advertised to other peers.
+After downloading the software, it is possible to configure the
+        network devices to use the computer on which it is running as a BGP
+        route reflector client. To prevent routes from being returned from the
+        server running BGPlayer, a policy can be written to prevent importing
+        routes from the server:
+
+[edit policy-options]
+policy-statement bgplayer {
+    from neighbor 10.0.0.122;
+    then reject;
+}
+[edit protocols bgp]
+group bgplayer {
+    type internal;
+    import bgplayer;
+    cluster 1.1.1.1;
+    neighbor 10.0.0.122;
+}
+After some time, it is possible to replay advertisements and
+        withdrawals from BGP, allowing for a much better picture of not only
+        how BGP is running, but also how network prefixes are being
+        advertised. With this knowledge it is possible to tweak routing
+        policies to ensure that network outages in neighboring ASs will not
+        degrade high availability in the network.
+
+
+
+
+
+Pitfalls
+
+
+
+As you saw throughout this chapter, the pitfall of all
+        monitoring for high availability is information overload obscuring
+        necessary data. In traffic monitoring, too, the amount of information
+        gathered must be proportionate to the number of people available to
+        monitor the data, as well as the software available for parsing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 10. Management Interfaces
+
+
+
+Although a planned and clearly implemented syslog and Simple Network
+  Management Protocol (SNMP) solution is the first step to ensuring continuous
+  system operation within a network, it removes much of the management
+  intelligence from the networking equipment itself. Using syslog and SNMP
+  configurations does allow you to filter and forward events and messages to
+  specific locations, but the parsing and correlating of information takes
+  place on separate Network Management Stations (NMSs).
+With the introduction into JUNOS of intuitive GUI interfaces and
+  powerful onboard scripting, the network management intelligence can be
+  shared by both the NMSs and the networking equipment itself. The variety of
+  interfaces allows all levels of network engineers and technicians—from
+  crusty old-timers who were brought up handcoding assembly language or
+  writing their first BASIC programs for the C64, to kids fresh out of
+  community college who don't comprehend the simple beauty of lines such as
+  "look lantern" and the text-based RPGs to which some of us were addicted—to
+  participate proactively in managing the network to minimize system downtime.
+  Although the debate between GUI and command-line interface (CLI) management
+  tools will no doubt rage on, multiple management interfaces do provide a
+  custom-tailored management tool to network technicians and engineers of all
+  experience levels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+A GUI for Junior Techs
+
+
+
+To allow nontechnical people and individuals new to JUNOS to quickly
+    build, deploy, and manage a network of Juniper equipment, a tool called
+    J-Web is bundled with the equipment. J-Web is an HTTP-based
+    GUI-driven tool that has been developed especially for equipment
+    management. The J-Web tool, which comes preinstalled on J Series enterprise routing equipment and is free for
+    download and installation on the EX Series Ethernet switches, the MX Series Ethernet routers, and the M7i, M10i, and M120
+    router families, provides a graphical interface for many JUNOS commands
+    and tools. Even the big-iron M and T Series routers can use J-Web for an additional
+    licensing fee, but the main purpose of J-Web is to provide simple and
+    quick access for users in remote offices so that they can turn on their
+    systems.
+
+Note
+Because J-Web is totally web-driven, you do not need to download a
+      Java client, as with some other vendors' management tools. Although that
+      may seem inconsequential, the fact that you are able to get into the
+      equipment without worrying about Java versions becomes very important
+      when time is of the essence and you see your seven 9s slipping
+      away.
+
+
+
+
+
+Using J-Web
+
+
+
+Because J-Web is preinstalled on the J Series equipment, no
+      configuration tasks are required to use it. On the other JUNOS systems,
+      such as the upper-end M and T Series, you must download, install, and
+      obtain the proper licenses for the J-Web software before you use it. You
+      download the J-Web software from the Juniper Networks Customer Support
+      area and save it to the /var/tmp directory of the
+      equipment on which it is to be installed.
+Once the software is on the network device, install it using the
+      standard software add commands,
+      and then add web management to the configuration:
+
+user@host> request system software add /var/tmp/j-web-bundle.tgz
+user@host> configure
+user@host# set system services web-management-http
+After you issue these commands, you access J-Web through a
+      standard browser using the IP address of the host as the URL. Figure 10-1 shows an example of the J-Web interface.
+Although the GUI is designed for lower-level and new users, you
+      can use it to access all JUNOS configuration statements and commands and
+      to monitor the network to ensure high availability.
+
+
+
+
+
+J-Web for High Availability
+
+
+
+The J-Web GUI provides access to the CLI commands and functions that are normally used to
+      ensure continuous system operation. The major advantage of using J-Web
+      is that it provides visual indicators, which can help you to quickly
+      discover issues before you can identify them in the plain-text
+      monitoring formats, such as logfiles. The graphical nature of J-Web
+      lends itself to the following monitoring and management functions:
+
+
+
+Equipment performance, which displays with colored bar
+          graphs
+
+
+Syslog events, color-coded to highlight critical
+          errors
+
+
+Interface usage, which displays with colored bar graphs
+
+
+
+
+
+
+
+
+
+
+
+
+Figure 10-1. J-Web GUI
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Mid-Level Techs and the CLI
+
+
+
+For those mid-level technicians and engineers in your network who are
+    more comfortable with using the CLI to monitor continuous system
+    operation, JUNOS offers tools in addition to syslog and SNMP for obtaining
+    the information necessary to ensure continuous system operation and high
+    availability. The primary tool for these technicians is event policies,
+    which make it possible to define a list of commands to be run when a
+    trigger event occurs. The output from these commands can be sent to an
+    external source for root-cause
+    failure analysis, for network monitoring, and to develop a network
+    baseline. You configure event policies in the standard configuration file
+    of the network equipment, and they are visible when you display the
+    contents of the configuration.
+
+
+
+
+Event Policy Planning
+
+
+
+Just as with syslog and SNMP, you must determine up front exactly what
+      information to retrieve during periodic checks or in the case of an
+      expected or unexpected event. Without proper and thorough planning, the
+      amount of information available from your network equipment can be
+      overwhelming. While you cannot fully customize information gathered from
+      event policies, CLI pipes and other tricks are available to help filter
+      command output. Table 10-1 is an
+      example of an event policy plan.
+
+
+Table 10-1. Event policy planning
+
+
+
+
+
+
+
+
+
+
+Event
+
+
+Destination
+
+
+Commands
+
+
+
+
+
+
+Routing
+              failures
+
+
+Engineers
+
+
+
+show
+              configuration protocols
+
+
+show
+              system processes | match rpd
+
+
+show
+              log messages | match rpd
+
+
+
+
+
+Daily
+              baseline
+
+
+Archive
+
+
+
+show interfaces
+              terse
+
+
+show bgp
+              summary
+
+
+show ospf
+              overview
+
+
+show chassis
+              alarms
+
+
+
+
+
+Weekly interface
+              baseline
+
+
+Archive
+
+
+
+show interfaces
+              statistics
+
+
+clear interface
+              statistics all
+
+
+
+
+
+Configuration
+              commit
+
+
+Archive, engineers
+
+
+
+show
+              configuration
+
+
+show configuration
+              | compare rollback 1
+
+
+show
+              configuration | display commit-scripts
+              view
+
+
+
+
+
+
+
+The event policies shown in this table gather information about
+      the health of routing protocols and interfaces, and track changes in the
+      configuration. The purpose of these policies is to prevent network
+      downtime caused by either software or human errors, and to help
+      guarantee continuous system operation. Notice that pipes are used to
+      limit the amount of information collected by invoking commands such as
+      compare, finding configuration
+      deltas, and matching specific lines from logfiles.
+
+
+
+
+Sample event policy configuration
+
+
+
+Once you have a plan for event triggers, you typically build a
+        configuration that both triggers commands when an event appears in the
+        syslog and schedules generated events that force commands to run. The
+        following code creates periodic events—for a daily baseline that runs
+        at midnight and a weekly baseline—and trigger commands that gather
+        information when specific events occur. The code is an example of how
+        to configure the event policy that corresponds to the plan shown in
+        Table 10-1:
+
+event-options {
+  generate-event {
+    Daily_Baseline time-of-day "00:00:00 +0000";
+    Weekly_Baseline time-interval 604800;
+  }
+  policy Routing_Failure {
+    events [ rpd_abort rpd_exit rpd_os_memhigh ];
+      then {
+        execute-commands {
+            commands {
+                "show configuration protocols";
+                "show system processes | match rpd";
+                "show log messages | match rpd";
+            }
+            raise-trip;
+            output-filename routing;
+            destination Engineering;
+            output-format text;
+          }
+      }
+  }
+  policy Daily_Baseline {
+    events Daily_Baseline;
+      then {
+        execute-commands {
+            commands {
+                "show interfaces terse";
+                "show bgp summary";
+                "show ospf overview";
+                "show chassis alarms";
+            }
+            output-filename Daily_Baseline;
+            destination Archive;
+            output-format text;
+          }
+      }
+  }
+  policy Weekly_Baseline {
+    events Weekly_Baseline;
+      then {
+        execute-commands {
+            commands {
+                "show interfaces statistics";
+                "clear interface statistics all";
+            }
+            output-filename weekly;
+            destination Archive;
+            output-format text;
+        }
+     }
+  }
+  policy Commit {
+    events ui_commit;
+    then {
+        execute-commands {
+            commands {
+                "show configuration";
+                "show configuration | compare rollback 1";
+                "show configuration | display commit-scripts view";
+            }
+            output-filename commit;
+            destination Archive;
+            output-format text;
+        }
+    }
+ }
+  policy Commit_Engineers {
+    events ui_commit;
+    then {
+        execute-commands {
+            commands {
+                "show configuration";
+                "show configuration | compare rollback 1";
+                "show configuration | display commit-scripts view";
+            }
+            output-filename commit;
+            destination Engineering
+            output-format text;
+        }
+    }
+ }
+
+  destinations {
+    NOC {
+        archive-sites {
+            "ftp://router@noc.example.com" password "$9$OW0r1RS8X-"; ## SECRET-DATA
+        }
+    }
+    Archive{
+        archive-sites {
+            "ftp://router@archive.example.com" password "$IEKvxNd"; ## SECRET-DATA
+        }
+    }
+    Engineering {
+        archive-sites {
+            "ftp://router@engineering.example.com" password "$9$U"; ## SECRET-DATA
+        }
+    }
+  }
+}
+This very basic configuration uses only show commands and SNMP traps, and does not
+        invoke any event scripts. The destination section of the event policy defines the hosts to which the information
+        collected by the policy is sent. The example configures five
+        policies:
+
+
+
+
+Routing_Failure
+
+
+
+Provides routing configuration and possible log messages
+              relating to the routing protocols when a Routing Protocol Daemon
+              (RPD) failure appears in the syslog. The output of the policy is
+              sent to the destination archive.
+
+
+
+Daily_Baseline
+
+
+
+Provides basic information about Open Shortest Path First
+              (OSPF), Border Gateway Protocol (BGP), interfaces, and any
+              chassis alarms when the specified event is triggered at the set
+              time. The time-of-day
+              command generates an event at midnight every night.
+
+
+
