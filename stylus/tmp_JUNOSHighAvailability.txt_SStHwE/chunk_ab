@@ -1,0 +1,1000 @@
+800-998-9938 (in the United States or Canada)
+
+
+707-829-0515 (international or local)
+
+
+707-829-0104 (fax)
+
+
+We have a web page for this book, where we list errata, examples,
+    and any additional information. You can access this page at:
+
+
+
+http://www.oreilly.com/catalog/9780596523046
+
+
+
+or:
+
+
+
+http://cubednetworks.com
+
+
+
+To comment or ask technical questions about this book, send email
+    to:
+
+
+
+
+bookquestions@oreilly.com
+
+
+
+
+For more information about our books, conferences, Resource Centers,
+    and the O'Reilly Network, see our
+    website at:
+
+
+
+http://www.oreilly.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Acknowledgments
+
+
+
+The authors would like to gratefully and unabashedly acknowledge
+    many of our peers, editors, and advisers over the long course of writing
+    this book. We began naively and finished as book-writing experts mostly
+    because of the leadership of many of our associates.
+First, we must thank Patrick Ames, Juniper Networks' editor in chief
+    for its technical book program. Without him you would not be holding this
+    volume in your hand or viewing it on your monitor. Second, Aviva Garrett,
+    author of JUNOS
+    Cookbook (O'Reilly), performed a marvelous final edit
+    of our work, putting in countless hours and raining down incredible
+    suggestions. Third, Colleen Toporek, our developmental editor, slogged
+    through our first missives and gently guided us toward the O'Reilly
+    benchmarks of excellence. Finally, our copyeditor, Audrey Doyle, took it
+    all in and masterfully made it sync together. These four, along with Mike
+    Loukides, Marlowe Shaeffer, Robert Romano, and countless others at
+    O'Reilly, formed a team that helped to create a book that is greater than
+    the sum of its authors. Thank you all.
+We would also like to thank Juniper Networks, the employer of three
+    of the four authors, for allowing us the resources and occasional
+    bandwidth to work on this project, and the many people who contributed to
+    this book in a thousand little ways, from hallway conversations to
+    in-depth emails explaining one thing or another; Fred Stringer, who helped
+    us at the very beginning while we were still proposing the book; Chris
+    Hellberg for sparking the book idea—no more busting routers, mate; and
+    Anton Bernal and Gonzalo Gomez Herrero for contributing to the early
+    discussions and providing many fresh ideas. We note that Abhilash
+    Prabhakaran was the original writer and Ben Mann and Joanne McClintock the
+    editors of the material in Appendix C, which we condensed
+    and abbreviated for the reader's benefit. And finally, we want to
+    especially reserve our admiration for the team of additional technical
+    reviewers from Juniper Networks who worked on tight schedules and limited
+    resources: Majid Ansari, Nathan Day, Jasun Rutter, and Jared Gull.
+James Sonderegger would personally like to thank his wife, Bonnie,
+    and children, Gabby, Riley, Cat, and William, for their patience and
+    unwavering support through the year it took to finish this project.
+Orin Blomberg would personally like to thank his wife, Holly, for
+    all her support during the writing of the book.
+Kieran Milne would like to first thank and acknowledge his daughter,
+    Sarah. Then, he would like to extend deep appreciation to Will Pincek,
+    Stacy Smith, and Elna Wells for making Juniper Networks an amazing place
+    to work. He would also like to thank James Sonderegger for inviting him to
+    join this project and Patrick Ames for keeping the project on track and
+    moving forward.
+Senad Palislamovic would like to thank his Guide for allowing him to
+    complete this project; and his parents and beautiful wife for their love
+    and support during long sleepless weekends. Special thanks go to James
+    Sonderegger, Orin Blomberg, and Kieran Milne for all the extra cycles
+    devoted to the project; Aviva Garrett for pulling all-nighters rewriting
+    his lines and still meeting the deadline; Fred Stringer for his High
+    Availability mentorship; and his old and new managers for letting him
+    slack, Michael Kozich and Michael Langdon. Final thanks go to all of those
+    who gave him space throughout the past year; Senad is still your
+    friend.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Part I. JUNOS HA Concepts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 1. High Availability Network Design
+  Considerations
+
+
+
+Before diving into the details of how JUNOS-enabled networks can be
+  managed to promote high availability, we need to examine networks at the
+  architectural level in order to distinguish a high availability network from
+  other networks.
+Redundancy schemes are relative to a layered model and can be described with the
+  following line of simple premises:
+
+
+
+Redundant components protect systems
+
+
+High availability at the system layer is supported by redundant
+        hardware components such as power supplies, interface cards, and
+        processor engines.
+
+
+Redundant systems protect services
+
+
+High availability at the service layer is supported by redundant
+        systems such as routers, switches, and servers.
+
+
+Redundant services protect the enterprise
+
+
+High availability at the enterprise layer is supported by
+        redundant services such as email, VoIP, the Web, and "shopping
+        carts."
+
+
+Redundant enterprises protect free-market economies
+
+
+Though relevant to the current state of world finances, this
+        premise is beyond the scope of this book.
+
+
+
+Each layer in the model can be said to have an associated base cost
+  that represents the price of functionality at that layer. High availability
+  is provided by protecting base functionality with hardware, software,
+  configuration options, staffing, or whatever else is available. In almost
+  every case, adding protection to a layer's functionality increases the cost
+  of that layer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Why Mention Cost in a Technical Book?
+
+
+
+With the exception of some government projects, cost is always a concern when building or upgrading a
+    network, even when high availability is the desired end state. Is it
+    practical to add $500,000 to the cost of creating and supporting services
+    that yield a $50,000 annual revenue stream? Probably not. Would it be more
+    tenable to protect a $50,000 revenue stream with $25,000 in high
+    availability-focused enhancements? An investment like that makes
+    sense.
+Most books on the market today that describe "network solutions" do
+    so with little consideration given to the price of equipment and support,
+    and to additional operational expenses (OPEX) tied to space, power, and
+    cooling. Why are these issues so commonly overlooked? Perhaps because
+    prices are subject to change; they can be affected by discount models, and
+    they change over time: some prices could be outdated before this book's
+    shelf life expires. Also, vendors occasionally discourage the release of
+    price information in public forums.
+This chapter does not attempt to capture the
+    actual cost in real dollars of products from Juniper
+    or any other vendor. Instead, we assign a baseline cost to a simple, nonredundant
+    network, and then look at the relative changes that are associated with
+    different forms of redundancy as described in the layered model. Likewise,
+    we do not attempt to place specific makes and models of network products,
+    such as routers, switches, and firewalls, in the design. Doing so could
+    distract you from the true purpose of this chapter, which is to identify
+    the relative cost of different layers of redundancy in a network.
+
+
+
+
+
+
+
+
+
+
+
+
+
+A Simple Enterprise Network
+
+
+
+A simple enterprise network design relies on routers, firewalls, and switches, as shown in Figure 1-1. The design provides
+    filtering and separation of traffic to support a pair of employee local
+    area networks (LANs), a pair of sensitive corporate LANs that support
+    connectivity among corporate data stores, and a pair of demilitarized zone
+    (DMZ) LANs that support the company's web presence.
+While this design is quite common, you'll notice immediately that it
+    has multiple single points of failure. All Internet connectivity is
+    provided by a single router through a single
+    connection to the Internet. All Internet access to the DMZ LANs
+    is provided by a single firewall. The employee LANs reside behind another
+    router, itself an additional single point of failure. Finally, the
+    sensitive corporate LANs are connected using an additional firewall, which
+    because of the linear design of the network, must push traffic through no
+    fewer than three other single points of failure in order to send data from
+    the corporate LANs to the regular Internet. The complete reliance on
+    multiple single points of failure in this design results in a total lack
+    of fault tolerance on the network.
+
+
+
+
+
+
+
+
+
+Figure 1-1. A simple enterprise network design
+
+
+Table 1-1 lists the
+    chassis that provide the base functionality and is used to
+    calculate a representative "cost" for this simple network. The cost
+    calculation includes all switches, routers, and firewall products shown in
+    the data transport path. This calculation also includes a representative
+    cost of labor and materials for fiber optic connections within the office
+    in which the network is located.
+
+
+Table 1-1. Representative cost of a simple network
+
+
+
+
+
+
+
+
+
+
+Line item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with interface
+            cards and one year of vendor support
+
+
+1
+
+
+
+
+2
+
+
+Firewall 1 with interface
+            cards and one year of vendor support
+
+
+1
+
+
+
+
+3
+
+
+Router 2 with interface
+            cards and one year of vendor support
+
+
+1
+
+
+
+
+4
+
+
+Firewall 2 with interface
+            cards and one year of vendor support
+
+
+1
+
+
+
+
+5
+
+
+Switch 1 and one year of
+            vendor support
+
+
+6
+
+
+
+
+6
+
+
+Multimode fiber trunk
+            (materials and installation)
+
+
+10
+
+
+
+
+7
+
+
+Facility power and cooling
+            for one year
+
+
+1
+
+
+
+
+Total representative cost =
+            $100,000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Redundancy and the Layered Model
+
+
+
+Because most corporations have come to rely on data communications as a
+    means of generating profit, we can safely assume that the simple design
+    shown in Figure 1-1, with its
+    complete lack of fault tolerance, is inadequate for the majority of
+    corporate needs. Redundancy is necessary, so we must redesign the simple
+    transport network.
+Redundant network architectures fall into one of four basic
+    categories:
+
+
+
+Redundant site architectures
+
+
+Rely on identical systems and services, placed in
+          geographically disparate locations, to support enterprise-level
+          redundancy.
+
+
+Redundant system architectures
+
+
+Rely on paired groupings of systems (routers, switches, servers) to
+          provide service resiliency when chassis or components fail.
+
+
+Redundant component architectures
+
+
+Rely on additional interface cards, processor boards, power
+          supplies, and other major components within individual chassis to
+          provide chassis resiliency when components fail.
+
+
+Hybrid redundancy schemes
+
+
+Use a combination of system, component, and site redundancy
+          elements to provide resilient services. This is by far the most
+          common category.
+
+
+
+
+
+
+
+Redundant Site Architectures
+
+
+
+Figure 1-2 shows
+      the simple network design from Figure 1-1 replicated at a site
+      that is geographically distant from the primary site. The advantage of
+      having the same architecture at two different sites is that it provides
+      resilient routing of traffic during system or component failure, as well
+      as during catastrophic disasters at the primary site. Also, this scheme
+      allows the backup site to serve corporate goals because it is an online,
+      staffed, working office while the primary site is also online.
+The disadvantages of this redundancy scheme are based on usage and
+      availability. First, note that all backup systems are physically distant
+      from primary systems, resulting in the added difficulty of the primary
+      site staff using the backup systems. Furthermore, this scheme by itself
+      would require a full site failover to recover from something as simple
+      as an interface failure on a router. Site-based redundancy schemes
+      require constant attention, particularly when the backup site is in
+      active use.
+
+
+
+
+
+
+
+
+
+Figure 1-2. Site redundancy for a simple network
+
+
+Resource availability on the backup system must be kept above the
+      levels required to fully support the processing needs of the primary
+      site. Otherwise, the backup site cannot accurately be called a backup
+      site. For this reason and those previously listed, a site-based
+      redundancy scheme is seldom used without some form
+      of component or system redundancy at both the primary and backup
+      sites.
+Table 1-2 details the
+      relative cost of a site-based redundancy scheme. Note the added cost of
+      facilities startup as well as the annual cost of staffing, security,
+      Internet connectivity, and utilities. You should keep in mind that any
+      annual costs described in the table recur on a yearly basis.
+
+
+Table 1-2. Relative cost of site redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+2
+
+
+Firewall 1 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+3
+
+
+Router 2 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+4
+
+
+Firewall 2 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+12
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+20
+
+
+
+
+7
+
+
+Additional physical
+              facilities startup costs
+
+
+1
+
+
+
+
+8
+
+
+Facility power and
+              cooling for one year
+
+
+2
+
+
+
+
+Total relative cost = $540,000
+
+
+
+
+
+
+
+
+
+
+
+Redundant Component Architectures
+
+
+
+Use of redundant components within a network requires significant planning
+      by the network architects. Equipment should be chosen that supports the
+      component redundancy scheme required at both the physical and logical
+      levels. To provide link redundancy, chassis should be selected that
+      support at least twice as many physical interfaces as are needed for
+      nonredundant connectivity. Future growth plans should also be taken into
+      consideration.
+Physical component redundancy is supported by original equipment
+      manufacturers (OEMs) when they design a chassis to hold multiple power
+      supplies and multiple processor boards. Logical redundancy is supported
+      by the protocols implemented in a network. Virtual Router Redundancy Protocol (VRRP), for example,
+      allows multiple routers or multiple interfaces on a single router to
+      serve as virtual redundant gateways off a LAN. The Internet Engineering
+      Task Force (IETF) standard 802.3ad, which supports bundling of multiple
+      physical Ethernet interfaces to a single logical address, is another way
+      to take advantage of redundant component architectures.
+A disadvantage to redundant component architectures is the lack of
+      protection in the event of complete system failure. For example,
+      regardless of the number of redundant components within a router, a
+      single bucket of mop water can still destroy the system. Furthermore,
+      redundant component architectures provide no resilience against regional
+      disasters.
+Figure 1-3 shows
+      the addition of redundant components including power supplies, processor
+      boards, and physical connections to the simple transport network
+      described in Figure 1-1.
+
+
+
+
+
+
+
+
+
+Figure 1-3. Component redundancy in a transport network
+
+
+Table 1-3 details
+      the cost of the network after complete component redundancy is added.
+      Again, costs listed are an estimate at the time of this book's writing
+      and may not reflect actual vendor pricing.
+Note that no additional cost is associated with the implementation
+      of logical redundancy protocols such as VRRP and 802.3ad. These
+      protocols are relatively simple to implement and require little ongoing
+      adjustment by network administrators. Furthermore, neither requires
+      modification to the IP address scheme used for nonredundant
+      connectivity.
+
+
+Table 1-3. Relative cost of component redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+1
+
+
+
+
+2
+
+
+Firewall 1 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+1
+
+
+
+
+3
+
+
+Router 2 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+1
+
+
+
+
+4
+
+
+Firewall 2 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+1
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+6
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+20
+
+
+
+
+Total relative cost = $150,000
+
+
+
+
+
+
+
+
+
+
+
+Combined Component and Site-Redundant Architectures
+
+
+
+A combination of component and site redundancy provides better network
+      resilience than either component or site schemes do by themselves. Under
+      the tenets of this scheme, failure of multiple components does not
+      automatically trigger a failover to the backup site. This scheme is
+      therefore much friendlier to both staff members and application systems.
+      As with a simple site-based scheme, this hybrid still requires
+      administrative attention to make sure the backup system can support
+      resource use levels if the primary system fails.
+Figure 1-4
+      illustrates the architectural principles of the hybrid component and
+      site redundancy scheme applied to the simple transport network, and
+      Table 1-4 details the
+      relative cost associated with this scheme.
+
+
+
+
+
+
+
+
+
+Figure 1-4. Component and site redundancy for a transport network
+
+
+
+
+Table 1-4. Relative cost of component and site redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+2
+
+
+
+
+2
+
+
+Firewall 1 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+2
+
+
+
+
+3
+
+
+Router 2 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+2
+
+
+
+
+4
+
+
+Firewall 2 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+2
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+12
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+40
+
+
+
+
+7
+
+
+Additional physical
+              facilities startup costs
+
+
+1
+
+
+
+
+8
+
+
+Additional physical
+              facilities operational costs for one year (electricity, Internet
+              connectivity, staffing, and support)
+
+
+1
+
+
+
+
+Total relative cost = $660,000
+
+
+
+
+
+
+
+
+
+
+
+Redundant System Architectures
+
+
+
+Use of redundant systems within the network architecture provides protection from
+      both component failure and complete system failure. However, this scheme
+      provides no protection from regional disaster. You should also take into
+      account that on top of the cost of additional systems, the power and
+      cooling requirements of this scheme are twice those of a simple,
+      nonredundant architecture.
+The redundant system architecture requires careful planning before

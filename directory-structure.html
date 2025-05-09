@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoomable Directory Map</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .node circle {
+            fill: #69b3a2;
+            cursor: pointer;
+        }
+        .node text {
+            font-size: 12px;
+            fill: #333;
+        }
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 1.5px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Dimensions for the SVG canvas
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Create an SVG canvas
+        const svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(40,0)");
+
+        // Load the JSON data
+        d3.json("tree.json").then(data => {
+            const root = d3.hierarchy(data);
+
+            // Create a tree layout
+            const treeLayout = d3.tree().size([height, width - 160]);
+            treeLayout(root);
+
+            // Add links between nodes
+            svg.selectAll(".link")
+                .data(root.links())
+                .join("path")
+                .attr("class", "link")
+                .attr("d", d3.linkHorizontal()
+                    .x(d => d.y)
+                    .y(d => d.x));
+
+            // Add nodes
+            const node = svg.selectAll(".node")
+                .data(root.descendants())
+                .join("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.y},${d.x})`);
+
+            node.append("circle")
+                .attr("r", 5);
+
+            node.append("text")
+                .attr("dy", 3)
+                .attr("x", d => d.children ? -10 : 10)
+                .style("text-anchor", d => d.children ? "end" : "start")
+                .text(d => d.data.name);
+        });
+    </script>
+</body>
+</html>

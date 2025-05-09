@@ -1,0 +1,1000 @@
+    bgp {
+        }
+        group IBGP{
+            type internal;
+            allow 192.168.1.0/24;
+            neighbor 192.168.1.1;
+            neighbor 192.168.1.2;
+        }
+    }
+}
+As you can see, the loopback interfaces of the existing BGP
+        routers are added to the configuration so that the new router can
+        initiate a peering with each system. Because the infrastructure
+        contains the allow statement for
+        the IP address range that includes the loopback for the new equipment,
+        no changes need to be made to the existing equipment to allow the new
+        equipment to peer.
+Again, in phase 3, when you add the new router, IBGP-Peer-3, to the network, no
+        configuration changes are required on the previously installed
+        equipment. The following code snippet for IBGP-Peer-3 explicitly calls out the
+        existing infrastructure so that the router can initiate BGP
+        peering:
+
+protocols {
+    bgp {
+    group IBGP{
+            type internal;
+            allow 192.168.1.0/24;
+            neighbor 192.168.1.1;
+            neighbor 192.168.1.2;
+            neighbor 192.168.1.2;
+        }
+    }
+}
+Because the allow statement
+        keeps configurations stable for BGP peering, you can add the new
+        equipment without causing downtime. Using this statement also makes
+        the merging of ASs much easier. The one caveat to the use of the
+        allow statement is that you cannot
+        use it with BGP authentication.
+
+
+
+
+
+Zen and the art of AS numbers
+
+
+
+From Slashdot IDs to JNCIE or CCIE numbers, geeks love to be
+        identified by numbers, and the lower the better. This love of numbered
+        branding seems to extend even to ISPs, which are identified throughout
+        the industry by their AS number. Losing your AS number to a merger,
+        especially if you have something seemingly meaningful, is considered
+        quite a blow by some. Beyond the psychological effect, there are good
+        technical reasons for preserving AS numbers during mergers to protect
+        the network's overall high availability posture:
+
+
+
+Limiting configuration changes
+
+
+Anytime superfluous network configuration changes can be
+              avoided, they should be. Even with commit scripts, JUNOScope,
+              and all the other tools used to limit human error, it still
+              happens.
+
+
+Mitigating peering issues
+
+
+Depending on the size of the network you own and the sizes of
+              the neighbors to which your routers peer, it is sometimes nearly
+              impossible to get everything together to conduct a logically
+              staged transition to a new AS number. Preserving the peering
+              relationships based on the AS allows the merger to occur with no
+              interaction by the upstream ISP.
+
+
+Preserving traffic patterns
+
+
+Even when one company acquires another, network resources
+              are not going to instantly be combined and controlled by an
+              individual organization. Through the preservation of the AS path
+              information, it is possible to retain traffic patterns that
+              mirror the previously gathered baseline, thus mitigating the
+              possibility that new traffic patterns might overload previously
+              underutilized equipment.
+
+
+Maintaining consistency of service
+
+
+For a service provider or a large enterprise, high
+              availability is not only a technical requirement; it is also a
+              service requirement. By preventing Internet routing changes by
+              providing BGP peers with a consistent AS and not renumbering
+              peers with every corporate change, it is possible to create good
+              karma in the network community and allow your peers to be more
+              responsive in how issues affect your network
+              availability.
+
+
+
+In JUNOS, you can use the local-as statement to preserve an existing
+        peering relationship for a network that is being swallowed by another.
+        In these networks, the BGP peer routers advertise one set of AS
+        numbers to internal peers and a different set to external peers. In
+        Figure 20-3, one company has an AS number it does
+        not want to lose, for obvious reasons. To prevent the loss of such an
+        elite AS number, as well as to mitigate any of the network or
+        bureaucratic churn that may result from changing the peering sessions,
+        the local-as statement is included
+        in the configuration.
+In this example, the owner of AS 21522 is to merge with AS 1337,
+        but does not want to change the peering relationship with the ISP. The
+        following code illustrates the basic BGP configurations for three
+        routers: router A, the EBGP peer in
+        AS 21522 that communicates with the EBGP peer in 1234; router B, the EBGP peer in 1337 that communicates
+        with the peer in AS 1234; and router C, the EBGP peer in AS 1234 that communicates with the other two
+        peers.
+
+
+
+
+
+
+
+
+
+Figure 20-3. AS migration
+
+
+For router A:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            allow 192.168.1.0/24;
+            neighbor 192.168.1.2;
+            neighbor 192.168.1.3;
+        }
+        group external {
+            type external;
+            neighbor 198.238.112.166;
+            remote-as 1234;
+        }
+
+    }
+}
+For router B:
+
+routing-options {
+    autonomous-system 1337;
+}
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            allow 192.168.1.0/24;
+            neighbor 10.0.0.2;
+            neighbor 10.0.0.3;
+        }
+        group external {
+            type external;
+            neighbor 147.56.221.2;
+            remote-as 1234;
+        }
+
+    }
+}
+For router C:
+
+routing-options {
+    autonomous-system 1234;
+}
+protocols {
+    bgp {
+        group AS21522 {
+            type external;
+            neighbor 198.238.112.167;
+            remote-as 21522;
+        }
+        group AS1337 {
+            type external;
+            neighbor 147.56.221.1;
+            remote-as 1337;
+        }
+
+    }
+}
+In this code example, standard EBGP advertisement rules are in
+        play. AS 1234 sees routes from AS 21522 with an AS path of 21522, and
+        sees routes from AS 1337 with an AS path of 1337. To merge these ASs,
+        the following code is configured on the AS 1337 peer (the
+        configuration of IBGP on the AS 21522 routers has been omitted because
+        they are standard).
+For router B:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            allow 10.0.0.1/24;
+            neighbor 10.0.0.2;
+            neighbor 10.0.0.3;
+            allow 192.168.1.0/24;
+            neighbor 192.168.1.2;
+            neighbor 192.168.1.3;
+        }
+        group external {
+            type external;
+            neighbor 147.56.221.2;
+            remote-as 1234;
+            local-as 1337;
+        }
+
+    }
+}
+In this example, the internal group is expanded to include the
+        routers in the new parent AS. The AS number for the device has also
+        been changed to the new AS number. The local-as statement is added to the external
+        group to ensure that the peering relationship remains constant and
+        that AS 1234 continues to see AS number 1337.
+When you use the local-as
+        statement, it is important to determine how the traffic will flow
+        before and after the migration. This statement adds the AS number to
+        the AS path by default, which can cause traffic to flow differently
+        than planned. Adding the private keyword in the local-as statement overrides the default
+        action of prepending the local-as
+        number to the AS path.
+It is necessary to understand how the extra AS in the path
+        affects the flow of incoming packets and whether you can do anything
+        to mitigate the effects of the migration. Table 20-6 illustrates the possible routing
+        changes caused by the migration we just discussed.
+
+
+Table 20-6. Migration routing
+
+
+
+
+
+
+
+
+
+
+Route
+
+
+AS_PATH
+
+
+Comment
+
+
+
+
+
+
+
+
+Pre-migration
+
+
+
+
+
+
+10.0.0.0/8
+
+
+21522
+
+ 
+
+
+
+192.168.1.0/24
+
+
+1337
+
+ 
+
+
+
+
+
+Post-migration
+
+
+
+
+
+
+10.0.0.0/8
+
+
+21522
+
+ 
+
+
+
+192.168.1.0/24
+
+
+1337
+                21522
+
+
+The AS_PATH for this network has
+                increased because of local-as. If both EBGP peers are
+                advertising this route, the chosen route goes through router
+                A because of the AS path.
+                To ensure that router B
+                continues to be the ingress point, routing policies would have
+                to force no advertisement from A or a lengthened AS
+                path.
+
+
+
+
+Post-migration
+                with private
+keyword
+
+
+
+
+10.0.0.0/8
+
+
+21522
+
+ 
+
+
+
+192.168.1.0/24
+
+
+21522
+
+
+AS number 1337 no
+                longer appears in the AS path for this network. If both EBGP
+                peers are advertising this route, the best route is chosen
+                based on another attribute. To ensure that router B continues to be the ingress point,
+                routing policies would have to force advertisements from
+                A by setting less
+                preferable attributes.
+
+
+
+
+
+
+
+
+
+
+
+Sometimes loopy is OK
+
+
+
+In BGP, it is necessary not only to prevent loops in the full mesh
+        within the AS, but also to prevent loops for external routing. BGP
+        prevents external routing loops for external routes by dropping routes
+        that it has learned from external neighbors when the routes contain
+        its own AS number somewhere in the AS path. Although this does prevent
+        loops, sometimes mergers and BGP/MPLS virtual private network (VPN) deployments require that
+        an AS be seen more than once. You can override this default BGP
+        behavior with the loops statement
+        in the AS configuration in the routing-options hierarchy:
+
+routing-options {
+    autonmous-system 1337 loops 2;
+}
+In this example, AS 1337 has added the loops statement to allow its AS to appear up
+        to two times in the AS path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Merging Our ASs Off
+
+
+
+The complexity of merging ASs without causing network downtime requires careful preparation, with
+    an eye on using as many automated tools as possible.
+Figure 20-4 shows an example of our
+    merger.
+
+
+
+
+
+
+
+
+
+Figure 20-4. Pre-merger layout
+
+
+
+
+
+
+Merge with Full Mesh
+
+
+
+In the first scenario, the ASs are going to be merged and the result will be a
+      single AS with a full-mesh architecture. To transition to the networks
+      without suffering network downtime, you need to ensure that during the
+      transition, the internal network has access to the external networks,
+      and vice versa, through at least one of the EBGP peers.
+
+
+
+
+IBGP
+
+
+
+The first goal of merging our networks while maintaining high availability
+        is to ensure that all hosts internal to the network continue to be
+        able to reach external networks. Chapter 19 discussed
+        merging the IGPs in your network, but with "ships in the night"
+        routing, it is now necessary to ensure that the BGP routing
+        environments are merged.
+In the first step of the merge process, the IBGP peers within AS
+        1337 are fully peered with the routers of AS 21522. Using
+        the allow statement
+        enables routers A, 1, and
+        2 to accept the connections of
+        routers 3 and 4 without being explicitly configured.
+        However, during the configuration changes, you must change the AS
+        number and peering IP addresses on routers 3 and 4.
+Once the peering sessions are up and converged, packets on
+        routers 3 and 4 that are about to egress from the network
+        will do so from router A. Packets
+        arriving at router B will also
+        still be able to egress the network. Figure 20-5 illustrates the mid-merger
+        layout.
+During this interim step, transit packets begin to use router
+        A as the egress of the network.
+        Packets arriving at router B are
+        also still able to egress the network, and packets bound for AS 1337
+        are still forwarded to router B.
+The following code snippets show the changes in the
+        configuration.
+On router 1:
+
+protocols {
+    bgp {
+            group internal {
+            type internal;
+            allow 192.168.1.0/24;
+            allow 10.100.0.0/24;
+            neighbor 10.100.0.1;
+            neighbor 10.100.0.3;
+
+        }
+    }
+}
+On router 3:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+    bgp {
+            group internal {
+            type internal;
+            neighbor 10.100.0.1;
+            neighbor 10.100.0.2;
+            neighbor 10.100.0.3;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+Figure 20-5. Mid-merger layout
+
+
+The allow statement mitigates
+        the complexity and error-prone nature of configuring every router in
+        the network, bringing us closer to our goal of executing the planned
+        merger and bringing the network to a full mesh with as little
+        disruption as possible.
+
+
+
+
+
+Bring in the EBGP peer
+
+
+
+When all the IBGP neighbors have formed peer relationships, the final EBGP
+        peer can be brought into the network. The first step here is to change
+        the AS number of router B without
+        thrashing the connection to router C. This is where the local-as command comes in handy. Figure 20-6 shows the final merger.
+
+
+
+
+
+
+
+
+
+Figure 20-6. Final merger
+
+
+Not only does the local-as
+        statement prevent interruptions with neighbors, but the allow command also
+        makes it easier to create the full mesh. The following code shows the
+        changes in router B's
+        configuration:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            allow 10.100.0.0/24;
+            allow 192.168.1.0/24;
+            neighbor 10.100.0.1;
+            neighbor 10.100.0.2;
+            neighbor 10.100.0.3;
+            neighbor 192.168.1.1;
+            neighbor 192.168.1.2
+        neighbor 192.168.1.3;
+        }
+        group AS1234 {
+            type external;
+            neighbor 147.56.221.2;
+            remote-as 1234;
+            local-as 1337
+        }
+    }
+}
+Although merging into a full mesh is possible, sometimes
+        architectures dictate the use of route reflection or confederation.
+
+
+
+
+
+
+Merge with Route Reflectors
+
+
+
+A second method for merging ASs is to add route reflectors to the network.
+      Although route reflectors do prevent the need for full-mesh networks, as
+      discussed before, they also have issues that affect the merging of
+      networks. In Figure 20-7, the networks have been
+      merged by setting up router A and
+      router B to work as route reflectors,
+      and by having routers 1, 2,
+      3, and 4 peer to
+      routers A and B in separate clusters to ensure redundancy.
+As with the full-mesh merger process, it is best to merge the
+      networks progressively to ensure that no downtime occurs. By using two
+      clusters with redundancy, it is possible to peer routers 3 and 4 to
+      router A to accomplish the same
+      routing patterns as discussed in the full-mesh merger.
+
+
+
+
+
+
+
+
+
+Figure 20-7. Route reflectors
+
+
+
+
+
+
+Cluster 1
+
+
+
+The following code samples show the statements added to routers
+        1, 3, and A to set up route reflection.
+To router 1:
+
+protocols {
+    bgp {
+            group Cluster1 {
+              type internal;
+              neighbor 10.100.0.1;
+          }
+    }
+}
+To router 3:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+    bgp {
+        group Cluster1 {
+           type internal;
+           neighbor 10.100.0.1;
+        }
+    }
+}
+To router A:
+
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            allow 192.168.1.0/24;
+         }
+         group Cluster1 {
+            type internal;
+            allow 10.100.0.0/24;
+            allow 192.168.1.0/24;
+            neighbor 10.100.0.1;
+            cluster 1.1.1.1;
+        }
+    }
+}
+As the code demonstrates, router 1 actually needs to peer with only router
+        A at this point and does not
+        require the allow statement. The AS
+        number on router 2 has changed and
+        a neighbor statement for router
+        A is added. In router A, the allow statements are added to allow peering
+        from all the IBGP peers in the network, and the cluster statement identifies the cluster-id.
+The internal group has been added to allow the eventual
+        inclusion of router B as an IBGP
+        peer. Once routers 3 and 4 are configured to use router A as the reflector, they should begin to
+        forward egress packets to it.
+
+
+
+
+
+Cluster 2
+
+
+
+When the first cluster is stable, configure router B with the new AS number so that it becomes
+        an IBGP peer with router A. Once
+        this step is complete, add the cluster statement to router B, and configure the allow statements to support peering requests
+        from the route reflector clients, routers 1,
+        2, 3, and 4.
+For router 3:
+
+routing-options {
+    autonomous-system 21522;
+}
+protocols {
+       bgp {
+            group Cluster1 {
+              type internal;
+              neighbor 10.100.0.1;
+            }
+            group Cluster2 {
+              type internal;
+              neighbor 192.168.1.1;
+            }
+        }
+    }
+}
+For router B:
+
+protocols {
+    bgp {
+        group internal {
+            type internal;
+            neighbor 10.100.0.1;
+        }
+        group Cluster2 {
+            type internal;
+            allow 10.100.0.0/24;
+            allow 192.168.1.0/24;
+            neighbor 10.100.0.1;
+            cluster 2.2.2.2;
+        }
+    }
+}
+As you can see in this example, router B now has an IBGP peering with router
+        A and allows IBGP peer requests
+        from all other IBGP routers in the network.
+
+
+
+
+
+
+Merge with Confederations
+
+
+
+A third way to merge ASs is to use BGP confederations. This type of merge can
+      be very simple to implement, but as we mentioned earlier in this chapter
+      confederations are susceptible to persistent route oscillation. Using
+      RFC 3345 as a guide, you can put in place measures to
+      prevent the type of routing churn that creates oscillation issues. Figure 20-8 illustrates a merger implemented
+      with confederations.
+
+
+
+
+
+
+
+
+
+Figure 20-8. Merger with confederations
+
+
+In Figure 20-8, you see that
+      only a few changes have to be made to the routers. In the following code
+      samples, the confederation statement
+      is added to all the systems to identify the AS number that is to be used
+      in the AS_PATH attribute when it is advertised to the peers, as well as to identify
+      the sub-ASs that make up the confederation.
+For all routers in AS 21522:
+
+routing-options {
+    autonomous-system 21522;
+    confederation 21522 members [21522 1337];
+}
+For all routers in AS 1337:
+
+routing-options {
+    autonomous-system 1337;
+    confederation 21522 members [21522 1337];
+}
+Once you configure the confederations in the network, configure
+      routers A and B to be EBGP peers. Although the type statement identifies the peering
+      relationship as external, the confederation command
+      overrides the default behavior and allows the relationship to work in
+      the pseudo-EBGP deployment identified as CBGP.
+On router B:
+
+protocols {
+    bgp {
+        group CBGP {
+        type external;
+            neighbor 10.100.0.1 {
+            peer-as 21522;
+            multihop {
+               ttl 3;
+               }
+            }
+        }
+        group EBGP {
+            type external;
+            neighbor 10.0.0.1 {
+            peer-as 1234;
+            local-as 1337;
+            }
+        }
+    }
+}
+Using the multihop statement in
+      the peering with the CBGP neighbor allows you to still peer using
+      loopback addresses, which is considered a best common practice for
+      internal peering addresses. You can also use the local-as statement again on router B to ensure that the peering information with
+      AS 1234 does not change.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Monitoring the Merge
+
+
+
+Of course, the most critical time for high availability is immediately
+    after the merge. Thus, you should use a combination of syslog, Simple Network Management Protocol (SNMP), the command-line interface (CLI), and JUNOScript, as covered in Chapters 9 and 21 of this book and in the technical
+    documentation. To monitor the long-term results of the migration on your
+    network and on your upstream and downstream neighbors, use JUNOScope and
+    JUNOScript and develop simple event policies.
+
+
+
+
+Neighbor Peering
+
+
+
+Preventing Internet churn caused by flapping of BGP peers is an easy way to maintain high
+      availability in the whole network, as well as to preserve good karma in
+      the Internet world in general. The following code sample event policy
+      monitors the status of BGP peers:
+
+event-options {
+    policy BGP-PEER {
+        events rpd_bgp_neighbor_state_changed;
+        then {
+            execute-commands {
+                commands {
+                    "show bgp replication";
+                    "show bgp neighbors";
+                    "show bgp groups";
+                }
+                output-filename BGP-PEER;
+                destination Engineering;
+            }
+            raise-trap;
+        }
+    }
+    destinations {
+        Engineering {
+            archive-sites {
+                "ftp://user@engineering.example.com/"
+                     password "$9$qP3n1RhclM";
+            }
+        }
+    }
+}
+In the preceding policy, each time a BGP peer flaps, the router
+      sends an SNMP trap and runs a series of commands. These commands provide
+      information about the neighbor relationships, as well as the status of
+      the NSR replication. The command output is written to a file that is
+      then transferred to a management station, where the output can be
+      analyzed.
+
+
+
+
+Persistent route oscillation
+
+
+
+A second issue that may arise after an AS merger is persistent route
+        oscillation, which normally goes unnoticed, although it can lead to
+        network downtime. To proactively discover which routes are oscillating
+        so that you can develop a plan to stop the oscillation and prevent it
+        in the future, write the following policy:
+
+event-options {
+    generate-event {
+        Route-Check time-interval 300;
+    }
+    policy PRO {
+        events Route-Check;
+        then {
+            execute-commands {
+                commands {
+                    "show route protocol bgp | find '00:0[0-5]:'";
+                }
+                output-filename PRO-CHECK;
+                destination Engineering;
+            }
+        }
+    }
+    destinations {
+        Engineering {
+            archive-sites {
+                "ftp://orin@engineering.example.com/" password "$fds";
+            }
+        }
+    }
+}
+This policy generates an event every five minutes. Also, every
+        five minutes, the router runs a command to look for BGP routes that
+        have been learned within those five minutes and writes the command
+        output to a file on an FTP server. These files can be parsed to
+        determine whether there is a pattern of constant routing updates for
+        certain network segments.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 21. Making Configuration Audits Painless
+
+
+
+Just as the OS and networking equipment hardware need updates and
+  maintenance, you must also maintain and audit the configuration files on the
+  Juniper devices to ensure that changes in either the configurations or the
+  network architecture have not led to issues that can cause network downtime.
+  Well-planned and proactive auditing systems not only are necessary for
+  maintaining continuous systems, but also are a matter of great importance
+  today when it comes to compliance with data security standards laid out by
+  such groups as the Payment Card Industry and the federal government.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Why Audit Configurations?
+
+
+
+In many networks around the globe, the Information Technology
+    Infrastructure Library (ITIL) is being implemented to provide detailed processes for
+    change management and change requests. With these intricate processes,
+    many administrators now swear off configuration auditing as
+    superfluous—but this is not the case. Even if everyone follows the
+    processes to the letter, there is always a need to audit configurations,
+    not just for errors and changes but also for their applicability in the
+    current network architecture.
+
+
+
+
+Knowledge Is Power
+
+
+
+Networks do not remain continuous, let alone survive, if no one is
+      able to answer simple questions about how the network is designed or
+      configured. Though some networks struggle along with very little
+      documentation concerning design and configuration, these networks have
+      little high availability. Configuration auditing provides insight into
+      network configuration state to ensure that everything is configured
+      correctly and to provide a foundation for future configuration changes.
+      Configuration auditing has the following advantages:
+
+
+
+Configuration standardization
+
+
+Having standardized configurations and configuration
+            procedures across the network allows new services to be deployed
+            much more quickly, improves the efficiency of troubleshooting, and
+            can help to prevent network downtime. Through the use of network
+            auditing, you can ensure that the configurations throughout your
+            network equipment are standardized and that one-off or kludged
+            solutions are highlighted so that they can be eliminated.
+
+

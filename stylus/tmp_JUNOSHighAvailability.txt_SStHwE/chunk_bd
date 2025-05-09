@@ -1,0 +1,1000 @@
+First and foremost, OSPF is purpose-built for IP networks. Having been
+        designed by the IETF, OSPF was built for IP networks, by IP networking
+        specialists. It therefore tends to be quite intuitive.
+OSPF supports virtual links. Architecturally, OSPF requires that
+        there be a centralized backbone (usually Area 0) and that all
+        nonbackbone areas be directly connected to it. In a case where that's
+        simply not possible, the workaround is virtual links. Virtual links
+        make it possible to join a nonbackbone area across another nonbackbone
+        area to the backbone:
+
+[edit]
+lab@r1# set protocols ospf area 0 virtual-link ?
+Possible completions:
+neighbor-id Router ID of a virtual neighbor
+transit-area  Transit area in common with virtual neighbor
+This feature can be particularly handy in situations where two
+        networks are merging and a method is needed to join the networks
+        together when direct physical connectivity is not possible.
+
+Note
+In practice, virtual links are a temporary solution to a
+          larger design issue. Virtual links should not be a long-term
+          solution in an OSPF-designed network.
+
+Another great advantage that simplifies OSPF is its native
+        ability to summarize routes. Unlike IS-IS, OSPF supports the
+        summarization of contiguous routes at area borders using the area-range statement:
+
+lab@r1# set protocols ospf area 1 area-range 172.16/16 ?
+Possible completions:
+<[Enter]>            Execute this command
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+  exact                Enforce exact match for advertisement of this area range
+  override-metric      Override the dynamic metric for this area-range
+  restrict             Restrict advertisement of this area range
+With built-in summarization capabilities, no other IGP routing
+        policy configuration is required.
+And finally, perhaps OSPF's greatest advantage is that it is
+        simply a more familiar protocol. Networking folks tend to like to work
+        with what they know or can easily learn, and OSPF is more widely
+        deployed and documented than IS-IS.
+
+
+
+
+
+Disadvantages
+
+
+
+OSPF is an excellent routing protocol, but isn't without its flaws and
+        disadvantages.
+One disadvantage, at least compared to IS-IS, is that OSPF runs
+        directly on IP (using protocol number 89). As an IP-based protocol,
+        OSPF is subject to malicious attacks, such as IP spoofing or denial-of-service (DoS) attacks.
+Another characteristic of OSPF that can be cumbersome is its
+        fairly strict adjacency-forming requirements. While IS-IS has quite
+        relaxed requirements for neighbors to form adjacencies (most
+        parameters don't have to match), OSPF requires
+        several parameters to match before neighbors can acknowledge each
+        other's existence. This situation can be a positive in the sense that
+        it ensures that configuration parameters match properly; IS-IS could
+        form an adjacency despite the mismatch of a parameter that,
+        practically speaking, should match. However, the OSPF matching
+        requirement can be a negative in the sense that several parameters
+        must match exactly to allow the routers to share information with one
+        another. For example, in troubleshooting OSPF connectivity between two
+        routers, the correct interfaces could be configured, the subnet mask
+        could be accurate, the Hello timers could match, and the OSPF options
+        could be identical, and yet if the routers' Dead timers are mismatched
+        by one second, the routers can never form an adjacency.
+
+Note
+In practice, OSPF works quite smoothly, and enabling the
+          protocol using its default
+          settings should allow neighboring routers to communicate just
+          fine.
+
+OSPF also has some shortcomings regarding authentication. OSPF supports both simple and MD5-based
+        authentication, with MD5 being a good choice for security purposes. However,
+        where IS-IS supports authentication for all packet types, OSPF authenticates only Hello packets. This
+        means that all other OSPF packet types, such as link-state updates,
+        are not authenticated, thus creating a security exposure.
+And finally, OSPF as a protocol is not IPv6-ready. While IS-IS supports IPv6 as readily as
+        IPv4, OSPF (technically, OSPFv2) was built specifically for networks
+        running IPv4, and it is this purpose-built design that makes it
+        incompatible with IPv6.
+
+Note
+To support IPv6 networks, the IETF has developed a new version
+          of the OSPF protocol, OSPFv3.
+
+
+
+
+
+
+High availability features for OSPF in JUNOS Software
+
+
+
+OSPF provides a number of features that support high availability, among
+        them link and node failure detection, and packet
+        authentication.
+
+
+
+
+Link and node failure detection
+
+
+
+A basic feature of OSPF is, of course, its ability to detect
+          link and node failures and reroute around the problem. However, the
+          default timer settings may not be sufficient to support a high
+          availability environment. By default, an OSPF neighbor is declared
+          down after 40 seconds (for broadcast networks),
+          but this can be an eternity if the link is a major
+          revenue-generating connection. You can reduce the timers to very low
+          values if desired.
+
+Warning
+Use caution when lowering OSPF timers; just because you can
+            configure extremely low values doesn't mean you should. While the
+            low timer settings for IGPs on JUNOS devices provide the option to
+            use these protocols for high availability purposes, in practice
+            routing protocols are no longer used as a primary means of quick
+            failure detection and recovery. This is true to such an extent
+            that it is now not generally recommended to use extremely low
+            timers at all. These days, purpose-built protocols such as
+            Bidirectional Forwarding Detection (BFD) virtually eliminate the
+            need for IGPs to participate in quick failure detection.
+
+
+
+
+
+
+Authenticating packets
+
+
+
+Authentication plays an important role in high availability: security
+          in a network can only be a good thing. Authentication of OSPF Hello
+          packets ensures that only legitimate routers are on the network and
+          eliminates the possibility of a "rogue" router forming an adjacency
+          with a neighboring router and causing trouble.
+
+
+
+
+
+Designated routers
+
+
+
+OSPF provides high availability support for designated routers
+          (DRs). Each broadcast network running OSPF has a DR, a central point
+          of contact on the subnet to reduce communication traffic between
+          neighboring routers. As part of the DR election process, a
+          backup designated router (BDR) is also elected. Both
+          the DR and the BDR form adjacencies with all routers on the
+          broadcast network, with the BDR sitting quietly in the background.
+          The DR and BDR are shown in the detailed output for OSPF neighbors:
+
+[edit]
+lab@r1> show ospf neighbor detail
+Address          Interface     State     ID               Pri  Dead
+10.0.1.2         fe-0/0/2.0    Full      192.168.2.2      128    35
+Area 0.0.0.0, opt 0x42, DR 10.0.1.2, BDR 10.0.1.1
+  Up 4d 10:45:53, adjacent 4d 10:45:13
+If the DR goes down, the BDR is in the perfect position to
+          take over the duties and function of the DR.
+
+
+
+
+
+Graceful Restart
+
+
+
+Graceful Restart (GR) is a newer feature in JUNOS Software, allowing a router to
+          restart without affecting the routing topology. The separation of
+          the routing and forwarding planes in Juniper Networks routers allows a
+          routing engine (RE) restart while the forwarding plane continues to
+          forward traffic. (See Chapters 4 and 5 for a complete overview of
+          Graceful Restart.) In practice, a restarting router sends a
+          Grace-LSA (a type 9 link-state advertisement or LSA) to its
+          neighbors, who then ignore that the router is
+          down for a given period of time (the grace
+          period). When the RE restarts, the router again forms an adjacency with
+          its neighbors, and the rest of the network is none the wiser. You
+          can configure Graceful Restart globally or just for OSPF:
+
+[edit]
+lab@r1# show protocols ospf graceful-restart ?
+Possible completions:
+<[Enter]>            Execute this command
++ apply-groups       Groups from which to inherit configuration data
++ apply-groups-except Don't inherit configuration data from these groups
+  disable            Disable OSPF graceful restart capability
+  helper-disable     Disable graceful restart helper capability
+  notify-duration    Time to send all max-aged grace LSAs (1..3600 seconds)
+  restart-duration   Time for all neighbors to become full (1..3600 seconds)
+
+
+
+
+
+Non-Stop Active Routing
+
+
+
+Non-Stop Active Routing (NSR) is another newer feature in JUNOS Software that takes the
+          concept of GR to the next level, providing support for an RE restart
+          without affecting the topology and without
+          requiring neighboring "helper routers" to assist in preserving the
+          stability of the network.
+With a backup RE installed, the router can run routing
+          protocols as normal, and the system maintains neighbor and state
+          information on both REs. This provides excellent high availability
+          support. If the master RE goes down, the backup RE immediately takes
+          over, with routing adjacencies intact, and neighboring routers have
+          no awareness that anything has happened.
+You configure NSR globally, and it is extremely easy to set
+          up:
+
+[edit]
+lab@r1# show routing-options
+nonstop-routing;
+NSR requires that you also enable Graceful Routing Engine Switchover (GRES) and that you
+          configure the router to synchronize all configuration changes
+          between REs:
+
+[edit]
+lab@r1# show chassis redundancy
+graceful-switchover;
+
+[edit]
+lab@r1# show system
+commit synchronize;
+If your JUNOS devices have dual REs and your network cannot
+          tolerate even a few seconds of downtime, NSR provides a
+          huge benefit.
+
+
+
+
+
+Overload
+
+
+
+Overload, an IS-IS feature that has been added to OSPF, deflects transit traffic
+          away from a router, forcing it to use a different path (unless no
+          other path is available). Consider the network shown in Figure 19-1. Traffic is
+          following normal, shortest-path routing through the r2 router.
+
+
+
+
+
+
+
+
+
+Figure 19-1. Normal traffic flow, before overload is enabled
+
+
+Now imagine that you want to perform a task on r2 that impacts traffic, such as
+          restarting the routing daemon. You have two choices: either perform
+          the task and let the routing protocols discover the failure in their
+          own time, or preemptively force traffic to use another path, as
+          shown in Figure 19-2.
+
+
+
+
+
+
+
+
+
+Figure 19-2. Traffic being redirected around r2 as a result of having
+            overload enabled
+
+
+Using the overload setting does not completely avoid impacting
+          the network, because the process involves Shortest Path First
+          (SPF) recalculations and sending routing updates. However,
+          it's still a more reliable and desirable method than simply putting
+          the router offline and relying on Hello messages to discover the
+          outage and recover from it.
+
+
+
+
+
+Prefix limits
+
+
+
+When you use routing policy, configuration errors are always a
+          possibility. If, for example, a router that is connected to the
+          Internet and receiving a full Border Gateway Protocol (BGP)
+          feed were to redistribute all 230,000 or so routes
+          into OSPF, the router would not be happy! Such redistribution would
+          place a very heavy load on the router, to the point that smaller
+          devices might not function properly. Configuring prefix limits
+          provides a safety mechanism for this situation:
+
+[edit]
+lab@r1# show protocols ospf
+prefix-export-limit 750;
+Once the prefix limit is configured, the router purges the
+          external prefixes and goes into overload state when that limit is
+          reached. This state ensures that the router is not overwhelmed as it
+          attempts to process more routing information than it can
+          handle.
+
+Warning
+It is generally not a good practice to
+            redistribute a full BGP table into a network's IGP!
+
+
+
+
+
+
+Bidirectional Forwarding Detection
+
+
+
+BFD is another relatively new feature that takes significant steps toward
+          achieving high availability. BFD is not directly part of OSPF;
+          rather, it supports routing protocols by providing
+          liveness detection. For example, two routers
+          using BFD can detect a failure between them in less than 0.5
+          seconds, as shown here:
+
+[edit]
+lab@r1# show protocols ospf
+area 0.0.0.0 {
+    interface fe-0/0/2.0 {
+        bfd-liveness-detection {
+            minimum-interval 150;
+            multiplier 3;
+
+Warning
+Use caution when setting BFD timers. BFD is designed for
+            reliable network links and flapping can
+            result from even slight delay or loss. See Chapter 14 for more information
+            on BFD.
+
+
+
+
+
+
+
+
+IS-IS
+
+
+
+IS-IS was developed by the International Organization for
+      Standardization (ISO) as the routing protocol for the Connectionless Network
+      Protocol (CLNP) suite, which originally was a competitor to the TCP/IP
+      protocol suite and IP routing protocols. IS-IS was adapted to support IP
+      networks when it became clear that IP would become the standard protocol
+      of the Internet. This new integrated IS-IS protocol
+      has now found a home in service provider networks (although there are
+      instances of IS-IS being used in enterprise networks as well).
+JUNOS Software supports the full range of IS-IS standards and
+      features. It also supports many high availability features, which we
+      cover later in this chapter. And just like OSPF, IS-IS has its
+      advantages and disadvantages.
+
+
+IS-IS Fundamentals
+This book assumes you have good knowledge of routing and routing
+        protocols. Should you want or need more information on IS-IS
+        fundamentals, you can find a wide range of material on the Internet.
+        You can also learn more about the protocol and its implementation on
+        JUNOS devices by attending Juniper Networks training courses.
+For more details on Juniper Networks training, see http://www.juniper.net/training.
+
+
+
+
+
+Advantages
+
+
+
+As mentioned earlier, both OSPF and IS-IS have grown to be very similar.
+        However, each still has a set of unique features. If your network uses
+        IS-IS you are probably aware that it has excellent scaling
+        capabilities. But there's more. IS-IS has a deep set of capabilities
+        that are worth exploring.
+First off, IS-IS is not an IP-based
+        protocol, so it is not affected by issues that affect other routing
+        protocols. For example, you can misconfigure the IP addressing of two
+        neighboring interfaces in a way
+        that puts them on different subnets, but IS-IS doesn't care. As long
+        as you include the interfaces in the IS-IS configuration, the routers
+        can form an adjacency.
+
+Note
+A side benefit of IS-IS's non-IP roots is that it is not
+          subject to most malicious attacks, because hackers generally attack
+          networks at the IP level and above.
+
+Another advantage of IS-IS is its looser adjacency-forming
+        requirements. While OSPF requires certain parameters, such as the
+        Hello timer, to match for neighboring routers to form an adjacency,
+        IS-IS has much more flexibility in this regard, specifically that
+        parameters generally don't need to match. For example, imagine a
+        broadcast network such as an Ethernet local area network (LAN). Among
+        the parameters that must match between routers is the subnet mask,
+        right? Wrong! Because IS-IS is not IP-based, matching subnet masks (a
+        requirement for OSPF broadcast networks) are
+        irrelevant. IS-IS doesn't care about the IP configuration at
+        all.
+
+Note
+Having the freedom to mismatch Hello timers provides nice
+          flexibility in cases where certain routers should detect a failure
+          more quickly. This can also be helpful when changing Hello timers in
+          general, because they can be changed independently of a neighbor, a
+          luxury not offered by OSPF.
+
+IS-IS does not require a "backbone." OSPF architecturally
+        requires that the routes of all areas feed into a centralized backbone
+        (usually Area 0) before being distributed to the rest of the network.
+        Not so for IS-IS. While IS-IS does require all areas to be linked
+        together, it doesn't require a centralized backbone at all. In certain
+        network environments, this can be a huge advantage. For example,
+        imagine a network in which the physical layout doesn't lend itself
+        naturally to a centralized backbone. Instead, there are "islands" of
+        concentrated connectivity, perhaps with lower-speed links joining the
+        islands. In this case, a more distributed architecture that links the
+        areas together would be ideal.
+As shown in Figure 19-3, all Level 1
+        (L1) routers with the same area ID belong to an area. L1 routers feed
+        their routing information to the nearest Level 2 (L2) router, in this
+        case an L1/L2 router. L2 routers share routing information with other
+        L2 routers, providing complete reachability across the entire routing
+        domain—without the use of a centralized backbone.
+
+
+
+
+
+
+
+
+
+Figure 19-3. An IS-IS network with no centralized backbone
+
+
+An IS-IS feature that is great for high availability,
+        particularly during area migration or redesign, is the ability to
+        configure a router with multiple area IDs. L1 routers form adjacencies
+        if they are in the same area, as shown in Figure 19-4.
+
+
+
+
+
+
+
+
+
+Figure 19-4. IS-IS network with L1 areas and an L2 backbone
+
+
+In cases where a router is in transition or is being migrated
+        from one area to another, changing the area ID could disrupt the
+        stability of the network. As shown in Figure 19-5, IS-IS supports
+        the configuration of multiple area IDs on a router, which makes
+        transitions and migrations very easy.
+
+
+
+
+
+
+
+
+
+Figure 19-5. IS-IS routers configured with multiple area IDs
+
+
+A router with an existing area ID can be configured with a
+        second ID, with no requirement or time restriction on synchronizing
+        with neighboring routers. Once the neighboring routers have been
+        configured with the new area ID, and all routers effectively belong in
+        multiple areas simultaneously, the original ID can be removed. Figure 19-6 shows the result of the
+        transition.
+Another IS-IS advantage for your high availability network is
+        its large Hello timer range. In situations where Hello traffic is a
+        drain on network resources, such as across a low-speed remote access
+        link or when a router is working at maximum capacity, one solution is
+        to reduce the frequency of the Hellos. IS-IS supports this to the
+        extreme, allowing Hellos to be sent as little as once every 5.5 hours.
+        Now that's granular control!
+
+
+
+
+
+
+
+
+
+Figure 19-6. IS-IS network after transition
+
+
+IS-IS has several flexible authentication options that are ideal for environments
+        requiring more than basic authentication between network devices. All
+        IS-IS packets can be sent securely to neighboring routers (OSPF
+        supports only Hello packet authentication), with the additional
+        capability to disable authentication of certain packet types as
+        desired:
+
+[edit]
+lab@r1# set protocols isis level 1 ?
+Possible completions:
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+  authentication-key       Authentication key (password)
+  authentication-type      Authentication type
+  disable                  Disable IS-IS on this level
+  external-preference      Preference of external routes
+  no-csnp-authentication   Disable authentication for CSN packets
+  no-hello-authentication  Disable authentication for hello packets
+  no-psnp-authentication   Disable authentication for PSN packets
+  preference               Preference of internal routes
+  prefix-export-limit      Maximum number of external prefixes that
+     can be exported
+  wide-metrics-only        Generate wide metrics only
+Furthermore, the router can disregard authentication
+        altogether:
+
+[edit]
+lab@r1# set protocols isis no-?
+Possible completions:
+  no-adjacency-holddown    Disable adjacency hold down
+  no-authentication-check  Disable authentication checking
+  no-ipv4-routing          Disable IPv4 routing
+  no-ipv6-routing          Disable IPv6 routing
+Disabling authentication checking can be helpful when migrating
+        to new authentication parameters, or when bringing a new router online
+        that is configured to run IS-IS but does not have authentication
+        enabled.
+And finally, in support of the general evolution of IP networks,
+        IS-IS is IPv6-ready. The protocol requires no special
+        modifications to support IPv6 because it carries IPv6 addressing and routing information
+        alongside IPv4 information. So, as you begin to implement IPv6, IS-IS
+        is already in place and ready to support your rollout.
+
+
+
+
+
+Disadvantages
+
+
+
+Like OSPF, IS-IS is an excellent routing protocol, but it isn't without
+        flaws. For starters, IS-IS isn't "made for IP." Instead, IS-IS has
+        been adapted to support IP networks. This fact
+        makes the protocol a bit nonintuitive to use sometimes. For example,
+        you could have the router's interfaces and IS-IS configured correctly,
+        but routing won't work properly until you assign an ISO address to the
+        router.
+Another disadvantage for some administrators is the fact that
+        IS-IS has no native summarization ability. OSPF supports the
+        summarization of contiguous routes at area borders, but IS-IS has no
+        such built-in ability. You must completely set up IS-IS summarization
+        using routing policy.
+
+Note
+Interestingly, some administrators actually
+          prefer routing policy for route summarization.
+          Route control and redistribution is done for most routing protocols
+          using policy, so having the IGP use policy as well can make things
+          neat and tidy, as well as easy to find, in the policy section of the
+          configuration.
+
+Finally, despite all of IS-IS's advantages, network
+        administrators simply like to work with what they know or can easily
+        learn, and OSPF is more widely deployed and documented than
+        IS-IS.
+
+
+
+
+
+High availability features for IS-IS in JUNOS Software
+
+
+
+Much like OSPF, IS-IS provides a number of features that support high
+        availability.
+
+
+
+
+Link and node failure detection
+
+
+
+One of IS-IS's basic features is its ability to detect link and node
+          failures and reroute around the problem. And as with OSPF, the IS-IS
+          default timer settings may not be sufficient to support a high
+          availability environment: by default, a neighboring router is
+          declared down after 27 seconds (9 seconds for
+          Designated Intermediate Systems or DISs), but this can be far too long when the link is a
+          high-capacity connection with a service-level agreement (SLA). You
+          can reduce the timers to very low values if desired. In fact, you
+          can technically set the Hello interval to an extremely low 1 second,
+          which means Hello packets are sent every 333 milliseconds!
+
+Warning
+Use caution when lowering IS-IS timers; just because you can
+            configure extremely low values doesn't mean you should. While the
+            low timer settings for IGPs on JUNOS devices provide the option to
+            use these protocols for high availability purposes, in practice
+            routing protocols are no longer used as a primary means of quick
+            failure detection and recovery. This is true to such an extent
+            that it is now not generally recommended to use extremely low
+            timers at all. These days, purpose-built protocols such as BFD
+            virtually eliminate the need for IGPs to participate in quick
+            failure detection.
+
+
+
+
+
+
+Authenticating packets
+
+
+
+Authentication plays a part in high availability from the standpoint
+          that security in a network can have only a positive effect on
+          availability. Authentication of IS-IS packets virtually eliminates
+          any chance of downtime in the network due to a malicious attack at
+          the routing protocol level.
+
+
+
+
+
+Graceful Restart
+
+
+
+JUNOS Software supports GR for IS-IS, allowing a router to restart without
+          affecting the routing topology. The separation of the routing and
+          forwarding planes in Juniper Networks routers allows an RE restart
+          while the forwarding plane continues to forward traffic. (See
+          Chapters 4 and 5 for detailed information about
+          GR.) In practice, a restarting router sends a Restart TLV (type, length, value) to its neighbors, who then
+          consider the router to still be up for a given
+          period of time. When the RE restarts, the router again forms an
+          adjacency with its neighbors, and the rest of the network is never
+          aware that anything unusual happened. You can configure GR globally
+          or just for IS-IS:
+
+[edit]
+lab@r1# show protocols isis graceful-restart ?
+Possible completions:
+<[Enter]>           Execute this command
+  disable           Disable graceful restart
+  helper-disable    Disable graceful restart helper capability
+  restart-duration  Maximum time for graceful restart to finish (seconds)
+
+
+
+
+
+Non-Stop Active Routing
+
+
+
+NSR uses redundant REs within a router chassis to provide
+          support for an RE restart without affecting the topology. With a
+          backup RE installed, the router maintains neighbor and state
+          information on both REs. If the master RE goes down, the backup RE
+          can immediately take over, making it appear to neighboring routers
+          that nothing has happened.
+NSR is not related to a specific protocol, and you configure
+          it globally on the router:
+
+[edit]
+lab@r1# show routing-options
+nonstop-routing;
+You must also enable GRES and configure the router to synchronize all
+          configuration changes between REs:
+
+[edit]
+lab@r1# show chassis redundancy
+graceful-switchover;
+
+[edit]
+lab@r1# show system
+commit synchronize;
+If your JUNOS devices have dual REs, NSR is an absolute must-have
+          to ensure minimal downtime.
+
+
+
+
+
+Overload
+
+
+
+The overload bit can be used to deflect transit traffic away from a
+          router before performing a task that affects traffic. Consider the
+          network shown in Figure 19-7. Traffic is
+          following normal, shortest-path routing through r2.
+
+
+
+
+
+
+
+
+
+Figure 19-7. Normal traffic flow, before overload is enabled
+
+
+Now imagine that you want to perform a task on r2 that impacts traffic, such as
+          restarting the routing daemon. You have two choices: you can perform
+          the task and let the routing protocols discover the failure in their
+          own time, or you can preemptively force traffic to use another path,
+          as shown in Figure 19-8.
+
+
+
+
+
+
+
+
+
+Figure 19-8. Traffic being redirected around r2 as a result of having
+            overload enabled
+
+
+To be clear, using the overload setting isn't completely
+          impact-free—the process does involve SPF recalculations and sending
+          routing updates. But it is an improvement over simply
+          downing the router and letting the network
+          discover that the topology has changed.
+
+
+
+
+
+Prefix limits
+
+
+
+Prefix limits provide a safety mechanism in case a large number of routes
+          (such as a full BGP feed) are imported into IS-IS:
+
+[edit]
+lab@r1# show protocols isis
+level 1 prefix-export-limit 500;
+level 2 prefix-export-limit 750;
+The increased load placed on some devices can slow them down,
+          and even bring them to a halt. When the prefix limit is reached, the
+          router stops transmitting the prefixes in IS-IS and goes into
+          overload state (which is equivalent to setting the overload bit).
+          This state relieves the router of the stress that has been placed on
+          it and ensures that the router will not be brought down by a single
+          action.
+
+Warning
+It is generally not a good practice to
+            redistribute a full BGP table into a network's IGP!
+
+
+
+
+
+
+Bidirectional Forwarding Detection
+
+
+
+BFD supports high availability by providing liveness detection. BFD is not
+          part of the IS-IS protocol, but it can detect subsecond link failure
+          between routers and inform IS-IS that the link should be
+          considered down:
+
+[edit]
+lab@r1# show protocols isis interface fe-0/0/2.0
+bfd-liveness-detection {
+    minimum-interval 100;
+    multiplier 4
+In this example, if the router does not hear from its neighbor
+          within 400 milliseconds, it notifies IS-IS that the link should be
+          considered down.
+
+Warning
+Use caution when setting BFD timers. BFD is designed for
+            reliable network links and flapping can occur
+            from even slight delay or loss. See Chapter 14 for more information
+            on BFD.
+
+
+
+
+
+
+
+
+Which Protocol Is "Better"?
+
+
+
+It is very difficult to crown either the OSPF or IS-IS protocol as the
+      superior protocol. They are both solid, robust,
+      scalable protocols that have a deep set of features, and they have
+      become so similar over time that it is truly hard to call one "better"
+      than the other. That being said, here are some general guidelines and
+      recommendations.
+OSPF is well suited to situations where:
+
+
+
+An IP-based routing protocol is desired.
+
+
+A centralized backbone is desired or required.
+
+
+The operational staff is less experienced or not familiar with
+          IS-IS.
+
+
+
+IS-IS is well suited to situations where:
+
+
+
+Maximum granularity and control is required.
+
+
+A centralized backbone is not required.
+
+
+The operational staff is already familiar with IS-IS's
+          terminology, concepts, and functionality.
+
+
+
+
+
+
+
+A final thought
+
+
+
+After all the features are compared and the advantages analyzed,
+        the best answer may be the simplest one: OSPF is just more
+        "available." It isn't superior to IS-IS, but it is more available as a
+        standard feature on networking equipment. OSPF is also more widely
+        deployed, making it implicitly more interoperable with other vendors'
+        equipment. In situations where companies are merging, it's a good bet
+        that OSPF is in use in one or both of the networks. And finally, there
+        is more information, support, and knowledge available around OSPF,
+        making it more user-friendly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Migrating from One IGP to Another
+
+
+
+Networks develop and grow over time. Subnets are split up, more
+    equipment and new routes are added, and router configurations become more
+    complex. Changing the IGP of an active network is nothing short of a
+    monumental task—and has the potential to be a nightmare when it comes to
+    preserving high availability.
+Five general steps are involved in migrating to another IGP:
+
+
+
+Plan for the migration. Arguably the most
+        important step, proper planning can make or break the entire
+        migration.
+
+
+Add the new protocol to the network. The
+        new protocol is added (as the less preferred protocol), mirroring the
+        existing one.
+
+
+Make the new protocol "preferred." Once the
+        new protocol is in place it can be made the preferred protocol,
+        effectively taking over from the original protocol.
+
+
+Verify the success of the migration. When
+        the new protocol is active it is essential to check the results and
+        look for any problems or issues.
+
+
+Remove the original protocol. After the new
+        protocol is in a stable state in the network, the original protocol
+        can be removed.
+
+
+
+
+
+
+
+Migrating from OSPF to IS-IS
+
+
+
+Before any migration takes place, it is important to have a good sense of what your
+      current network looks like. In fact, documenting the details of the
+      entire network might be the most important step in the migration!
+This section uses the following example to help illustrate the
+      steps of a successful migration:
+
+[edit]
+lab@r1> show route
+
+inet.0: 9 destinations, 9 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 23:46:09
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 23:46:09
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 10:27:10
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 10:27:11
+                      Local via fxp0.0
+172.16.1.0/24      *[OSPF/150] 23:43:04, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[OSPF/150] 23:43:04, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 23:48:55
+                    > via lo0.0
+192.168.2.2/32     *[OSPF/10] 23:43:04, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 2d 10:27:11, metric 1
+                      MultiRecv
+This "before" view of the network is from the perspective of
+      r1. In this example, r1 is receiving
+      three routes from its neighbor. Two of them (172.16.1.0/24 and
+      172.16.2.0/24) are static routes that are being redistributed into OSPF
+      as external routes. The third route (192.168.2.2/32) is an OSPF internal
+      route and happens to be the neighbor's loopback address. With this view
+      of the network in mind, it's time to move on to the first migration
+      step.
+
+
+
+
+Step 1: Plan for the migration
+
+
+
+When migrating from one IGP to another, the primary planning step is to
+        consider the design of the existing network and determine the best way
+        to implement that design within the capabilities of the new
+        protocol.
+There are several items to consider when moving from OSPF to
+        IS-IS:
+
+
+

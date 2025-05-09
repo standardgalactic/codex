@@ -1,0 +1,1000 @@
+Area and backbone design
+
+
+IS-IS can simply match the centralized OSPF backbone design, or you
+              can take advantage of the fact that IS-IS doesn't require that
+              its backbone be centralized.
+
+Note
+IS-IS as a protocol scales somewhat better than OSPF. In
+                practice, IS-IS networks often don't use areas at all and
+                simply run as flat L2 networks.
+
+
+
+Authentication
+
+
+If authentication is in place within OSPF, you can easily mirror it in
+              IS-IS. If authentication is not in place, this would be a good
+              time to add it!
+
+
+Metrics
+
+
+There are two options when migrating metrics to IS-IS:
+
+
+
+Set the metrics manually, per interface, using the
+                  existing OSPF metrics as reference.
+
+
+Set the metrics dynamically. IS-IS (borrowing a
+                  feature from OSPF) can use a reference bandwidth and
+                  dynamically set the cost of each interface based on link
+                  speed.
+
+Note
+In practice, use the method that parallels the
+                    current OSPF network. Note that when using manually
+                    configured metrics, it is common to scale up the values
+                    (e.g., 50 becomes 500) because of IS-IS's larger metric
+                    range.
+
+
+
+
+
+
+Routing policy
+
+
+You should mirror any redistribution of routes into OSPF in IS-IS.
+              Some policies may be reusable, while others, such as interarea
+              routes summarized by OSPF itself, require new policies that can
+              be used by IS-IS.
+
+
+
+
+
+
+
+
+Step 2: Add IS-IS to the network
+
+
+
+When the planning step is complete, you can begin adding IS-IS to the
+        network. Configure the protocol, router by router, based on the design
+        considerations determined in the preceding section. If the design is
+        sound, configuration should be fairly straightforward; with a few
+        commands, IS-IS will be in place on the routers.
+Start by adding the ISO family under the desired transit
+        interfaces, as well as the NET under the loopback interface:
+
+[edit]
+lab@r1# show interfaces
+fe-0/0/2 {
+    unit 0 {
+        family inet {
+            address 10.0.1.1/24;
+        }
+        family iso;
+    }
+}
+lo0 {
+    unit 0 {
+        family inet {
+            address 192.168.1.1/32;
+        }
+        family iso {
+            address 49.0001.1921.6800.1001.00;
+        }
+    }
+}
+Then enable IS-IS and add the appropriate interfaces under the
+        protocol:
+
+[edit]
+lab@r1# show protocols
+isis {
+    interface fe-0/0/2.0;
+    interface lo0.0;
+}
+Add authentication as desired:
+
+[edit]
+lab@r1# show protocols isis
+level 1 {
+    authentication-key "$9$XJlxds2gJUDksYfT3nCA"; ## SECRET-DATA
+    authentication-type md5; ## SECRET-DATA
+}
+level 2 {
+    authentication-key "$9$AXPhtORhclvMXREdb2gJZ"; ## SECRET-DATA
+    authentication-type md5; ## SECRET-DATA
+}
+interface fe-0/0/2.0;
+interface lo0.0;
+In this example, OSPF is using metrics based on link bandwidth.
+        To match this in IS-IS, use the
+        reference-bandwidth
+        statement:
+
+[edit]
+lab@HongKong# show protocols isis
+reference-bandwidth 100m;
+level 1 {
+    authentication-key "$9$XJlxds2gJUDksYfT3nCA"; ## SECRET-DATA
+    authentication-type md5; ## SECRET-DATA
+}
+level 2 {
+    authentication-key "$9$AXPhtORhclvMXREdb2gJZ"; ## SECRET-DATA
+    authentication-type md5; ## SECRET-DATA
+}
+interface fe-0/0/2.0;
+interface lo0.0;
+In addition, use wide-metrics-only to allow the broadest
+        possible metric-setting capabilities:
+
+[edit]
+lab@r1# set protocols isis level 1 wide-metrics-only
+
+[edit]
+lab@r1# set protocols isis level 2 wide-metrics-only
+The neighboring router, r2,
+        is currently using a routing policy to redistribute two static routes
+        into OSPF. You can easily replicate this in IS-IS by reusing the same
+        policy statement:
+
+[edit]
+lab@r2# show policy-options
+policy-statement static-to-IGP {
+    term 1 {
+        from protocol static;
+        then accept;
+    }
+}
+It now simply needs to be applied to IS-IS:
+
+[edit]
+lab@r2# set protocols isis export static-to-IGP
+One key detail that makes adding IS-IS a nonimpacting step in
+        terms of high availability is its protocol preference. The preference
+        values for IS-IS are higher (i.e., less preferred) than OSPF;
+        therefore, even though IS-IS is configured and running on the routers,
+        it is not the preferred protocol in the network, as shown here:
+
+[edit]
+lab@r1> show route
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 1d 00:47:49
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 1d 00:47:49
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 11:28:50
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 11:28:51
+                      Local via fxp0.0
+172.16.1.0/24      *[OSPF/150] 1d 00:44:44, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/165] 00:00:12, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[OSPF/150] 1d 00:44:44, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/165] 00:00:12, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 1d 00:50:35
+                    > via lo0.0
+192.168.2.2/32     *[OSPF/10] 1d 00:44:44, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/18] 00:00:12, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 2d 11:28:51, metric 1
+                      MultiRecv
+Notice how IS-IS is now activated and running in parallel with
+        OSPF. However, IS-IS's protocol preference ensures that it doesn't
+        take over as the primary protocol. The active routes are still
+        provided by OSPF at this point.
+Before moving to the next stage, take some time to ensure that
+        IS-IS is working properly and advertising the
+        same routes as OSPF. Ensure that both internal and external routes are
+        being advertised properly through the network by comparing the
+        OSPF-specific and IS-IS-specific entries in the routing table:
+
+[edit]
+lab@r1> show route table inet.0 protocol ospf
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24      *[OSPF/150] 1d 00:52:44, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[OSPF/150] 1d 00:52:44, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32     *[OSPF/10] 1d 00:52:44, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 2d 11:36:51, metric 1
+                      MultiRecv
+ [edit]
+lab@r1> show route table inet.0 protocol isis
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24       [IS-IS/165] 00:08:16, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24       [IS-IS/165] 00:08:16, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32      [IS-IS/18] 00:08:16, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+
+Note
+The 224.0.0.5/32 entry is simply the OSPF protocol
+          itself.
+
+If you see any discrepancy between the OSPF and IS-IS
+        advertisements, something isn't properly configured in IS-IS.
+
+
+
+
+
+Step 3: Make IS-IS the "preferred" IGP
+
+
+
+When IS-IS is properly mirroring OSPF, it is time to make IS-IS the preferred
+        routing protocol in the network. You can achieve this in one of two
+        ways: lower the preference of IS-IS or increase the preference of
+        OSPF. In general, it is preferable to leave the new protocol at its
+        default settings (to minimize complexity, should you need to manage
+        protocol preferences again in the future). So, in this case it makes
+        more sense to increase the preference value of OSPF routes to make
+        them less preferred than IS-IS routes:
+
+[edit]
+lab@HongKong# show protocols ospf
+preference 168;
+external-preference 169;
+Once this change is committed, check the routing table to
+        confirm that IS-IS is now the preferred protocol:
+
+[edit]
+lab@r1> show route
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 1d 01:05:54
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 1d 01:05:54
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 11:46:55
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 11:46:56
+                      Local via fxp0.0
+172.16.1.0/24      *[IS-IS/165] 00:18:17, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/169] 00:00:05, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[IS-IS/165] 00:18:17, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/169] 00:00:05, metric 0, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 1d 01:08:40
+                    > via lo0.0
+192.168.2.2/32     *[IS-IS/18] 00:18:17, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/168] 00:00:05, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 2d 11:46:56, metric 1
+                      MultiRecv
+Notice how the preferred protocol has changed, and the IS-IS
+        routes are now active.
+
+
+
+
+
+Step 4: Verify the success of the migration
+
+
+
+Once IS-IS becomes the preferred protocol, your job is simply to watch and
+        wait. If you have executed all of the previous steps properly, there
+        shouldn't be many—if any—issues. Nevertheless,
+        some hidden problem is always waiting to be discovered. Monitor the
+        network for issues. Verify that adjacencies are in place and that all
+        routes are being advertised properly:
+
+[edit]
+lab@r1> show isis interface
+IS-IS interface database:
+Interface           L CirID Level 1 DR  Level 2 DR    L1/L2 Metric
+fe-0/0/2.0          3   0x1 r1.00       r2.02               1/1
+lo0.0               0   0x1 Passive     Passive             0/0
+
+[edit]
+lab@r1> show isis adjacency
+Interface           System   L State  Hold (secs) SNPA
+fe-0/0/2.0          r2       2  Up              7  0:14:f6:8c:18:2
+
+lab@r1> show route protocol isis
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24      *[IS-IS/165] 00:25:50, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[IS-IS/165] 00:25:50, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32     *[IS-IS/18] 00:25:50, metric 1
+                    > to 10.0.1.2 via fe-0/0/2.0
+
+Note
+At this stage, a very important detail that can cause later
+          problems is to verify that the active routes in the routers' routing
+          tables are indeed being received from IS-IS and installed as "IS-IS
+          routes." An issue with IS-IS could easily be hidden due to the fact
+          that OSPF is still active and sending routing updates. If you do not
+          check this carefully, the next stage could expose the issue in a
+          very unpleasant way!
+
+A high availability best practice is to now perform connectivity
+        tests to various points in the network to ensure reachability, as well
+        as to confirm proper routing.
+
+
+
+
+
+Step 5: Remove OSPF from the network
+
+
+
+After IS-IS has been made the preferred protocol and has been working smoothly for
+        some time, you can remove OSPF from the network. The process of
+        removing OSPF from the router is simple enough:
+
+[edit]
+lab@r1# delete protocols ospf
+
+Note
+Another option is to deactivate OSPF instead of deleting it,
+          using the command deactivate protocols
+          ospf. This disables the protocol but leaves the
+          configuration intact in case you need it later.
+
+The process of removing OSPF from all routers may depend on the
+        design of the network as well as your overall migration strategy. For
+        example, perhaps the strategy calls for removing OSPF from nonbackbone
+        areas one by one, to allow for maximum control and containment in case
+        of a problem. This decision is part of the design strategy you created
+        back in step one.
+If the worst happens and removing OSPF does create a serious
+        problem, it is very easy to recover by using the rollback command
+        (don't forget to enter commit as well):
+
+[edit]
+lab@r1# rollback 1
+load complete
+However, with thoughtful planning, careful execution, and close
+        monitoring, the migration should go smoothly.
+
+
+
+
+
+
+Migrating from IS-IS to OSPF
+
+
+
+As we already mentioned, before any migration takes place, it is important to have
+      a good sense of what your current network looks like. And documenting
+      the details of the entire network might be the most important step of
+      the entire migration.
+This section uses the following example to help illustrate the
+      migration steps:
+
+[edit]
+lab@r1> show route
+
+inet.0: 8 destinations, 8 routes (8 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 1d 01:32:49
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 1d 01:32:49
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 12:13:50
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 12:13:51
+                      Local via fxp0.0
+172.16.1.0/24      *[IS-IS/165] 00:00:48, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[IS-IS/165] 00:00:48, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 1d 01:35:35
+                    > via lo0.0
+192.168.2.2/32     *[IS-IS/18] 00:00:48, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+The preceding example is the "before" view of the network, from
+      the perspective of r1. In this
+      example, r1 is receiving three routes
+      from its neighbor. Two of them (172.16.1.0/24 and 172.16.2.0/24) are
+      static routes that are being redistributed into IS-IS as L2 external routes. The third
+      route (192.168.2.2/32) is an IS-IS L2 internal route; it is the
+      neighbor's loopback address. With this baseline view in mind, it's time
+      to move on to the first migration step.
+
+
+
+
+Step 1: Plan for the migration
+
+
+
+When migrating from one protocol to another, the primary planning step is to
+        consider the design of the existing network and determine the best way
+        to implement that design within the capabilities of the new
+        protocol.
+There are several items to consider when moving from IS-IS to
+        OSPF:
+
+
+
+Area and backbone design
+
+
+If the existing IS-IS network has been designed using a
+              centralized L2 backbone, migrating to OSPF is straightforward;
+              you can simply design it to match the existing network. However,
+              if the existing IS-IS network doesn't use a centralized backbone
+              some significant planning may be required. It is not possible to
+              get into all the possible variations in this book, but a good
+              general approach is to make the central area—or areas—Area 0
+              (the backbone), and make the other areas nonzero areas, feeding
+              into the backbone. Also, don't forget to use OSPF area types as
+              appropriate to match the existing network design. For example, a
+              typical IS-IS L1 (nonbackbone) area is equivalent to an OSPF
+              totally stubby area.
+
+Note
+In practice, let natural boundaries determine area
+                boundaries. For example, a remote office that is connected by
+                a low-speed link may make a good stub area.
+
+
+
+Authentication
+
+
+You can take the authentication scheme from the existing network
+              and implement it in OSPF. If it happens that your current
+              network doesn't use authentication, this would be a very good
+              time to start!
+
+Note
+Remember that only OSPF Hello packets are
+                authenticated.
+
+
+
+Metrics
+
+
+You have two options when migrating metrics to OSPF:
+
+
+
+Set the metrics manually, per interface, using the
+                  existing IS-IS metrics as reference.
+
+
+Set the metrics dynamically. By default, OSPF uses a
+                  reference bandwidth and dynamically sets the cost of each
+                  interface based on link speed.
+
+Note
+In practice, unless you have a specific reason to
+                    change the strategy used to determine metrics, use the
+                    method that parallels the current IS-IS network.
+
+
+
+
+
+
+Routing policy
+
+
+Any redistribution of routes into IS-IS should be mirrored in OSPF.
+              Some policies may be reusable, while others, such as interarea
+              routes, can be summarized natively by OSPF.
+
+
+
+
+
+
+
+
+Step 2: Add OSPF to the network
+
+
+
+When the planning step is complete, you can add OSPF to the network. The
+        protocol is easy to configure, using settings based on the design
+        considerations in the preceding list. If the design decisions have
+        been made wisely, this should be a straightforward process; with a few
+        commands, OSPF will be in place on the router.
+Start by enabling OSPF and adding the appropriate interfaces
+        under the protocol:
+
+[edit]
+lab@r1# show protocols ospf
+area 0.0.0.0 {
+    interface fe-0/0/2.0;
+    interface lo0.0;
+}
+Then add authentication:
+
+[edit]
+lab@r1# show protocols ospf
+area 0.0.0.0 {
+    interface fe-0/0/2.0 {
+        authentication {
+            md5 1 key "$9$OkzSBEyleWXxdyrYgJZji"; ## SECRET-DATA
+        }
+    }
+    interface lo0.0;
+}
+In this example, IS-IS is using its default method of setting
+        metrics—simply setting a metric of 10 per link. To match this in OSPF,
+        use the metric statement:
+
+[edit]
+lab@r1# show protocols ospf
+area 0.0.0.0 {
+    interface fe-0/0/2.0 {
+        metric 10;
+        authentication {
+            md5 1 key "$9$OkzSBEyleWXxdyrYgJZji"; ## SECRET-DATA
+        }
+    }
+    interface lo0.0;
+}
+The neighboring router, r2,
+        is using a routing policy to redistribute two routes into IS-IS. Route redistribution can often be
+        replicated easily in OSPF by reusing the same policy statement.
+        However, in this scenario, metrics are being manually configured and
+        OSPF requires additional configuration to alter the metric of an
+        external route:
+
+[edit]
+lab@r2# show policy-options
+policy-statement static-to-IGP {
+    term 1 {
+        from protocol static;
+        then accept;
+    }
+}
+policy-statement static-to-OSPF {
+    term 1 {
+        from protocol static;
+        then {
+            metric 10;
+            accept;
+        }
+    }
+}
+Apply this new policy to OSPF:
+
+[edit]
+lab@r2# set protocols ospf export static-to-OSPF
+One critical item to configure to ensure
+        that there is no impact to the network at this point is to modify
+        OSPF's default protocol preference:
+
+[edit]
+lab@r1# set protocols ospf preference 168
+
+[edit]
+lab@r1# set protocols ospf external-preference 169
+The default preference values for OSPF are lower (i.e., more
+        preferred) than IS-IS. Implementing OSPF using default settings would
+        immediately make it the preferred protocol, before you have the chance
+        to validate that it is functioning as desired.
+When you commit the OSPF configuration, OSPF should
+        not appear as the preferred protocol in the
+        routing table:
+
+[edit]
+lab@r1> show route
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 1d 02:07:46
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 1d 02:07:46
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 12:48:47
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 12:48:48
+                      Local via fxp0.0
+172.16.1.0/24      *[IS-IS/165] 00:00:04, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/169] 00:02:40, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[IS-IS/165] 00:00:04, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/169] 00:02:40, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 1d 02:10:32
+                    > via lo0.0
+192.168.2.2/32     *[IS-IS/18] 00:35:45, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [OSPF/168] 00:05:57, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 00:07:08, metric 1
+                      MultiRecv
+Notice in the output how OSPF is now activated and running in
+        parallel with IS-IS. However, its modified protocol preference ensures
+        that OSPF doesn't take over as the primary protocol. The active routes
+        are still provided by IS-IS at this point.
+Before moving to the next stage, take the time to ensure that
+        OSPF is working properly and advertising the same
+        routes as IS-IS. Ensure that both internal and external routes are
+        being advertised properly through the network by comparing the
+        IS-IS-specific and OSPF-specific entries in the routing table:
+
+lab@r1> show route table inet.0 protocol isis
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24      *[IS-IS/165] 00:09:26, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[IS-IS/165] 00:09:26, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32     *[IS-IS/18] 00:45:07, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+
+lab@r1> show route table inet.0 protocol ospf
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24       [OSPF/169] 00:12:05, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24       [OSPF/169] 00:12:05, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32      [OSPF/168] 00:15:22, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 00:16:33, metric 1
+                      MultiRecv
+
+Note
+The 224.0.0.5/32 entry is simply the OSPF protocol
+          itself.
+
+If you see any discrepancy between the IS-IS and OSPF
+        advertisements, something isn't properly configured in OSPF.
+
+
+
+
+
+Step 3: Make OSPF the "preferred" IGP
+
+
+
+With OSPF properly mirroring IS-IS, make OSPF the preferred routing
+        protocol in the network. You can do this easily by deleting the
+        customized preference settings:
+
+[edit]
+lab@r1# delete protocols ospf preference
+
+[edit]
+lab@r1# delete protocols ospf external-preference
+Once you commit this change, OSPF's lower default preference
+        values make it automatically more preferred, and thus it becomes the
+        preferred protocol, as shown here:
+
+[edit]
+lab@r1> show route
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+10.0.1.0/24        *[Direct/0] 1d 02:22:39
+                    > via fe-0/0/2.0
+10.0.1.1/32        *[Local/0] 1d 02:22:39
+                      Local via fe-0/0/2.0
+10.210.0.0/27      *[Direct/0] 2d 13:03:40
+                    > via fxp0.0
+10.210.0.1/32      *[Local/0] 2d 13:03:41
+                      Local via fxp0.0
+172.16.1.0/24      *[OSPF/150] 00:00:03, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/165] 00:14:57, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[OSPF/150] 00:00:03, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/165] 00:14:57, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.1.1/32     *[Direct/0] 1d 02:25:25
+                    > via lo0.0
+192.168.2.2/32     *[OSPF/10] 00:00:03, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+                    [IS-IS/18] 00:50:38, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 00:22:01, metric 1
+                      MultiRecv
+Notice that the preferred protocol has changed and that OSPF
+        routes are now active.
+
+
+
+
+
+Step 4: Verify the success of the migration
+
+
+
+Once OSPF becomes the preferred protocol, the next step simply involves
+        watching and waiting. If the previous steps were carried out properly
+        you shouldn't have many—if any—issues. That being said,
+        even the best-planned migration usually involves some unanticipated
+        issue. Monitor the network while OSPF takes over as the preferred
+        protocol. Verify that the router maintains adjacencies with its
+        neighbors and that all routes are advertised correctly:
+
+[edit]
+lab@r1> show ospf interface
+Interface       State   Area       DR ID         BDR ID       Nbrs
+fe-0/0/2.0      BDR     0.0.0.0    192.168.2.2   192.168.1.1     1
+lo0.0           DR      0.0.0.0    192.168.1.1   0.0.0.0         0
+
+[edit]
+lab@r1> show ospf neighbor
+Address     Interface     State     ID            Pri  Dead
+10.0.1.2    fe-0/0/2.0    Full      192.168.2.2   128    37
+
+[edit]
+lab@r1> show route protocol ospf
+
+inet.0: 9 destinations, 12 routes (9 active, 0 holddown, 0 hidden)
++ = Active Route, - = Last Active, * = Both
+
+172.16.1.0/24      *[OSPF/150] 00:03:58, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+172.16.2.0/24      *[OSPF/150] 00:03:58, metric 10, tag 0
+                    > to 10.0.1.2 via fe-0/0/2.0
+192.168.2.2/32     *[OSPF/10] 00:03:58, metric 10
+                    > to 10.0.1.2 via fe-0/0/2.0
+224.0.0.5/32       *[OSPF/10] 00:25:56, metric 1
+                      MultiRecv
+
+Note
+Verify that the active routes in the routers' routing tables
+          are indeed being received from OSPF and installed as "OSPF routes."
+          If OSPF isn't functioning properly on a router, the issue could
+          easily be hidden because IS-IS
+          is still active and sending routing updates. Missing this situation can lead to a major issue in
+          the next step!
+
+Be sure to conduct connectivity testing to ensure reachability
+        through the network, as well as proper routing.
+
+
+
+
+
+Step 5: Remove IS-IS from the network
+
+
+
+After you have made OSPF the preferred protocol and have verified that it is
+        working properly, you can remove IS-IS from the network. To remove
+        IS-IS, simply delete it from the configuration:
+
+[edit]
+lab@r1# delete protocols isis
+
+Note
+Another option is to deactivate IS-IS instead of deleting it,
+          using the command deactivate protocols
+          isis. This disables the protocol but leaves the
+          configuration intact in case it is needed later.
+
+How you remove IS-IS from all routers in the network likely
+        depends on the design of the network as well as your overall migration
+        strategy. For example, perhaps the strategy calls for removing IS-IS
+        one L1 area at a time, and finally the L2 backbone, to allow for
+        maximum control over the migration and provide containment in case of
+        a problem. At this stage, control is critical.
+If the worst happens and removing IS-IS
+        does create a problem, the easiest way to recover
+        is to use the rollback command
+        (don't forget to enter commit as well):
+
+[edit]
+lab@r1# rollback 1
+load complete
+However, if you are thorough in creating the new design, careful
+        in configuring the routers, and watchful during monitoring, the
+        migration should be successful, with minimal problems.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Merging Networks Using a Common IGP
+
+
+
+Transitioning from one IGP to another can be quite a challenge. The task of merging two
+    networks that use the same IGP also has its own challenges to overcome.
+    The classic example is the merging of two companies: Company A has bought
+    Company B and the two organizations must now join together. Part of this
+    effort involves merging the companies' IT infrastructure. From a
+    networking perspective, two separate administrative domains must be merged
+    into one, a problem that can be quite a challenge to solve.
+
+
+
+
+Considerations
+
+
+
+There are a variety of factors to consider when merging two (or
+      more) networks—primarily area design, but also matching configuration
+      parameters and tunneling.
+
+
+
+
+Area design
+
+
+
+The biggest factor in merging the two networks is area design, and the
+        most important design consideration is how to deal with the networks'
+        backbones. If the networks are running centralized backbones, as
+        required by OSPF and as shown in Figure 19-9, significant
+        work needs to be done to determine how and where to join the two
+        networks' backbone areas.
+
+
+
+
+
+
+
+
+
+Figure 19-9. Two companies using OSPF and centralized backbones
+
+
+The simplest solution may involve creating physical links
+        between the backbone areas, effectively creating a single larger
+        backbone, as shown in Figure 19-10.
+
+
+
+
+
+
+
+
+
+Figure 19-10. Two companies' networks merged by combining backbones
+
+
+However, the solution depends heavily on access to reliable
+        links with sufficient bandwidth, as well as sufficiently powered
+        routers, to support the increased traffic load. In cases where these
+        conditions don't exist, it may be better to use only a portion of the
+        original backbone areas to create a new combined backbone and
+        repartition the network to absorb the remaining routers. This
+        strategy, shown in Figure 19-11, optimizes the
+        network given the resources available.
+
+
+
+
+
+
+
+
+
+Figure 19-11. Reconfigured combined backbone area, and repartitioned
+          nonbackbone areas
+
+
+If the networks are running IS-IS, another option is available:
+        because IS-IS doesn't require a contiguous backbone, it may be
+        possible to keep the area structure largely intact and simply join L2
+        routers from each network, creating a continuous chainlike backbone
+        through both networks. If the architecture supports (or requires) it,
+        joining the routers can be a very efficient solution, as shown in
+        Figures 19-12 and 19-13.
+
+
+
+
+
+
+
+
+
+Figure 19-12. Two companies using IS-IS
+
+
+
+
+
+
+
+
+
+
+
+Figure 19-13. Two companies' networks merged by chaining backbones
+
+
+The treatment of nonbackbone areas depends on how the backbone
+        is impacted when the networks merge. In cases where a backbone is
+        significantly repartitioned, it is reasonable to assume that some of
+        the repartitioning affects nonbackbone areas (as occurred in Figure 19-13) because routers
+        are architecturally repositioned in the network. In cases where the
+        backbones are left largely intact, nonbackbone areas may well require
+        little or no alteration at all (aside from ensuring that they have
+        unique area IDs).
+
+
+
+
+
+Matching configuration parameters
+
+
+
+Of course, a significant factor in "getting it right" is to ensure
+        that all appropriate configuration parameters match—generally this is
+        more applicable to OSPF than IS-IS, but the principle holds for either protocol. The
+        best-laid plans can come crashing down because of simple configuration
+        issues.
+A smart approach is to come up with a single strategy for the
+        new combined network. Using the best practices and usage guidelines
+        from each network, define a unified approach and set of requirements
+        for the new domain, including guidelines and rules for Hello timers,
+        authentication types and passwords, metrics, and any other parameters
+        that are relevant for the network. Ensuring that links are using
+        compatible parameters is, of course, critical to ensuring that the
+        network is unaffected during the merge. But the long-term solution to
+        ensure high availability is to standardize the parameters and features
+        across the network before the merge takes place.
+        Otherwise, the process of merging the networks will be the start of a
+        long and probably painful exercise.

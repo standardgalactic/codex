@@ -1,0 +1,1000 @@
+      deployment and requires ongoing administrative scrutiny for the life of
+      the network because, assuming traffic load is balanced across paired
+      systems, no single physical system or single physical link is permitted
+      to exceed 50% utilization. If any system or link does exceed 50%
+      utilization, failure of the paired device could result in loss of data.
+      Loss of data is not synonymous with high availability. For example,
+      let's say we have a traffic load evenly balanced between a pair of
+      switches. If throughput across each of the individual switches is at 60%
+      of individual switch capacity, then the two cannot accurately be
+      described as a "redundant pair." If one of the switches in the pair were
+      to fail, then a load equivalent to 120% of single-device capacity would
+      be placed on the remaining switch (60% + 60% = 120%). Clearly many
+      packets would spill out on the floor, making a terrible mess!
+Figures 1-5 and 1-6 show two system redundancy principles
+      applied to infrastructure links and user LANs. These diagrams also
+      include physical cross connection among components.
+
+
+
+
+
+
+
+
+
+Figure 1-5. System redundancy for transport networks
+
+
+
+
+
+
+
+
+
+
+
+Figure 1-6. Impact of system redundancy on enterprise LANs
+
+
+Table 1-5 shows the
+      relative costs associated with use of redundant systems. Note the added
+      cost of space cooling and electricity shown in the table.
+
+
+Table 1-5. Relative cost of system redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+2
+
+
+Firewall 1 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+3
+
+
+Router 2 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+4
+
+
+Firewall 2 with interface
+              cards and one year of vendor support
+
+
+2
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+6
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+28
+
+
+
+
+7
+
+
+Additional space,
+              cooling, and electrical use for second system
+
+
+1
+
+
+
+
+Total relative cost = $200,000
+
+
+
+
+
+
+
+
+
+
+
+Combined System- and Site-Redundant Architectures
+
+
+
+In modern network designs, redundant systems and redundant sites are
+      commonly used to provide effective transport network resilience. This
+      scheme is among the more expensive; however, it does protect users from
+      component and system failure on a local basis, as well as from regional
+      disasters. Furthermore, this scheme allows the enterprise to take
+      advantage of system capabilities at both the primary and backup sites.
+      As with other architectures featuring redundant systems, care must be
+      taken to make sure that failure of a system or a component does not
+      result in an excessive burden on the paired device.
+Figure 1-7
+      illustrates these system and site redundancy principles applied to our
+      simple transport network, with Table 1-6 giving details of
+      the relative cost of the scheme.
+
+
+
+
+
+
+
+
+
+Figure 1-7. System and site redundancy for transport networks
+
+
+
+
+Table 1-6. Relative cost of system and site redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 base bundle with
+              interface cards and one year of vendor support
+
+
+4
+
+
+
+
+2
+
+
+Firewall 1 with interface
+              cards and one year of vendor support
+
+
+4
+
+
+
+
+3
+
+
+Router 2 with interface
+              cards and one year of vendor support
+
+
+4
+
+
+
+
+4
+
+
+Firewall 2 with interface
+              cards and one year of vendor support
+
+
+4
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+12
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+56
+
+
+
+
+7
+
+
+Additional physical
+              facilities startup costs
+
+
+1
+
+
+
+
+8
+
+
+Additional physical
+              facilities operational costs for one year (electricity, Internet
+              connectivity, staffing, and support)
+
+
+1
+
+
+
+
+Total relative cost = $720,000
+
+
+
+
+
+
+
+
+
+
+
+Combined System- and Component-Redundant Architectures
+
+
+
+Figures 1-8 and 1-9 show the combination of redundant systems and redundant
+      components applied to the simple transport network model from Figure 1-1. This type of
+      architecture is generally used only in situations in which an extremely
+      strong resiliency scheme is required but site redundancy is
+      not an option. And as itemized in Table 1-7, this scheme
+      carries the added expense of double the amount of space, power, and
+      cooling that would be required from a network that did not include
+      redundant systems.
+
+
+
+
+
+
+
+
+
+Figure 1-8. System and component redundancy for transport networks
+
+
+
+
+
+
+
+
+
+
+
+Figure 1-9. Impact of system and component redundancy on enterprise
+        LANs
+
+
+
+
+Table 1-7. Relative cost of system and component redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+2
+
+
+
+
+2
+
+
+Firewall 1 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+2
+
+
+
+
+3
+
+
+Router 2 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+2
+
+
+
+
+4
+
+
+Firewall 2 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+2
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+6
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+56
+
+
+
+
+7
+
+
+Additional space,
+              cooling, and electricity for second system
+
+
+1
+
+
+
+
+Total relative cost = $320,000
+
+
+
+
+
+
+
+
+
+
+
+Combined System-, Component-, and Site-Redundant
+      Architectures
+
+
+
+The model shown in Figure 1-10 provides the greatest protection possible from equipment
+      failure and regional disaster, though at significant cost (you'll have
+      to decide the price of failure for your network), as listed in Table 1-8. In comparison with
+      the dollar amounts in Table 1-1, we can see that
+      this scheme is almost 10 times the relative cost of a simple transport
+      network.
+
+
+
+
+
+
+
+
+
+Figure 1-10. System, component, and site redundancy for transport
+        networks
+
+
+
+
+Table 1-8. Relative cost of system, component, and site redundancy
+
+
+
+
+
+
+
+
+
+
+Line
+              item
+
+
+Description
+
+
+Qty
+
+
+
+
+
+
+1
+
+
+Router 1 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+4
+
+
+
+
+2
+
+
+Firewall 1 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+4
+
+
+
+
+3
+
+
+Router 2 with additional
+              interface cards and redundant power and processor and one year
+              of vendor support
+
+
+4
+
+
+
+
+4
+
+
+Firewall 2 with
+              additional interface cards and redundant power and processor and
+              one year of vendor support
+
+
+4
+
+
+
+
+5
+
+
+Switch 1 and one year of
+              vendor support
+
+
+12
+
+
+
+
+6
+
+
+Multimode fiber trunk
+              (materials and installation)
+
+
+112
+
+
+
+
+7
+
+
+Additional physical
+              facilities startup costs
+
+
+1
+
+
+
+
+8
+
+
+Additional physical
+              facilities operational costs for one year (electricity, Internet
+              connectivity, staffing, and support)
+
+
+1
+
+
+
+
+Total relative cost = $970,000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What Does It All Mean?
+
+
+
+You don't need to be a rocket scientist to figure out that the more
+    protection your network has, the greater its cost. Fortunately, there is
+    no rule requiring that every network be set up with the maximum amount of
+    redundancy technologically available. Typically, networks are somewhere in
+    between on the scale of "no protection" to "complete and redundant
+    protection." Indeed, this book assumes you are in a gradual transition
+    toward a higher availability and thus might find the final analysis
+    useful.
+Table 1-9 allows you to compare
+    relative costs among the different redundancy schemes described in this
+    chapter. Note that the relative dollar amounts are not as important (and
+    indeed were manipulated for ease of comparison) as the cost represented as
+    a multiplier of the simple nonredundant scheme. The relative cost number
+    listed in the "Base system multiplier" column allows you to predict the
+    cost of redundancy schemes for other enterprise network projects. You can
+    then compare the cost estimates to the anticipated value of the services
+    the network provides, or for nonprofits and government agencies, the
+    importance of the purpose for which the network is being built.
+
+
+Table 1-9. Relative cost comparison
+
+
+
+
+
+
+
+
+
+
+
+
+Table #
+
+
+Redundancy scheme
+
+
+Provides protection
+            from...
+
+
+Total relative cost
+
+
+Base system
+            multiplier
+
+
+
+
+
+
+1
+
+
+None
+
+
+Provides
+            no protection
+
+
+$100,000
+
+
+1
+
+
+
+
+2
+
+
+Site redundancy
+
+
+System failure, component
+            failure, and regional disaster
+
+
+$540,000
+
+
+5.4
+
+
+
+
+3
+
+
+Component redundancy
+
+
+Component
+            failure
+
+
+$150,000
+
+
+1.5
+
+
+
+
+4
+
+
+Component and site redundancy
+
+
+Component failure and
+            regional disaster
+
+
+$660,000
+
+
+6.6
+
+
+
+
+5
+
+
+System
+            redundancy
+
+
+System failure and
+            component failure
+
+
+$200,000
+
+
+2.0
+
+
+
+
+6
+
+
+System and site redundancy
+
+
+System failure, component
+            failure, and regional disaster, as well as regional disaster and
+            single-system and single-component failure combinations
+
+
+$720,000
+
+
+7.2
+
+
+
+
+7
+
+
+System and component
+            redundancy
+
+
+System failure and
+            component failure
+
+
+$320,000
+
+
+3.2
+
+
+
+
+8
+
+
+System, site, and component
+            redundancy
+
+
+System failure, component
+            failure, and regional disaster, as well as regional disaster and
+            single-system and multiple-component failure
+            combinations
+
+
+$970,000
+
+
+9.7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 2. Hardware High Availability
+
+
+
+Within networks, there are normally three roadblocks to high
+  availability: hardware failures, software failures, and user-based
+  configuration errors. Before we dive into the nitty-gritty details of how a
+  string of acronyms (VRRP, ISSU, etc.) can improve the high availability of
+  your network, we need to look at the hardware on which your network is
+  based.
+No matter how well designed a network is, if you're missing a few key
+  features in the hardware design all the protocol hacks, routing tips, and
+  best common practices offered up in the networking books on your shelf may
+  be useless. Let's say that you have a set maintenance window for a bug scrub
+  on your new router operating system, and you have tested the upgrade in the
+  lab environment 10 times, but when you complete the upgrade, you discover
+  that your routing engine (RE) is not booting. You will have to replace it
+  and get your router running again before the maintenance window closes and
+  calls start coming in from customers. To accomplish this task, it is vital
+  that you have a way to smoothly replace hardware.
+Any network design that is to provide high availability must be built
+  on a solid foundation that offers stability, resiliency, and redundancy.
+  Without such a foundation, the efforts of your team will be wasted on
+  attempting to solve or mitigate issues through the use of complex redundancy
+  protocol configurations or traffic engineering, when you and your customers
+  would be better served by having the hardware in place to mitigate those
+  issues so that your team can focus their time on adding or improving
+  services on the network.
+This chapter provides insight into the feature set of JUNOS devices
+  that ultimately provide the resilient and stable hardware foundation upon
+  which your network will thrive.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Divide and Conquer
+
+
+
+Have you ever had someone in management, three tiers above you, send you email because
+    you didn't use the new report cover or you missed some checkbox on a minor
+    network form? This type of micromanagement can hamper efficiency, forcing
+    individuals in an office to be responsible for a wide range of tasks and
+    making them less efficient on the core tasks for which they are
+    responsible.
+Just as with the overworked employees in the micromanaged office,
+    data processing chips in network equipment based on generalized designs,
+    performing a multitude of functions such as routing protocols, packet
+    forwarding, encryption, and system management, are less efficient in each
+    of those processes because they are doing them all. By incorporating
+    application-specific integrated circuits (ASICs) that perform very specific tasks, Juniper Networks
+    equipment is able to provide efficient processing of packets and a stable
+    foundation on which to build networks that provide high
+    availability.
+Since the beginning, Juniper's hardware design has steered clear of
+    the monolithic processor trying to perform every task in the network
+    device. The design architecture has instead been divided into the RE as
+    the brain and the forwarding engine as the brawn.
+Imagine if you will that all packages transiting a post office were
+    required to be examined by the head postmaster to ensure that they were
+    being handled properly. Package delivery would be totally unfeasible,
+    which is why the head postmaster is responsible for high-level management
+    and the mail sorters and carriers are responsible for getting the mail out
+    to the right address. This separation of tasks provides the high
+    availability for the post office, and it is the same philosophy that
+    applies to network equipment. Figure 2-1
+    illustrates the separation of the Packet Forwarding Engine (PFE)
+    and the RE.
+
+
+
+
+
+
+
+
+
+Figure 2-1. Juniper router architecture
+
+
+While Figure 2-1 is a simplified
+    look at the Juniper Networks router architecture, the RE serves the
+    purpose of the head postmaster in our post office metaphor. Though the RE
+    is responsible for managing the overall processes of the system, such as
+    processing the routing and management protocols, it is not responsible for
+    actually forwarding the packets. Without the packet forwarding
+    responsibilities, the processor cycles of the RE are used to process the
+    routing and management protocols present on the network, performing the
+    calculations to determine the best path to an address, and create a
+    forwarding table tree that the ASICs in the forwarding engine can easily
+    parse.
+
+Note
+This type of architecture quickly proves itself in a network,
+      especially when you have a full Internet routing table feed and,
+      possibly, Multiprotocol Label Switching (MPLS) virtual private networks
+      (VPNs). Looking at older-generation routers, the toll on the CPU caused
+      by processing all the management protocols, as well as forwarding the
+      packets, led to lower throughputs and performance even on high-end
+      equipment. It is not uncommon to see a router advertised with 4 Gbps

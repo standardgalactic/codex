@@ -1,0 +1,1000 @@
+    incrementally updates the copy stored in the
+    PFE that is used for forwarding. Because the microkernel of each ASIC contains all routes and their
+    respective next hops, the actual forwarding process continues even when
+    the primary RE is brought down, as shown in Figure 4-1. The fact that
+    forwarding can continue while the control plane is unavailable—such as
+    during an RE switchover—is important for understanding high availability
+    solutions.
+
+
+
+
+
+
+
+
+Figure 4-1. ASICs storing the forwarding table routes
+
+
+
+
+
+Routing Update Process
+
+
+
+To understand how you can use the routing features of JUNOS high
+      availability in your network, it is best to actually visualize the
+      routing update process that we discussed in the previous section. The
+      following steps and code snippets explain the control plane and
+      forwarding plane interactions, as they also serve as an excellent
+      troubleshooting tool for diagnosing issues that might occur during
+      network degradation.
+
+
+
+
+Step 1: Verify that the RE and PFEs are up
+
+
+
+During normal operation, one of the REs should be online and labeled
+        as master. The master RE should have open, active connections with the
+        rest of the hardware components. The following commands verify the
+        state of the hardware, as seen by the RE.
+
+lab@r1> show chassis routing-engine 
+Routing Engine status:
+  Slot 0:
+    Current state            Master
+    Election priority        Master (default)
+    ......
+    Uptime                   2 days, 1 hour, 55 minutes, 53 seconds
+    Load averages:           1 minute   5 minute  15 minute
+                                 0.00       0.00       0.00
+Routing Engine status:
+  Slot 1:
+    Current state            Backup
+    Election priority        Backup (default)
+    ......
+    Start time               2008-09-17 05:59:19 UTC
+    Uptime                   17 hours, 53 minutes, 38 seconds
+
+
+lab@r1> show chassis fpc 
+               Temp  CPU Utilization (%)   Memory    Utilization (%)
+Slot State      (C)  Total  Interrupt      DRAM (MB) Heap     Buffer
+  0  Online      21      7          0       1024       24         31
+  1  Online      21      4          0       1024       24         31
+  2  Online      22      5          0       1024       18         31
+  3  Online      22      5          0       1024       17         31
+  4  Empty     
+  5  Empty     
+
+
+
+
+
+
+Step 2: Verify that the socket is built
+
+
+
+All hardware components should now be online, and one of the REs should be
+        listed in the Master state. If any hardware component is not online,
+        you can start troubleshooting by examining the IPC performed by TNP
+        between different hardware components. Specifically, look at the
+        connections between the RE and the PFE and make sure you see an RPD
+        OPEN state for each online PFE component:
+
+lab@r1>start shell
+lab@r1% netstat -a -f tnp
+Active TNP connections (including servers)
+Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)
+<...>
+rdp        0      0  master.pfed            feb0.46081             OPEN
+rdp        0      0  master.chassisd        feb0.46080             OPEN
+rdp        0      0  master.pfed            fpc2.24577             OPEN
+rdp        0      0  master.chassisd        fpc2.24576             OPEN
+udp        0      0  *.sampled              *.*
+udp        0      0  *.sampled              *.*
+rdp        0      0  *.1013                 *.*                    LISTEN
+rdp        0      0  *.chassisd             *.*                    LISTEN
+
+
+
+
+
+
+Step 3: Verify that there is a valid TNP communication
+
+
+
+If you see state issues in step 2, research them further by monitoring
+        the internal management interface:
+
+lab@r1> monitor traffic interface em1
+verbose output suppressed, use <detail> or <extensive> for full protocol decode
+Listening on em1, capture size 96 bytes
+
+02:51:40.239754 Out TNPv2 master.1021 > re1.1021: UDP, length 8
+02:51:40.397159  In TNPv2 re1.1021 > re0.1021: UDP, length 8
+02:51:41.249676 Out TNPv2 master.1021 > re1.1021: UDP, length 8
+02:51:41.407092  In TNPv2 re1.1021 > re0.1021: UDP, length 8
+02:51:42.259578 Out TNPv2 master.1021 > re1.1021: UDP, length 8
+02:51:42.416900  In TNPv2 re1.1021 > re0.1021: UDP, length 8
+02:51:43.269506 Out TNPv2 master.1021 > re1.1021: UDP, length 8
+02:51:43.426834  In TNPv2 re1.1021 > re0.1021: UDP, length 8
+
+
+
+
+
+
+Step 4: Verify that BGP adjacencies are established
+
+
+
+Once the RE is online, if you configured a BGP neighbor, you next verify the state of
+        the BGP adjacency:
+
+lab@r1> show bgp summary
+Groups: 1 Peers: 1 Down peers: 0
+Table      Tot Paths  Act Paths Suppressed  History Damp State Pending
+inet.0            28         28          0        0          0       0
+bgp.l3vpn.0       13         13          0        0          0       0
+bgp.mvpn.0         5          5          0        0          0       0
+Peer           AS      InPkt     OutPkt    OutQ   Flaps Last Up/Dwn State|#Activ
+e/Received/Damped...
+69.191.3.199    33181     68         24       0       0    8:21 Establ
+  inet.0: 28/28/0
+  bgp.l3vpn.0: 13/13/0
+  bgp.mvpn.0: 5/5/0
+  vpn.inet.0: 13/13/0
+  vpn.mvpn.0: 5/5/0
+
+
+
+
+
+Step 5: Verify that BGP updates are being received
+
+
+
+Next, verify that the route updates are being received. The following command
+        peeks into the BGP RIB-IN table:
+
+lab@r1> show route receive-protocol bgp 69.191.3.199
+
+inet.0: 64 destinations, 64 routes (63 active, 0 holddown, 1 hidden)
+  Prefix            Nexthop         MED     Lclpref    AS path
+* 3.3.3.3/32        69.191.3.201    2000    100        13908 I
+* 4.4.4.4/32        69.191.3.201    2000    100        13908 I
+* 69.184.0.64/26    69.191.3.201    2025    100        13908 I
+* 69.184.25.64/28   69.191.3.201            100        13908 I
+* 69.184.25.80/28   69.191.3.201            100        13908 I
+* 69.184.25.96/28   69.191.3.201            100        13908 I
+* 101.0.0.0/30      69.191.3.201            100        13908 ?
+* 128.23.224.4/30   69.191.3.201            100        13908 ?
+... output truncated...
+
+
+
+
+
+Step 6: Verify that route updates are processed
+        correctly
+
+
+
+The following CLI output proves that a route has gone through the BGP selection
+        process and has been marked as active:
+
+lab@r1> show route 3.3.3.3
+
+inet.0: 64 destinations, 64 routes (63 active, 0 holddown, 1 hidden)
+@ = Routing Use Only, # = Forwarding Use Only
++ = Active Route, - = Last Active, * = Both
+
+3.3.3.3/32    *[BGP/170] 1w6d 21:55:50, MED 2000, localpref 100, from 69.191.3.199
+                 AS path: 13908 I
+               > to 172.24.160.1 via fe-1/3/1.0
+
+
+
+
+
+Step 7: Verify that the correct next hop is being
+        selected
+
+
+
+The following output gives more details about the actual BGP selection process, including the reasons the route
+        was activated or deactivated, the BGP next hop, the physical next hop,
+        and the state of the route:
+
+lab@r1> show route 3.3.3.3 extensive
+
+inet.0: 64 destinations, 64 routes (63 active, 0 holddown, 1 hidden)
+3.3.3.3/32 (1 entry, 1 announced)
+TSI:
+KRT in-kernel 3.3.3.3/32 -> {indirect(262148)}
+        *BGP    Preference: 170/-101
+                Next hop type: Indirect
+                Next-hop reference count: 75
+                Source: 69.191.3.199
+                Next hop type: Router, Next hop index: 462
+                Next hop: 172.24.160.1 via fe-1/3/1.0, selected
+                Protocol next hop: 69.191.3.201
+                Indirect next hop: 89bb000 262148
+                State: <Active Int Ext>
+                Local AS: 33181 Peer AS: 33181
+                Age: 1w6d 21:54:56  Metric: 2000 Metric2: 1001
+                Announcement bits (2): 0-KRT 7-Resolve tree 2
+                Task: BGP_33181.69.191.3.199+179
+                AS path: 13908 I (Originator) Cluster list: 69.191.3.199
+                AS path: Originator ID: 69.191.3.201
+                Communities: 13908:5004
+                Localpref: 100
+                Router ID: 69.191.3.199
+                Indirect next hops: 1
+                        Protocol next hop: 69.191.3.201 Metric: 1001
+                        Indirect next hop: 89bb000 262148
+                        Indirect path forwarding next hops: 1
+                                Next hop type: Router
+                                Next hop: 172.24.160.1 via fe-1/3/1.0
+                        69.191.3.201/32 Originating RIB: inet.0
+                          Metric: 1001                    Node path count: 1
+                          Forwarding nexthops: 1
+                                Nexthop: 172.24.160.1 via fe-1/3/1.0
+
+
+
+
+
+Step 8: Verify that the correct copy of the route is being
+        selected for kernel update
+
+
+
+This output shows the kernel copy of the forwarding table. This table,
+        which is present on the RE, is sent to the PFE complex by means of
+        routing update messages:
+
+lab@r1> show route forwarding-table destination 3.3.3.3 extensive
+Routing table: inet [Index 0]
+Internet:
+
+Destination:  3.3.3.3/32
+  Route type: user
+  Route reference: 0                   Route interface-index: 0
+  Flags: sent to PFE, prefix load balance
+  Next-hop type: indirect              Index: 262148   Reference: 26
+  Nexthop: 172.24.160.1
+  Next-hop type: unicast               Index: 462      Reference: 47
+Next-hop interface: fe-1/3/1.0
+
+
+
+
+
+Step 9: Verify that the correct copy of the route is being sent
+        to the forwarding plane
+
+
+
+This step looks at the rtsock
+        messages being used to replicate the kernel table into the PFE complex:
+
+lab@r1> start shell 
+% rtsockmon -t
+        sender   flag    type       op
+[20:07:40] rpd      P    nexthop    add     inet 172.24.160.1 nh=indr 
+flags=0x1 idx=262142 ifidx=68 filteridx=0 
+[20:07:40] rpd      P    route      add     inet 69.184.0.64 tid=0
+ plen=26 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 199.105.185.224 tid=0
+ plen=28 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 160.43.3.144 tid=0
+ plen=28 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 172.24.231.252 tid=0
+ plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 4.4.4.4 tid=0
+ plen=32 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 172.24.95.208 tid=0
+ plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 172.24.95.204 tid=0
+ plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 172.24.231.248 tid=0
+ plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    route      add     inet 172.24.95.196 tid=0
+ plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd      P    route      add     inet 3.3.3.3 tid=0
+ plen=32 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd      P    route      add     inet 160.43.175.0 tid=0
+ plen=27 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0 
+[20:07:40] rpd      P    nexthop    add     inet 172.24.160.1 nh=ucst 
+flags=0x85 idx=494 ifidx=68 filteridx=0 
+
+
+
+
+
+Step 10: Verify that the correct copy of the route is being
+        installed into the forwarding plane on the PFE complex
+
+
+
+Using a VTY session to access the PFE complex, you can determine which actual
+        forwarding entries are present in the PFE's ASICs. The following
+        output shows that the routing entry for destination 3.3.3.3 is present
+        and has a valid next hop:
+
+lab@r1> start shell
+% su
+Password:
+root@r1% vty feb
+
+
+CSBR platform (266Mhz PPC 603e processor, 128MB memory, 512KB flash)
+
+CSBR0(r1 vty)# show route ip prefix 3.3.3.3 detail
+IPv4 Route Table 0, default.0, 0x0:
+Destination               NH IP Addr      Type     NH ID Interface
+------------------------- --------------- -------- ----- ---------
+3.3.3.3                   172.24.160.1    Indirect 262142 fe-1/3/1.0
+  RT flags: 0x0010, Ignore: 0x00000000, COS index: 0, DCU id: 0, SCU id: 0
+  RPF ifl list id: 0,  RPF tree: 0x00000000
+  PDP[0]: 0x00000000
+
+  Second NH[0]: 0x00000000
+The exercise in this section verified the state of the control
+        plane and followed the routing update process from the initial
+        establishment of a BGP peering session all the way to installing the routing entry
+        into the forwarding ASIC on the PFE. Now that you understand the
+        control and forwarding plane processes and their interactions, we can
+        discuss the different high availability solutions available through
+        JUNOS software.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Graceful Routing Engine Switchover
+
+
+
+Graceful Routing Engine Switchover (GRES) takes advantage of the separation between the control and
+    forwarding in JUNOS software to provide system redundancy. GRES allows the
+    control plane, in this case the RE, to switch over to its backup RE without any interruption
+    to the existing traffic flows in the PFE. When GRES is configured on the
+    router, the kernel state on both REs is synchronized to preserve routing
+    and forwarding state on both REs. Any changes to the routing state on the
+    primary RE result in an automatic incremental update of kernel state on
+    the backup RE. As you can see, the GRES concept is very simple.
+However, the limitation of GRES is that, by itself, it cannot provide router redundancy. Even though traffic continues to flow through
+    the router during a switchover between REs, the flow occurs for only a
+    limited time. As soon as any of the protocol timers expire, the neighbor
+    relationship between routers is dropped and traffic is stopped at the
+    upstream router. To maintain high availability, networks must quickly
+    discover when a neighbor goes down and must implement the lowest possible
+    timers. Because GRES provides an intact forwarding plane, it is to our
+    advantage not to drop any of the adjacencies, but rather to continue
+    sending traffic toward the failed router.
+The solution to this limitation is to use the Graceful Restart (GR) protocol
+    extension. GR signals all supporting protocols that the failing
+    router is capable of forwarding even though it is having control plane
+    problems and needs help maintaining protocol adjacencies. GRES provides
+    zero loss only when supplemented with the GR protocol running between a
+    failed router and all its neighbors. For more about GR, see Graceful Restart.
+
+Note
+As we will see later in this chapter, the key factor for using GR
+      is to have a stable topology. Any topology change results in adjacency
+      loss.
+
+
+
+
+
+Implementation and Configuration
+
+
+
+Enabling GRES on the router changes the information flow from the RE to the
+      PFE. By default, without GRES enabled, the RE signals any state change or routing update directly to
+      the PFE. However, when GRES is enabled, these changes must first be
+      duplicated on the backup RE. This action must be taken first to avoid
+      any potential corner cases where the PFE and the backup RE might be out
+      of sync. For example, if the backup RE is updated last and the primary
+      RE crashes after it updates the PFE, but before updating the backup RE,
+      the backup RE and the PFE would be out of sync. The problems that would
+      result would be immense, so the replication order used makes sure that
+      this condition never happens.
+Because state replication is a broad term, let's examine further what exactly is
+      being replicated. From the user perspective, all the interfaces and
+      their states are replicated when the interfaces restart. Additionally,
+      all Layer 2 protocol states are preserved, such as ATM, Frame Relay, and Point to Point Protocol (PPP)
+      states. All routes from the kernel table, as well as Address Resolution
+      Protocol (ARP) entries and firewall states, are preserved as well.
+      However, TCP state and actual RPD routes are not preserved because they
+      are rebuilt either locally by means of a kernel copy or through new
+      neighbor discovery.
+From the JUNOS perspective, three states are being replicated.
+      Understanding them will help you to configure and troubleshoot the state
+      replication process used in GRES. The three states are:
+
+
+
+Configuration database
+
+
+The configuration database is the repository of the
+            router's configuration files. Different daemons query this
+            database as needed. The dcd daemon,
+            which manages interfaces, queries it as an interface is brought
+            online. At the same time, the chassisd daemon uses this database
+            when it manages hardware components. The RPD also uses this
+            database, using the configuration information stored in the database to control all routing
+            protocols. To ensure that this state is preserved and the database
+            is always in sync, you must use the commit
+            synchronize command when committing a change in a
+            redundant RE configuration. JUNOS displays an error prompt when
+            GRES is enabled but you fail to commit configuration changes with
+            a commit synchronize
+            command.
+
+
+Kernel with all its entries
+
+
+Configuring GRES starts the ksyncd daemon, which is responsible for
+            all kernel state replications. ksyncd is a
+            custom JUNOS daemon used only for replication tasks between
+            different hardware components. Here, it is used to replicate the
+            kernel state. ksyncd uses
+            regular IPC Rtsock messages to
+            carry information from the kernel on the primary RE to the kernel
+            on the backup RE. When a GRES restart event occurs, the RPD starts
+            up on the backup RE and it reads all saved routes from the kernel
+            and puts them into routing tables as kernel routes (KRT). These routes stay active for a
+            maximum of three minutes. Any routing changes resulting in routing
+            updates, even those as simple as ARP entries, are signaled
+            incrementally to the backup RE by means of ksyncd.
+
+
+PFE state
+
+
+PFE state replication is done by chassisd. When a GRES restart event
+            occurs, chassisd does a soft
+            restart of all the hardware, querying it for an inventory. The
+            hardware that responds is reattached to the backup RE and brought
+            online without any disruption. However, if certain hardware fails
+            to respond, it is restarted anyway. To make the replication
+            process as efficient as possible, local user files, accounting
+            information, logs, and traceoptions
+            files are not replicated to the backup RE.
+
+
+
+Figure 4-2 illustrates the state
+      replication components and the flow of communication between
+      them.
+While the replication of all states is important, let's look
+      further at the role of kernel state replication, because all routing
+      entries, including ARP-derived next hop addresses, depend on successful
+      replication of the kernel state. Once the user makes a change and
+      implements it with the commit sync
+      command, all the state replication takes place. All routing and next hop
+      entries derived from the RPD and found in routing tables inet.0,
+      inet.6, mpls.0, and inet.3 are replicated from the primary RE's
+      kernel routing table to the secondary RE's kernel table. All these
+      routes become "active" routes with duplicate forwarding entries in the
+      PFE. The routes and forwarding entries stay active for
+      about three minutes and then are purged. Once the RPD on the backup RE
+      initializes itself, it populates its routing table with the existing
+      kernel routes. We can then say that the GRES event has successfully
+      completed. From a high availability perspective, the RPD acquires the
+      most up-to-date network state information and refreshes its routing
+      tables. Figure 4-3 illustrates
+      the GRES state replication process.
+
+
+
+
+
+
+
+
+
+Figure 4-2. State replication process
+
+
+
+
+
+
+
+
+
+
+
+Figure 4-3. GRES state replication process
+
+
+
+
+
+
+Configuration examples
+
+
+
+GRES is supported only on the routers with two REs running the
+        same JUNOS version. Use the show
+        version command to verify the software version on the RE; by
+        default, when you log in, you are on the master RE:
+
+lab@r1> show version
+Hostname: r1
+Model: mx480
+JUNOS Base OS boot [9.2R2.15]
+JUNOS Base OS Software Suite [9.2R2.15]
+JUNOS Kernel Software Suite [9.2R2.15]
+JUNOS Crypto Software Suite [9.2R2.15]
+JUNOS Packet Forwarding Engine Support (M/T Common) [9.2R2.15]
+JUNOS Packet Forwarding Engine Support (MX Common) [9.2R2.15]
+JUNOS Online Documentation [9.2R2.15]
+JUNOS Routing Software Suite [9.2R2.15]
+From the master RE, you can log in to the backup RE and verify
+        its software version:
+
+lab@r1> request routing-engine login other-routing-engine
+
+--- JUNOS 9.2R2.15 built 2008-10-03 19:32:58 UTC
+
+lab@r1> show version
+Hostname: r1
+Model: mx480
+JUNOS Base OS boot [9.2R2.15]
+JUNOS Base OS Software Suite [9.2R2.15]
+JUNOS Kernel Software Suite [9.2R2.15]
+JUNOS Crypto Software Suite [9.2R2.15]
+JUNOS Packet Forwarding Engine Support (M/T Common) [9.2R2.15]
+JUNOS Packet Forwarding Engine Support (MX Common) [9.2R2.15]
+JUNOS Online Documentation [9.2R2.15]
+JUNOS Routing Software Suite [9.2R2.15]
+If the systems are running the same JUNOS version, you can
+        configure GRES using the redundancy
+        statements under the chassis hierarchy:
+
+[edit]
+lab@r1# set chassis redundancy graceful-switchover
+
+[edit]
+lab@r1# set chassis redundancy failover on-disk-failure
+
+[edit]
+lab@r1# set chassis redundancy failover on-loss-of-keepalives
+
+[edit]
+lab@r1# set chassis redundancy routing-engine 0 master
+
+[edit]
+lab@r1# set chassis redundancy routing-engine 1 backup
+
+[edit]
+lab@r1# show chassis redundancy
+routing-engine 0 master;
+routing-engine 1 backup;
+failover {
+    on-loss-of-keepalives;
+    on-disk-failure;
+}
+graceful-switchover;
+RE failure is one type of failure that GRES monitors. The primary RE sends keepalive messages every
+        second to the backup kernels. If the backup RE does not receive
+        keepalives for two consecutive
+        seconds, it presumes that the primary RE has failed and attempts to
+        acquire mastership by starting the RE failover process. Another type
+        of failure handled by GRES is media corruption. The kernel is intelligent enough to recognize storage media
+        problems, both with the hard drive and with the CompactFlash drive. Because JUNOS software is built on a
+        modified FreeBSD kernel, it requires constant writing to the
+        logfiles. When the kernel senses problems with writing or reading from
+        the hard drive, it registers this as an RE failure and starts up a
+        GRES event.
+
+Note
+In newer JUNOS releases, another configuration step is
+          required to enable GRES: configuring the backup router. Although the
+          backup router is not part of the redundancy mechanism, it is
+          required so that the control plane is always reachable when the
+          primary router is loading or recovering a configuration, or when
+          this router is being configured. The backup router serves as a
+          default route for the control plane, even though this route is never
+          installed into the forwarding plane. Here is an example of
+          configuring the backup router:
+
+lab@re1# set system backup-router destination 184.12.1.12
+
+Once GRES is enabled, verify its status by executing
+        the show system
+        switchover command from the backup RE:
+
+{backup}
+lab@r1> show system switchover
+Graceful switchover: On
+Configuration database: Ready
+Kernel database: Version incompatible
+Peer state: Out of transition
+The preceding output shows that the router is running different
+        JUNOS versions on the primary and backup REs. Once you upgrade JUNOS
+        on the backup RE, verify GRES again:
+
+{backup}
+lab@r1> show system switchover
+Graceful switchover: On
+Configuration database: Ready
+Kernel database: Ready
+Peer state: Steady State
+
+
+
+
+
+Troubleshooting GRES
+
+
+
+As the previous section shows, the steps to implement GRES are simple.
+        However, there wouldn't be such a high demand for skilled IT employees
+        if everything always worked as configured and expected. Sometimes it
+        will be necessary to troubleshoot how the protocols are working in
+        your network.
+As an example, let's consider a scenario in which the entire
+        configuration is in place and the kernel replication states look fine,
+        but during a lab RE switchover test you observe traffic loss. Because
+        GRES is enabled, no packets should be dropped—at least, that's what
+        Juniper promised us. Well, let's analyze the situation and see what is
+        happening.
+To troubleshoot the actual problem, first verify the
+        configuration. Enabling traceoptions on all the protocols and
+        GRES knobs helps us get to the root of the problem:
+
+lab@r1# show protocols ospf
+traceoptions {
+    file ospf.trace;
+    flag all detail;
+}
+
+[edit]
+lab@r1# show protocols bgp
+traceoptions {
+    file bgp.trace;
+    flag all detail;
+}
+
+Note
+It is not recommended to have flag all
+          turned on under any protocol traceoptions in the
+          production network. Logging all protocol events takes a toll on RPD
+          processing, which could jeopardize real-time protocol managements
+          such as BGP keepalives or OSPF Hellos. flag all
+          was acceptable in this case since it is a lab environment.
+
+Then check the traceoptions output with the
+        show log command. If you see from the logs that the
+        protocols are working correctly and that it was not a protocol error
+        that caused the issue, the next step is to debug the actual GRES
+        communication:
+
+[edit]
+lab@r1# show chassis
+redundancy {
+    routing-engine 0 master;
+    routing-engine 1 backup;
+
+    failover {
+        on-loss-of-keepalives;
+        on-disk-failure;
+    }
+    graceful-switchover {
+        traceoptions {
+            flag all;
+        }
+        enable;
+    }
+}
+
+[edit]
+lab@r1# show routing-options
+static {
+    route 66.129.243.0/24 next-hop 172.18.66.1;
+}
+forwarding-table {
+    traceoptions {
+        flag all detail;
+    }
+}
+When you enable traceoptions
+        in the GRES portion of the chassis redundancy configuration and on the
+        forwarding table, JUNOS software begins placing debugging information
+        about redundancy and the forwarding engine into logfiles, which you
+        can then review.
+Because ksyncd is the daemon responsible for kernel route replication, its
+        logs usually reveal a lot of information about state, potential
+        errors, misconfigurations, and software bugs. Check the logs with the
+        following command:
+
+lab@r1> show log ksyncd
+The logs themselves contain much information that can point you
+        in the proper direction when troubleshooting. The following code
+        snippet shows log output from ksyncd:
+
+lab@r1> show log ksyncd
+
+Sep 10 23:27:09 Terminated: 15 signal received, posting signal
+Sep 10 23:27:09 inspecting pending signals
+Sep 10 23:27:09 SIGTERM posted, exiting
+Sep 12 17:12:27 KSYNCD release 9.0R3.6 built by builder on 2008-08-01 05:05:43
+UTC starting, pid 4564
+Sep 12 17:12:27 Not runnable attempt 0 reason: not configured (errors: none)
+Sep 12 17:12:27 Setting hw.re.is_slave_peer_gres_ready: 0
+Near the end of the following output, an error message points to
+        a configuration error, specifically that the commit sync command is not configured on the
+        master RE:
+
+lab@r1> show log ksyncd
+
+Sep 15 21:57:52 KSYNCD release 9.1R2.10 built by builder on 2008-07-01
+05:06:40 UTC starting, pid 4566
+Sep 15 21:57:52 Not runnable attempt 0 reason: undefined mode (errors: none)
+Sep 15 21:58:01 Terminated: 15 signal received, posting signal
+Sep 15 21:58:01 inspecting pending signals
+Sep 15 21:58:01 SIGTERM posted, exiting
+Sep 18 02:17:16 KSYNCD release 9.1R2.10 built by builder on 2008-07-01 05:06:40 
+UTC starting, pid 8998
+Sep 18 02:17:16 Commit sync knob is NOT configured on master RE
+Sep 18 02:17:16 Stop attempting to perform initial sync
+Sep 18 02:17:16 config state: ready
+Another problem that occurs quite often is that the REs on the
+        router are running different versions of JUNOS software. In the
+        kysncd logfile, you see this as
+        a version mismatch error. You could
+        easily search for this message when parsing the logfiles:
+
+lab@r1> show log ksyncd
+
+Sep 18 02:17:17 Register timer to wait for version info from master
+Sep 18 02:17:17 recv RE msg subtype RE_MSG_RTSOCK_VERSION_REPLY
+Sep 18 02:17:17         RE_MSG_RTSOCK_VERSION_REPLY :
+Sep 18 02:17:17                     rtm_n_msg_types : 0x00000059
+Sep 18 02:17:17                rtm_version_checksum : 0x86496873
+Sep 18 02:17:17 Received RTSOCK version message from master
+Sep 18 02:17:17 Rtsock version checksum mismatch: master 2252957811, slave 1789492047
+Sep 18 02:17:17 Version mismatch detected: Slumber time
+Sep 18 02:17:17 Suspending due to unrecoverable error: version_mismatch
+Sep 18 02:17:17 Not runnable attempt 0 reason: hard error (errors: version_mismatch )
+Sep 18 02:17:17 closing connection to master
+Sep 18 02:17:17 cleaning up kernel state
+Sep 18 02:17:17 delete all commit proposals seqno 1658:
+Sep 18 02:17:17 delete route rtb 0 af 2 rttype perm: skip not supported
+Sep 18 02:17:17 delete route rtb 0 af 2 0.0.0.0 rttype perm: skip not supported
+Sep 18 02:17:17 delete route rtb 0 af 2 66.129.243.0 rttype user: skip private
+Sometimes issues may not be obvious in the ksyncd logs, or the log may not reveal
+        anything specific. A further step in troubleshooting ksyncd is to log in to the backup RE and run
+        the Unix command rtsockmon from the
+        shell to view the actual route replication process:
+
+lab@r1> start shell
+% rtsockmon -t
+         sender   flag    type        op
+[20:07:40] rpd       P    route       add     inet 4.4.4.4 tid=0 
+plen=32 type=user flags=0x10nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd       P    route       add     inet 172.24.95.208 tid=0 
+plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd       P    route       add     inet 172.24.95.204 tid=0 
+plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd       P    route       add     inet 172.24.231.248 tid=0 
+plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd       P    route       add     inet 172.24.95.196 tid=0 
+plen=30 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+[20:07:40] rpd       P    route       add     inet 3.3.3.3 tid=0 
+plen=32 type=user flags=0x10 nh=indr nhflags=0x4 nhidx=262142 filtidx=0
+This output shows that the route replication process seems to be
+        fine. If the configuration and
+        logfiles do not reveal anything out of the ordinary, you next look at
+        the bigger picture, such as networkwide issues. For example,
+        investigate the protocol traceoptions logs to see whether an
+        adjacency dropped during a GRES event on a failed router. If this
+        appears to be the case, analyze the neighbor's configuration for
+        Graceful Restart extensions. If you see very similar config without a
+        Graceful Restart knob, the neighbor is missing the GR configuration:
+
+lab@r1# show routing-options
+static {
+    route 66.129.243.0/24 next-hop 172.18.66.1;
+As you will see in the next section, the GRES concept alone is
+        not sufficient to keep the network running during RE failures. GRES
+        must be complemented with Graceful Restart.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Graceful Restart
+
+
+
+No doubt you have experienced some sort of routing meltdown in your networking
+    career. Unfortunately, it is a fact that failures are inevitable, whether
+    software or hardware or a combination of the two. The challenge is to make
+    them as painless as possible.
+Let's take a simple routing process failure as an example, in which
+    a routing daemon restarts on one of the core routers. The restart causes a
+    networkwide disruption to many of the network processes and brings down
+    all protocol adjacencies. While the router is recovering, all its
+    neighbors shift their traffic in different directions, using redundant
+    links or paths. It is possible that the shifted traffic, now on
+    oversubscribed links, causes congestion and potential traffic drops. When
+    the failed router recovers, it establishes new adjacencies and advertises
+    new routing information, which in turn causes another traffic shift back
+    to the original paths. This is actually how basic routing handles
+    failures; according to the protocol definitions, each step in this
+    scenario happened as it was designed to. But how does this situation
+    affect the users?
+The traffic churn has substantial impact on the user experience.
+    This is especially true with the content being delivered using modern
+    next-generation networks, which consist primarily of video and voice
+    communication, in which any delay and jitter can cause havoc. If you have
+    seen a distorted or frozen picture on your cable TV, it was likely caused
+    by jitter. Moreover, if the next-generation telephone network is riding on
+    top of an IP network, a 911 emergency call (or any other call) could be
+    distorted—just enough for the operator to misunderstand a street location,
+    house number, or other important detail.
+Because most modern routers are capable of forwarding, even when the
+    control plane is incapacitated, the traffic churn resulting from a routing
+    process hiccup is absolutely unnecessary. In certain scenarios, it might
+    be better if the neighbors refuse to establish a new adjacency that shifts
+    traffic to a new path after a neighboring router fails.
+Graceful Restart (GR) allows you to address this scenario. In a
+    nutshell, GR allows the failure of a neighboring router to go undetected
+    for a period of time so that traffic continues to be forwarded along the
+    already established paths, and no adjacencies are broken. This small
+    detail helps in both software and hardware failures. The period of
+    nondetection was originally designed to support software failures.
+    However, with advances in hardware design and in the separation of the
+    control and forwarding planes, this concept has found its real purpose as
+    a technology complementing nonstop forwarding models. If all the router's
+    neighbors somehow ignore the loss of communication and continue forwarding
+    toward the troubled router, which is still capable of forwarding, all problems induced by routing
+    churn—including convergence time issues, delays, and jitter—simply go
+    away. Figure 4-4 illustrates the basic
+    concepts of GR.
+
+
+
+
+
+
+
+
+
+Figure 4-4. GR protocol extension steps
+
+
+While different protocols implement GR slightly differently, from a
+    high availability point of view the concept is the same for all protocols.
+    The rest of this chapter examines how the various protocols implement GR.
+    Before we begin, however, it is important to point out two crucial
+    conditions that are the prerequisites for successfully deploying GR:
+
+
+
+The router must support Non-Stop Forwarding (NSF). During a
+        failure, this router must be able to forward the traffic based on old
+        forwarding entries found in its forwarding table.
+
+
+No topology changes must occur during the failure event.
+
+
+
+
+Note
+Topology changes can occur with certain network designs without
+      any impact on traffic and quality of information. We cover the actual
+      configuration steps for such scenarios later in this chapter.
+
+
+
+
+
+Graceful Restart in OSPF
+
+
+
+To understand how GR is implemented in Open Shortest Path First
+      (OSPF), let's first analyze the basics of OSPF protocol
+      communications. Neighbor adjacency between two OSPF speaking routers is
+      formed by exchanging OSPF Hello messages. After the initial Hello messages,
+      OSPF passes through several states and then establishes full neighbor
+      adjacencies. OSPF advertises routing information using link-state update
+      messages called link-state advertisements (LSAs). For normal routing, OSPF
+      uses standard LSAs. With the integration of MPLS traffic engineering and GR into OSPF, opaque LSAs
+      were created to carry information for these protocol extensions.
+      Depending on the scope of advertisement, these LSA updates can be
+      link-local, area-wide, or across the entire OSPF domain, which is LSA
+      type 9, 10, or 11, respectively. Because GR involves communication
+      between a router and its direct neighbors, it is implemented using
+      link-local scope messages.
+Grace (type 9) LSAs negotiate and exchange restart information between OSPF
+      neighbors. The information relevant to the restarting event is carried
+      in the body of the message using the type, length, value (TLV) system:
+
+
+
+Type (two octets):
+
+
+
+1 (grace period)
+
+
+2 (restart reason)
+
+
+3 (interface IP address)
+
+
+
+
+
+Length (two octets):
+
+
+
+Grace period (four octets)
+
+
+Restart reason (one octet)
+
+
+Interface IP address (four octets)
+
+
+
+
+
+Value (open)
+
+
+
+Here are more details about the information carried in the TLV
+      message:
+
+
+
+Grace period
+

@@ -1,0 +1,1000 @@
+      collected messages are saved.
+The idea of thousands of syslog messages sitting on a disk
+      supports the goals of high availability within your network, but they
+      are merely messages. To gain any insight into how your network is
+      working, you must collate the data and gauge the health of the network
+      and its equipment.
+Some network engineers swear by the magic of grep; they are able to pull out any network information
+      that is needed for maintaining high availability. Others ignore logs
+      altogether and rely on the use of SNMP or ping to monitor the health of
+      the network. Still others purchase multimillion-dollar systems touted to
+      be able to cure all logging woes, only to find that the systems do an
+      excellent job of correlating the security data but do nothing with data
+      for the kernel processes.
+Through the use of the syslog framework and JUNOS software, you
+      can deploy well-planned and efficient logging mechanisms in your
+      network. Though no rules are made concerning the format of the content
+      of the individual syslog messages themselves, according to the RFC, the
+      syslog packets must be divided into three parts:
+
+
+
+PRI (Priority)
+
+
+Identifies the priority of the syslog message by combining the facility and
+            severity of the message into either a one-digit, two-digit, or
+            three-digit integer bounded by the open and close brackets; for
+            example, <165>.
+
+
+Header
+
+
+Contains the timestamp and either the hostname or the IP address
+            of the device originating the message.
+
+
+MSG (Message)
+
+
+Contains the actual event that is being reported by the syslog
+            message. Though the message can be in any format, containing
+            visible characters, it must not be so long as to make the total
+            syslog packet longer than 1,024 bytes.
+
+
+
+Using the information in the various parts of the syslog message,
+      you can filter messages, either when they are transmitted from the
+      device or at your collection agent, to create a system in which
+      engineers, technicians, and managers receive only the information
+      necessary for assigned tasks to ensure high availability.
+
+
+
+
+Facilities
+
+
+
+The facilities portion of the PRI indicates from which function, daemon, or process an
+        event was spawned. This facility indicator can be used to sort and
+        collate the messages so that they are delivered to collectors that are
+        monitored by engineers responsible for that functional area. As with
+        the hardware and software of JUNOS, this division of labor (this time
+        among engineers) allows for a more efficient use of resources for the
+        protection of high availability.
+Table 9-1 identifies
+        the daemons and processes within JUNOS that can spawn event
+        messages.
+
+
+Table 9-1. JUNOS system logging facilities
+
+
+
+
+
+
+
+
+
+
+Facility
+
+
+Type of event or
+                error
+
+
+Potential high availability issues
+                avoided
+
+
+
+
+
+
+
+any
+
+
+
+Messages from all
+                facilities
+
+ 
+
+
+
+
+authorization
+
+
+
+Authentication and
+                authorization attempts
+
+
+Unauthorized access
+                that could lead to accidental or intentional network downtime
+
+
+
+
+
+change-log
+
+
+
+Changes to the JUNOS
+                configuration
+
+
+Unexpected
+                configuration changes made intentionally or accidentally
+
+
+
+
+
+conflict-log
+
+
+
+Specified configuration
+                is invalid on the routing platform
+
+ 
+
+
+
+
+daemon
+
+
+
+Actions performed or
+                errors encountered by
+                system processes
+
+
+Software errors in the
+                RE leading to network downtime
+
+
+
+
+
+dfc
+
+
+
+Dynamic flow
+                capture
+
+ 
+
+
+
+
+firewall
+
+
+
+Packet filtering
+                actions performed by a firewall filter
+
+
+Network attacks that
+                could lead to downtime
+
+
+
+
+
+ftp
+
+
+
+Actions performed or
+                errors encountered by
+                the FTP process
+
+ 
+
+
+
+
+interactive-commands
+
+
+
+Commands issued at the
+                JUNOS command-line interface (CLI) prompt or invoked by a
+                client application such as a JUNOScript or NETCONF client
+
+
+Commands that
+                accidentally or intentionally cause network downtime
+
+
+
+
+
+kernel
+
+
+
+Actions performed or
+                errors encountered by
+                the JUNOS
+                kernel
+
+
+Hardware or software
+                errors in the RE leading to network downtime
+
+
+
+
+
+pfe
+
+
+
+Actions performed or
+                errors encountered by
+                the Packet Forwarding Engine (PFE)
+
+
+Hardware or software
+                errors or failures leading to
+                reduced or no forwarding and network downtime
+
+
+
+
+
+user
+
+
+
+Actions performed or
+                errors encountered in
+                the user space processes
+
+
+Software errors in the
+                RE leading to network downtime
+
+
+
+
+
+
+The JUNOS CLI allows these facilities to be used in determining
+        to which syslog collector the
+        messages are sent.
+
+
+
+
+
+Severity
+
+
+
+To further pare down the amount of information that individual technicians
+        must analyze, it is possible to filter the forwarding of messages by
+        severity level in the PRI field. Using the
+        severity level, syslog messages from your network equipment can be
+        sent to either real-time monitoring stations—for the most critical
+        levels—or systems that provide archiving for regulatory compliance or
+        possible forensic tasks. The severity levels of messages within JUNOS
+        are based on the severity conditions defined in RFC 3641 and appear in
+        Table 9-2.
+
+
+Table 9-2. Syslog messaging severity
+
+
+
+
+
+
+
+
+
+Severity
+                level
+
+
+Description
+
+
+
+
+
+
+
+any
+
+
+
+Includes all severity
+                levels
+
+
+
+
+
+none
+
+
+
+Disables logging of the
+                associated facility
+
+
+
+
+
+emergency
+
+
+
+System panic or other
+                condition that causes the network device to stop
+                functioning
+
+
+
+
+
+alert
+
+
+
+Conditions that require
+                immediate correction, such as a corrupted system
+                database
+
+
+
+
+
+critical
+
+
+
+Critical conditions,
+                such as hard drive errors
+
+
+
+
+
+error
+
+
+
+Error conditions that
+                generally have less serious consequences than errors in the
+                emergency,
+                alert, and critical levels
+
+
+
+
+
+warning
+
+
+
+Conditions that warrant
+                monitoring
+
+
+
+
+
+notice
+
+
+
+Conditions that are not
+                errors but might warrant special handling
+
+
+
+
+
+info
+
+
+
+Events or nonerror
+                conditions of interest
+
+
+
+
+
+
+When critical messages are sent to real-time monitoring and less
+        important messages are sent to archival or long-term correlation
+        systems, technicians within your network can focus on the current
+        state of the network and events that could possibly degrade high
+        availability.
+
+
+
+
+
+Header and MSG parts
+
+
+
+Though the network devices can filter on the facilities and
+        severity information (the PRI part of the syslog message), the Header
+        and MSG portions are normally used to filter messages
+        within the collectors. The Header is used for quick correlation of the
+        devices from which messages were received and the time period in which
+        the messages were created.
+Because the MSG part of the syslog messages is not bound by any
+        rules, except that it must use visible characters and must not make
+        the total syslog message more than 1,024 bytes, it is where the
+        monitoring software vendors attempt to create the most effective
+        algorithms and regular expressions for parsing the messages and
+        correlating the events reported.
+
+
+
+
+
+
+Syslog Planning
+
+
+
+Without proper planning, the syslog messages produced by equipment in
+      your network can quickly overrun even the most robust logging system.
+      It's not just unnecessary to send all syslog messages to a single
+      device; it's ill-advised. It is almost impossible to do any real
+      analysis, planning, or outage prevention when attempting to parse the
+      millions of messages that may be received within a day. To properly
+      monitor your network to maintain high availability, you must choose the
+      collector to which syslog messages are sent.
+Modern network support models normally break technicians into
+      functional areas based on their expertise, such as security, routing, or
+      management. To allow these groups to perform efficiently, many have
+      their own syslog collectors with special properties. Some examples of
+      these organizations and software systems include:
+
+
+
+A Security Information Management (SIM or SIEM) system
+          to collect and collate security and authentication events located in
+          the security group
+
+
+A Configuration Management auditing system to collect
+          information on configuration changes or errors in the network
+          located with the network administrators responsible for managing the
+          overall health of the network
+
+
+An event correlation system collecting critical chassis or processing syslog
+          events and forwarding them to visual displays or network monitoring
+          equipment in the first-tier technicians' area
+
+
+A baselining and trending system set up for the senior engineering team involved with
+          long-term planning and network expansion
+
+
+An archive server that receives all syslog messages, and archives,
+          compresses, and stores the messages for possible forensics or public
+          disclosure information
+
+
+
+Table 9-3 shows a planning layout
+      that could be used to develop a logging architecture in a network. By
+      carefully examining the facilities supported by JUNOS and the functional
+      areas of network teams, it is possible to eliminate logging bottlenecks
+      that prevent technicians and engineers from discovering events that can
+      lead to degradation in the network and reduce high availability.
+
+
+Table 9-3. Syslog planning example
+
+
+
+
+
+
+
+
+
+
+
+
+
+Facility
+
+
+NOC
+
+
+Security
+
+
+Network
+              admin
+
+
+Senior
+              engineers
+
+
+Archive
+
+
+
+
+
+
+
+any
+
+
+
+Emergency
+
+ 
+
+Critical
+
+ 
+
+Any
+
+
+
+
+
+authorization
+
+
+ 
+
+Warning
+
+
+Any
+
+ 
+
+Any
+
+
+
+
+
+change-log
+
+
+ 
+ 
+ 
+
+Any
+
+
+Any
+
+
+
+
+
+conflict-log
+
+
+ 
+ 
+ 
+
+Any
+
+
+Any
+
+
+
+
+
+daemon
+
+
+
+Alert
+
+ 
+
+Critical
+
+
+Warning
+
+
+Any
+
+
+
+
+
+firewall
+
+
+ 
+
+Warning
+
+ 
+ 
+
+Any
+
+
+
+
+
+ftp
+
+
+ 
+ 
+ 
+ 
+
+Any
+
+
+
+
+
+interactive-commands
+
+
+ 
+ 
+ 
+
+Any
+
+
+Any
+
+
+
+
+
+kernel
+
+
+
+Alert
+
+ 
+
+Critical
+
+
+Warning
+
+
+Any
+
+
+
+
+
+pfe
+
+
+
+Alert
+
+ 
+
+Critical
+
+
+Warning
+
+
+Any
+
+
+
+
+
+user
+
+
+
+Alert
+
+ 
+
+Critical
+
+
+Warning
+
+
+Any
+
+
+
+
+
+
+Using a coherent and logical plan for syslog forwarding, it is
+      possible to turn syslog into a far more useful tool for maintaining high
+      availability.
+
+
+
+
+Pitfalls
+
+
+
+Several pitfalls can prevent the syslog in your network from providing the information
+        you need for high availability:
+
+
+
+Collection stations can alter the format of data into
+            proprietary formats; SIM systems are notorious for this. The changed
+            format may not be understood by a division's software solution or
+            may not be used legally during computer forensic investigations.
+            When forwarding messages from a network device, it may be
+            necessary to forward security messages to multiple locations so
+            that an unaltered record is
+            kept.
+
+
+Some network management software attempts to write all
+            syslog messages into a relational database, both changing the
+            format and running into issues with transactional rates on the
+            database. In this situation, multiple messages should be forwarded.
+
+
+With more and more laws and regulations on network
+            information retention, it is necessary to truly gauge the amount
+            of storage necessary for your system and build a syslog solution
+            that can handle years of syslog messages.
+
+
+Syslog forwarding over the network and the practice of not
+            using a secured Out of Band (OoB) management network, such as the RE management
+            interface, allows nefarious people in the network to sniff the
+            unencrypted syslog traffic and conduct reconnaissance.
+
+
+
+
+
+
+
+
+
+Implementing Syslog
+
+
+
+JUNOS software supports standard syslog, as well as structured format syslog,
+      which is included in Internet Engineering Task Force (IETF) draft documents.
+      Table 9-4 shows the default settings and
+      the overriding statements for the syslog daemon within the JUNOS
+      operating system. By understanding the default operation of the network
+      equipment and how to use the overriding statements, it is possible to
+      develop a logging policy that supports your network's high availability stance.
+
+
+Table 9-4. JUNOS syslog defaults
+
+
+
+
+
+
+
+
+
+
+Setting
+
+
+Default
+
+
+Overrides
+
+
+
+
+
+
+Alternative facility for
+              message forwarded to a remote machine
+
+change-log: local6
+conflict-log:
+              local5 dfc:
+              local1 firewall:
+              local3 interactive-commands: local7
+pfe:
+              local4
+
+Facility overrides can be
+              used to enable more efficient parsing of logs at the
+              collector
+
+
+
+
+Format of messages logged
+              to a file
+
+
+Standard JUNOS format,
+              based on Unix format
+
+
+Can be used to select
+              IETF draft structured syslog messages, where
+              appropriate
+
+
+
+
+Maximum number of files
+              in the archived set
+
+
+10
+
+
+Can be used to adjust the
+              number of files and file size based on the network
+              situation
+
+
+
+
+Maximum size of
+              logfile
+
+J Series: 128 KB
+M Series, MX Series, and T Series: 1 MB TX
+              Matrix: 10 MB
+
+Can be used to adjust the
+              number of files and file size based on the network
+              situation
+
+
+
+
+Timestamp
+              format
+
+
+Month, date, hour,
+              minute, second
+
+
+Can be used to add
+              milliseconds to the timestamp, which can aid in
+              troubleshooting
+
+
+
+
+Users who can read
+              logfiles
+
+
+Root user and users with
+              JUNOS maintenance permission
+
+
+Can allow all users to
+              read select logging files on the network device
+
+
+
+
+
+
+In configuring your syslog solution, it will probably be necessary
+      to change some of the default settings to allow for the most efficient
+      use of network resources, but this can easily be done using the JUNOS
+      CLI.
+
+
+
+
+Sample configuration
+
+
+
+Using the planning table featured previously, and the JUNOS
+        commands for filtering and forwarding messages, it is possible to
+        deploy a well-planned syslog environment. The following is an example
+        configuration of a filtered syslog environment:
+
+system {
+    syslog {
+        archive size 10240000 files 1000 world-readable;
+        user * {
+            any emergency;
+        }
+        host security.example.com {
+            authorization warning;
+            firewall warning;
+        }
+        host noc.example.com {
+            any emergency;
+            daemon alert;
+            kernel alert;
+            user alert;
+            pfe alert;
+        }
+        host netad.example.com {
+            authorization any;
+            daemon critical;
+            kernel critical;
+            user critical;
+            pfe critical;
+        }
+        host engineering.example.com {
+            daemon warning;
+            kernel warning;
+            user warning;
+            pfe warning;
+            conflict-log any;
+            change-log any;
+            interactive-commands any;
+        }
+        host archive.example.com {
+            any any;
+            log-prefix example.example.com;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        file engineering {
+            daemon any;
+            kernel any;
+            pfe any;
+            archive size 10240000 files 1000 no-world-readable;
+            structured-data {
+                brief;
+            }
+        }
+        time-format year millisecond;
+    }
+}
+As in the previous example, the syslog messages are filtered to
+        their respective collectors within the network management structure.

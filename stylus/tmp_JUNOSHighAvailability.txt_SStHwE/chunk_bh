@@ -1,0 +1,1000 @@
+Continuous systems
+
+
+The less time it takes technicians and engineers to find,
+            diagnose, and repair an incident of network downtime, the fewer
+            strikes you have against your goal of high availability. With
+            configuration audits, you can compare baseline configurations and
+            recent changes to quickly determine whether a configuration error
+            is leading to downtime.
+
+
+Continuous improvement
+
+
+Using configuration auditing tools, it is much easier to
+            determine what possible changes must be made to the network to
+            ensure high availability. By having a set schedule of
+            configuration audits, you are able to ensure that the
+            configurations are keeping up with the current best common
+            practices and that they reflect any changes in network status,
+            such as formerly bogon addresses being allocated to new
+            customers.
+
+
+Continuous services
+
+
+Sometimes it is not physical hardware or software that
+            brings a network service to a halt, but new regulations or
+            policies released by federal agencies or private groups. Through
+            the use of configuration audits, it is possible to demonstrate
+            compliance with the various rules and regulations that are on the
+            services on which you and your customers depend.
+
+
+
+
+
+
+
+
+JUNOS: Configuration Auditing Made Easy
+
+
+
+As we discussed before, the JUNOS operating system was developed
+      with the ISP network in mind. As a result, the OS has features and
+      functionality that allow configuration audits to be performed
+      efficiently. The following features provide an advantage to operators
+      using Juniper Networks equipment:
+
+
+
+Single OS
+
+
+The fact that the code and configuration of JUNOS are standardized
+            across a wide range of products makes planning configurations
+            simpler and allows for efficient configuration auditing. Because
+            of the identical command line, it is not necessary to write
+            auditing rules for individual pieces of equipment or code bases,
+            such as IOS on a router and CATOS on a switch. Instead, audit
+            templates can be written as logical rules for functional areas and
+            shared among the equipment rather than individual rules being
+            written for each piece of equipment to take into account
+            command-line differences.
+
+
+Configuration groups
+
+
+JUNOS configuration groups allow you to more easily manage the portions
+            of the configuration that appear on many network systems. Reducing
+            the configuration of items, such as interfaces, to a single group
+            prevents typos by network technicians and provides a single place
+            to audit and correct the configurations.
+
+
+JUNOScript
+
+
+Commit scripts allow you to institute specialized configuration
+            audits each time a configuration is committed. Event scripts can
+            provide views of the configurations based on times or events, thus
+            providing a running archive of configurations and configuration
+            changes.
+
+
+JUNOScope
+
+
+JUNOScope provides a built-in Concurrent Versions System (CVS)
+            to ensure that configuration files are maintained
+            and versioned so that any changes are readily identifiable.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Configuration Auditing 101
+
+
+
+If it were possible, we would have our special Level-40 Night Elf
+    Druid use his inscription skills to create the "Dark Tome of Configuration
+    Auditing" for you, but this being the real world, we will attempt to
+    provide a brief but good foundation for configuration auditing in support
+    of high availability. As with everything about the network, configuration
+    audits require planning before you can implement them successfully. The
+    key to any good configuration audit is to understand that consistency
+    across network device configurations is one of the best and easiest-to-use
+    techniques you can employ to guarantee high availability.
+
+
+
+
+Organizing the Audit
+
+
+
+The key to good configuration auditing is to develop rules and a template
+      that create the most useful information, while still being efficient.
+      JUNOScope provides the ability to monitor changes made to each and every
+      configuration on networking equipment in detail, but the information can
+      be unwieldy for an overall view of the network and its high availability
+      stance. Through careful planning of what configuration pieces are most
+      important for continuous systems and the use of audit templates designed
+      for functional areas of the network, not for individual devices, you can
+      more accurately get a snapshot of the overall network condition.
+
+
+
+
+Configuration modules
+
+
+
+Dividing the initial templates for audit configurations into the functional areas within
+        the configuration allows you to mix and match modules to build very
+        granular templates for the equipment's functional areas. Here is a
+        list of some of the configuration modules that are important to high
+        availability and those that can be audited to ensure high
+        availability:
+
+
+
+Chassis
+
+
+Through the use of a general template for alarms, hardware information, and routing engine (RE) policy, it is possible to
+              ensure that hardware events are processed for failover properly and that the appropriate alarms
+              are sent for nonredundant systems.
+
+
+Class of service (CoS)
+
+
+Ensuring that your network's CoS policies are enforced, not only at your
+              borders but also throughout your entire network, helps to
+              guarantee that high availability for your important customers
+              and packets is maintained, even during times of network
+              saturation.
+
+
+Firewall filters
+
+
+A common set of firewall filters can prevent access to REs or deny
+              malicious traffic at borders, ensuring the flow of essential
+              data.
+
+
+Interfaces
+
+
+Through the auditing of physical hardware settings, such as
+              speed and duplex, you can ensure that auto-negotiation
+              failures and timing mismatches
+              do not cause network outages.
+
+
+Policy options
+
+
+Because routing is the basis of all packets flowing across
+              the network, you must ensure that routes are learned and
+              distributed properly to all routers in a functional area.
+
+
+Protocols
+
+
+Auditing the routing protocols on the network equipment to
+              ensure that high availability features such as Graceful Restart
+              (GR), and security features such as authentication, are in place
+              is a good defense to prevent routing loops or blackholing of
+              traffic because of equipment outages or malicious route
+              advertisements.
+
+
+Security
+
+
+Not auditing and updating the encryption protocols and the
+              security stance of equipment is one of the quickest ways to
+              create downtime for services that depend on compliance to
+              federal or standards-based policies.
+
+
+System
+
+
+Establishing a consistent configuration for logging and
+              monitoring, as well as authentication, guarantees that only authorized
+              personnel are making configuration changes, and provides
+              information to tools that ensure high availability.
+
+
+
+
+Note
+The most effective technique for ensuring high availability
+          with configuration audits is the consistency of configuration across
+          network devices, which enables technicians to maintain the network
+          more efficiently and troubleshoot issues more quickly.
+
+You can use the preceding configuration modules to develop a
+        common architecture and a style for configuration. These configuration
+        modules can be independent of each other and can change when necessary
+        to meet current best common practices and to deploy new services.
+
+
+
+
+
+Functional network areas
+
+
+
+Using the configuration modules, it is possible to build
+        configuration audit templates that match configuration
+        items necessary to ensure high availability. The problem with this
+        strategy is that you end up trying to create a single, catchall
+        template to audit every piece of equipment within your network.
+        Because the JUNOS command-line interface (CLI) is the same across the
+        EX, J, M, MX, T, and SRX Series hardware, configuration audit
+        templates do not rely on the chassis or software code, but can be
+        divided into the functional areas in which the equipment falls. The
+        requirements of a core Internet router are much different from those
+        of a router acting as a gateway in a SOHO. Table 21-1 shows possible planning for
+        breaking the network into specific functional areas.
+
+
+Table 21-1. Functional area planning
+
+
+
+
+
+
+
+
+
+Functional
+                area
+
+
+High availability
+                configuration audits
+
+
+
+
+
+
+Peering (connectivity to
+                customer networks and external peering points)
+
+
+Interior Gateway
+                Protocol (IGP) high availability features to prevent internal
+                routing convergence issues and downtime
+
+
+
+ 
+
+Chassis high
+                availability features to maintain continuous
+                systems
+
+
+
+ 
+
+CoS configurations to ensure that customer/peer
+                traffic does not starve internal control or high-priority
+                traffic
+
+
+
+ 
+
+Border Gateway Protocol
+                (BGP) high availability features and routing policy to
+                prevent route flapping or hijacking, or introduction of bogon
+                networks
+
+
+
+ 
+
+Interface high availability and physical hardware features
+                to maintain links to disparate connection types
+
+
+
+ 
+
+Firewall filters
+                to provide very basic packet checking to prevent
+                address spoofing and common attacks
+
+
+
+ 
+
+Standard high
+                availability and monitoring and logging features
+
+
+
+
+Core (internal
+                connectivity within the network cloud providing the efficient
+                transport of
+                packets)
+
+
+IGP high availability
+                features to prevent internal routing convergence issues and
+                downtime
+
+
+
+ 
+
+Chassis high
+                availability features to maintain continuous
+                systems
+
+
+
+ 
+
+CoS configurations to
+                ensure that customer/peer traffic does not starve internal
+                control or high-priority traffic
+
+
+
+ 
+
+Multiprotocol Label
+                Switching (MPLS) configurations (if needed) to ensure
+                that interfaces are properly configured to handle label
+                switching and protocols to handle traffic engineering
+
+
+
+ 
+
+Standard high
+                availability and monitoring and logging
+                features
+
+
+
+
+Data
+                center
+
+
+Chassis high
+                availability features to maintain continuous
+                systems
+
+
+
+ 
+
+CoS configurations to
+                ensure that high-priority services are treated
+                properly
+
+
+
+ 
+
+High availability
+                configurations for switching, such as Virtual Chassis (VCs) on the EX
+                Series
+
+
+
+ 
+
+Standard high
+                availability and monitoring and logging
+                features
+
+
+
+
+SOHO
+
+
+High availability
+                features specific to the J Series, such as dial backup through a USB
+                modem
+
+
+
+ 
+
+CoS configurations to
+                ensure that high-priority services are treated
+                properly
+
+
+
+ 
+
+Standard high
+                availability and monitoring and logging
+                features
+
+
+
+
+
+
+When you omit unnecessary configuration items from configuration
+        audits for functional areas, the templates are easier to read, and
+        provide only the information necessary to maintain high availability
+        for those types of network devices.
+
+
+
+
+
+Organization involvement
+
+
+
+Once you decide on the configuration items to be audited, you
+        then determine the best course to take to develop the templates. It
+        makes sense for those responsible for configuration of a module to
+        develop the template for it, with the senior network engineers
+        responsible for coalescing each one into a usage template. Table 21-2 illustrates an example of a
+        planning table for organization responsibilities for the audit
+        templates.
+
+
+Table 21-2. Organization responsibility
+
+
+
+
+
+
+
+
+
+Functional
+                organization
+
+
+High availability configuration audit
+                responsibilities
+
+
+
+
+
+
+Security
+
+
+Packet filtering for
+                external connections
+
+
+
+ 
+
+Security-specific
+                logging
+
+
+
+
+Operations
+
+
+Chassis high
+                availability features
+
+
+
+ 
+
+Standard high
+                availability and monitoring and logging
+                features
+
+
+
+ 
+
+Interface high
+                availability configurations
+
+
+
+
+Network
+                engineers
+
+
+IGP and BGP high
+                availability features
+
+
+
+ 
+
+Routing policies
+
+
+
+ 
+
+CoS configuration templates for the core network and
+                for the writing and rewriting of packets entering and leaving
+                the network
+
+
+
+ 
+
+MPLS configurations
+
+
+
+
+
+
+After all the functional organizations have completed their
+        portion of the configuration template, it is possible to create the
+        overall templates and begin auditing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Auditing Configurations
+
+
+
+Although having a single JUNOS code train makes it easy to apply common
+    auditing techniques across all levels and functional areas of the network,
+    in planning for configuration audits you must determine what degree of
+    detail and complexity is necessary at each level. For instance, the SOHO
+    staff may not understand the full configuration audit output of a J Series
+    router and how changes to the configuration affect the network, but they
+    must have the ability to determine whether configuration changes have been
+    made. Looking at the various levels of configuration complexity and
+    staffing in different portions of the network makes it possible to
+    discover the best solutions for creating configuration baselines and
+    auditing systems.
+
+
+
+
+Baseline Configurations
+
+
+
+For configuration audits to be truly successful, they must be conducted
+      against an accurate baseline configuration. Although you can take the
+      baseline from the production equipment, all network configurations
+      should use templates to guarantee that every device shares a
+      configuration that is consistent in scope and functionality.
+
+
+
+
+Saving a baseline
+
+
+
+For offices with few IT staff members and few changes to the
+        configurations of their networking equipment, the simplest way to
+        ensure that a baseline configuration is in place for audits is by
+        simply saving the final deployment configuration to the user directory
+        on the network equipment itself. The following code shows the CLI
+        method for saving a configuration. The J-Web GUI also allows offices with untrained technicians
+        to save the baseline configuration:
+
+user@host> show configuration | save /var/home/user/baseline
+user@host> file list detail
+
+/var/home/user/:
+total 20
+drwxr-xr-x  2 user  staff        512 Jan 22 08:08 .ssh/
+-rw-r--r--  1 user  staff       2768 Jan 22 08:10 baseline
+
+user@host>
+As you can see in the code example, the commands are a very
+        simple way to save a baseline configuration so that it can be used for
+        comparison in the future. The issue with such a simple solution for
+        creating the baseline configuration is that while individual copies of
+        the baseline exist on each piece of equipment, there is no guarantee
+        that the configurations are consistent with the other devices in your
+        network. As new services and policies are introduced and the network
+        baseline changes, each piece of equipment must be changed individually
+        at each level of functionality, thus creating a new baseline on each
+        device.
+
+
+
+
+
+Baseline configuration with JUNOS groups
+
+
+
+In the JUNOS CLI, you can create groups that ensure that all functional areas are
+        configured consistently across a single piece of equipment. In the
+        following code, a group named Standard_Gig_Interface is created to
+        guarantee that all Gigabit Ethernet interfaces on a single device use
+        consistent settings for speed, duplex, and auto-negotiation:
+
+user@host> show configuration
+## Last commit: 2009-01-13  12:31:40 PST by root
+version 9.1R1.8;
+groups {
+    interfaces;
+    Standard_Gig_Interface {
+        interfaces {
+            <ge-*> {
+                speed 1g;
+                link-mode full-duplex;
+                gigether-options {
+                    no-auto-negotiation;
+                }
+            }
+        }
+    }
+}
+apply-groups Standard_Gig_Interface;
+Though the group in the example must be configured on each piece
+        of equipment, changing the group affects all interfaces to which the
+        group is applied. Through the use of groups, you can prevent human
+        errors, such as misconfiguration of a single interface that could lead
+        to network downtime. As configured in the preceding code, the group
+        provides the first layer of configuration auditing to ensure high
+        availability.
+
+Note
+Tools such as apply-groups
+          are invaluable not only to keep your network up, but also when you
+          initially configure the network. The example in the code would be
+          very helpful in networks where million-dollar systems have refused
+          to start communicating because the auto-negotiate settings on two
+          manufacturers' equipment didn't play well.
+
+
+
+
+
+
+Baseline configuration with commit scripts
+
+
+
+With commit scripts, it is possible to create an automated, preemptive
+        configuration audit that checks for and includes the information
+        required in accordance with your network policies. The following code
+        example is a commit script that ensures that some standard
+        configurations are applied to the configuration each time it is
+        activated. This configuration example applies a standard syslog configuration to all devices in the network.
+        Using a single instance of the syslog template, you can ensure that
+        logging is applied in a uniform manner across your network:
+
+version 1.0;
+ns junos = "http://xml.juniper.net/junos/*/junos";
+ns xnm = "http://xml.juniper.net/xnm/1.1/xnm";
+ns jcs = "http://xml.juniper.net/junos/commit-scripts/1.0";
+import "../import/junos.xsl";
+import "../import/junos.xsl";
+var $macro-name = 'config-system.xsl';
+match configuration {
+s  <transient-change> {
+    <system> {
+      /* Standard SYSLOG Configuration */
+      <syslog> {
+        <user> {
+          <name> "*";
+          <contents> {
+            <name> "any";
+            <emergency>;
+           }
+        }
+        <host> {
+          <name> "security.example.com";
+          <contents> {
+            <name> "authorization";
+            <warning>;
+           }
+           <contents> {
+            <name> "firewall";
+            <warning>;
+           }
+        }
+        <host> {
+          <name> "noc.example.com";
+          <contents> {
+            <name> "any";
+            <emergency>;
+           }
+           <contents> {
+            <name> "daemon";
+            <alert>;
+           }
+           <contents> {
+            <name> "kernel";
+            <alert>;
+           }
+           <contents> {
+            <name> "user";
+            <alert>;
+           }
+           <contents> {
+            <name> "pfe";
+            <alert>;
+           }
+
+        }
+      }
+    }
+  }
+}
+Once the commit script is installed and loaded on the network
+        devices, it parses the configuration each time the commit command is
+        executed and checks for the appropriate configuration pieces. If the
+        pieces do not exist, they are added to the configuration; if other
+        errors exist, the script can stop the commit and signal the error,
+        depending on how you have written it. Using the commit scripts, it is
+        possible to create a single configuration template that is examined
+        after any change, thus providing for preemptive auditing. The
+        following example is the output showing the inclusion of our
+        configuration template:
+
+user@host> show configuration | display commit-scripts
+## Last changed: 2009-01-13 11:01:45 PST
+version 9.1R1.8;
+system {
+    host-name host;
+    domain-name example.com;
+    domain-search example.com;
+    time-zone America/Los_Angeles;
+    authentication-order [ radius password ];
+    root-authentication {
+        encrypted-password "$1dfds$.0"; ## SECRET-DATA
+    }
+    name-server {
+        192.168.9.3;
+        10.0.0.1;
+    }
+    radius-server {
+        10.0.0.230 secret "$9$0mC4xN"; ## SECRET-DATA
+    }
+    scripts {
+        commit {
+            allow-transients;
+            file baseline.slax;
+        }
+        op {
+            traceoptions {
+                file orin;
+                flag all;
+            }
+            file test.slax {
+                source test.slax;
+            }
+            file test1.xsl;
+        }
+    }
+    services;
+    syslog {
+        archive size 1000k files 1000 world-readable;
+        user * {
+            any emergency;
+        }
+        host security.example.com {
+            authorization warning;
+            firewall warning;
+        }
+        host noc.example.com {
+            any emergency;
+            daemon alert;
+            kernel alert;
+            user alert;
+            pfe alert;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+Even though you configure the commit scripts, much like
+        configuration groups, on individual pieces of equipment, updating them
+        is much easier than updating the configuration groups. The commit
+        script itself can point to a source file in which the original script
+        exists, and can then instruct the network device to update the commit
+        script with information in the source document. In the following code
+        example, the source code for the commit scripts exists on a web server
+        in the engineering department:
+
+system {
+    scripts {
+        commit {
+            allow-transients;
+            file Baseline_audit.slax {
+                source http://engineering.example.com/
+                      scripts/base_audit_core.slax;
+            }
+        }
+Once you have added a source of the commit scripts to the
+        configuration, you can refresh them manually using the following code
+        example—or you can work the commands into automated scripts to provide
+        a scheduled or event-driven refresh:
+
+[edit]
+user@host#set system scripts commit file Baseline_audit.slax refresh
+
+
+
+
+
+
+Manually Auditing Configurations
+
+
+
+With all network devices running a consistent configuration across the network,
+      using either groups or commit scripts, we now look at the various
+      methods for performing the configuration audits themselves. Again,
+      auditing methods can be as simple or as complex as desired.
+
+
+
+
+Manual auditing through the GUI
+
+
+
+J Series and EX Series devices, with their built-in J-Web interfaces, make simple configuration audits quick
+        and easy. By viewing the database commit history on the devices, you
+        can easily determine when the configuration was last changed and how
+        often changes are being made to the device. Data in the configuration
+        database history includes the time the commit was made, the method
+        through which the configuration was edited, and options to either
+        download the configuration or roll back to a previously known good
+        configuration. Figure 21-1 represents the
+        web page for the configuration history. Note that the page also
+        indicates whether anyone is actively editing the configuration.
+
+
+
+
+
+
+
+
+
+Figure 21-1. Configuration history
+
+
+Configuration audits consist of more than examining the history
+        of the configuration changes on the devices; they also include a
+        comparison of the configurations that you can use to determine what
+        changes have been made. Figure 21-2
+        illustrates the configuration comparison screen on the J-Web
+        GUI.
+
+
+
+
+
+
+
+
+
+Figure 21-2. Comparing configurations
+
+
+The J-Web GUI uses color coding, though not readily apparent in
+        Figure 21-2, to highlight any deltas
+        between the current and compared configurations. Using J-Web, it is
+        simple to determine which configuration aspects have been added,
+        deleted, or viewed but not changed.
+
+
+
+
+
+Manual auditing through the CLI
+
+
+
+The simple configuration auditing capabilities in J-Web are also
+        available to junior technicians using the CLI. Automatically saved
+        backups of previously committed configurations or comparisons with
+        saved baseline configurations make it simple to determine when a
+        change was last made and what the change was.
+The show system commit
+command highlights the last configuration commit time,
+        the user, and the management interface through which the change was
+        made:
+
+user@host> show system commit
+0   2009-01-13 10:40:28 PST by user via cli
+1   2009-01-02 09:26:30 PST by user via cli
+2   2009-01-10 09:26:22 PST by user via cli
+The show system rollback
+        command displays the previous configuration. Each time a configuration
+        is committed, the backup is put into a rollback file so that it can be reused, or reloaded, in
+        case a configuration error causes system downtime:
+
+user@host> show system rollback 3
+## Last changed: 2009-01-22 13:33:15 PST
+version 9.1R1.8;
+groups {
+    interfaces;
+    Standard_Interface {
+        interfaces {
+            <ge-*> {
+                speed 1g;
+                link-mode full-duplex;
+                gigether-options {
+                    no-auto-negotiation;
+                }
+            }
+        }
+    }
+}
+The show configuration
+command can be piped through the compare command to show the difference
+        between the current configuration and any other configuration on the
+        system:
+
+user@host> show configuration | compare baseline
+[edit system root-authentication]
+−   encrypted-password "$1$.XfRw1"; ## SECRET-DATA
++   encrypted-password "$1$ /"; ## SECRET-DATA
+[edit system scripts commit file baseline.slax]
++     source http://engineering.wa.gov/baseline.slax;
+[edit event-options]
+−  generate-event {
+−      AUDIT time-of-day "00:00:00 −0800";
+−  }

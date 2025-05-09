@@ -1,0 +1,1000 @@
+
+
+
+Configuration Management
+
+
+
+JUNOS supports a configuration archiving option that allows a copy of the
+    configuration to be written back to an FTP or SCP server either at
+    periodic intervals or every time a commit is executed. This is critical
+    for high availability networks because it allows all device configurations
+    to be stored in a central location for rapid access. Transferring the
+    configuration at periodic intervals is convenient, but it tends to fill
+    the FTP server with duplicate copies of the configuration. For high
+    availability networks, transfer-on-commit is recommended,
+    particularly when managing large numbers of devices.
+With the configuration elements shown in this sample, when a
+    commit is typed on r1, the
+    candidate configuration will be committed and transferred via
+    FTP to 172.16.99.217:
+
+lab@r1> show configuration system archival
+configuration {
+    transfer-on-commit;
+    archive-sites {
+        "ftp://james:password@172.16.99.217:21";
+        "ftp://backup:password@202.45.45.12:21";
+    }
+}
+IOS platforms support use of copy run
+<tftp server>.
+    This sends a manually initiated write of the current running configuration
+    back to the IP address of a configured TFTP server, and essentially
+    accomplishes the same thing as the JUNOS configuration archive function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Configuration for AAA
+
+
+
+The act of configuring and monitoring user authentication, user
+    authorization, and user activity accounting is collectively referred to as
+    AAA (pronounced "Triple A"). In a AAA context:
+
+
+
+Authentication uses one or more authentication factors to confirm the user
+        is who she claims to be. Authentication methods protect the
+        availability of a system by preventing unauthorized access.
+
+
+Authorization uses individual or group profiles to control which features,
+        commands, or system resources the user is permitted to access.
+        Authorization protects the availability of a system by restricting
+        user activity to job-specific functions.
+
+
+Accounting is the act of monitoring what the user is doing while connected
+        to the system. Accountability is provided because every configuration
+        change or command executed is recorded and is linked to the user who
+        performed the action.
+
+
+
+In small to medium-size networks, AAA functions are often handled on
+    a per-chassis basis. The elements are simple to configure, few users
+    access the chassis, and the small number of chassis makes data harvesting
+    a relatively quick process. However, as a network grows in size,
+    configuring and monitoring AAA on each chassis becomes more cumbersome and
+    a AAA server based on TACACS or RADIUS standards is needed.
+The benefits of a AAA server system are quite clear. A single,
+    managed database of user IDs and passwords is easier to support than
+    individual user accounts on a large number of routers. A single repository
+    of profiles allows grouping of users based on duties, and is easier to
+    support than individual profiles on many routers. In addition, user
+    activity is easier to track when the data points are in a single location,
+    rather than being scattered around the network.
+There are two common standards for AAA: Terminal Access Control
+    Access-Control System Plus (TACACS+) and Remote Authentication Dial-in User Service (RADIUS).
+    Although they serve similar functions, the two protocols have a few
+    significant differences that have led to different uses in
+    networks.
+TACACS+ relies on TCP for its transport, whereas RADIUS relies
+    on UDP. This has led to the notion that TACACS+ is more
+    reliable and secure, which is not entirely true. Also, TACACS+ uses
+    different mechanisms for authentication and authorization, while RADIUS
+    incorporates both functions into a single, simpler mechanism.
+For these reasons, TACACS+ is most commonly used by network
+    administrators to monitor and manage network resources for the sake of
+    protecting network availability. RADIUS is generally used by network
+    administrators to monitor and manage customer access to network services
+    and resources for the sake of generating revenue. This chapter focuses on
+    the ability of TACACS+ to provide AAA services for a network with high
+    availability requirements.
+
+
+
+
+TACACS+
+
+
+
+To enable TACACS+ in JUNOS, you define tacplus-server configuration elements and add
+      tacplus to the list of authentication
+      methods for the chassis.
+
+
+
+
+JUNOS authentication
+
+
+
+The following configuration sample shows the definition of a tacplus-server at IP address 172.16.99.5. An
+        authentication key and source-address are defined for
+        authentication attempts to this server. This key is required because
+        most TACACS+ servers maintain an IP address-based list of devices that can request
+        authentication and require that devices submitting requests from a
+        recognized IP submit a valid password with the request:
+
+[edit system]
+lab@r1# show
+authentication-order tacplus;
+tacplus-server {
+    172.16.99.55 {
+        port 2066;
+        secret "$9$/wGABby.Ri1EyEyKWxcyoCat.zWiLLevL"; # SECRET-DATA
+        timeout 60;
+        source-address 172.16.99.50;
+    }
+}
+...
+A common misconception in JUNOS regarding authentication-order is that when local is included in the order the local
+        password is tried only when access to the authentication server is not
+        available. In fact, using a local password is the default behavior
+        when the server is not accessible. When adding local to the authentication-order statement, the
+        administrator is in effect giving users who fail authentication
+        against the AAA server a chance to authenticate against the router's
+        locally defined user accounts. This may not be desirable in all
+        situations.
+
+
+
+
+
+IOS authentication
+
+
+
+As with JUNOS, IOS authentication is defined on the local chassis and on
+        the TACACS+ server. Here are the
+        elements to accomplish this:
+
+r5(config)#enable secret JUNIPER
+r5(config)#aaa new-model
+r5(config)#aaa authentication login default group tacacs+ enable
+r5(config)#tacacs-server host 172.16.99.55
+r5(config)#tacacs-server key JUNIPER
+
+
+
+
+
+JUNOS locally defined accounts and authorization
+
+
+
+The remote user account is a special account that forces authentication
+        attempts to be forwarded from the chassis to the TACACS+ server. The
+        remote account also defines the
+        maximum permission (level of authorization) that is allowed for users
+        who have been positively authenticated through TACACS+. In this
+        example, two user accounts are configured, lab and remote. User lab is assigned to class superuser and has configured a password.
+        Based strictly on these settings and the previous tacplus-server elements, user lab is the only user able to access this
+        chassis if the TACACS+ server becomes unreachable:
+
+login {
+    user lab {
+        uid 2005;
+        class superuser;
+        authentication {
+            encrypted-password "$1$ZnzWNcTaBi_RoSeJIr6hGL9OfCD/"; # SECRET-DATA
+        }
+    }
+    user remote {
+        full-name "for use by TACACS+ tools";
+        uid 2020;
+        class superuser;
+    }
+
+}
+In this configuration example, user remote is also assigned class superuser; however, users who authenticate
+        through the server have a subset of superuser permissions based on their job
+        duties. In this case, class superuser represents the maximum allowable
+        authorization level that can be granted by the access server. Also of
+        interest, note that user remote has
+        no password configured. In this case, authentication is handled by the
+        TACACS+ server.
+
+
+Local Password Strength Enforcement
+Although a slight tangent from true TACACS+ functionality,
+          password strength enforcement is an important high
+          availability concept. JUNOS allows you to enforce password strength
+          for locally defined user accounts. This feature protects the
+          security posture of a chassis by allowing the administrator to
+          prevent locally defined accounts from using weak passwords:
+
+[edit]
+lab@r5# set system login password ?
+Possible completions:
+...
+change-type          Password change type
+format               Encryption method to use for password
+maximum-length       Maximum password length for all users
+minimum-changes      Minimum number of changes in password
+minimum-length       Minimum password length for all users
+For a network with high availability requirements, we
+          recommend enforcement of strong passwords, including:
+
+
+
+minimum-length of eight
+              characters
+
+
+minimum-changes of
+              two
+
+
+change-type to include
+              uppercase, numerals, and special characters
+
+
+
+
+
+
+
+
+
+IOS authorization
+
+
+
+Configuration elements in IOS to have user authorization be controlled by the
+        TACACS+ server include:
+
+r5(config)#aaa authorization exec default group tacacs none
+r5(config)#aaa authorization commands 0 default group tacacs none
+r5(config)#aaa authorization commands 1 default group tacacs none
+r5(config)#aaa authorization commands 15 default group tacacs none
+
+
+
+
+
+JUNOS accounting (activity tracking)
+
+
+
+You configure TACACS+ accounting, which monitors the activity of users on the system,
+        under the system accounting level of hierarchy. In this configuration
+        example, as with authorization, you must define the TACACS+ server. A
+        shared secret (a password) is used to authenticate the local system,
+        and a source address for accounting information is specified. Events
+        for which tracking information is sent to the server include user
+        login attempts, configuration
+        changes (using change-log), and any
+        executable command (using interactive-commands) that generates
+        output:
+
+[edit system accounting]
+lab@r1# show
+events [ login change-log interactive-commands ];
+destination {
+    tacplus {
+        server {
+            172.16.99.55 {
+                port 2060;
+                secret "$9$lo5MWxY2aji.Lxjq_B0NnIE1hLX-Y2a"; # SECRET-DATA
+                timeout 60;
+                source-address 172.16.99.34;
+            }
+        }
+    }
+}
+
+
+
+
+
+IOS accounting (activity tracking)
+
+
+
+Configure accounting in IOS with these commands:
+
+r5(config)#aaa accounting delay-start
+r5(config)#aaa accounting exec default start-stop group tacacs+
+r5(config)#aaa accounting commands 15 default start-stop group tacacs+
+r5(config)#tacacs-server host 172.16.99.55 key JUNIPER
+r5(config)#ip tacacs source-interface lo0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+JUNOS GUI Support
+
+
+
+JUNOS-based platforms support graphics-driven GUI performance monitoring tools. You enable JUNOS GUI support
+    under the system services level of hierarchy. To enable J-Web and other HTML-based management
+    and monitoring tools, add web-management to the configuration. To
+    enable chassis management and monitoring via JUNOScript, add either xnm-clear-text or xnm-ssl:
+
+[edit system services]
+lab@r1# set ?
+Possible completions:
++ apply-groups         Groups from which to inherit configuration data
++ apply-groups-except  Don't inherit configuration data from these groups
+> finger               Allow finger requests from remote systems
+> ftp                  Allow FTP file transfers
+> ssh                  Allow ssh access
+> telnet               Allow telnet login
+> web-management       Web management configuration
+> xnm-clear-text       Allow clear text-based JUNOScript connections
+> xnm-ssl              Allow SSL-based JUNOScript connections
+The J-Web GUI provides a suite of point-and-click tools for
+    management and monitoring of individual devices in the network. Figure 17-3 shows the J-Web home page of an M7i.
+Though it may offend some purists, it is important to note that any
+    configuration change that can be made from the JUNOS command-line
+    interface (CLI) can be made from the J-Web GUI. The GUI includes a
+    collection of wizards. A wizard is essentially a
+    scripted series of prompts that allows you to get the router up and
+    running quickly without mandating a thorough understanding of the GUI
+    itself.
+
+
+
+
+
+
+
+
+
+Figure 17-3. J-Web home page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What IS Normal?
+
+
+
+As we mentioned at the start of this chapter, network monitoring,
+    whether by CLI commands, remote servers, or device GUIs, is based on the
+    premise that deviation from a defined norm can be
+    detrimental to the network. Therefore, it is absolutely critical to
+    establish a baseline of what is normal for the network. Without this
+    awareness, it is impossible to identify abnormal behavior.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Chapter 18. Network Scalability
+
+
+
+Opinions vary widely about the definition of network scalability. Some consider it to
+  be the network's ability to handle growing amounts of work and the
+  increasing demands for resources and services. To others, true network
+  scalability must include elements of modularity and mathematical logic.
+  According to this second definition, for a network to be truly scalable, the
+  addition of hardware should yield processing, throughput, and service
+  capacities proportional to the characteristics of the hardware added.
+While neither definition is wrong, we'd say they're both missing parts
+  of the picture. The second definition implies that network scalability is a
+  simple byproduct of hardware capacity. Both definitions assume the network
+  will only grow. In the modern economy, it is sometimes necessary for a
+  network to shrink in capacity and cost, while oftentimes retaining all
+  functionality.
+A more modern definition of network scalability is the ability of the
+  network to retain all functionality and services while adjusting its
+  capacity and cost to properly fit demand. This definition implies that the
+  network can get bigger and smaller. It's with this
+  definition in mind that we approach the discussion in this chapter.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hardware Capacity
+
+
+
+One of the first topics in any discussion of network scalability is hardware.
+    It is imperative that hardware selected for the network can meet the
+    throughput needs and withstand the
+    processing burden of the network. In networks with high availability
+    requirements, chassis are often
+    deployed in pairs. We discuss cost and design implications of pairing
+    devices in Chapter 1,
+    and in this chapter we consider the 50% rule to be gospel. For a high availability network in
+    which chassis are deployed in pairs and in which the load is balanced
+    across the redundant pair of switches, routers, firewalls, and other
+    devices, the 50% rule means that no more than half the resources or
+    capacities of either device in the pair should ever be in use at the same
+    time. If this threshold is exceeded, and especially if it is exceeded
+    consistently, and if one device in the pair fails, the remaining device
+    will be unable to assume the load of both devices and the redundancy
+    scheme will fail.
+
+
+
+
+Device Resources to Monitor
+
+
+
+All JUNOS-based products provide functional separation between the control plane, which
+      operates in the routing engine (RE), and the data plane, which operates in
+      the Packet Forwarding Engine (PFE), as discussed in Chapter 3. Trivial Network Protocol (TNP) enables communications
+      between the control and data planes. You must understand the resources
+      and capacities of the RE and the PFE to properly select hardware for a
+      scalable network and to monitor each chassis as the network adjusts to
+      its planned size.
+
+
+
+
+Control plane capacity best practices
+
+
+
+Memory and processing power in the control plane are finite resources. The
+        number of variables that tax these resources means it is nearly
+        impossible to make absolute statements about the suitability of
+        placing any particular chassis in a network. Variables that impact
+        processor burden at the control plane include:
+
+
+
+Total number of routes in the local routing table
+
+
+As the number of routes increases, more memory is required to store
+              them and more processing power is needed to maintain
+              them.
+
+
+Stability of the local routing table
+
+
+If the local routing table is stable, as it should be in a
+              high availability network, less processing power is required for
+              updates.
+
+
+Total number and stability of Border Gateway Protocol (BGP)
+            peers
+
+
+In large service provider networks, the control plane processor burden is
+              directly proportional to the number of BGP peering relationships
+              that must be maintained and the stability of the peers.
+
+
+Total number of Interior Gateway Protocol (IGP) adjacencies
+            and domain stability
+
+
+The control plane processor burden also increases with the number of IGP
+              adjacencies, and the stability of the domain also affects the
+              amount of processing done by the RE.
+
+
+Total number of routing instances and virtual private
+            networks (VPNs)
+
+
+Each routing instance created for a VPN has its own separate routing table within the
+              primary logical router that must be maintained by the control
+              plane processor.
+
+
+Total number of logical routers enabled
+
+
+Configuring a logical router spawns creation of a completely
+              independent routing process and all related routing tables.
+              Therefore, each logical router taxes memory and processor
+              resources relative to the number of BGP and IGP peers, routing
+              instances, and size and stability of the routing table in the
+              logical router.
+
+
+Amount of system logging enabled
+
+
+Increasing the amount of information logged about the system
+              requires the RE processor to write that information, which
+              steals time away from other tasks that the processor must
+              perform.
+
+
+Rate of sampling
+
+
+If enabled, statistical sampling adds significant burden
+              to the RE.
+
+
+
+With all these variables in play, what is the best way to
+        identify a chassis that can adequately scale to network demands? The
+        answer is simple: testing. The best practice when selecting a chassis to scale to
+        desired capacity while meeting high availability requirements is to
+        test it in a setting that reflects both the current and anticipated
+        settings for the variables we mentioned in the preceding list. In many
+        cases, equipment vendors actively support this testing because they
+        have a vested interest in it.
+
+Note
+While discussing control plane capacities, we must return to
+          one of the fundamentals of high availability design and consider
+          device pairing from a different perspective. As we discussed in
+          Chapter 1, pairing
+          devices is one way to add redundancy to a design. This method
+          effectively doubles the number of devices that would have to fail
+          before connectivity is impacted. However, deploying redundant
+          devices doubles the number of neighbor relationships that must be
+          maintained by routing protocols and managed by the control plane. As
+          a result, redundant devices tend to add processor burden at the
+          control plane. However, with load sharing enabled across redundant
+          pairs, the "doubling up" effectively decreases the burden on the
+          data plane.
+
+
+
+
+
+
+Data plane specifications
+
+
+
+When considering classic packet-based routing, forwarding plane capacity
+        has fewer related variables for you to monitor and track. Quite often,
+        the forwarding plane is described simply by its aggregate
+        data transport rate, either in bits per second or in packets per
+        second.
+Table 18-1 shows
+        forwarding plane capacity for M Series products. All use classic packet-based
+        forwarding.
+
+
+Table 18-1. M Series forwarding plane capacity
+
+
+
+
+
+
+
+
+
+
+Chassis
+
+
+Aggregate
+                half-duplex throughput
+
+
+Aggregate
+                half-duplex forwarding rate
+
+
+
+
+
+
+M7i
+
+
+10 Gbps
+
+
+16 Mpps
+
+
+
+
+M10i
+
+
+16 Gbps
+
+
+16 Mpps
+
+
+
+
+M40e
+
+
+51.2
+                Gbps
+
+
+40 Mpps
+
+
+
+
+M120
+
+
+120 Gbps
+
+
+90 Mpps
+
+
+
+
+M320
+
+
+320 Gbps
+
+
+240 Mpps
+
+
+
+
+
+
+Table 18-2 shows
+        forwarding plane capacity for MX Series products.
+
+
+Table 18-2. MX Series forwarding plane capacity
+
+
+
+
+
+
+
+
+
+
+Chassis
+
+
+Aggregate
+                half-duplex throughput
+
+
+Aggregate
+                half-duplex forwarding rate
+
+
+
+
+
+
+MX240
+
+
+240 Gbps
+
+
+180 Mpps
+
+
+
+
+MX480
+
+
+480 Gbps
+
+
+360 Mpps
+
+
+
+
+MX960
+
+
+960 Gbps
+
+
+720 Mpps
+
+
+
+
+
+
+Table 18-3 shows
+        forwarding plane capacity for T Series products.
+
+
+Table 18-3. T Series forwarding plane capacity
+
+
+
+
+
+
+
+
+
+
+Chassis
+
+
+Aggregate half-duplex
+                throughput
+
+
+Aggregate half-duplex forwarding
+                rate
+
+
+
+
+
+
+T320
+
+
+320 Gbps
+
+
+385 Mpps
+
+
+
+
+T640
+
+
+640 Gbps
+
+
+770 Mpps
+
+
+
+
+T1600
+
+
+1.6 Tbps
+
+
+1.92
+                Gpps
+
+
+
+
+TX Matrix (4x T640
+                multichassis system)
+
+
+2.5 Tbps
+
+
+3 Gpps
+
+
+
+
+TX Matrix Plus (16x
+                T1600 multichassis system)
+
+
+25.6
+                Tbps
+
+
+30.7
+                Gpps
+
+
+
+
+
+
+J Series products combine routing and security functionality and
+        are capable of classic packet-based forwarding as well as flow-based
+        traffic forwarding. This results in additional capacity variables that
+        must be taken into consideration. These variables are based on the
+        type of forwarding and related features enabled on the chassis. Table 18-4 shows forwarding plane
+        capacity for J Series products.
+
+
+Table 18-4. J Series forwarding plane capacity
+
+
+
+
+
+
+
+
+
+
+Chassis
+
+
+Firewall
+                throughput
+
+
+Routing forwarding
+                rate
+
+
+
+
+
+
+J2320
+
+
+400 Mbps
+
+
+175,000
+                pps
+
+
+
+
+J2350
+
+
+500 Mbps
+
+
+200,000
+                pps
+
+
+
+
+J4350
+
+
+600 Mbps
+
+
+225,000
+                pps
+
+
+
+
+J6350
+
+
+1 Gbps
+
+
+400,000
+                pps
+
+
+
+
+
+
+A good rule of thumb when selecting devices for a network is to
+        provision for 2.5 times the current anticipated demand. This rule does
+        not mean it is necessary to immediately purchase Physical Interface Cards (PICs) and Flexible PIC Concentrators (FPCs) to support the
+        additional traffic, but it does mean the chassis you select should be
+        able to accommodate the additional PICs and FPCs required to support
+        the increase.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Network Scalability by Design
+
+
+
+While choosing the right hardware for a network is critical, more is involved
+    in building a scalable network than simply buying routers with redundant
+    components and a few orders of magnitude more performance than is
+    immediately needed. As important as hardware selection is, it's only about
+    one-third of the task of building a scalable network. The remaining
+    two-thirds of the task comprise the logical design of the network.
+Designing a scalable transport network or adding scalability to an
+    existing design can be accomplished by scaling intradomain routing, by
+    scaling interdomain routing, and by engineering transit traffic through
+    the use of Multiprotocol Label Switching (MPLS). Chapter 12 details the IGP
+    mechanisms that allow the network to grow without putting service or
+    connectivity at risk. Chapter 13 addresses methods of
+    controlling domain-external traffic. This chapter ties the two concepts
+    together to provide a big-picture look at scaling networks.
+
+
+
+
+Scaling BGP for High Availability
+
+
+
+Any discussion of scaling interdomain routing is, by default, a discussion of BGP
+      scalability mechanisms. This section builds on the Internal BGP (IBGP) configuration basics described in
+      Chapter 13 to show how a
+      simple intelligent route reflection scheme can allow a network to expand
+      or contract to scale as needed.
+
+Note
+As explained in Chapter 13, for networks with
+        high availability requirements the authors strongly recommend scaling
+        using route reflection with clusters instead of using confederations
+        because of the added number and complexity of routing policies that
+        are mandated by IBGP confederations.
+
+
+
+
+
+Route reflectors and clusters
+
+
+

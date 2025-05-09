@@ -1,0 +1,1000 @@
+
+
+As a final test, if possible, you should power down and then power up the
+    router again, and leave it running for at least 48 hours. After this
+    period, check the system logs and boards status.
+
+
+
+
+Power Down the Router
+
+
+
+To power down the router, first stop the backup RE:
+
+lab@r1-re0> request routing-engine login other-routing-engine
+lab@r1-re1> request system halt
+After a few seconds, the backup RE will stop, and your Telnet session will fall
+      back to the master RE. After this, stop the master RE:
+
+lab@r1-re0> request system halt
+Both REs are now halted. Turn the power off.
+
+
+
+
+
+Power On the Router/Burn-In Test
+
+
+
+Connect a console cable to RE 0
+      (capturing any messages on file), and turn the power on. Check for any
+      active alarms and the status of the router boards. Check the content of
+      the messages log for any error with
+      the show log messages
+      command.
+The router must be left powered on for one or two days.
+
+
+
+
+
+Final Checks and Power Down
+
+
+
+Be sure to check that the uptime for all the FPCs and SFMs is about the same. If it is not, this means one of
+      the boards has restarted during the burn-in period—check in the logs for
+      details. Here is sample output from an M10i router:
+
+lab@r1-re0> show chassis fpc detail
+Slot 0 information:
+  State                               Online
+  Logical slot                      0
+  Temperature                      34 degrees C / 93 degrees F
+  Total CPU DRAM                    8 MB
+  Total SRAM                        1 MB
+  Total SDRAM                     128 MB
+  Total notification SDRAM         24 MB
+  I/O Manager ASIC information        Version 2.0, Foundry IBM, Part number 0
+  Start time:                         2009-03-19 10:15:24 CET
+  Uptime:                              2 days, 8 hours, 4 minutes, 2 seconds
+Slot 1 information:
+  State                               Online
+  Logical slot                      1
+  Temperature                      34 degrees C / 93 degrees F
+  Total CPU DRAM                    8 MB
+  Total SRAM                        1 MB
+  Total SDRAM                     128 MB
+  Total notification SDRAM         24 MB
+  I/O Manager ASIC information        Version 2.0, Foundry IBM, Part number 0
+  Start time:                         2009-03-22 18:19:08 CET
+  Uptime:                          1 days, 18 hours, 22 minutes, 54 seconds
+In this example, FPC2 restarted
+      one day and 18 hours ago; this indicates a possible problem. Check the
+      system and chassisid logs around the time of the FPC
+      reset; this should provide enough information to understand why the
+      board restarted.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Appendix B. Configuration Audit
+
+
+
+The next few pages provide an example of an audit configuration checklist. In any configuration audit, it
+  is important to have the group responsible for the configuration functional
+  area to do quality control against their portion of the template or the
+  configuration scripts used to automate configuration. Once the baseline
+  templates and scripts exist, each portion of the configuration can be
+  compared against the template (in the case of predeployment auditing) or the
+  baseline configuration (in the case of production equipment auditing). The
+  audit itself can be conducted using manual checks of the equipment,
+  configuration audits using JUNOScope, or a combination of both. As each
+  portion of the configuration is audited, the auditor marks how the
+  configuration has been made and audited.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audit Responsibilities
+
+
+
+
+
+
+
+
+
+
+
+
+
+Configuration
+            module
+
+
+Audit
+            group
+
+
+Quality
+            control
+
+
+
+
+
+
+Chassis
+
+
+NOC
+
+ 
+
+
+
+Firewall
+            filter
+
+
+Security
+
+ 
+
+
+
+Interfaces
+
+
+Network
+            Engineering
+
+ 
+
+
+
+Routing
+            policies
+
+
+Network
+            Engineering
+
+ 
+
+
+
+Protocols
+
+
+Network
+            Engineering
+
+ 
+
+
+
+Security
+
+
+Security
+
+ 
+
+
+
+Services
+
+
+Security
+
+ 
+
+
+
+Systems
+
+
+NOC
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audit Response Key
+
+
+
+
+
+
+
+
+
+
+
+
+
+Status
+
+
+Definition
+
+
+Comments
+
+
+
+
+
+
+M
+
+
+Manually configured and
+            confirmed
+
+
+Initial comment
+            box
+
+
+
+
+G
+
+
+Configuration applied
+            through group
+
+
+Reference group in comment
+            box
+
+
+
+
+S
+
+
+Configuration added via
+            commit script
+
+
+Reference script in comment
+            box
+
+
+
+
+N/A
+
+
+Configuration not
+            applicable
+
+ 
+
+
+
+X
+
+
+Configuration
+            missing
+
+
+Identify group responsible
+            for configuration portion in comment box
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audit Checklist
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hierarchy
+
+
+Configuration
+
+
+Status
+
+
+Comments
+
+
+
+
+
+
+Chassis
+
+
+Aggregated
+            devices
+
+ 
+ 
+
+
+
+Cluster
+
+ 
+ 
+
+
+
+Redundancy
+
+ 
+ 
+
+
+
+Class of
+            Service
+
+
+Classifiers
+
+ 
+ 
+
+
+
+Code point
+            aliases
+
+ 
+ 
+
+
+
+Drop
+            profiles
+
+ 
+ 
+
+
+
+Forwarding
+            classes
+
+ 
+ 
+
+
+
+Forwarding
+            policy
+
+ 
+ 
+
+
+
+Interfaces
+
+ 
+ 
+
+
+
+rewrite-rules
+
+ 
+ 
+
+
+
+Event
+            Options
+
+
+Destinations
+
+ 
+
+Access confirmed:
+            YES/NO
+
+
+
+
+Event script
+
+ 
+
+Refresh access confirmed:
+            YES/NO
+
+
+
+
+Generate
+            event
+
+ 
+ 
+
+
+
+Policy
+
+ 
+ 
+
+
+
+Firewall
+
+
+Filter
+
+ 
+ 
+
+
+
+Prefix
+            action
+
+ 
+ 
+
+
+
+Service
+            filter
+
+ 
+ 
+
+
+
+Simple
+            filter
+
+ 
+ 
+
+
+
+Interface
+            set
+
+ 
+ 
+
+
+
+Load balance
+            group
+
+ 
+ 
+
+
+
+Policer
+
+ 
+ 
+
+
+
+Forwarding
+            Options
+
+
+Accounting
+
+ 
+ 
+
+
+
+DHCP-Relay
+
+ 
+ 
+
+
+
+Helpers
+
+ 
+ 
+
+
+
+Load balance
+
+ 
+ 
+
+
+
+Monitoring
+
+ 
+ 
+
+
+
+Next hop
+
+ 
+ 
+
+
+
+Packet
+            capture
+
+ 
+ 
+
+
+
+Port
+            mirroring
+
+ 
+ 
+
+
+
+Sampling
+
+ 
+ 
+
+
+
+Groups
+
+ 
+ 
+ 
+
+
+
+Interfaces
+
+
+Physical
+            options
+
+ 
+ 
+
+
+
+Clocking
+
+ 
+ 
+
+
+
+Encapsulation
+
+ 
+ 
+
+
+
+Framing
+
+ 
+ 
+
+
+
+Redundancy
+
+ 
+ 
+
+
+
+Schedulers
+
+ 
+ 
+
+
+
+Service
+            options
+
+ 
+ 
+
+
+
+Logical
+            options
+
+ 
+ 
+
+
+
+Logical
+            Routers
+
+ 
+ 
+ 
+
+
+
+Policy
+            Options
+
+
+AS-Path
+
+ 
+ 
+
+
+ 
+
+AS-Path
+            group
+
+ 
+ 
+
+
+
+Community
+
+ 
+ 
+
+
+
+Damping
+
+ 
+ 
+
+
+
+Policy
+
+ 
+ 
+
+
+
+Prefix-list
+
+ 
+ 
+
+
+
+protocols-BGP
+
+
+Authentication
+
+ 
+ 
+
+
+
+Group
+
+ 
+ 
+
+
+
+Neighbor
+
+ 
+ 
+
+
+
+Families
+
+ 
+ 
+
+
+
+Policies
+
+ 
+ 
+
+
+
+protocols-IGP
+
+
+Authentication
+
+ 
+ 
+
+
+
+Interfaces
+
+ 
+ 
+
+
+
+Reference
+            bandwidth
+
+ 
+ 
+
+
+
+protocols-switching
+
+
+MPLS
+
+ 
+ 
+
+
+
+LDP
+
+ 
+ 
+
+
+
+RSVP
+
+ 
+ 
+
+
+
+VSTP
+
+ 
+ 
+
+
+
+protocols-multicast
+
+
+PIM
+
+ 
+ 
+
+
+
+protocols-multicast
+
+
+MSDP
+
+ 
+ 
+
+
+
+routing-instances
+
+ 
+ 
+ 
+
+
+
+routing-options
+
+
+Aggregate
+
+ 
+ 
+
+
+
+Auto-export
+
+ 
+ 
+
+
+
+Autonomous
+
+ 
+ 
+
+
+
+Confederation
+
+ 
+ 
+
+
+
+Dynamics
+
+ 
+ 
+
+
+
+Fate-sharing
+
+ 
+ 
+
+
+
+Forwarding
+            table
+
+ 
+ 
+
+
+
+Generate
+
+ 
+ 
+
+
+
+Graceful
+            Restart
+
+ 
+ 
+
+
+
+Multicast
+
+ 
+ 
+
+
+
+Non-Stop
+            Routing
+
+ 
+ 
+
+
+
+RIB
+
+ 
+ 
+
+
+
+RIB groups
+
+ 
+ 
+
+
+
+Route
+            distinguisher
+
+ 
+ 
+
+
+
+Router ID
+
+ 
+ 
+
+
+
+Source
+            routing
+
+ 
+ 
+
+
+
+Static
+
+ 
+ 
+
+
+
+Source

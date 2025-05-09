@@ -1,0 +1,1000 @@
+
+flag flag
+
+
+
+Tracing operation to perform. To specify more than one
+              tracing operation, include multiple flag statements. These are
+              the VRRP-specific tracing options:
+
+
+
+
+all
+
+
+
+All VRRP tracing operations.
+
+
+
+database
+
+
+
+Database changes.
+
+
+
+general
+
+
+
+General events.
+
+
+
+interfaces
+
+
+
+Interface changes.
+
+
+
+normal
+
+
+
+Normal events.
+
+
+
+packets
+
+
+
+Packets sent and received.
+
+
+
+state
+
+
+
+State transitions.
+
+
+
+timer
+
+
+
+Timer events.
+
+
+
+
+
+
+match regex
+
+
+
+(Optional) Refine the output to include only those lines
+              that match the given regular expression.
+
+
+
+microsecond-stamp
+
+
+
+(Optional) Provide a timestamp with microsecond
+              granularity.
+
+
+
+size size
+
+
+
+(Optional) Maximum size of each trace file, in KB, MB, or
+              GB. When a trace file named trace-file reaches this size, it is
+              renamed trace-file.0. When
+              the trace-file again
+              reaches its maximum size, trace-file.0 is renamed trace-file.1 and trace-file is renamed trace-file.0. This renaming scheme
+              continues until the maximum number of trace files is reached.
+              Then the oldest trace file is overwritten. Syntax: xk to specify KB, xm to specify MB, or xg to specify GB. Range: 10 KB through
+              the maximum file size supported on your routing platform.
+              Default: 1 MB.
+
+Note
+If you specify a maximum file size, you also must
+                specify a maximum number of trace files with the files option.
+
+
+
+
+world-readable |
+            no-world-readable
+
+
+
+Specifies whether any reader can read the logfile.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+track
+
+
+
+
+track {
+  interface interface-name {
+    priority-cost priority;
+    bandwidth-threshold bits-per-second {
+      priority-cost priority;
+    }
+  }
+priority-hold-time seconds;
+route prefix routing-instance instance-name {
+  priority-cost priority;
+  }
+}
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family (inet | inet6) address
+          address (vrrp-group | vrrp-inet6-group) group-id],
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family (inet | inet6)
+          address address (vrrp-group | vrrp-inet6-group) group-id]
+
+
+
+
+
+Description
+Enable logical interface tracking, route tracking, or both for a VRRP
+        group.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+virtual-address
+
+
+
+
+virtual-address [ addresses ];
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet address address
+          vrrp-group group-id]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet address address
+          vrrp-group group-id]
+
+
+
+
+
+Description
+Configure the addresses of the virtual routers in a VRRP IPv4
+        group. You can configure up to eight addresses.
+
+
+
+Option
+
+
+
+
+addresses
+
+
+
+Addresses of one or more virtual routers. Do not include a
+              prefix length. If the address is the same as the interface's
+              physical address, the interface becomes the master virtual
+              router for the group.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+virtual-inet6-address
+
+
+
+
+virtual-inet6-address [ addresses ];
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet6 address address
+          vrrp-inet6-group group-id]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet6 address address
+          vrrp-inet6-group group-id]
+
+
+
+
+
+Description
+Configure the addresses of the virtual routers in a VRRP IPv6
+        group. You can configure up to eight addresses.
+
+
+
+Option
+
+
+
+
+addresses
+
+
+
+Addresses of one or more virtual routers. Do not include a
+              prefix length. If the address is the same as the interface's
+              physical address, the interface becomes the master virtual
+              router for the group.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+virtual-link-local-address
+
+
+
+
+virtual-link-local-address ipv6-address;
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet6 address address
+          vrrp-inet6-group group-id]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet6 address address
+          vrrp-inet6-group group-id]
+
+
+
+
+
+Description
+Configure a virtual link local address for a VRRP IPv6 group. You
+        must explicitly define a virtual link local address for each VRRP IPv6
+        group. The virtual link local address must be in the same subnet as
+        the physical interface address.
+
+
+
+Option
+
+
+
+
+ipv6-address
+
+
+
+Virtual link local IPv6 address for VRRP for an IPv6
+              group. Range: 0-255.
+
+
+
+The remaining statements are explained separately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+vrrp-group
+
+
+
+
+vrrp-group group-id {
+  accept-data | no-accept-data);
+  advertise-interval seconds;
+  authentication-key key;
+  authentication-type authentication;
+  fast-interval milliseconds;
+  (preempt | no-preempt) {
+    hold-time seconds;
+  }
+  priority number;
+  track {
+    interface interface-name {
+      priority-cost priority;
+      bandwidth-threshold bits-per-second {
+        priority-cost priority;
+     }
+   }
+   priority-hold-time seconds;
+   route prefix routing-instance instance-name {
+      priority-cost priority;
+    }
+  }
+  virtual-address [ addresses ];
+}
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet address address]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet address
+          address]
+
+
+
+
+
+Description
+Configure a VRRP IPv4 group.
+
+
+
+Option
+
+
+
+
+group-id
+
+
+
+VRRP group identifier. If you enable Media Access Control
+              (MAC) source address filtering on the interface, you must
+              include the virtual MAC address in the list of source MAC
+              addresses that you specify in the source-address-filter statement. MAC
+              addresses ranging from 00:00:5e:00:01:00-00:00:5e:00:01:ff are
+              reserved for VRRP, as defined in RFC 2338. The VRRP group number
+              must be the decimal equivalent of the last hexadecimal byte of
+              the virtual MAC address. Range: 0-255.
+
+
+
+The remaining statements are explained separately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+vrrp-inet6-group
+
+
+
+
+vrrp-inet6-group group-id {
+  (accept-data | no-accept-data);
+  fast-interval milliseconds;
+  inet6-advertise-interval seconds;
+  (preempt | no-preempt) {
+    hold-time seconds;
+  }
+  priority number;
+  track {
+    interface interface-name {
+      priority-cost priority;
+      bandwidth-threshold bits-per-second {
+        priority-cost priority;
+     }
+   }
+   priority-hold-time seconds;
+   route prefix routing-instance instance-name {
+      priority-cost priority;
+   }
+ }
+ virtual-inet6-address [ addresses ];
+ virtual-link-local-address ipv6-address;
+}
+
+
+
+Hierarchy level
+
+
+[edit interfaces interface-name unit logical-unit-number
+          family inet6 address address]
+
+
+[edit logical-systems logical-system-name interfaces
+          interface-name unit logical-unit-number family inet6 address
+          address]
+
+
+
+
+
+Description
+Configure a VRRP IPv6 group.
+
+
+
+Option
+
+
+
+
+group-id
+
+
+
+VRRP group identifier. If you enable MAC source address
+              filtering on the interface, you must include the virtual MAC
+              address in the list of source MAC addresses that you specify in
+              the source-address-filter
+              statement. MAC addresses ranging from
+              00:00:5e:00:01:00-00:00:5e:00:01:ff are reserved for VRRP, as
+              defined in RFC 2338. The VRRP group number must be the decimal
+              equivalent of the last hexadecimal byte of the virtual MAC
+              address. Range: 0-255.
+
+
+
+The remaining statements are explained separately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Unified In-Service Software Upgrade (ISSU)
+
+
+
+To perform a unified ISSU, you must first configure GRES and NSR.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+no-issu-timer-negotiation
+
+
+
+
+no-issu-timer-negotiation;
+
+
+
+Hierarchy level
+
+
+[edit protocols bfd]
+
+
+[edit logical-systems logical-system-name protocols
+          bfd]
+
+
+[edit routing-instances routing-instance-name protocols
+          bfd]
+
+
+
+
+
+Description
+Disable unified ISSU timer negotiation for BFD sessions.
+
+Warning
+The sessions might flap during unified ISSU or RE switchover,
+          depending on the detection intervals.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+traceoptions
+
+
+
+
+traceoptions {
+  file name <size size> <files number> <(world-readable | no-world-
+  readable)>;
+  flag flag <flag-modifier> <disable>;
+}
+
+
+
+Hierarchy level
+
+
+[edit protocols bfd]
+
+
+
+
+
+Description
+Define tracing operations that track unified ISSU functionality
+        in the router. To specify more than one tracing operation, include
+        multiple flag statements.
+
+
+
+Default
+If you do not include this statement, no global tracing
+        operations are performed.
+
+
+
+Options
+
+
+
+
+disable
+
+
+
+(Optional) Disable the tracing operation. You can use this
+              option to disable a single operation when you have defined a
+              broad group of tracing operations, such as all.
+
+
+
+file name
+
+
+
+Name of the file to receive the output of the tracing
+              operation. Enclose the name within quotation marks. All files
+              are placed in the directory /var/log. We recommend that you place
+              global routing protocol tracing output in the file routing-log.
+
+
+
+files number
+
+
+
+(Optional) Maximum number of trace files. When a trace
+              file named trace-file
+              reaches its maximum size, it is renamed trace-file.0, then trace-file.1, and so on, until the
+              maximum number of trace files is reached. Then the oldest trace
+              file is overwritten. Range: 2-1,000 files. Default: two
+              files.
+
+Note
+If you specify a maximum number of files, you also must
+                specify a maximum file size with the size option.
+
+
+
+
+flag flag
+
+
+
+Tracing operation to perform. There is only one unified
+              ISSU tracing option:
+
+
+
+
+issu
+
+
+
+Trace BFD unified ISSU operations.
+
+
+
+
+
+
+size size
+
+
+
+(Optional) Maximum size of each trace file, in KB, MB, or
+              GB. When a trace file named trace-file reaches this size, it is
+              renamed trace-file.0. When
+              the trace-file again
+              reaches its maximum size, trace-file.0 is renamed trace-file.1 and trace-file is renamed trace-file.0. This renaming scheme
+              continues until the maximum number of trace files is reached.
+              Then the oldest trace file is overwritten. Syntax: xk to specify KB, xm to specify MB, or xg to specify GB. Range: 10 KB through
+              the maximum file size supported on your system. Default: 128 KB.
+
+Note
+If you specify a maximum file size, you also must
+                specify a maximum number of trace files with the files option.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IndexA note on the digital index
+A link in an index entry is displayed as the section title in which that entry appears. Because some sections have multiple index markers,
+            it is not unusual for an entry to have several links to the same section. Clicking on any link will take you directly to the place in the text
+            in which the marker appears.
+AAAA acronym, Configuration for AAA-IOS accounting (activity tracking), Network equipmentABRs (area border routers), Is there a risk?, OSPF areasaccept-data configuration statement, Descriptionaccess control, Use a Strong Password, and Encrypt It (see security)accounting, Configuration for AAA, JUNOS accounting (activity tracking), Network equipmentconfiguration automation and, Network equipmentdefined, Configuration for AAATACACS+ support, JUNOS accounting (activity tracking)address aggregation, Address Aggregation-Is there a risk?, Practical aggregation for a large domain, Is there a risk?-Is there a risk?, Use of the Private Address Space-Private addressing, NAT, and MIP, Use of Public Address Space, Static Routes-When to configure static routes, Using Protocol Tweaks to Control Routing Table Size-OSPF areascontrolling routing table size, Using Protocol Tweaks to Control Routing Table Size-OSPF areasfor large domains, Practical aggregation for a large domainfunctionality, Address Aggregation-Is there a risk?private address space, Use of the Private Address Space-Private addressing, NAT, and MIPpublic address space, Use of Public Address Spacerisk considerations, Is there a risk?-Is there a risk?static routes, Static Routes-When to configure static routesaddress allocation, Address Allocation, Interface Addressing-JUNOS interface addressing syntax, JUNOS interface addressing syntax, JUNOS interface addressing syntax, Infrastructure Routes, Customer Routes-Virtual Router Redundancy Protocol, Customer Routes, Network Virtualization and Service Overlays-Configuring the service overlay, Network Virtualization and Service Overlays-Configuring the service overlaycustomer routes, Customer Routes-Virtual Router Redundancy Protocoldefined, Address Allocationinfrastructure routes, Infrastructure Routesinterface addressing, Interface Addressing-JUNOS interface addressing syntaxservice overlays and, JUNOS interface addressing syntax, Network Virtualization and Service Overlays-Configuring the service overlaytroubleshooting, Customer Routesvirtualization and, JUNOS interface addressing syntax, Network Virtualization and Service Overlays-Configuring the service overlayAddress Resolution Protocol, EX Series (see ARP)Advanced Insight Manager (AIM), Overview, Advanced Insight SolutionAdvanced Insight Scripts, Overview, Installationadvertise-interval configuration statement, DescriptionAIM (Advanced Insight Manager), Overview, Advanced Insight Solutionalarms, Check for alarms, RMON alarms, Configuration modules, Check for Any Active Alarmschecking for active, Check for Any Active Alarmsconfiguration auditing support, Configuration modulespost-upgrade verification, Check for alarmsRMON support, RMON alarmsallow command, Full mesh made easy (well, easier), IBGP, Bring in the EBGP peerBGP peers and, Full mesh made easy (well, easier)EBGP peers and, Bring in the EBGP peerIBGP peers and, IBGPAPIs (application programming interfaces), Configuration Management, Application Programming Interfaces, JUNOS APIs-SLAXautomating operations, Application Programming Interfacesconfiguration management, Configuration Managementfunctionality, JUNOS APIs-SLAXAPNIC allocation body, AS NumberApplication layer (OSI model), How to Use This Bookapplication programming interfaces, Application Programming Interfaces (see APIs)application-specific integrated circuits, Divide and Conquer (see ASICs)APS (automatic protection switching), SONET/SDH Automatic Protection Switching-SONET/SDH Automatic Protection Switchingarchives, Syslog Planning, Archives and Rollbackconfiguration automation and, Archives and Rollbacksyslog planning and, Syslog Planningarea border routers (ABRs), Is there a risk?, OSPF areasarea design, merging networks and, Area designARIN allocation body, AS NumberARP (Address Resolution Protocol), EX Series, Implementation and Configuration, Virtual Router Redundancy Protocolbackup routers and, Virtual Router Redundancy ProtocolEX Series support, EX Seriesstate replication and, Implementation and ConfigurationAS (Autonomous System), Graceful Restart in Multicast Protocols, PIM, and MSDP, Traffic Monitoring Overview, Large Enterprises and Service Providers, AS Number, EBGP Loop Prevention, IBGP Loop Prevention, Confederation, Prefix-length enforcement, Route damping, CDA model, PE-CE model, IBGP Peering, EBGP Peering, Success, Router r5 configuration, Route reflectors and clusters, Traffic Engineering Case Study, Planning the Merge-Sometimes loopy is OK, Architecture-Oscillation commences, Outcomes, BGP Migration Features in JUNOS-Sometimes loopy is OK, Zen and the art of AS numbers-Zen and the art of AS numbers, Merging Our ASs Off-Merge with Confederations, Merge with Full Mesh-Bring in the EBGP peer, Merge with Route Reflectors-Cluster 2, Merge with Confederations, Monitoring the Merge-Persistent route oscillationarchitectural considerations, Architecture-Oscillation commencesBGP support, Large Enterprises and Service Providers, SuccessCDA model and, CDA modelcommon routing policies, Prefix-length enforcement, Route dampingconfederation support, ConfederationEBGP support, EBGP Loop Prevention, EBGP PeeringGraceful Restart and, Graceful Restart in Multicast Protocols, PIM, and MSDPIBGP support, IBGP Loop Prevention, IBGP PeeringJUNOS migration features, BGP Migration Features in JUNOS-Sometimes loopy is OKmerge issues, Outcomesmerging process, Merging Our ASs Off-Merge with Confederationsmerging with confederations, Merge with Confederationsmerging with full mesh, Merge with Full Mesh-Bring in the EBGP peermonitoring merges, Monitoring the Merge-Persistent route oscillationnumbering support, AS Number, Zen and the art of AS numbers-Zen and the art of AS numbersPE-CE model and, PE-CE modelplanning merges, Planning the Merge-Sometimes loopy is OKroute reflection and, Route reflectors and clusters, Merge with Route Reflectors-Cluster 2RSVP signaling, Router r5 configurationtraffic engineering case study, Traffic Engineering Case Studytraffic monitoring and, Traffic Monitoring OverviewASICs (application-specific integrated circuits), Divide and Conquer, The Brawn: The Packet Forwarding Engine, Hardware components, M Series, Under the Hood of the Routing Engine, Virtual Chassis in the Switching Control Planefunctionality, Divide and ConquerPFE support, The Brawn: The Packet Forwarding Engine, Hardware components, Under the Hood of the Routing Engine, Virtual Chassis in the Switching Control PlanePICs and, M SeriesAS_PATH attribute, Making the choice, Merge with ConfederationsATM, Implementation and Configuration, Address Allocationauditing systems, Syslog Planning, Syslog Planning, Cyclops(see also configuration audits)Cyclops tool, Cyclopssyslog planning and, Syslog Planningauthentication, SNMP Overview, OSPF authentication keys-OSPF authentication keys, Configuration for AAA, TACACS+-IOS accounting (activity tracking), Disadvantages, Authenticating packets, Advantages, Authenticating packets, Step 1: Plan for the migration, Step 1: Plan for the migration, Configuration modules, Local Password Authentication, RADIUS and TACACS+ Authentication, RADIUS and TACACS+ Authentication, Authentication Order, Network equipmentconfiguration auditing support, Configuration modulesconfiguration automation and, Network equipmentdefined, Configuration for AAAdefining order, Authentication OrderIS-IS support, Advantages, Authenticating packetslocal password authentication, Local Password Authenticationmigration planning, Step 1: Plan for the migration, Step 1: Plan for the migrationOSPF support, OSPF authentication keys-OSPF authentication keys, Disadvantages, Authenticating packetsRADIUS support, RADIUS and TACACS+ AuthenticationSNMP support, SNMP OverviewTACACS+ support, TACACS+-IOS accounting (activity tracking), RADIUS and TACACS+ Authenticationauthentication-key configuration statement, Description, Descriptionauthorization, Configuration for AAA, JUNOS locally defined accounts and authorization-IOS authorization, Network equipmentconfiguration automation and, Network equipmentdefined, Configuration for AAATACACS+ support, JUNOS locally defined accounts and authorization-IOS authorizationautomated configuration, Automated Configuration Strategies (see configuration automation)automatic protection switching (APS), SONET/SDH Automatic Protection Switching-SONET/SDH Automatic Protection Switchingautomation scripts, JUNOS APIs, Automation ScriptsAutonomous System, Graceful Restart in Multicast Protocols, PIM, and MSDP (see AS)
+
+
+
+
+
+
+
+
+
+
+About the Authors
+James Sonderegger (JNCIE-M #130, JNCIS-FWV, JNCIS-ER, and Juniper Certified Instructor) holds a MS in IT Management and is a Resident Engineer Manager on Juniper Networks' Professional Services Team. James spent five years as an Engineer in Residence for Federal customers and has been in the networks industry for the last twelve years. His former employers include The Analysis Corporation (TAC), Ericsson IP Infrastructure, and Automated Data Processing.  James was a co-author on "Juniper Networks Reference Guide. Routing, Configuration, and Architecture", ISBN 0201775921, Addison-Wesley Publishing, 2002.
+Orin Blomberg (CCNP, CCSP, CCIP, CCVP, CCDP, JNCIS-M, JNCIS-FWV, JNCIS-ER, JNCIA-IDP, JNCI) is the technical lead for SSL VPNs and remote access at the Washington State Department of Information Service.  His primary responsibilities include providing remote access and secure connectivity for state agencies, county, city governments, and tribal nation governments, as well as connectivity to federal agencies.  His former employers include General Dynamics C4 Systems, Ericsson IP Infrastructure, and the US Army.
+Kieran Milne (JNCIE-M #380, JNCIS-ER, JNCIA-WX, JNCIA-EX, JNCIA-E, JNCI, CCNA, Nortel NCTS) is a training developer and technical trainer within the Education Services department at Juniper Networks. With over ten years of experience in the networking industry, Kieran has taught all over the world, in both corporate and college settings. Before joining Juniper Networks, Kieran spent time at Nortel Networks and Alcatel. He is the author of the O'Reilly book JUNOS Networking Essentials, and contributes to exam development for the Juniper Networks Technical Certification Program. Kieran lives and works out of Canada.
+Senad Palislamovic (JNCIE-M #145 and JNCIS-E) is a Professional Services Engineer at Juniper Networks, where he consults, designs, and implements MPLS enabled NGEN services for largest global ASPs and financial networks.  He has also worked as a JTAC Engineer troubleshooting major ISPs' networks.  Before JTAC, Senad held various network positions at Weber State University where he designed and implemented scalable network solutions.  Senad holds B.S Degree in Telecommunications and IS&T from Weber State University and has over 10 years of experience in various enterprise and ISP networking technologies.  He lives in New York with his wife Samera.
+
+
+
+
+
+
+
+
+
+
+Colophon
+The animals on the cover of JUNOS High
+  Availability are Bohemian waxwings (Bombycilla garrulus). The generic name
+  Bombycilla, Latin for "silk tail," describes the bird's
+  sleek, soft plumage. Waxwing refers to the red tips of
+  the wing feathers that resemble drops of wax. Three species of waxwings
+  exist: Japanese, Cedar, and Bohemian. These species are fairly similar in
+  appearance and are primarily distinguished by geography: the Japanese
+  waxwing lives exclusively in Asia; the Cedar inhabits North America; and the
+  Bohemian—true to its name—travels throughout the sub-Arctic continents in nomadic flocks, particularly in
+  winter as it searches for berries. The two latter waxwings have the most in
+  common, although Cedars are more prevalent in the northeastern United
+  States, whereas Bohemians are numerous in western Canada and the Rocky
+  Mountain region. All three waxwings subsist on a diet of fruit and
+  insects.
+Another difference between the species is seen in the edges of the
+  wing feathers: Bohemian and Japanese
+  waxwings have white edges, while Cedars do not. At six to nine inches long,
+  the Bohemian is also larger and grayer than the Cedar, although both have
+  yellow tail feather tips and a pointed crest. The Bohemian waxwing's call is
+  extremely similar to the Cedar's, most likely because the Bohemian has no
+  territory to defend and thus has never needed to develop a true song.
+The cover image is from the Dover Pictorial Archive. The cover font is
+  Adobe ITC Garamond. The text font is Linotype Birka; the heading font is
+  Adobe Myriad Condensed; and the code font is LucasFont's
+  TheSansMonoCondensed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Special Upgrade Offer
+
+
+
+If you purchased this ebook from a retailer other than O'Reilly, you can upgrade it for $4.99 at oreilly.com by clicking here.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+JUNOS High Availability
+
+
+
+
+James  Sonderegger
+
+
+
+
+
+
+Orin Blomberg
+
+
+
+
+
+
+Kieran Milne
+
+
+
+
+
+
+Senad Palislamovic
+
+
+
+
+Editor
+
+Mike Loukides
+
+
+
+Copyright © 2009 Orin Blomberg, James Sonderegger, Senad Palislamovic, and Kieran Milne, Orin Blomberg, James Sonderegger, Senad Palislamov
+
+
+
+
+O'Reilly books may be purchased for educational, business, or sales
+    promotional use. Online editions are also available for most titles
+    (http://my.safaribooksonline.com).
+    For more information, contact our corporate/institutional sales
+    department: 800-998-9938 or corporate@oreilly.com.
+
+
+
+
+
+O'Reilly and the O'Reilly logo are registered trademarks of O'Reilly
+    Media, Inc. JUNOS High Availability, the image of
+    Bohemian waxwings, and related trade dress are trademarks of O'Reilly
+    Media, Inc.
+Many of the designations used by manufacturers and sellers to
+    distinguish their products are claimed as trademarks. Where those
+    designations appear in this book, and O'Reilly Media, Inc. was aware of a
+    trademark claim, the designations have been printed in caps or initial
+    caps.
+
+
+
+
+
+While every precaution has been taken in the preparation of this
+    book, the publisher and authors assume no responsibility for errors or
+    omissions, or for damages resulting from the use of the information
+    contained herein.
+
+
+
+O'Reilly Media
+
+
+1005 Gravenstein Highway North
+
+Sebastopol, CA 95472 
+
+
+
+2013-04-01T01:24:32-07:00
+
+
+
+
+
+
+
+
+
+
+
+
+YYouTube website, Route Monitoring
+
+
+
+
+
+
+
+
+
+
+XXML (Extensible Markup Language), OverviewXSLT (Extensible Stylesheet Language
+          Transformation), Scripting, JUNOS APIs, XSLTfunctionality, Scripting, JUNOS APIsscripting support, XSLT
+
+
+
+
+
+
+
+
+
+
+WWAN (wide area network), How to Use This BookWireshark tool, Port mirroringworking configuration, Save the working configuration, System-archive a copy of the working configurationsaving, Save the working configurationsystem-archive considerations, System-archive a copy of the working configuration
+
+
+
+
+
+
+
+
+
+
+VVACM (view-based access control model), SNMP Overview, SNMPv3van Beijnum, Iljitsch, Planning the MergeVC (Virtual Chassis), EX Series, Virtual Chassis in the Switching Control Plane-Virtual Chassis in the Switching Control Plane, Virtual Chassis in the Switching Control Plane, Virtual Chassis in the Switching Control Plane, VC Roles, IDs for VCs, Priorities and the Election Process, Basic VC Setup and Configuration-Basic VC Setup and Configuration, Basic VC Setup and Configuration-Basic VC Setup and Configuration, Eliminating Loops Within the VC-Eliminating Loops Within the VC, Highly Available Designs for VCs-Server resilience with VCs, Server resilience with VCs-Server resilience with VCs, Functional network areasbasic configuration, Basic VC Setup and Configuration-Basic VC Setup and Configurationbasic setup, Basic VC Setup and Configuration-Basic VC Setup and Configurationconfiguration auditing support, Functional network areasdefined, Virtual Chassis in the Switching Control Planeeliminating loops within, Eliminating Loops Within the VC-Eliminating Loops Within the VCidentifier support, IDs for VCsmanaging remotely, Virtual Chassis in the Switching Control Planepriorities and election process, Priorities and the Election ProcessRE support, EX Seriesredundancy support, Highly Available Designs for VCs-Server resilience with VCsroles supported, VC Rolesserver resilience, Server resilience with VCs-Server resilience with VCsswitching control plane, Virtual Chassis in the Switching Control Plane-Virtual Chassis in the Switching Control PlaneVC ports, Basic VC Setup and Configuration (see VCPs)VC split, manipulating, Manipulating a split VCVCCPd daemon, Eliminating Loops Within the VC, Eliminating Loops Within the VCVCPs (VC ports), Basic VC Setup and Configuration, Eliminating Loops Within the VC-Eliminating Loops Within the VCeliminating loops, Eliminating Loops Within the VC-Eliminating Loops Within the VCfunctionality, Basic VC Setup and Configurationverification, Routing Update Process-Step 10: Verify that the correct copy of the route is being
+        installed into the forwarding plane on the PFE complex, Pre-Upgrade Verifications-Checklist, Post-Upgrade Verification-Removal of Configuration Workarounds, Device State-Verify memory, Network State (Routes, Peering Relationships, and
+      Databases)-Routing table consistency, State of Existing Services, Filesystems and Logs-Syslog settings, Removal of Configuration Workaroundsdevice state, Device State-Verify memoryduring routing update process, Routing Update Process-Step 10: Verify that the correct copy of the route is being
+        installed into the forwarding plane on the PFE complexfilesystems and logs, Filesystems and Logs-Syslog settingsnetwork state, Network State (Routes, Peering Relationships, and
+      Databases)-Routing table consistencypost-upgrade, Post-Upgrade Verification-Removal of Configuration Workaroundspre-upgrade, Pre-Upgrade Verifications-Checklistremoving configuration workarounds, Removal of Configuration Workaroundsstate of existing services, State of Existing Servicesversion mismatch errors, Troubleshooting GRESversioning, software, One OS to Rule Them, Configuration Managerview-based access control model (VACM), SNMP Overview, SNMPv3VIP (virtual IP), Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IP, Virtual Router Redundancy Protocolswitching ownership, Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IPVRRP support, Virtual Router Redundancy ProtocolVirtual Chassis, Virtual Chassis in the Switching Control Plane (see VC)virtual IP (VIP), Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IP, Virtual Router Redundancy Protocolswitching ownership, Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IPVRRP support, Virtual Router Redundancy Protocolvirtual LAN (VLAN), Address AllocationVirtual Private LAN Service, Taking Consolidation to the Next Level: Scalable Route
+      Reflection (see VPLS)virtual private networks, Divide and Conquer (see VPNs)Virtual Route and Forwarding (VRF), Graceful Restart in MPLS-Based VPNsvirtual router chassis, T SeriesVirtual Router Redundancy Protocol, Redundant Component Architectures (see VRRP)virtual routers, Network Virtualization and Service Overlays (see routing instances)virtual-address configuration statement, Descriptionvirtual-inet6-address configuration statement, Descriptionvirtual-link-local-address configuration
+            statement, Descriptionvirtualization, Virtualization for High Availability, Virtual Chassis in the Switching Control Plane-Server resilience with VCs, Control System Chassis-Taking Consolidation to the Next Level: Scalable Route
+      Reflection, JUNOS interface addressing syntax, Network Virtualization and Service Overlays-Configuring the service overlayaddress allocation and, JUNOS interface addressing syntax, Network Virtualization and Service Overlays-Configuring the service overlaycontrol system chassis, Control System Chassis-Taking Consolidation to the Next Level: Scalable Route
+      Reflectiondefined, Virtualization for High Availabilityswitching control plane, Virtual Chassis in the Switching Control Plane-Server resilience with VCsvisualization tools, Syslog and KiwiVLAN (virtual LAN), Address AllocationVLAN tagging, Enable VLAN tagging in the primary logical router-Enable VLAN tagging in the primary logical routervoltages, checking, Check Voltages and Temperatures-Check Voltages and TemperaturesVPLS (Virtual Private LAN Service), Taking Consolidation to the Next Level: Scalable Route
+      Reflection, Implementation Detailsfunctionality, Taking Consolidation to the Next Level: Scalable Route
+      ReflectionISSU support, Implementation DetailsVPNs (virtual private networks), Divide and Conquer, Divide and Conquer, SRX Series, Under the Hood of the Routing Engine, Graceful Restart in MPLS-Based VPNs-Configuration, Control System Chassis, Taking Consolidation to the Next Level: Scalable Route
+      Reflection, Implementation Details, Routing instances, AS Number, Control plane capacity best practices, Sometimes loopy is OKAS considerations, Sometimes loopy is OKbest practices, Control plane capacity best practicesGraceful Restart in, Graceful Restart in MPLS-Based VPNs-ConfigurationISSU support, Implementation DetailsMPLS support, Divide and Conquer, Control System Chassis, Taking Consolidation to the Next Level: Scalable Route
+      Reflectionpacket flows and, SRX Seriesrouting instances, Routing instancesrouting table roles, Under the Hood of the Routing Engineservice providers and, AS NumberSPC support, Divide and ConquerVRF (Virtual Route and Forwarding), Graceful Restart in MPLS-Based VPNsVRRP (Virtual Router Redundancy Protocol), Redundant Component Architectures, J Series, Eliminating Loops Within the VC, Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IP, Software Upgrades Without Unified ISSU, Virtual Router Redundancy Protocol, Virtual Router Redundancy Protocol-Virtual Router Redundancy Protocol, Description-Optionconfiguration statements, Description-Optioncustomer routes and, Virtual Router Redundancy Protocolfunctionality, Redundant Component Architectures, Virtual Router Redundancy Protocol-Virtual Router Redundancy ProtocolJ Series support, J Seriessoftware upgrades, Software Upgrades Without Unified ISSUswitching ownership, Switching Ownership of a VRRP Virtual IP-Switching Ownership of a VRRP Virtual IPVC support, Eliminating Loops Within the VCvrrp-group configuration statement, Descriptionvrrp-inet6-group configuration statement, Description
+
+
+
+
+
+
+
+
+
+
+UUDP, How to Use This Book, Configuration for AAA, Use Firewall Filtersdefined, How to Use This BookDoS attacks and, Use Firewall FiltersRADIUS support, Configuration for AAAUniversity of California, CyclopsUniversity of Oregon, Route Viewsupdate command, Private configurationupgrades, One OS to Rule Them (see software upgrades)USB thumb drives, Backup Imagesuser space, Modular Design, Daemonsuser-based security model (USM), SNMP Overview, SNMPv3USM (user-based security model), SNMP Overview, SNMPv3
+
+
+
+

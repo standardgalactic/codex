@@ -1,0 +1,1000 @@
+      bidirectional throughput pass fewer than 100 Mbps while its CPU spikes
+      to 100% utilization in this type of situation. With processor cycles
+      being split between packet forwarding and management protocols, the CPU
+      is overworked to the point where protocol processes may die or packets
+      may be dropped. The divided architecture ensures that packet processing
+      does not impact CPU performance and the reconvergence of routing
+      protocols does not affect packet throughput.
+
+The PFE serves the purpose of the sorters and carriers in our snail
+    mail example. It is responsible for comparing the addresses on incoming
+    packet headers and determining their next hop based on the forwarding
+    table pushed from the RE. Without the need to understand the routing and
+    management protocols, the PFE is able to process all the transit packets
+    efficiently. The only packets that are ever sent to the RE are those of
+    local significance, such as routing protocol and management packets, or
+    other packets of special interest such as packets with the IP option bits
+    set.
+By dividing the processes of routing and packet forwarding, the RE
+    remains stable during times of unusually high network activity, and the
+    PFE remains stable during times of network and routing table churn. When
+    you provide this stability in your networking equipment, you have taken
+    the first step in guaranteeing that the network achieves your high
+    availability goals.
+The architecture is further divided with the use of Adaptive
+    Services Physical Interface Cards (PICs) in Juniper Networks M and T Series equipment, and Services Processing Cards (SPCs) in the Juniper Networks
+    SRX Series, to offload highly intensive processing used for
+    services such as stateful firewalls, VPNs, and intrusion detection and
+    prevention. Again, by removing these new calculations from the work of the
+    RE and PFE, the chassis is able to provide high availability and
+    throughput even with a multitude of services running on the equipment.
+
+
+
+
+The Brains: The Routing Engine
+
+
+
+If you were to pull one of the REs out of the device—preferably a
+      device that has a redundant RE—it would look strangely familiar. Unlike
+      some routing products that cloak their deep magic in jumbles of
+      unidentifiable chips and wires, the Juniper RE looks just like a PC
+      motherboard, with all the standard features: Intel-based processor, hard
+      drive, RAM, and Ethernet port. Here is a brief description of the role
+      each component plays:
+
+
+
+General processor
+
+
+Ranging from Pentium III to Pentium 4 and Intel Celeron, the
+            processor provides the power for running the kernel and performing
+            the routing and management functionality of the router. In the
+            Juniper Networks EX Series, the PowerPC processor is used.
+
+
+Random access memory
+
+
+The random access memory performs the normal RAM functionality
+            of the processor and is sized to scale to allow storage of routing
+            tables with millions of routes, which is hundreds of times the
+            size of the current Internet routing tables.
+
+
+Hard disk drive
+
+
+This is a standard hard drive on which a backup of the Juniper
+            operating system (JUNOS) is stored. Including a hard drive in the
+            system allows for flexibility in logging and system configuration
+            management. More importantly, the hard disk drive is used to store
+            the Unix logs from the underlying FreeBSD operating system.
+
+
+CompactFlash drive
+
+
+The CompactFlash storage on the Juniper RE stores the JUNOS software
+            and the current configurations.
+
+
+Ethernet port
+
+
+The Ethernet port on the RE allows for direct access to the RE's
+            management processes for Out of Band (OoB) management.
+
+
+
+
+
+
+
+RE comparison
+
+
+
+Some people new to Juniper equipment are surprised that the processors in
+        the RE can be earlier models than those in their PCs. Because of the
+        efficiency of BSD-based operating systems and the JUNOS software, the
+        earlier Pentium and Celeron processors are more than powerful enough
+        to run the protocols and keep track of the routing tables. Remember,
+        these processors are not responsible for forwarding traffic—the ASICs
+        handle that.
+An additional advantage with the older general processors is
+        that they require less electrical supply and cooling than the more
+        modern chips. This allows the equipment to be in a better high
+        availability posture during times of high heat or electrical grid
+        disruption.
+Though based on a common architecture, the REs within various
+        Juniper Networks devices have unique throughput and traffic
+        requirements that correspond with their specific usage. Understanding
+        how the RE was designed for specific network equipment is worth a few
+        moments of inspection. By reviewing the design of each of these REs,
+        you can see how they are scaled and scoped to ensure that they remain
+        stable during the most extreme network conditions, thus allowing your
+        network to maintain its high availability status.
+
+
+
+
+M Series
+
+
+
+The first of the core networking routers in the Juniper product line, and thus a
+          general-purpose routing device, the M Series provides flexibility in
+          its RE deployment. Table 2-1 shows the
+          available REs for the various M Series equipment. Though the M7i
+          does not offer RE redundancy, the M10i, M120, and M320 all offer the
+          ability to install redundant REs in an active/standby mode. As you
+          can see in Table 2-1, some of the REs are
+          interchangeable among different equipment within the series. With a
+          lack of redundancy in REs and with its throughput levels, the M7i is
+          very well suited for branch offices where redundancy is not needed
+          or provided through multihomed connections to an ISP. The full
+          redundancy in the rest of the M Series allows the devices to form
+          the core of an enterprise network or the edge of a service
+          provider.
+
+
+Table 2-1. M Series REs
+
+
+
+
+
+
+
+
+
+
+
+
+Specifications
+
+
+M7i
+
+
+M10i
+
+
+M120
+
+
+M320
+
+
+
+
+
+400 MHz Intel Celeron
+                  processor 768 MB SDRAM 1 GB
+                  CompactFlash 20 GB IDE hard disk
+                  drive
+X
+(NR)[a]
+
+X
+
+ 
+ 
+
+
+850 MHz Intel Pentium
+                  III processor 1536 MB SDRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+X
+(NR)
+
+X
+
+ 
+ 
+
+
+1 GHz Intel Celeron M
+                  processor 2 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+ 
+ 
+
+X
+
+ 
+
+
+1.6 GHz Intel Pentium
+                  4 M processor 2 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+ 
+ 
+ 
+
+X
+
+
+
+2 GHz Intel Celeron M
+                  processor 4 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+ 
+ 
+
+X
+
+
+X
+
+
+
+
+
+
+
+[a] (NR) = No redundancy available
+
+
+
+
+
+
+
+
+
+
+
+
+MX Series
+
+
+
+The Juniper Networks MX Series routers are positioned for use in the Metro Ethernet realm,
+          and provide high throughput and various services. The REs in this
+          line are based on the Intel Celeron chipset. All models of equipment
+          within the MX Series offer the ability to install redundant
+          REs.
+
+Note
+It is important to remember that the resiliency and
+            redundancy of the hardware are only as good as the rest of your
+            network design. No number of redundant parts can ensure high
+            availability in your network when a backhoe cuts your only fiber
+            cable to a distant site.
+
+Imagine that for your network you have just been put in charge
+          of ensuring that service-level agreements (SLAs) are maintained and
+          that they include guarantees not only for high availability, but
+          also for rapid response if any of the equipment fails. With
+          interchangeable REs in the MX Series and optional hardware
+          redundancy, you are able to meet the high availability requirements
+          either by having seamless failover between the redundant equipment
+          or by reducing your Mean Time to Repair (MTTR) by having a general spare RE to install in case of a
+          hardware failure in a nonredundant system. Table 2-2 lists the REs for the MX Series.
+
+
+Table 2-2. MX Series REs
+
+
+
+
+
+
+
+
+
+
+
+Specifications
+
+
+MX240
+
+
+MX480
+
+
+MX960
+
+
+
+
+
+1.3 GHz Intel Celeron
+                  M processor 2 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+
+X
+
+
+X
+
+
+X
+
+
+
+2 GHz Intel Celeron M
+                  processor 4 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+
+X
+
+
+X
+
+
+X
+
+
+
+
+
+
+
+
+
+
+
+T Series
+
+
+
+In the core network "big iron" range of routers, the T Series is
+          designed for high throughput and redundancy. The T Series REs are
+          based on the Pentium 4 chipsets, can be fully redundant in all
+          models of the series, and are interchangeable among all chassis. The
+          TX Matrix, which allows multiple T1600s or T640s to be connected to
+          form a virtual router chassis, requires redundant REs. The T Series
+          REs are covered in Table 2-3. The virtual router chassis or
+          routing node created by the T Series adds
+          important high availability features to the routing core. With all
+          the routers attached through the matrix appearing as a single
+          router, the systems offer multiple redundant paths across the node.
+          If a single RE fails, the other REs in the node are available to
+          continue managing the routing information. Only in the rare case
+          that a full chassis fails would a large number of links be affected,
+          but of course, this too could be mitigated with redundant links to
+          multiple chassis in the node.
+
+
+Table 2-3. T Series REs
+
+
+
+
+
+
+
+
+
+
+
+
+Specifications
+
+
+T320
+
+
+T640
+
+
+T1600
+
+
+TX
+                  Matrix
+
+
+
+
+
+1.6 GHz Pentium 4
+                  processor 2 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+
+X
+
+
+X
+
+
+X
+
+X
+(RR)[a]
+
+
+2 GHz Pentium 4
+                  processor 4 GB DRAM 1 GB
+                  CompactFlash 40 GB IDE hard disk
+                  drive
+
+X
+
+
+X
+
+
+X
+
+X
+(RR)
+
+
+
+
+
+
+[a] (RR) = Redundancy required
+
+
+
+
+
+
+
+
+
+
+
+
+EX Series
+
+
+
+Unlike the other devices in the Juniper Networks line, the EX Series
+          does not rely on a removable RE. In the EX Series, the RE is built
+          into the chassis itself. To provide for RE redundancy, the switches
+          can be connected to provide a single virtual switch chassis. This
+          Virtual Chassis (VC) uses one RE as the master of the system and another
+          one as a backup to provide high availability for the switching
+          network.
+Though the EX Series has been designed to fit into your
+          network within the data center, or in any area that relies on
+          traditional Ethernet switching systems, it also includes an RE so
+          that it can participate in the routing protocols running on the core
+          or distribution layer routers to which it is attached. The ability
+          of the EX Series to work at Layer 3 as well as Layer 2 moves the
+          platform away from the typical switch's reliance on Spanning Tree
+          Protocol (STP), which was designed merely to prevent loops in a
+          Layer 2 architecture but was not designed to provide the
+          deterministic packet forwarding or resiliency necessary in a high
+          availability architecture. Table 2-4 shows
+          the details of the EX Series.
+
+
+Table 2-4. EX Series REs
+
+
+
+
+
+
+
+
+
+
+
+Specifications
+
+
+EX3200
+
+
+EX4200
+
+
+EX8200
+
+
+
+
+
+600 MHz Power PC
+                  processor 512 MB DRAM 1 GB
+                  CompactFlash 20 GB IDE hard disk
+                  drive
+X
+(NR)[a]
+
+X
+
+
+X
+
+
+
+
+
+
+
+[a] (NR) = No redundancy available
+
+
+
+
+
+
+
+
+
+
+
+
+SRX Series
+
+
+
+The most recent addition to the Juniper Networks product line
+          is the SRX Series of security gateways which not only provide full
+          routing capabilities, but also provide for VPNs, high-throughput
+          stateful firewalls, and industry-leading intrusion detection and
+          prevention. As with the rest of the product lines discussed in this
+          book, the SRX uses the JUNOS operating system running on an RE,
+          which in the case of the SRX is located in its System Control Board
+          (SCB). Though a detailed explanation of the SRX Series is
+          beyond the scope of this book, its architecture mirrors that of the
+          router and switch product lines.
+
+
+
+
+
+J Series
+
+
+
+The RE within the J Series is different from all others in the other
+          product lines because of this platform's position in the enterprise
+          routing arena. With a focus on accessibility, cost savings, and the
+          provision of services to lower bandwidths in branch offices, the J
+          Series divided architecture is based on software modules instead of
+          discrete hardware. This difference makes the choice of an RE for the
+          J Series far simpler. The RE within the J Series can come with
+          upgraded RAM or an additional hardware encryption accelerator, but
+          no other options. High availability for the J Series can be provided
+          through the use of Virtual Router Redundancy Protocol
+          (VRRP) or other protocols, as well as multihoming to several
+          ISPs.
+
+Note
+For small offices with little or no IT support, sometimes
+            the best way to provide high availability is simplicity in the
+            deployment and configuration of the network device. The J Series,
+            with web configuration and limited configurations, is appropriate
+            for your most distant offices, whereas the more complex systems
+            may require you to spend hours on the phone walking someone
+            through configuration or troubleshooting.
+
+
+
+
+
+
+
+
+The Brawn: The Packet Forwarding Engine
+
+
+
+Having the RE responsible for the management and routing tasks on the device frees the PFE
+      to forward data packets as efficiently as possible.
+Unlike the RE, which uses a general processor for calculations and
+      processes, the PFE consists of ASICs designed to perform specific jobs as efficiently and
+      accurately as possible. The jobs within the PFE, such as Layer 2 header
+      decoding, IP longest-prefix match lookup, and buffer memory management,
+      are divided among these ASICs.
+At lower levels of throughput, the Juniper device relies on a
+      single PFE per chassis to perform packet processing tasks, but as the
+      device's bandwidth needs grow, device throughput is scaled by using
+      multiple PFEs per chassis—even to the point where multiple PFEs exist on
+      a single interface card.
+
+
+
+
+Hardware components
+
+
+
+Throughout the entire line of Juniper products, the PFE performs
+        the function of handling the processing of media signaling, Layer 2
+        encapsulation, Layer 3 routing and filtering, and packet forwarding.
+        Though the overarching architecture for the PFE and the router is the
+        same, how individual products in the line perform this duty is
+        slightly different. The roles that individual components play in the
+        PFE are as follows:
+
+
+
+Layer 2 Processor ASICs
+
+
+These provide Layer 2 header processing for packets across the network.
+
+
+Internet Processor ASICs
+
+
+The heart of the PFE, the Internet Processor ASIC provides efficient and
+              quick packet processing at Layer 3 and higher.
+
+
+PIC
+
+
+In the M Series and T Series routers, the PICs provide ports and processing for specific
+              media types. The Controller ASICs on the PIC perform framing and
+              line-speed signaling specific to the media type.
+
+
+Flexible PIC Concentrator (FPC)
+
+
+In the M Series and T Series, the FPC provides connectivity between the PICs
+              and the midplane of the device. In the T Series and in the M320,
+              M120, and M40e, the FPC also provides an Internet Processor ASIC
+              for longest-prefix match lookups.
+
+
+Services Processing Cards (SPCs)
+
+
+The SPCs of the SRX Series host Services Processing Units
+              (SPUs) that are used to offload the processing of
+              security-related features, such as stateful firewalling and denial-of-service (DoS) mitigation.
+
+
+Control boards
+
+
+In the M Series, the control boards provide the Internet Processor to
+              process the Layer 3 (and higher) headers of the packets. In the
+              T Series and MX Series, the control boards provide the Switch
+              Interface ASIC for data and notification cell switching across
+              the backplane.
+
+
+Midplane
+
+
+The midplane provides connectivity between the various
+              components that make up a single PFE, or between PFEs in systems
+              with multiple PFEs.
+
+
+Buffering and memory control
+
+
+Each product has ASICs specifically designed to buffer data packets
+              and to switch data packets across the midplane of the
+              device.
+
+
+
+
+
+
+
+
+Model comparison
+
+
+
+Though the PFE provides the same functionality in each model in the product line,
+        the architecture in each series is slightly different, depending on
+        the market use Juniper initially intended it to serve. At the lower
+        end of the product line, the packet forwarding components are built
+        into the chassis. Products at the higher end provide options allowing
+        for PFE scaling and hardware redundancy. For more comprehensive
+        coverage of individual hardware components, see the hardware guides at
+        http://juniper.net/techpubs.
+
+
+
+
+M Series
+
+
+
+The M Series PFEs consist of an FPC and a control board. At the
+          lower end of the M Series (the M7i and M10i), the FPCs are built into the chassis. At the high end of
+          the M Series, the PFE is divided among removable FPCs and removable
+          Forwarding Engine Boards (FEBs). In order to support the high throughput needed by
+          the M320, the highest in the M Series, the M320 is identically
+          architected to the T640. By having control boards and packet
+          forwarding components that can be replaced without causing a full network outage, it is
+          possible to maintain high availability even during hardware
+          failures.
+The M Series has the following combination of FPCs and
+          control boards:
+
+
+
+M7i/M10i FPC
+
+
+The FPC on the low-end M Series equipment is built into
+                the router chassis.
+
+
+M120FPC-1, 2, 3
+
+
+Three revisions of the standard M120 FPC exist for the
+                various revisions of PICs.
+
+
+M320FPC-1, 2, 3
+
+
+Three revisions of the standard M320 FPC exist for the
+                various revisions of PICs.
+
+
+cFPC
+
+
+This is a compact FPC with a single
+                built-in interface. cFPCs are available with OC-192 and 10
+                Gigabit Ethernet interfaces.
+
+
+M7i/M10i cFEB
+
+
+The compact FEB is the control
+                board within the M7i and M10i. A single board is present in
+                the M7i, but the M10i can support two cFEBs in an
+                active/standby mode for RE redundancy.
+
+
+
+
+
+
+
+
+MX Series
+
+
+
+Within the MX Series, the concept of the FPC is replaced with the Dense Port
+          Concentrator (DPC), which provides four PFEs per DPC. The SCBs within
+          the MX Series provide the Switch Interface ASIC for the management
+          of data packets across the midplane of the system. The DPCs are
+          interchangeable among the MX240, MX480, and MX960. The
+          interchangeable nature of the MX Series components makes it easier
+          to maintain high availability in the Metro Ethernet environment,
+          because a limited number of spares can be stored to mitigate any
+          threat from hardware failures.
+The DPCs in the MX Series Ethernet Services Routers are
+          designed to supply the most efficient performance based on the
+          services they are to provide. The MX Series has three DPC
+          models:
+
+
+
+DPCE-X
+
+
+Designed for distributed and centralized office Ethernet
+                and Metro Ethernet aggregation. The cards provide both virtual
+                LAN (VLAN) and MPLS aggregation.
+
+
+DPCE-R
+
+
+Provides for a full suite of routing protocols and
+                upper-layer packet processing capabilities.
+
+
+DPCE-EQ
+
+
+A DPCE-X or DPCE-R card providing more advanced queuing
+                capabilities.
+
+
+
+Table 2-5 lists the basic
+          features available on the DPCE-X and DPCE-R (advanced queuing is in
+          addition to these features).
+
+
+Table 2-5. DPC differentiation
+
+
+
+
+
+
+
+
+
+
+Feature
+
+
+DPCE-X
+
+
+DPCE-R
+
+
+
+
+
+
+IP
+                  multicast
+
+
+Yes
+
+
+Yes
+
+
+
+
+Layer 2 switching and
+                  STP
+
+
+Yes
+
+
+Yes
+
+
+
+
+Virtual Private LAN
+                  Service or VPLS (Layer 2 VPNs)
+
+
+Yes
+
+
+Yes
+
+
+
+
+RFC 2547 VPNs (Layer
+                  3 VPNs)
+
+
+No
+
+
+Yes
+
+
+
+
+Border Gateway
+                  Protocol (BGP)
+
+
+No (limited
+                  scaling)
+
+
+Yes
+
+
+
+
+uRFP
+
+
+No
+
+
+Yes
+
+
+
+
+Source class
+                  usage/destination class usage (SCU/DCU)
+
+
+No
+
+
+Yes
+
+
+
+
+Filter
+                  scalability
+
+
+Limited
+
+
+Very large
+
+
+
+
+
+
+
+Note
+The midplane communication in the MX Series is controlled by
+            the SCB, which has a Switch Interface ASIC that communicates with
+            a Switch Interface ASIC on the DPC.
+
+
+
+
+
+
+T Series
+
+
+
+As with the M Series, the T Series relies on the concept of FPCs, but like the
+          MX Series, its control board is in the system (the T Series Switch
+          Interface Board) and provides for connectivity between the FPCs.
+          Within the T Series, as well as the M120 and M320, the Internet
+          Processor is on the FPC itself. This change in architecture
+          facilitates the system's higher packet throughput, as well as
+          allowing the T Series to be connected to other T Series routers
+          through the T Series matrix.
+Through the use of the T Series matrix switch, the equipment
+          attached to the switch appears as a single routing node. The routing
+          node provides multiple redundant paths, REs, and systems to ensure
+          that the node remains available.
+
+
+
+
+
+EX Series
+
+
+
+Because the EX Series was designed to be a switch and to work
+          efficiently at Layer 2 and Layer 3, the EX architecture is based on
+          the new EX-PFE ASIC. Depending on the size, chassis, and number of
+          ports on the switch, the EX Series can contain from one to three
+          PFEs. To make the EX Series more efficient at forwarding Layer 2
+          traffic, the RE in the system not only pushes down the standard
+          forwarding table with Layer 3 information, but also pushes a
+          bridging table.
+In existing networks, STP and Layer 2 switching are used at the access layer
+          and sometimes at the core to provide packet forwarding. In
+          accordance with STP rules, loops are prevented in the Layer 2
+          switching network by forwarding packets across only a single
+          forwarding path. This restriction results in reduced efficiency and
+          increased complexity in troubleshooting and scalability, which in
+          turn affects the high availability of the network. However, by using
+          uplink modules, you can combine the EX Series switches in your
+          network to form a VC, providing for redundancy of the RE as well as
+          eliminating the need for STP between the switches. Creating a VC
+          eliminates extraneous packet processing and allows the chassis to
+          build a shortest-path tree for packets moving between PFEs, which allows for a more
+          deterministic forwarding of packets and a higher high availability
+          profile for the switch.
+
+

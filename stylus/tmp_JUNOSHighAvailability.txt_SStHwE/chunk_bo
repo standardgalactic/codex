@@ -1,0 +1,1000 @@
+            routing
+
+ 
+ 
+
+
+
+security
+
+
+Application layer
+            gateways
+
+ 
+ 
+
+
+
+Flow
+
+ 
+ 
+
+
+
+Forwarding
+            options
+
+ 
+ 
+
+
+
+IKE
+
+ 
+ 
+
+
+
+IPSEC
+
+ 
+ 
+
+
+
+NAT
+
+ 
+ 
+
+
+
+PKI
+
+ 
+ 
+
+
+
+Policies
+
+ 
+ 
+
+
+
+Screen
+
+ 
+ 
+
+
+
+Zones
+
+ 
+ 
+
+
+
+services
+
+
+CoS
+
+ 
+ 
+
+
+
+Dynamic flow
+            capture
+
+ 
+ 
+
+
+
+Flow
+            collector
+
+ 
+ 
+
+
+
+Flow
+            monitoring
+
+ 
+ 
+
+
+
+IPSEC-VPN
+
+ 
+ 
+
+
+
+L2TP
+
+ 
+ 
+
+
+
+NAT
+
+ 
+ 
+
+
+
+Stateful
+            firewall
+
+ 
+ 
+
+
+
+snmp
+
+
+Client list
+
+ 
+ 
+
+
+
+Health
+            monitor
+
+ 
+ 
+
+
+
+RMON
+
+ 
+ 
+
+
+
+Trap groups
+
+ 
+ 
+
+
+
+Trap options
+
+ 
+ 
+
+
+
+V3
+
+ 
+ 
+
+
+
+system
+
+
+Accounting
+
+ 
+ 
+
+
+
+Archival
+
+ 
+ 
+
+
+
+Hostname
+
+ 
+ 
+
+
+
+Login
+
+ 
+ 
+
+
+
+NTP
+
+ 
+ 
+
+
+
+RADIUS
+            options
+
+ 
+ 
+
+
+
+Scripts -
+            commit
+
+ 
+
+Refresh access confirmed:
+            YES/NO
+
+
+
+
+Scripts - op
+
+ 
+
+Refresh access confirmed:
+            YES/NO
+
+
+
+
+Service
+
+ 
+ 
+
+
+
+Syslog
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Audit Interval
+
+
+
+
+
+
+
+
+
+
+
+
+
+Configuration
+            module
+
+
+Audit
+            interval
+
+
+Comments
+
+
+
+
+
+
+Chassis
+
+
+Quarterly
+
+ 
+
+
+
+Firewall
+            filter
+
+
+Biweekly
+
+
+Pay special attention to
+            newly allocated IP address ranges
+
+
+
+
+Interfaces
+
+
+Quarterly
+
+ 
+
+
+
+Routing
+            policies
+
+
+Biweekly
+
+
+Pay special attention to
+            newly allocated IP address ranges
+
+
+
+
+Protocols
+
+
+Biweekly
+
+
+Pay special attention to
+            external BGP peering
+
+
+
+
+Security
+
+
+Biweekly
+
+ 
+
+
+
+Systems
+
+
+Quarterly
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Appendix C. High Availability Configuration Statements
+
+
+
+This appendix supplies a summary of JUNOS configuration statements arranged by various high
+  availability features.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Routing Engine and Switching Control Board
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+cfeb
+
+
+
+
+cfeb slot-number (always | preferred);
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy]
+
+
+
+
+
+Description
+On M10i routers only, configure which Compact Forwarding
+        Engine Board (CFEB) is the master and which is the backup.
+
+
+
+Default
+By default, the CFEB in slot 0 is the master and the CFEB in
+        slot 1 is the backup.
+
+
+
+Options
+
+
+
+
+slot-number
+
+
+
+Specify which slot is the master and which is the
+              backup.
+
+
+
+always
+
+
+
+Define this CFEB as the sole device.
+
+
+
+preferred
+
+
+
+Define this CFEB as the preferred device of at least
+              two.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+description
+
+
+
+
+description description;
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy feb redundancy redundancy-group
+          name]
+
+
+
+
+
+Description
+Provide a description of the FEB redundancy group.
+
+
+
+Option
+
+
+
+
+description
+
+
+
+Provide a description for the FEB redundancy group.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+failover on-disk-failure
+
+
+
+
+failover on-disk-failure;
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy]
+
+
+
+
+
+Description
+Instruct the backup router to take mastership if it detects hard disk
+        errors on the master routing engine (RE).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+failover on-loss-of-keepalives
+
+
+
+
+failover on-loss-of-keepalives;
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy]
+
+
+
+
+
+Description
+Instruct the backup router to take mastership if it detects a loss of
+        keepalive signals from the master RE.
+
+
+
+Default
+If the failover
+        on-loss-of-keepalives statement at the [edit chassis
+        redundancy] hierarchy level is not included and Graceful Routing
+        Engine Switchover (GRES) is not enabled, failover cannot occur. When the
+        failover on-loss-of-keepalives
+        statement is included and GRES is not configured, failover occurs
+        after 300 seconds (five minutes). When the failover on-loss-of-keepalives statement is
+        included and GRES is configured, the keepalive signal is automatically
+        enabled and the failover time is set to two seconds. You cannot
+        manually reset the keepalive time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+failover other-routing-engine
+
+
+
+
+failover other-routing-engine;
+
+
+
+Hierarchy level
+
+
+[edit system processes process-name]
+
+
+
+
+
+Description
+Instruct the backup RE to take mastership if a software process
+        fails. If this statement is configured for a process and that process
+        fails four times within 30 seconds, the router reboots from the backup
+        RE.
+
+
+
+Option
+
+
+
+
+process-name
+
+
+
+One of the valid software process names. A few examples
+              are disk-monitoring,
+              ethernet-link-fault-management,
+              kernel-replication,
+              redundancy-interface-process, and vrrp.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+feb (Creating a Redundancy Group)
+
+
+
+
+feb {
+   redundancy-groupgroup-name {
+      description description;
+      febslot-number (backup | primary);
+      no-auto-failoverr;
+   }
+}
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy]
+
+
+
+
+
+Description
+On M120 routers only, configure an FEB redundancy group.
+
+
+
+Options
+The remaining statements are described separately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+feb (Assigning a FEB to a Redundancy Group)
+
+
+
+
+feb slot-number (backup | primary);
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy feb
+          redundancy-groupgroup-name]
+
+
+
+
+
+Description
+On M120 routers only, configure an FEB as part of an FEB
+        redundancy group.
+
+
+
+Options
+
+
+
+
+slot-number
+
+
+
+Slot number of the FEB. Range: 0-5.
+
+
+
+backup
+
+
+
+For each redundancy group, you must configure exactly one
+              backup FEB.
+
+
+
+primary
+
+
+
+(Optional) For each redundancy group, you can optionally
+              configure one primary FEB.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+keepalive-time
+
+
+
+
+keepalive-time seconds;
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy]
+
+
+
+
+
+Description
+Configure the time period that must elapse before the backup
+        router takes mastership when it detects loss of the keepalive
+        signal.
+
+
+
+Default
+If the failover
+        on-loss-of-keepalives statement at the [edit chassis
+        redundancy] hierarchy level is not included and GRES is not enabled,
+        failover cannot occur. When the failover
+        on-loss-of-keepalives statement is included and GRES is not
+        configured, failover occurs after 300 seconds (five minutes). When the
+        failover on-loss-of-keepalives
+        statement is included and GRES is configured, the keepalive signal is
+        automatically enabled and the failover time is set to two seconds. You
+        cannot manually reset the keepalive time.
+
+
+
+Option
+
+
+
+
+seconds
+
+
+
+Time before the backup router takes mastership when it
+              detects loss of the keepalive signal. Range: 2-10,000.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+no-auto-failover
+
+
+
+
+no-auto-failover;
+
+
+
+Hierarchy level
+
+
+[edit chassis redundancy feb
+          redundancy-groupgroup-name]
+
+
+
+
+
+Description
+Disable automatic failover to a backup FEB when an active FEB in
+        a redundancy group fails.
+
+
+
+Default
+Automatic failover is enabled by default.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+redundancy
+
+
+
+
+redundancy {
+  cfeb slot-number (always | preferred);
+  feb {
+    redundancy-group group-name {
+      description description;
+      feb slot-number (backup | primary);
+      no-auto-failover;
+    }
+  }
+  failover on-disk-failure;
+  failover on-loss-of-keepalives;
+  keepalive-timeseconds;
+  routing-engineslot-number (backup | disabled | master);
+  sfmslot-number (always | preferred);
+  ssbslot-number (always | preferred);
+}
+
+
+
+Hierarchy level
+
+
+[edit chassis]
+
+
+
+
+
+Description
+Configure redundancy options.
+
+
+
+Options
+The statements are explained separately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Name
+redundancy-group
+
+
+
+
+redundancy-group group-name {

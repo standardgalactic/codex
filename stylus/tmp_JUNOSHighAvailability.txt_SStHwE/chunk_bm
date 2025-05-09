@@ -1,0 +1,1000 @@
+      var $ifname = {
+        expr ../../name;
+        expr ".";
+        expr ../name;
+      }
+      if ($class = 'customer') {
+        <change> {
+         if ($protocol = 'isis') {
+           <protocols> {
+              <isis> {
+                <interface> {
+                  <name> $ifname;
+               }
+             }
+           }
+        }
+        else if ($protocol = 'ospf') {
+          <protocols> {
+          <ospf> {
+            <area> {
+              <name> data[name='area']/value;
+                <interface> {
+                    <name> $ifname;
+               }
+             }
+           }
+         }
+       }
+    }
+  }
+}
+Using this combination of macros and commit scripts, it is
+        possible to ensure that configuration consistency, and thus high
+        availability, is maintained across the entire network.
+
+
+
+
+
+
+Ad Hoc Changes
+
+
+
+Strategies for automating ad hoc changes are far different from
+      strategies for automating infrastructure and deployment changes, because
+      ad hoc changes normally do not offer the same amount of time for
+      planning. In the case of workaround configurations, it is usually
+      necessary to deploy changes to configurations within a few days after
+      the need for the workaround is determined. Other types of configuration
+      changes, such as emergency changes to stop a denial-of-service (DoS) attack, must be deployed even
+      more quickly.
+
+
+
+
+Workarounds
+
+
+
+The first goal for designing a strategy for deploying automated
+        configuration changes for a workaround is to determine the systems or
+        devices affected by the issue you are attempting to solve. Workarounds
+        can normally be divided into two groups: those affecting the systems
+        that are internal to the network device, such as the JUNOS software,
+        and those caused by external device issues.
+
+
+
+
+JUNOS issues
+
+
+
+If an issue arises in the JUNOS software that requires a
+          workaround, the workaround should be applied to all devices running
+          the same code version. Although the workaround may not be necessary
+          on all devices, the foundation of consistency in configuration
+          demands that you implement the workaround on all of them.
+
+
+
+
+
+External device issues
+
+
+
+Sometimes an issue on an external device requires that you
+          implement a workaround on the devices connected to it. Again, all
+          equipment that can be changed without affecting operation should be
+          changed. Although the argument may be that other devices are
+          currently not connected to the offending device, in the future they
+          may be, and having the configuration in place early saves downtime
+          later:
+
+ns junos = "http://xml.juniper.net/junos/*/junos";
+ns xnm = "http://xml.juniper.net/xnm/1.1/xnm";
+ns jcs = "http://xml.juniper.net/junos/commit-scripts/1.0";
+
+import "../import/junos.xsl";
+
+param $min-mtu = 1024;
+
+match configuration {
+    for-each (interfaces/interface[starts-with(name, 'so-') and mtu and
+                        mtu < $min-mtu]) {
+        <xnm:error> {
+            call jcs:edit-path();
+            call jcs:statement($dot = mtu);
+            <message> {
+                expr "SONET interfaces must have a minimum MTU of ";
+                expr $min-mtu;
+                expr ".";
+            }
+        }
+    }
+
+
+
+
+
+
+One-off workarounds
+
+
+
+Sometimes it is either not necessary or not feasible to make a
+        configuration change to all devices in the network—for example, in the
+        event of a DoS attack. In early 2009, many networks were either
+        attacked or participated in Domain Name System (DNS) amplification attacks that were based on misconfigured
+        or out-of-date DNS servers.
+Because of the speed at which the attacks occurred and were
+        discovered, it was necessary to immediately deploy policers and policies to lessen the effect of the
+        attacks.
+A one-off configuration is sometimes necessary, and should be
+        automated so that it can be quickly deployed, as well as quickly
+        removed if other issues with the configuration are discovered. The key
+        to deploying a one-off configuration is to include detailed commenting
+        in the configuration that explains how, when, and why the
+        configuration changes were made.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Part IV. Appendixes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Appendix A. System Test Plan
+
+
+
+This test plan describes Juniper Networks recommendations for
+  testing JUNOS platforms before full implementation in a
+  production network. The purpose of this procedure is to detect hardware
+  problems (e.g., parts damaged in transit) so that you can solve them before
+  they have an impact on transit traffic.
+
+Note
+Because a considerable percentage of hardware failures occur within
+    the first 48 hours of operation, leave the router powered on for at least
+    two days, either on the customer's premises or in a staging location, and
+    then check again.
+
+For most tests, it is necessary to connect to the routing engines
+  (REs) or system boards via a console cable; so, remember to capture all
+  output and keep it for future reference or to help the Juniper Technical
+  Assistance Center (JTAC) in troubleshooting.
+Note that the staging procedures might vary for other applications and
+  products.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Physical Inspection and Power On
+
+
+
+The purpose of this step is to detect any obvious mechanical damage done to the
+    chassis or to the system boards:
+
+
+
+Check the chassis and the system boards for any sign of
+        mechanical damage.
+
+
+Check that all field-replaceable units—Switching and Forwarding
+        Modules (SFMs), Flexible PIC Concentrators (FPCs), REs, MCSs, Compact Forwarding Engine Boards
+        (CFEBs), power supplies, etc.—are correctly seated.
+
+
+Connect the power supplies and turn them on one at a
+        time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Check General System Status
+
+
+
+The purpose of this section is to collect data about the router hardware
+    configuration and environment (temperatures and voltages).
+
+Note
+You can run these commands only on the master RE; if you are
+      connected to the backup RE, the commands will fail. In this case, either
+      move your console connection to the master RE or use this
+      command:
+
+lab@r1-re0> request routing-engine login other-routing-engine
+
+
+
+
+
+Check for Any Active Alarms
+
+
+
+Run the show chassis alarm
+command on the master RE to display any active alarms. If
+      any alarm is reported, contact JTAC (remember to include all output you
+      collected).
+
+Note
+If the Ethernet management interface (fxp0) is not connected, a red alarm will be
+        triggered. This is the correct behavior; to avoid the alarm, make sure
+        the management interface is connected.
+
+
+
+
+
+
+Save the System Hardware Configuration for Future
+      Reference
+
+
+
+Connect to the master RE and run the show chassis hardware
+      command. This command allows you to get a snapshot of the actual
+      hardware configuration together with the serial numbers of each
+      component.
+Here is sample output from an M40e router; the actual output might
+      vary according to the platform and installed hardware:
+
+lab@r1-re0> show chassis hardware
+Hardware inventory:
+Item             Version  Part number  Serial number  Description
+Chassis                                25979          M40e
+Midplane         REV 01   710-005071   AW9739
+FPM CMB          REV 03   710-001642   AN5627
+FPM Display      REV 03   710-001647   BD0951
+CIP              REV 05   710-002649   BA5041
+PEM 0            Rev 01   740-003787   MC25400        Power Entry Module
+PEM 1            Rev 01   740-003787   MC13653        Power Entry Module
+PCG 0            REV 03   710-003066   BD0671
+PCG 1            REV 03   710-003066   BD0711
+Routing Engine 0 REV 08   740-003239   1000323102     RE-2.0
+Routing Engine 1 REV 08   740-003239   1000323004     RE-2.0
+MCS 0            REV 12   710-001226   BD0550
+MCS 1            REV 12   710-001226   BD0546
+SFM 0 SPP        REV 08   710-001228   BB5747
+SFM 0 SPR        REV 06   710-002189   BB5595         Internet Processor IIv1
+SFM 1 SPP        REV 07   710-001228   HB6333
+SFM 1 SPR        REV 05   710-002189   HD4454         Internet Processor IIv1
+FPC 4            REV 07   710-001611   AF1657         FPC Type 2
+  CPU            REV 05   710-001217   AE6608
+  PIC 0          REV 02   750-001850   HB2063         1x Tunnel
+FPC 5            REV 03   710-005078   BE5129         M40e-FPC Type 1
+  CPU            REV 01   710-004602   BB8532
+  PIC 0          REV 01   750-001897   AF4144         1x OC-12 ATM, MM
+FPC 6            REV 02   710-005078   AY7872         M40e-FPC Type 1
+  CPU            REV 01   710-004600   BB8809
+  PIC 0          REV 01   750-002575   AG7176         4x OC-3 SONET, SMIR
+FPC 7            REV 02   710-005078   BD0865         M40e-FPC Type 1
+  CPU            REV 01   710-004600   BD0635
+  PIC 0          REV 03   750-001894   AF6789         1x G/E, 1000 BASE-SX
+Here is sample output from an M10i router:
+
+lab@r2-re0> show chassis hardware
+Hardware inventory:
+Item             Version  Part number  Serial number Description
+Chassis                                31977         M10i
+Midplane         REV 04   710-008920   CC8226
+Power Supply 0   Rev 05   740-008537   QF11226       AC
+Power Supply 1   Rev 05   740-008537   QD19413       AC
+Power Supply 2   Rev 05   740-008537   QF11383       AC
+HCM slot 0       REV 01   710-010580   CE0986
+HCM slot 1       REV 01   710-010580   CE0876
+Routing Engine 0 REV 09   740-009459   1000500683    RE-5.0
+CFEB slot 0      REV 03   750-010465   CC7456        Internet Processor II
+FPC 0                                                E-FPC
+  PIC 0          REV 11   750-005653   CA8548        2x EIA-530
+  PIC 1          REV 10   750-005653   CC1653        2x EIA-530
+  PIC 2          REV 09   750-002992   CC9774        4x F/E, 100 BASE-TX
+  PIC 3          REV 09   750-002992   CC9880        4x F/E, 100 BASE-TX
+FPC 1                                                E-FPC
+  PIC 0          REV 11   750-005653   CA8538        2x EIA-530
+  PIC 1          REV 11   750-005653   BF7328        2x EIA-530
+  PIC 2          REV 11   750-005653   CA8525        2x EIA-530
+
+Note
+Remember to save the output for future reference; you will need
+        the serial numbers of each component if a Return Materials
+        Authorization (RMA) is opened.
+
+
+
+
+
+
+Check Voltages and Temperatures
+
+
+
+To check the temperatures and voltages on all boards, use the show chassis
+      environment command. Here is sample output from an M40e
+      router:
+
+lab@r1-re0> show chassis environment
+Class Item                   Status  Measurement
+Power PEM 0                  OK
+      PEM 1                  OK
+Temp  PCG 0                  OK      41 degrees C / 105 degrees F
+      PCG 1                  OK      45 degrees C / 113 degrees F
+      Routing Engine 0       OK      28 degrees C / 82 degrees F
+      Routing Engine 1       OK      26 degrees C / 78 degrees F
+      MCS 0                  OK      38 degrees C / 100 degrees F
+      MCS 1                  OK      40 degrees C / 104 degrees F
+      SFM 0 SPP              OK      36 degrees C / 96 degrees F
+      SFM 0 SPR              OK      40 degrees C / 104 degrees F
+      SFM 1 SPP              OK      40 degrees C / 104 degrees F
+      SFM 1 SPR              OK      42 degrees C / 107 degrees F
+      FPC 4                  OK      36 degrees C / 96 degrees F
+      FPC 5                  OK      41 degrees C / 105 degrees F
+      FPC 6                  OK      38 degrees C / 100 degrees F
+      FPC 7                  OK      39 degrees C / 102 degrees F
+      FPM CMB                OK      25 degrees C / 77 degrees F
+      FPM Display            OK      29 degrees C / 84 degrees F
+Fans  Rear Bottom Blower     OK      Spinning at normal speed
+      Rear Top Blower        OK      Spinning at normal speed
+      Front Top Blower       OK      Spinning at normal speed
+      Fan Tray Rear Left     OK      Spinning at normal speed
+      Fan Tray Rear Right    OK      Spinning at normal speed
+      Fan Tray Front Left    OK      Spinning at normal speed
+      Fan Tray Front Right   OK      Spinning at normal speed
+Misc  CIP                    OK
+Commands used to check voltage input vary by chassis. On the M40e
+      platform you can check voltage input on the various system boards with
+      these commands:
+
+
+
+show chassis environment
+        fpc
+
+
+
+
+show chassis environment
+        sfm
+
+
+
+
+show chassis environment
+        mcs
+
+
+
+
+show chassis environment
+        pcg
+
+
+
+
+show chassis environment
+        pem
+
+
+
+Any anomaly (e.g., components that are not online) is flagged in
+      the command output. Here is an example of show
+      chassis environment sfm output:
+
+lab@r1-re0> show chassis environment sfm
+SFM 0 status:
+  State                           Online
+  SPP temperature              36 degrees C / 96 degrees F
+  SPR temperature              40 degrees C / 104 degrees F
+  SPP Power:
+    1.5 V                    1500 mV
+    2.5 V                    2471 mV
+    3.3 V                    3286 mV
+    5.0 V                    5010 mV
+    5.0 V bias               4986 mV
+  SPR Power:
+    1.5 V                    1500 mV
+    2.5 V                    2477 mV
+    3.3 V                    3299 mV
+    5.0 V                    5015 mV
+    5.0 V bias               5001 mV
+    8.0 V bias               8251 mV
+  CMB Revision                 12
+SFM 1 status:
+  State                           Online - Standby
+  SPP temperature              40 degrees C / 104 degrees F
+  SPR temperature              42 degrees C / 107 degrees F
+  SPP Power:
+    1.5 V                    1500 mV
+    2.5 V                    2471 mV
+    3.3 V                    3304 mV
+    5.0 V                    5059 mV
+    5.0 V bias               4996 mV
+  SPR Power:
+    1.5 V                    1503 mV
+    2.5 V                    2477 mV
+    3.3 V                    3316 mV
+    5.0 V                    5062 mV
+    5.0 V bias               5008 mV
+    8.0 V bias               8263 mV
+  CMB Revision                 12
+
+
+
+
+
+Check the Status of the Individual Components
+
+
+
+Connect to the router and check that the various boards from which the
+      router is composed are in a correct state. On the M40e platform, you can
+      use these commands:
+
+
+
+show chassis fpc
+        detail
+
+
+
+
+show chassis sfm
+        detail
+
+
+
+For all active boards, the state field must be online; you can also check how long
+      the board has been online by checking its uptime. Here is a sample of
+      show chassis fpc detail
+      output:
+
+lab@r1-re0> show chassis fpc detail
+Slot 4 information:
+  State                               Online
+  Temperature                      36 degrees C / 96 degrees F
+  Total CPU DRAM                   32 MB
+  Total SRAM                        2 MB
+  Total SDRAM                     128 MB
+  I/O Manager ASIC information        Version 2.0, Foundry IBM, Part number 0
+  I/O Manager ASIC information        Version 2.0, Foundry IBM, Part number 0
+  Start time:                         2003-12-16 17:36:40 CET
+  Uptime:                              2 days, 16 hours, 58 minutes, 57 seconds
+Slot 5 information:
+  State                               Online
+  Temperature                      42 degrees C / 107 degrees F
+  Total CPU DRAM                   32 MB
+  Total SRAM                        4 MB
+  Total SDRAM                     128 MB
+  I/O Manager ASIC information        Version 3.0, Foundry IBM, Part number 0
+  I/O Manager ASIC information        Version 3.0, Foundry IBM, Part number 0
+  Start time:                         2003-12-16 17:36:41 CET
+  Uptime:                              2 days, 16 hours, 58 minutes, 56 seconds
+On J Series platforms, use these commands:
+
+
+
+show chassis fpc
+        detail
+
+
+
+
+show chassis pic fpc-slot <#>
+        pic-slot <#>
+
+
+
+Here is sample output of both commands on a J2300:
+
+lab@j2300-1> show chassis fpc detail
+Slot 0 information:
+  State                               Online
+  Total CPU DRAM                   32 MB
+  Start time                          2009-05-28 22:24:31 UTC
+  Uptime                              29 minutes, 26 seconds
+
+lab@j2300-1> show chassis pic fpc-slot 0 pic-slot 0
+PIC fpc slot 0 pic slot 0 information:
+  Type                             2x FE, 2x T1
+  State                            Online
+  PIC version                  3.5
+  Uptime                        30 minutes, 1 second.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Check Routing Engine and Storage Media
+
+
+
+The purpose of this section is to check whether the RE and its storage media are
+    working correctly.
+
+
+
+
+Check Routing Engine Status
+
+
+
+To check the general condition of the REs, use the show chassis
+      routing-engine command.
+      This command shows the status of both the primary and the backup REs.
+      Here is sample output from an M40e router:
+
+lab@r1-re0> show chassis routing-engine
+Routing Engine status:
+  Slot 0:
+    Current state              Master
+    Election priority          Master
+    Temperature             27 degrees C / 80 degrees F
+    DRAM                   768 MB
+    Memory utilization      15 percent
+    CPU utilization:
+      User                   0 percent
+      Background             0 percent
+      Kernel                 3 percent
+      Interrupt              1 percent
+      Idle                  97 percent
+    Model                      RE-2.0
+    Serial ID                  6f000000b3a7e001
+    Start time                 2009-03-16 17:34:30 CET
+    Uptime                     2 days, 18 hours, 51 minutes, 37 seconds
+    Load averages:             1 minute   5 minute  15 minute
+                                   0.00       0.01       0.00
+Routing Engine status:
+  Slot 1:
+    Current state              Backup
+    Election priority          Backup
+    Temperature             26 degrees C / 78 degrees F
+    DRAM                   768 MB
+    Memory utilization      14 percent
+    CPU utilization:
+      User                   0 percent
+      Background             0 percent
+      Kernel                 0 percent
+      Interrupt              0 percent
+      Idle                 100 percent
+    Model                      RE-2.0
+    Serial ID                  77000000b3a62d01
+    Start time                 2009-03-16 16:02:43 CET
+    Uptime                     2 days, 20 hours, 23 minutes, 23 seconds
+
+
+
+
+
+Check Storage Media on Each Routing Engine
+
+
+
+Use the show system storage
+      command to display storage media and mounted filesystems. Check that the /var, /config, and / (root)
+      directories are correctly mounted. Here is sample output from an M40e
+      platform:
+
+lab@r1-re0> show system storage
+Filesystem 512-blocks       Used    Avail Capacity Mounted on
+/dev/ad0s1a    158174      56516    89006     39%  /
+devfs              32         32        0    100%  /dev/
+/dev/vn0        18316      18316        0    100%  /packages/mnt/jbase
+devfs              32         32        0    100%  /dev/
+/dev/vn1        45448      45448        0    100%  /packages/mnt/jkernel-6.0R1.5
+/dev/vn2        20532      20532        0    100%  /packages/mnt/jpfe-M160-6.0R1.5
+/dev/vn3         3580       3580        0    100%  /packages/mnt/jdocs-6.0R1.5
+/dev/vn4        20728      20728        0    100%  /packages/mnt/jroute-6.0R1.5
+/dev/vn5         9252       9252        0    100%  /packages/mnt/jcrypto-6.0R1.5
+mfs:139        3048670          8  2804770      0%  /tmp
+/dev/ad0s1e      23742         42    21802      0%  /config
+procfs               8          8        0    100%  /proc
+/dev/ad1s1f   34635886    6947870 24917146     22%  /var
+If the directories are correctly mounted, you can run
+      the request system
+      snapshot command to copy JUNOS Software from the CompactFlash memory onto the hard disk. This helps to
+      detect hard disk problems and allows the RE to recover quickly in case
+      of CompactFlash failures.
+Repeat the preceding steps on the backup RE. If any error is
+      detected during execution of the request system
+      snapshot command, contact JTAC.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Test Optical Interfaces
+
+
+
+The purpose of this section is to do a quick test on all optical interfaces
+    on the router. The configuration might change according to the type of
+    interface being tested; configuration examples are provided for some of
+    the most commonly used interfaces.
+You will need a fiber loop and an optical attenuator for
+    Intermediate Reach and Long Haul interfaces. No attenuation is required for
+    multimode Gigabit Ethernet interfaces.
+
+
+
+
+Configure a Private IP Address and Run Ping Tests
+
+
+
+You must configure a private IP address to ping through the fiber loop. In this
+      example, we use 10.0.0.1/30 as the private IP address; you can change it
+      if you are already using addresses in the same range (e.g., for the
+      management interface).
+To quickly see how many interfaces are present on the router, use
+      the show interfaces terse
+      command. Consider only interfaces whose name is in the form
+      type-fpc/pic/port—for
+      example, so-0/1/0, at-1/2/0, and
+      so on. Ignore the internal interfaces (e.g., pimd,
+      pime, tun, tap,
+      lo0, and dsc).
+
+
+
+
+Run a loopback test on SONET/SDH interfaces
+
+
+
+To configure the 10.0.0.1 address on SONET interfaces, use these commands in configuration
+        mode, replacing so-0/0/0 with the
+        actual interface you are configuring:
+
+[edit interfaces]
+lab@r1-re0# set so-0/0/0 encapsulation cisco-hdlc no-keepalives
+
+[edit interfaces]
+lab@r1-re0# set so-0/0/0 unit 0 family inet address 10.0.0.1/30
+Check that the configuration is correct, and then commit:
+
+[edit]
+lab@rl-re0# show interfaces so-0/0/0
+no-keepalives;
+encapsulation cisco-hdlc;
+unit 0 {
+    family inet {
+        address 10.0.0.1/30;
+    }
+}
+
+[edit]
+lab@rl-re0# commit
+commit complete
+The cisco-hdlc and no-keepalive settings are needed to prevent
+        the router from automatically detecting the loop, which would prevent
+        test traffic from being transmitted.
+To run the ping test, use this command (replacing so-0/0/0.0 with the actual interface
+        name):
+
+[edit]
+lab@r1-re0# run ping 10.0.0.1 interface so-0/0/0.0 bypass-routing rapid count 1000
+
+
+
+
+
+Run a loopback test on Fast Ethernet and Gigabit Ethernet
+        interfaces
+
+
+
+To configure the 10.0.0.1 address on Gigabit Ethernet or Fast Ethernet interfaces
+        for loopback testing, use these commands in configuration mode,
+        replacing ge-0/0/0 with the actual
+        interface you are configuring. You must configure a dummy Media Access
+        Control (MAC) address to run this test:
+
+[edit interfaces]
+lab@r1-re0# set ge-0/0/0 mac 00.00.00.00.00.01
+
+[edit interfaces]
+lab@r1-re0# set ge-0/0/0 unit 0 family inet address 10.0.0.1/30 arp 10.0.0.2 mac
+00.00.00.00.00.01
+When running a loopback test on Fast Ethernet or Gigabit
+        Ethernet interfaces, you cannot ping your own address, so you must use the remote
+        address (10.0.0.2). The ping will always fail, but you can use the
+        interface counters to check that all packets have been successfully
+        transmitted and received. To clear the interface counters, use this
+        command:
+
+lab@r1-re0> clear interface statistic ge-0/0/0
+Then start a ping test with 10 packets, each of which will loop
+        255 times through the fiber:
+
+lab@r1-re0> ping interface ge-0/0/0 10.0.0.2 bypass-routing count 10 ttl 255
+While the test is running, you will receive 10 Time to Live
+        (TTL) expired messages; this is normal:
+
+lab@r1-re0> ping interface ge-0/0/0 10.0.0.2 bypass-routing count 10 ttl 255
+PING 10.0.0.2 (10.0.0.2): 56 data bytes
+36 bytes from 10.0.0.1: Time to live exceeded
+Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst
+ 4  5  00 0054 a327   0 0000  01  01 0280 10.0.0.1  10.0.0.2
+
+36 bytes from 10.0.0.1: Time to live exceeded
+Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src      Dst
+ 4  5  00 0054 a32a   0 0000  01  01 027d 10.0.0.1  10.0.0.2
+Finally, use the show interfaces ge-0/0/0
+        extensive command to check that no packet was lost:
+
+lab@r1-re0> show interface ge-0/0/0 extensive | no-more
+Physical interface: ge-7/0/0, Enabled, Physical link is Up
+  Interface index: 134, SNMP ifIndex: 26, Generation: 18
+  Link-level type: Ethernet, MTU: 1514, Speed: 1000mbps, Loopback: Disabled,
+Source filtering: Disabled, Flow control: Enabled
+  Device flags   : Present Running
+  Interface flags: SNMP-Traps
+  Link flags     : None
+  Hold-times     : Up 0 ms, Down 0 ms
+  Current address: 00:00:00:00:00:01, Hardware address: 00:90:69:fe:67:72
+  Last flapped   : 2009-03-16 17:37:05 CET (5d 20:24 ago)
+  Statistics last cleared: 2009-03-22 14:00:39 CET (00:00:57 ago)
+  Traffic statistics:
+   Input  bytes  :               214200                    0 bps
+   Output bytes  :               214340                    0 bps
+   Input  packets:                 2550                    0 pps
+   Output packets:                 2550                    0 pps
+In this sample output, all 10 packets were looped through the
+        fiber 255 times, resulting in 2,550 input packets and 2,550 output
+        packets. No packets were lost.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Failover and Redundancy Tests
+
+
+
+The purpose of the tests described in this section is to verify that
+    the router redundancy and failover functionalities work as
+    expected. Before conducting the tests, make sure that both REs have the
+    correct configuration. If in doubt, log in to the master RE, check its
+    configuration, and run the commit synchronize
+    command.
+
+
+
+
+Routing Engine Redundancy
+
+
+
+Use the show chassis
+      routing-engine command to verify the current mastership status:
+
+lab@r1-re0> show chassis routing-engine
+Routing Engine status:
+  Slot 0:
+    Current state                  Master
+    Election priority              Master (default)
+    Temperature                 26 degrees C / 78 degrees F
+    DRAM                       768 MB
+    Memory utilization          16 percent
+    CPU utilization:
+      User                       0 percent
+      Background                 0 percent
+      Kernel                     2 percent
+      Interrupt                  0 percent
+      Idle                      98 percent
+    Model                          RE-2.0
+    Serial ID                      6f000000b3a7e001
+    Start time                     2009-03-06 14:39:54 CEST
+    Uptime                         1 day, 16 minutes, 17 seconds
+    Load averages:                 1 minute   5 minute  15 minute
+                                       0.00       0.00       0.00
+Routing Engine status:
+  Slot 1:
+    Current state                  Backup
+    Election priority              Backup (default)
+    Temperature                 26 degrees C / 78 degrees F
+    DRAM                       768 MB
+    Memory utilization          15 percent
+    CPU utilization:
+      User                       0 percent
+      Background                 0 percent
+      Kernel                     0 percent
+      Interrupt                  0 percent
+      Idle                     100 percent
+    Model                          RE-2.0
+    Serial ID                      77000000b3a62d01
+    Start time                     2009-03-06 11:11:08 CEST
+    Uptime                         1 day, 3 hours, 45 minutes, 2 seconds
+Connect to the master RE, and trigger a mastership change with
+      this command:
+
+lab@r1-re0> request chassis routing-engine master switch
+Wait a few seconds and verify that the mastership switch is
+      complete:
+
+lab@r1-re0> show chassis routing-engine
+Routing Engine status:
+  Slot 0:
+    Current state                  Backup
+    Election priority              Master
+    Temperature                 26 degrees C / 78 degrees F
+    DRAM                       768 MB
+    Memory utilization          16 percent
+    CPU utilization:
+      User                       0 percent
+      Background                 0 percent
+      Kernel                     0 percent
+      Interrupt                  0 percent
+      Idle                     100 percent
+    Model                          RE-2.0
+    Serial ID                      6f000000b3a7e001
+    Start time                     2003-12-16 17:34:35 CET
+    Uptime                         5 days, 21 hours, 23 minutes, 34 seconds
+    Load averages:                 1 minute   5 minute  15 minute
+                                       0.00       0.04       0.01
+Routing Engine status:
+  Slot 1:
+    Current state                  Master
+    Election priority              Backup
+    Temperature                 25 degrees C / 77 degrees F
+    DRAM                       768 MB
+    Memory utilization          15 percent
+    CPU utilization:
+      User                       0 percent
+      Background                 0 percent
+      Kernel                     2 percent
+      Interrupt                  0 percent
+      Idle                      98 percent
+    Model                          RE-2.0
+    Serial ID                      77000000b3a62d01
+    Start time                     2003-12-16 16:02:43 CET
+    Uptime                         5 days, 22 hours, 55 minutes, 24 seconds
+Connect to the backup RE:
+
+lab@r1-re0> request routing-engine login other-routing-engine
+After the Packet Forwarding Engine (PFE) has completed its
+      initialization, you can check the PFE status from the RE; this might
+      take a few seconds:
+
+lab@r1-re1> show chassis hardware
+Hardware inventory:
+Item             Version  Part number  Serial number     Description
+Chassis                                25979             M40e
+Midplane         REV 01   710-005071   AW9739
+FPM CMB          REV 03   710-001642   AN5627
+FPM Display      REV 03   710-001647   BD0951
+CIP              REV 05   710-002649   BA5041
+PEM 0            Rev 01   740-003787   MC25400           Power Entry Module
+PEM 1            Rev 01   740-003787   MC13653           Power Entry Module
+...
+Remember to revert to the previous situation with
+      another request chassis
+      routing-engine master switch.
+
+
+
+
+
+SFM Redundancy (M40e Platform Only)
+
+
+
+Verify the current SFM status by using the show chassis sfm
+      command:
+
+lab@r1-re0> show chassis sfm
+                     Temp  CPU Utilization (%)   Memory    Utilization (%)
+Slot State            (C)  Total  Interrupt      DRAM (MB) Heap     Buffer
+  0  Online            36      3          0        64        16         46
+  1  Online - Standby  40      3          0        64        16         46
+You can trigger an SFM switch by using this command:
+
+lab@r1-re0> request chassis sfm master switch no-confirm
+Wait a few seconds, and then verify that the SFM switch was
+      successful:
+
+lab@r1-re1> show chassis sfm
+                     Temp  CPU Utilization (%)   Memory    Utilization (%)
+Slot State            (C)  Total  Interrupt      DRAM (MB) Heap     Buffer
+  0  Online - Standby  35      4          0        64        16         46
+  1  Online            39      4          0        64        16         46
+Once the switch is complete, check the system log for any errors
+      with the show log messages
+command.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Final Burn-In Check
+
