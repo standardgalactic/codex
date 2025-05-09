@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoomable Star Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+            color: white;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <p>Controls:</p>
+        <ul>
+            <li>W/S: Zoom in/out</li>
+            <li>A/D: Pan left/right</li>
+            <li>Arrow keys: Move up/down/left/right</li>
+            <li>Mouse wheel: Zoom</li>
+            <li>Click on stars for details</li>
+        </ul>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Adjust canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Load the JSON data
+        fetch('tree.json')
+            .then(response => response.json())
+            .then(data => initializeStarMap(data))
+            .catch(error => console.error('Error loading JSON:', error));
+
+        let stars = [];
+        let viewport = {
+            x: 0,
+            y: 0,
+            zoom: 1
+        };
+
+        const controls = {
+            zoomIn: false,
+            zoomOut: false,
+            moveLeft: false,
+            moveRight: false,
+            moveUp: false,
+            moveDown: false
+        };
+
+        function initializeStarMap(tree) {
+            // Flatten the JSON tree into a list of files
+            function flattenTree(node) {
+                const files = [];
+                if (node.children) {
+                    node.children.forEach(child => {
+                        files.push(...flattenTree(child));
+                    });
+                } else {
+                    files.push(node.name);
+                }
+                return files;
+            }
+
+            const fileList = flattenTree(tree);
+
+            // Generate random star positions
+            stars = fileList.map((file, index) => ({
+                x: Math.random() * canvas.width * 4 - canvas.width * 2,
+                y: Math.random() * canvas.height * 4 - canvas.height * 2,
+                size: Math.random() * 2 + 1,
+                file: file
+            }));
+
+            animate();
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            stars.forEach(star => {
+                const screenX = (star.x - viewport.x) * viewport.zoom + canvas.width / 2;
+                const screenY = (star.y - viewport.y) * viewport.zoom + canvas.height / 2;
+                const screenSize = star.size * viewport.zoom;
+
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, screenSize, 0, Math.PI * 2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+
+                if (screenSize > 3) { // Show labels for closer stars
+                    ctx.fillStyle = 'white';
+                    ctx.font = `${12 * viewport.zoom}px Arial`;
+                    ctx.fillText(star.file, screenX + 5, screenY - 5);
+                }
+            });
+        }
+
+        function animate() {
+            updateViewport();
+            drawStars();
+            requestAnimationFrame(animate);
+        }
+
+        function updateViewport() {
+            const zoomSpeed = 0.02;
+            const moveSpeed = 10 / viewport.zoom;
+
+            if (controls.zoomIn) viewport.zoom *= 1 + zoomSpeed;
+            if (controls.zoomOut) viewport.zoom /= 1 + zoomSpeed;
+            if (controls.moveLeft) viewport.x -= moveSpeed;
+            if (controls.moveRight) viewport.x += moveSpeed;
+            if (controls.moveUp) viewport.y -= moveSpeed;
+            if (controls.moveDown) viewport.y += moveSpeed;
+        }
+
+        // Event listeners for keyboard controls
+        document.addEventListener('keydown', event => {
+            switch (event.key) {
+                case 'w': controls.zoomIn = true; break;
+                case 's': controls.zoomOut = true; break;
+                case 'a': controls.moveLeft = true; break;
+                case 'd': controls.moveRight = true; break;
+                case 'ArrowUp': controls.moveUp = true; break;
+                case 'ArrowDown': controls.moveDown = true; break;
+                case 'ArrowLeft': controls.moveLeft = true; break;
+                case 'ArrowRight': controls.moveRight = true; break;
+            }
+        });
+
+        document.addEventListener('keyup', event => {
+            switch (event.key) {
+                case 'w': controls.zoomIn = false; break;
+                case 's': controls.zoomOut = false; break;
+                case 'a': controls.moveLeft = false; break;
+                case 'd': controls.moveRight = false; break;
+                case 'ArrowUp': controls.moveUp = false; break;
+                case 'ArrowDown': controls.moveDown = false; break;
+                case 'ArrowLeft': controls.moveLeft = false; break;
+                case 'ArrowRight': controls.moveRight = false; break;
+            }
+        });
+
+        // Mouse wheel event for zooming
+        canvas.addEventListener('wheel', event => {
+            viewport.zoom *= event.deltaY < 0 ? 1.1 : 0.9;
+        });
+
+        // Click event to display file details
+        canvas.addEventListener('click', event => {
+            const clickX = (event.clientX - canvas.width / 2) / viewport.zoom + viewport.x;
+            const clickY = (event.clientY - canvas.height / 2) / viewport.zoom + viewport.y;
+
+            stars.forEach(star => {
+                const distance = Math.hypot(star.x - clickX, star.y - clickY);
+                if (distance < star.size * viewport.zoom) {
+                    alert(`File: ${star.file}`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
